@@ -1,0 +1,11 @@
+# Secrets and sensitive files
+*.env
+*.env.*
+*secret*
+*key*
+*token*
+*password*
+
+# Common ignore patterns
+.DS_Store
+Thumbs.db
