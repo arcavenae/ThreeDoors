@@ -32,7 +32,7 @@ sequenceDiagram
     DS->>DS: Random selection (3 tasks)
     DS->>TP: MarkRecentlyShown(task IDs)
     DS-->>DV: DoorSelection{doors: [t1, t2, t3]}
-    DV->>DV: Render Three Doors
+    DV->>DV: Render Three Doors (horizontally)
     DV-->>User: Display doors with status indicators
 ```
 
@@ -46,7 +46,7 @@ sequenceDiagram
     participant TDV as TaskDetailView
     participant Task as Task Model
 
-    User->>DV: Press "2" (select Door 2)
+    User->>DV: Press "W" (select Door 2)
     DV->>MM: Send SelectDoorMsg{doorIndex: 1}
     MM->>MM: Switch view mode to "detail"
     MM->>DV: GetTask(doorIndex: 1)

@@ -69,7 +69,7 @@ From a product perspective, these are the critical views necessary to deliver MV
 Leverage Charm Bracelet/Bubbletea's capabilities for styled terminal UI—think clean, readable typography with subtle use of color for status indication (green for progress, yellow for prompts, red sparingly for errors).
 
 **Three Doors Visual Metaphor:**
-The main interface could literally render three visual "doors" in ASCII art or styled terminal boxes:
+The main interface will render three visual "doors" arranged horizontally in ASCII art or styled terminal boxes:
 ```
 ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
 │   DOOR 1    │  │   DOOR 2    │  │   DOOR 3    │
@@ -79,7 +79,7 @@ The main interface could literally render three visual "doors" in ASCII art or s
 │  ~5min      │  │  ~30min     │  │  ~15min     │
 └─────────────┘  └─────────────┘  └─────────────┘
 
-Press 1, 2, or 3 to enter  |  R to refresh  |  B to mark blocked
+Press A, W, or D to enter  |  S to re-roll  |  Q to quit
 ```
 
 **"Progress Over Perfection" Visual Language:**
@@ -90,7 +90,7 @@ Use asymmetry, incomplete progress bars, and "good enough" indicators. The three
 **Primary: macOS Terminal Emulators (iTerm2, Terminal.app, Alacritty)**
 - CLI/TUI optimized for 80x24 minimum, responsive to larger terminal sizes
 - Assumes modern terminal with 256-color support minimum
-- Keyboard-driven navigation (arrow keys, vim-style hjkl, number keys 1-3 for door selection)
+- Keyboard-driven navigation (keys 'a', 'w', 'd' for door selection; 's' for re-roll; 'q' to quit)
 
 **Secondary: Remote Terminal Access**
 - Should function over SSH connections (for future Geodesic/remote environment access)

@@ -58,10 +58,10 @@
 
 **Acceptance Criteria:**
 1. Three tasks are randomly selected from loaded tasks
-2. Tasks are displayed in three visual "boxes" (ASCII art or Lipgloss styled borders)
+2. Tasks are displayed in three visual "boxes" (ASCII art or Lipgloss styled borders) arranged *horizontally*
 3. Each door is labeled: "Door 1", "Door 2", "Door 3"
 4. Task text is displayed inside each door (truncated if too long, max ~40 chars)
-5. Instructions displayed at bottom: "Press 1, 2, or 3 to select | R to refresh | Q to quit"
+5. Instructions displayed at bottom: "Press A, W, or D to select | S to re-roll | Q to quit"
 6. No duplicate tasks appear in the three doors simultaneously
 7. If fewer than 3 tasks available, show what's available (handle edge case gracefully)
 
@@ -76,7 +76,7 @@
 **so that** I have control over my options without feeling trapped.
 
 **Acceptance Criteria:**
-1. Pressing R generates a new set of three doors
+1. Pressing S generates a new set of three doors
 2. New selection is different from current selection (no duplicates of currently shown tasks)
 3. Random selection ensures variety over multiple refreshes
 4. Edge case: If 3 or fewer tasks remain total, show message "All available tasks are already showing"
@@ -97,7 +97,7 @@
 **so that** I can make progress on my tasks.
 
 **Acceptance Criteria:**
-1. Pressing 1, 2, or 3 selects the corresponding door
+1. Pressing A, W, or D selects the corresponding door
 2. Selected task is highlighted/indicated visually
 3. Prompt appears: "Working on: [task text] - Press C to complete, B to go back"
 4. Pressing C marks task as complete

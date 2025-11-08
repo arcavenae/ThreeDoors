@@ -35,8 +35,8 @@ The application is divided into **two primary layers**:
 - `sessionCompletionCount` - Tasks completed this session
 
 **Key Behaviors:**
-- **Keyboard: 1/2/3** - Select corresponding door, transition to TaskDetailView
-- **Keyboard: R** - Refresh doors (generate new selection)
+- **Keyboard: A/W/D** - Select corresponding door, transition to TaskDetailView
+- **Keyboard: S** - Re-roll doors (generate new selection)
 - **Keyboard: Q** - Quit application
 - **Keyboard: Arrow Keys** - Move cursor between doors (visual highlight)
 
@@ -52,7 +52,7 @@ The application is divided into **two primary layers**:
 └─────────────────┘  └─────────────────┘  └─────────────────┘
 
 Completed this session: 3
-Press 1, 2, 3 to select | R to refresh | Q to quit
+Press A, W, D to select | S to re-roll | Q to quit
 Progress over perfection. Just pick one and start. ✨
 ```
 
