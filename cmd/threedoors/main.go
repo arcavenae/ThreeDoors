@@ -16,7 +16,8 @@ import (
 type model struct {
 	allTasks          []tasks.Task
 	displayedDoors    []tasks.Task
-	selectedDoorIndex int // 0 for left, 1 for center, 2 for right
+	selectedDoorIndex int // -1 for no selection, 0 for left, 1 for center, 2 for right
+	width             int
 }
 
 // getThreeRandomDoors selects 3 random tasks from the provided allTasks pool.
@@ -49,7 +50,7 @@ func initialModel() model {
 	return model{
 		allTasks:          allTasks,
 		displayedDoors:    displayedDoors,
-		selectedDoorIndex: 0, // Initialize to select the first door
+		selectedDoorIndex: -1, // Initialize to no door selected
 	}
 }
 
@@ -59,19 +60,33 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "a": // Select left door
+		case "a", "left": // Select left door
 			m.selectedDoorIndex = 0
-		case "w": // Select center door
+		case "w", "up": // Select center door
 			m.selectedDoorIndex = 1
-		case "d": // Select right door
+		case "d", "right": // Select right door
 			m.selectedDoorIndex = 2
-		case "s": // Re-roll tasks
+		case "s", "down": // Re-roll tasks
 			m.displayedDoors = getThreeRandomDoors(m.allTasks)
-			m.selectedDoorIndex = 0 // Reset selection after re-rolling
+			m.selectedDoorIndex = -1 // Reset selection after re-rolling
+		case "c": // Mark selected task as complete
+			// TODO: Implement task completion logic
+		case "b": // Mark selected task as blocked
+			// TODO: Implement task blocking logic
+		case "i": // Mark selected task as in progress
+			// TODO: Implement task in progress logic
+		case "e": // Expand selected task (into more tasks)
+			// TODO: Implement task expansion logic
+		case "f": // Fork selected task (clone/split)
+			// TODO: Implement task forking logic
+		case "p": // Procrastinate/avoid selected task
+			// TODO: Implement task procrastination logic
 		}
 	}
 	return m, nil
@@ -81,21 +96,24 @@ func (m model) View() string {
 	s := strings.Builder{}
 	s.WriteString("ThreeDoors - Technical Demo\n\n")
 
+	// Calculate door width based on terminal width
+	doorWidth := (m.width - 6) / 3 // m.width - 6 for padding/borders, then divide by 3 doors
+
 	unselectedDoorStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("63")).
 		Padding(1, 2).
-		Width(20)
+		Width(doorWidth)
 
 	selectedDoorStyle := lipgloss.NewStyle().
 		Border(lipgloss.ThickBorder()).
 		BorderForeground(lipgloss.Color("86")). // Green color for selected
 		Padding(1, 2).
-		Width(20)
+		Width(doorWidth)
 
 	var renderedDoors []string
 	for i, task := range m.displayedDoors {
-		doorContent := fmt.Sprintf("Door %d:\n%s", i+1, task.Text)
+		doorContent := task.Text // Removed "Door X:" label
 		if i == m.selectedDoorIndex {
 			renderedDoors = append(renderedDoors, selectedDoorStyle.Render(doorContent))
 		} else {
@@ -105,7 +123,8 @@ func (m model) View() string {
 
 	s.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...))
 	s.WriteString("\n\nPress 'q' or 'ctrl+c' to quit.\n")
-	s.WriteString("Use 'a', 'w', 'd' to select doors, 's' to re-roll.\n")
+	s.WriteString("Use 'a'/'left', 'w'/'up', 'd'/'right' to select doors, 's'/'down' to re-roll.\n")
+	s.WriteString("Use 'c' (complete), 'b' (blocked), 'i' (in progress), 'e' (expand), 'f' (fork), 'p' (procrastinate) for task management.\n")
 	return s.String()
 }
 

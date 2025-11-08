@@ -1,4 +1,4 @@
-# Simple Todo Application
+# ThreeDoors Application
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/arcaven/ThreeDoors)](https://goreportcard.com/report/github.com/arcaven/ThreeDoors)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -7,7 +7,7 @@
 
 ## Introduction
 
-Simple Todo is a minimalist task management application designed to help users organize their daily tasks efficiently. Built with a focus on simplicity and speed, it provides a straightforward interface for adding, completing, and tracking your to-do items. This project serves as a foundational example for building robust, scalable applications using modern development practices.
+ThreeDoors is a minimalist task management application designed to help users organize their daily tasks efficiently. Built with a focus on simplicity and speed, it provides a straightforward interface for adding, completing, and tracking your to-do items. This project serves as a foundational example for building robust, scalable applications using modern development practices.
 
 ## Project Status
 
