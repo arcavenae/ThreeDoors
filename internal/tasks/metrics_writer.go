@@ -25,7 +25,7 @@ func NewMetricsWriter(baseDir string) *MetricsWriter {
 // Returns error if file operations fail (caller should log warning, not crash)
 func (mw *MetricsWriter) AppendSession(metrics *SessionMetrics) error {
 	// Open file in append mode, create if not exists
-	f, err := os.OpenFile(mw.sessionsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(mw.sessionsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
