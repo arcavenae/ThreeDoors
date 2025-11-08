@@ -113,6 +113,86 @@
 
 ---
 
+### Story 1.5a: Session Metrics Tracking
+
+**As a** developer validating the Three Doors concept,
+**I want** objective session metrics collected automatically,
+**so that** I can make a data-informed decision at the validation gate instead of relying solely on subjective impressions.
+
+**Priority:** HIGH (enables objective validation)
+
+**Context:** The validation decision gate asks: "Does Three Doors reduce friction vs. traditional task lists?" Without metrics, this is purely subjective. This story adds lightweight, non-intrusive tracking to provide objective evidence. The metrics should be invisible to the user during normal operation - no prompts, no UI changes, just silent background collection.
+
+**Acceptance Criteria:**
+
+1. **SessionTracker component created** in `internal/tasks/session_tracker.go`
+   - Tracks session_id, start/end times, duration
+   - Tracks behavioral counters: tasks_completed, doors_viewed, refreshes_used, detail_views, notes_added, status_changes
+   - Tracks time_to_first_door_seconds (key friction metric)
+   - Constructor `NewSessionTracker()` initializes with UUID and current timestamp
+   - Methods: `RecordDoorViewed()`, `RecordRefresh()`, `RecordDetailView()`, `RecordTaskCompleted()`, `RecordNoteAdded()`, `RecordStatusChange()`
+   - Method `Finalize()` calculates duration and returns metrics for persistence
+
+2. **MetricsWriter component created** in `internal/tasks/metrics_writer.go`
+   - Constructor `NewMetricsWriter(baseDir string)` sets path to sessions.jsonl
+   - Method `AppendSession(metrics *SessionMetrics)` writes JSON line to file
+   - Creates file if doesn't exist, appends to existing file
+   - Returns error on failure (caller logs warning, doesn't crash)
+
+3. **SessionTracker integrated into MainModel**
+   - MainModel includes sessionTracker field
+   - SessionTracker passed to DoorsView and TaskDetailView constructors
+   - No UI changes (completely invisible to user)
+
+4. **Recording calls integrated into DoorsView**
+   - Door selection (1/2/3) calls `RecordDoorViewed()`
+   - Refresh (R) calls `RecordRefresh()`
+   - Recording happens before transitioning to detail view
+
+5. **Recording calls integrated into TaskDetailView**
+   - Constructor calls `RecordDetailView()` on initialization
+   - Note addition calls `RecordNoteAdded()`
+   - Status change calls `RecordStatusChange()`
+   - Completion calls both `RecordStatusChange()` and `RecordTaskCompleted()`
+
+6. **Session persistence on app exit**
+   - `cmd/threedoors/main.go` calls `Finalize()` and `AppendSession()` on clean exit
+   - Write failures logged as warning to stderr, don't block exit
+   - File created: `~/.threedoors/sessions.jsonl` (JSON Lines format)
+
+7. **Metrics file format validated**
+   - Each line is valid JSON (parseable by `jq`)
+   - File is append-only, human-readable
+   - Manual verification: run app 2-3 times, verify lines in sessions.jsonl
+
+8. **Performance requirements met**
+   - Recording adds <1ms overhead per event
+   - No UI lag or stuttering observed
+   - Memory overhead negligible (<1KB per session)
+
+9. **Error handling implemented**
+   - File write failures don't crash app (warning logged)
+   - JSON marshal failures don't crash app
+   - No error dialogs shown to user
+
+**Analysis Scripts Created:**
+- `scripts/analyze_sessions.sh` - Session summary and averages
+- `scripts/daily_completions.sh` - Daily completion counts from completed.txt
+- `scripts/validation_decision.sh` - Automated validation criteria evaluation
+
+**Deferred to Future:**
+- Daily aggregation reports (manual analysis via scripts)
+- In-app metrics visualization
+- Friction score prompts (manual logging recommended)
+- Metrics export to other formats
+- Historical cleanup/rotation
+
+**Rationale:** Provides objective data to answer "Does Three Doors reduce friction?" Metrics enable data-informed decision at validation gate rather than relying solely on subjective feel. Lightweight implementation (50-60 min) doesn't compromise "progress over perfection" philosophy.
+
+**Estimated Time:** 50-60 minutes
+
+---
+
 ### Story 1.6: Essential Polish (SIMPLIFIED)
 
 **As a** user,
