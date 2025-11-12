@@ -100,3 +100,6 @@ temp/
 # .bmad-core/ - KEEP
 # .gemini/ - KEEP  
 # .windsurf/workflows/ - KEEP
+# BMAD (local only)
+.bmad-core/
+.bmad-*/
