@@ -30,19 +30,23 @@ workflow_path: "method-greenfield.yaml"
 
 workflow_status:
   # Phase Documentation
-  document-project: required
+  document-project: docs/brief.md
 
   # Phase 1: Planning
-  prd: required
+  prd: docs/prd/index.md
   validate-prd: optional
   create-design: conditional
 
   # Phase 2: Solutioning
-  create-architecture: recommended
+  create-architecture: docs/architecture/index.md
   validate-architecture: optional
   solutioning-gate-check: required
 
   # Phase 3: Implementation
   sprint-planning: required
-  story-development-1.1: /Users/michael.pursifull/work/ThreeDoors/docs/stories/1.1.story.md
-  story-development-1.2: required
+  story-development-1.1: docs/stories/1.1.story.md
+  story-development-1.2: docs/stories/1.2.story.md
+  story-development-1.3: required
+  story-development-1.3a: required
+  story-development-1.5: required
+  story-development-1.6: required

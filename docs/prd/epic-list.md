@@ -4,15 +4,17 @@
 
 **Epic 1: Three Doors Technical Demo**
 - **Goal:** Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept reduces friction compared to traditional task lists
-- **Timeline:** 1 week (3-6 hours development time - optimized sequence)
-- **Deliverables:** Working CLI/TUI showing Three Doors, reading from text file, door refresh, marking tasks complete, basic progress tracking
+- **Timeline:** 1 week (4-8 hours development time - optimized sequence)
+- **Deliverables:** Working CLI/TUI showing Three Doors, reading from text file, door refresh, task selection with expanded detail view, search/command palette, mood tracking, marking tasks complete, comprehensive session metrics
+- **Stories:** 1.1 (Project Setup), 1.2 (Display Three Doors), 1.3 (Door Selection & Status Management), 1.3a (Quick Search & Command Palette), 1.5 (Session Metrics Tracking), 1.6 (Essential Polish)
 - **Success Criteria:**
   - Developer uses tool daily for 1 week
   - Three Doors selection feels meaningfully different from scrolling a list
+  - Session metrics provide objective data for validation decision
   - Decision point reached: proceed to Full MVP or pivot/abandon
-- **Tech Stack:** Go 1.25.4+, Bubbletea/Lipgloss, local text files
+- **Tech Stack:** Go 1.25.4+, Bubbletea/Lipgloss, local text files, JSONL metrics
 - **Risk:** UX concept might not feel better than simple list; easy to pivot if fails
-- **Optimization:** Reordered stories to validate refresh UX before completion; merged/simplified non-essential features
+- **Optimization:** Reordered stories to validate refresh UX before completion; merged/simplified non-essential features; added search/command palette and mood tracking for richer validation data
 
 ---
 
@@ -45,13 +47,19 @@
 - **Risk:** Feature creep; maintain focus on minimal valuable additions
 
 **Epic 4: Learning & Intelligent Door Selection**
-- **Goal:** Implement pattern tracking and learning to make door selection context-aware and adaptive to user preferences
+- **Goal:** Use historical session metrics (captured in Epic 1 Story 1.5) to analyze user patterns and adapt door selection to improve task engagement and completion rates
 - **Prerequisites:** Epic 3 complete (enough usage data to learn from)
+- **Data Foundation:** Epic 1 Story 1.5 captures door position selections, task bypasses, status changes, and mood/emotional context—essential for pattern analysis
 - **Deliverables:**
+  - Pattern recognition (which task types are selected vs bypassed)
+  - Mood correlation analysis (emotional states → task selection/avoidance patterns)
+  - Avoidance detection (tasks repeatedly shown but never selected)
+  - Status pattern analysis (task types that get blocked/procrastinated, correlated with mood)
+  - Adaptive selection based on current mood state and historical patterns
+  - User insights ("When stressed, you avoid complex tasks")
+  - Goal re-evaluation prompts when persistent avoidance + mood patterns detected
+  - Encouragement system with mood-aware messaging
   - Task categorization (type, effort level, context)
-  - Door selection pattern tracking
-  - Learning algorithm that adapts based on user choices
-  - Progress view showing door choice patterns over time
   - "Better than yesterday" multi-dimensional tracking
 - **Estimated Effort:** 3-4 weeks at 2-4 hrs/week
 - **Risk:** Algorithm complexity; may need to simplify learning approach

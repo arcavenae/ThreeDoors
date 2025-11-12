@@ -1,0 +1,47 @@
+# BMad Workflow State
+# Auto-generated workflow tracking
+
+workflow:
+  active: true
+  id: greenfield-service
+  name: Greenfield Service/API Development
+  stage: analyst_project_brief
+  currentAgent: analyst
+
+artifacts:
+  completed: []
+  inProgress:
+    - name: project-brief.md
+      agent: analyst
+      status: in_progress
+      startedAt: 2025-11-11
+  pending:
+    - name: prd.md
+      agent: pm
+    - name: architecture.md
+      agent: architect
+
+history:
+  - timestamp: 2025-11-11T00:00:00Z
+    action: workflow_system_initialized
+    agent: analyst
+    note: Workflow tracking system initialized
+  - timestamp: 2025-11-11T00:00:01Z
+    action: workflow_started
+    agent: analyst
+    workflow: greenfield-service
+    note: Started Greenfield Service/API Development workflow
+
+availableWorkflows:
+  - id: greenfield-service
+    file: .bmad-core/workflows/greenfield-service.yaml
+  - id: greenfield-ui
+    file: .bmad-core/workflows/greenfield-ui.yaml
+  - id: greenfield-fullstack
+    file: .bmad-core/workflows/greenfield-fullstack.yaml
+  - id: brownfield-service
+    file: .bmad-core/workflows/brownfield-service.yaml
+  - id: brownfield-ui
+    file: .bmad-core/workflows/brownfield-ui.yaml
+  - id: brownfield-fullstack
+    file: .bmad-core/workflows/brownfield-fullstack.yaml

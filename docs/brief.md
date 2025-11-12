@@ -135,6 +135,37 @@ MVP succeeds if:
 
 ---
 
+## Implementation Approach: Phased Validation
+
+**Phase 1: Technical Demo & Validation (Current - Week 1)**
+
+Before investing in Apple Notes integration and full MVP development, ThreeDoors validates the core UX concept through a minimal Technical Demo:
+
+**Technical Demo Features:**
+- **Three Doors Interface** - Present three randomly selected tasks from local text file, validate that random selection reduces friction vs. scrolling traditional lists
+- **Door Selection & Expanded Detail View** - Select doors with keyboard (A/W/D or arrow keys), view task details in expanded view with status actions
+- **Quick Search & Command Palette** - Press `/` for live task search with bottom-up display; vi-style `:commands` for power-user actions (`:add`, `:mood`, `:stats`, `:edit`, `:help`, `:quit`)
+- **Mood Tracking** - Press `M` anytime to log emotional state (Focused, Tired, Stressed, Energized, Distracted, Calm, or custom text); creates data foundation for future learning features
+- **Task Status Management** - Mark tasks complete (C), blocked (B), in progress (I), expand (E), fork (F), procrastinate (P), or rework (R)
+- **Session Metrics Tracking** - Silent background collection of door selection patterns, task bypass behaviors, status changes, mood entries, and timestamps—provides objective data for validation decision
+- **"Progress over perfection" messaging** - Embedded throughout interface to reinforce core philosophy
+
+**Validation Success Criteria:**
+- Developer uses tool daily for 1 week
+- Three Doors selection feels meaningfully different from traditional list scrolling
+- Session metrics provide objective evidence that UX reduces friction
+- **Decision gate:** Metrics + subjective experience inform proceed/pivot/abandon decision
+
+**Why Technical Demo First:**
+- **Risk reduction:** Validates core UX concept before investing in complex Apple Notes integration
+- **Fast feedback:** 4-8 hours development time, 1 week validation period
+- **Data-driven decision:** Session metrics (door selections, bypasses, mood correlation) provide objective validation evidence, not just gut feel
+- **Learning foundation:** Mood tracking and pattern capture in Technical Demo creates data infrastructure needed for future learning features (Epic 4)
+
+If Technical Demo validation succeeds → proceed to Full MVP with Apple Notes integration.
+
+---
+
 ## MVP Scope
 
 **Core Features (Must Have)**
