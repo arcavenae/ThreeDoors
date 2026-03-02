@@ -52,7 +52,7 @@ func (iv *InsightsView) View() string {
 
 	if !iv.analyzer.HasSufficientData() {
 		needed := iv.analyzer.GetSessionsNeeded()
-		s.WriteString(fmt.Sprintf("  Keep using ThreeDoors to unlock insights! (%d more sessions needed)\n\n", needed))
+		fmt.Fprintf(&s, "  Keep using ThreeDoors to unlock insights! (%d more sessions needed)\n\n", needed)
 		s.WriteString(helpStyle.Render("Press Esc to return"))
 		return s.String()
 	}
@@ -106,11 +106,11 @@ func (iv *InsightsView) renderCompletionTrends(s *strings.Builder) {
 	spark := sparkline(counts)
 	s.WriteString("  ")
 	for _, label := range labels {
-		s.WriteString(fmt.Sprintf("%-5s", label))
+		fmt.Fprintf(s, "%-5s", label)
 	}
 	s.WriteString("\n  ")
 	for _, ch := range spark {
-		s.WriteString(fmt.Sprintf("%-5s", string(ch)))
+		fmt.Fprintf(s, "%-5s", string(ch))
 	}
 	s.WriteString("\n  ")
 	for _, c := range counts {

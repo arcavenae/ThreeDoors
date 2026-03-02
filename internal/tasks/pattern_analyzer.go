@@ -179,7 +179,7 @@ func (pa *PatternAnalyzer) LoadSessions(path string) error {
 		}
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	pa.sessions = nil
 	scanner := bufio.NewScanner(f)
