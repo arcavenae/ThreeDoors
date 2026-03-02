@@ -71,6 +71,13 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - NFR11: Clear architectural separation (core, TUI, adapters, enrichment)
 - NFR12: Data integrity during external Apple Notes modification
 
+**Code Quality & Submission Standards (Cross-Cutting):**
+- NFR-CQ1: All code must pass gofumpt formatting before submission
+- NFR-CQ2: All code must pass golangci-lint with zero issues before submission
+- NFR-CQ3: All branches must be rebased onto upstream/main before PR creation
+- NFR-CQ4: All PRs must have clean git diff --stat showing only in-scope changes
+- NFR-CQ5: All fix-up commits must be squashed before PR submission
+
 ### Additional Requirements
 
 **From Architecture:**
@@ -208,6 +215,16 @@ So that I have a foundation for building the Three Doors TUI.
 **And** `make run` builds and runs the application
 **And** `make clean` removes build artifacts
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 1.2: Display Three Doors from Task File
 
 As a developer,
@@ -251,6 +268,16 @@ So that I can see the core Three Doors interface.
 **Given** the application is running
 **When** the user presses 'q' or Ctrl+C
 **Then** the application exits cleanly
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 1.3: Door Selection & Task Status Management
 
@@ -299,6 +326,16 @@ So that I can take action on tasks and track my progress.
 **Given** the user is in the three doors view (no door selected)
 **When** the user presses 'm'
 **Then** the mood capture dialog opens without requiring door selection
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 1.4: Quick Search & Command Palette
 
@@ -360,6 +397,16 @@ So that I can efficiently find and act on tasks without relying solely on the th
 **When** the user types an invalid command and presses Enter
 **Then** "Unknown command: '<command>'. Type :help for available commands." is shown
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 1.5: Session Metrics Tracking
 
 As a developer validating the Three Doors concept,
@@ -404,6 +451,16 @@ So that I can make a data-informed validation decision.
 **When** `scripts/validation_decision.sh` is run
 **Then** automated validation criteria are evaluated against collected data
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 1.6: Essential Polish
 
 As a user,
@@ -423,6 +480,16 @@ So that I enjoy the validation experience.
 **Given** the user interacts with the application
 **When** any action is performed
 **Then** the response feels responsive and smooth with no noticeable lag
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ---
 
@@ -457,6 +524,16 @@ So that multiple backends (text file, Apple Notes) can be swapped without changi
 **And** `make test` target is added to the Makefile
 **And** `make lint` target runs golangci-lint
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 2.2: Apple Notes Integration Spike
 
 As a developer,
@@ -475,6 +552,16 @@ So that I can choose the best method for bidirectional sync.
 **Then** a spike report exists documenting: chosen approach, pros/cons, risks, estimated effort
 **And** a proof-of-concept demonstrates reading at least one note from Apple Notes
 **And** the chosen approach is validated for both read and write operations
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 2.3: Read Tasks from Apple Notes
 
@@ -499,6 +586,17 @@ So that I can manage my existing Apple Notes tasks from the terminal.
 **When** the user navigates the Three Doors interface
 **Then** the experience is identical to the text file backend (same keys, same views, same flows)
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Verify AppleScript injection safety: Ensure all note titles and task text passed to osascript are properly escaped
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 2.4: Write Task Updates to Apple Notes
 
 As a user,
@@ -522,6 +620,17 @@ So that my iPhone shows the latest task state.
 **When** the completion is synced
 **Then** the task is marked as complete in Apple Notes (not deleted)
 **And** the task appears in the local completed.txt log with timestamp
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Verify AppleScript injection safety: Ensure all note titles and task text passed to osascript are properly escaped
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 2.5: Bidirectional Sync
 
@@ -550,6 +659,16 @@ So that I can manage tasks from either device seamlessly.
 **Then** the most recent change wins (last-write-wins)
 **And** the user is informed if their local change was overridden
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 2.6: Health Check Command
 
 As a user,
@@ -566,6 +685,16 @@ So that I can diagnose sync issues.
 **Given** the health check detects issues
 **When** results are displayed
 **Then** actionable suggestions are shown (e.g., "Grant Full Disk Access in System Settings")
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ---
 
@@ -594,6 +723,16 @@ So that I can capture ideas without breaking flow.
 **And** pressing Enter again creates the task
 **And** pressing Esc cancels
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 3.2: Extended Task Capture with Context
 
 As a user,
@@ -612,6 +751,16 @@ So that I can make better decisions about task priority and alignment with goals
 **Given** a task has context/why information
 **When** the task appears in the detail view
 **Then** the "why" context is displayed below the task text
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 3.3: Values & Goals Setup and Display
 
@@ -634,6 +783,16 @@ So that I stay aligned with what matters most.
 **Given** the user wants to edit values/goals
 **When** the user types `:goals edit` in the command palette
 **Then** the existing values are displayed for editing (add, remove, reorder)
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 3.4: Door Feedback Options
 
@@ -658,6 +817,16 @@ So that the system can learn my preferences over time.
 **Then** a text input appears for freeform feedback
 **And** the comment is stored with the task
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 3.5: Daily Completion Tracking & Comparison
 
 As a user,
@@ -675,6 +844,16 @@ So that I can feel motivated by progress.
 **Given** the user types `:stats` in the command palette
 **When** daily stats are displayed
 **Then** the output includes: tasks completed today, tasks completed yesterday, doors viewed today, current streak (consecutive days with completions)
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 3.6: Session Improvement Prompt
 
@@ -694,6 +873,16 @@ So that I continuously refine my task management approach.
 **When** the response is saved
 **Then** it is appended to `~/.threedoors/improvements.txt` with timestamp and session ID
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 3.7: Enhanced Navigation & Messaging
 
 As a user,
@@ -712,6 +901,16 @@ So that the app feels like a supportive partner rather than a demanding taskmast
 **When** options are presented
 **Then** 3-5 contextual next steps are shown (not just "return to doors")
 **And** options adapt based on state (e.g., "add another task", "review blocked tasks", "check stats", "take a break")
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ---
 
@@ -740,6 +939,16 @@ So that the door selection can present diverse options.
 **When** the task appears in doors
 **Then** it is treated as "uncategorized" and can appear in any door
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 4.2: Pattern Recognition & Avoidance Detection
 
 As a user,
@@ -760,6 +969,16 @@ So that I get insights into my work habits.
 **When** pattern data is available
 **Then** insights are displayed: "You tend to pick quick-wins in the morning", "Task X has been shown 8 times without selection", "Your most productive days are Tuesdays"
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 4.3: Mood Correlation Analysis
 
 As a user,
@@ -777,6 +996,16 @@ So that I understand how emotions affect my productivity.
 **Then** the current mood is factored into door selection as a soft preference (not hard filter)
 **And** if mood is "tired", simpler/quicker tasks are slightly preferred
 **And** if mood is "focused", deeper work tasks are slightly preferred
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 4.4: Adaptive Door Selection Algorithm
 
@@ -800,6 +1029,16 @@ So that I'm presented with tasks I'm more likely to engage with.
 **When** persistent avoidance of certain task types is detected across 3+ sessions
 **Then** a gentle prompt suggests goal re-evaluation: "You've been skipping [category] tasks. Want to review if they still align with your goals?"
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 4.5: User Insights Dashboard
 
 As a user,
@@ -815,6 +1054,16 @@ So that I can make informed decisions about my productivity.
 **Given** the dashboard is displayed
 **When** the user presses Esc
 **Then** the view returns to the previous context
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ---
 
@@ -845,6 +1094,16 @@ So that cross-system task relationships and learning patterns can be persisted e
 **Then** automatic migration runs on startup
 **And** existing data is preserved
 
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
 ### Story 5.2: Cross-Reference Tracking
 
 As a user,
@@ -861,6 +1120,16 @@ So that I can see relationships across systems.
 **Given** a task with cross-references is viewed
 **When** the detail view is displayed
 **Then** linked tasks are listed with their source system and status
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ### Story 5.3: Data Migration & Backup
 
@@ -883,6 +1152,16 @@ So that I don't lose enrichment data during upgrades or system changes.
 **When** the application starts
 **Then** automatic migration preserves all existing data
 **And** a migration log records what changed
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
 
 ---
 

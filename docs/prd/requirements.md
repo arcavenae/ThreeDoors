@@ -137,3 +137,19 @@
 **NFR12:** The system shall maintain data integrity even when Apple Notes is modified externally while app is running
 
 ---
+
+## Code Quality & Submission Standards
+
+These non-functional requirements establish code quality gates that all contributions must pass before submission. They are derived from recurring patterns identified across 31+ pull requests (see `docs/architecture/pr-submission-standards.md` for full rationale and evidence).
+
+**NFR-CQ1:** All code must pass `gofumpt` formatting before submission — running `gofumpt -l .` must produce no output (Evidence: PRs #9, #10, #23, #24 required formatting fix-up commits)
+
+**NFR-CQ2:** All code must pass `golangci-lint run ./...` with zero issues before submission, including `errcheck` and `staticcheck` analyzers (Evidence: PR #16 required 2 extra commits to resolve lint findings)
+
+**NFR-CQ3:** All branches must be rebased onto `upstream/main` before PR creation — no merge commits, no stale branches (Evidence: PRs #3, #5, #19, #23 were delayed by merge conflicts from stale branches)
+
+**NFR-CQ4:** All PRs must have a clean `git diff --stat` showing only in-scope changes — no unrelated files, no accidental directory additions (Evidence: PR #5 included an unrelated `agents/` directory)
+
+**NFR-CQ5:** All fix-up commits must be squashed before PR submission — PRs should contain a single clean commit or logically separated commits, not iterative fix-up trails (Evidence: ~15 PRs contained avoidable "fix: address code review findings" commits)
+
+---
