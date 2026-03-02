@@ -38,8 +38,11 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
 
-      - name: Run tests
-        run: go test ./... -v -count=1
+      - name: Run tests with coverage
+        run: go test ./... -v -count=1 -coverprofile=coverage.out -covermode=atomic
+
+      - name: Display coverage summary
+        run: go tool cover -func=coverage.out
 
       - name: Validate build
         run: go build -o /dev/null ./cmd/threedoors
