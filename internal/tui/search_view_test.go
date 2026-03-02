@@ -12,13 +12,13 @@ import (
 
 func newTestSearchView(texts ...string) *SearchView {
 	pool := makePool(texts...)
-	return NewSearchView(pool, nil, nil, nil)
+	return NewSearchView(pool, nil, nil, nil, nil)
 }
 
 func newTestSearchViewWithTracker(texts ...string) (*SearchView, *tasks.SessionTracker) {
 	pool := makePool(texts...)
 	tracker := tasks.NewSessionTracker()
-	return NewSearchView(pool, tracker, nil, nil), tracker
+	return NewSearchView(pool, tracker, nil, nil, nil), tracker
 }
 
 // --- filterTasks Tests ---
@@ -93,7 +93,7 @@ func TestSearchView_FilterTasks_AllStatuses(t *testing.T) {
 	pool.AddTask(t2)
 	pool.AddTask(t3)
 
-	sv := NewSearchView(pool, nil, nil, nil)
+	sv := NewSearchView(pool, nil, nil, nil, nil)
 	results := sv.filterTasks("task")
 	if len(results) != 3 {
 		t.Errorf("expected 3 matches (all statuses searched), got %d", len(results))
@@ -583,7 +583,7 @@ func TestSearchView_View_CommandModeIndicator(t *testing.T) {
 
 func TestSearchView_EmptyPool_NoResults(t *testing.T) {
 	pool := tasks.NewTaskPool()
-	sv := NewSearchView(pool, nil, nil, nil)
+	sv := NewSearchView(pool, nil, nil, nil, nil)
 	sv.textInput.SetValue("anything")
 	results := sv.filterTasks("anything")
 	if len(results) != 0 {
