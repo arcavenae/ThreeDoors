@@ -317,8 +317,19 @@ func TestDoorsView_CompletionCounter_ShowsAfterCompletion(t *testing.T) {
 	m.Update(keyMsg("w"))
 	m.Update(keyMsg("enter"))
 
-	// Complete the task
+	// Complete the task — now goes to ViewNextSteps
 	_, cmd := m.Update(keyMsg("c"))
+	if cmd != nil {
+		msg := cmd()
+		m.Update(msg)
+	}
+
+	if m.viewMode != ViewNextSteps {
+		t.Errorf("expected ViewNextSteps after completion, got %d", m.viewMode)
+	}
+
+	// Dismiss next steps to return to doors
+	_, cmd = m.Update(keyMsg("esc"))
 	if cmd != nil {
 		msg := cmd()
 		m.Update(msg)
@@ -612,7 +623,7 @@ func TestAddTaskPromptMsg_TransitionsToAddTaskView(t *testing.T) {
 	}
 }
 
-// T8: TaskAddedMsg adds to pool, sets flash
+// T8: TaskAddedMsg adds to pool, sets flash from message pool
 func TestTaskAddedMsg_AddsToPool(t *testing.T) {
 	m := makeModel("task1", "task2", "task3")
 	initialCount := m.pool.Count()
@@ -623,8 +634,16 @@ func TestTaskAddedMsg_AddsToPool(t *testing.T) {
 	if m.pool.Count() != initialCount+1 {
 		t.Errorf("expected pool count %d, got %d", initialCount+1, m.pool.Count())
 	}
-	if m.flash != "Task added" {
-		t.Errorf("expected flash 'Task added', got %q", m.flash)
+	// Flash should be one of the task-added messages from the pool
+	found := false
+	for _, msg := range taskAddedMessages {
+		if m.flash == msg {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("flash message %q not found in taskAddedMessages pool", m.flash)
 	}
 }
 
@@ -677,8 +696,8 @@ func TestTaskAddedMsg_FromSearch_ReturnsToSearch(t *testing.T) {
 	}
 }
 
-// TaskAddedMsg from doors context returns to doors
-func TestTaskAddedMsg_FromDoors_ReturnsToDoors(t *testing.T) {
+// TaskAddedMsg from doors context shows next-steps view
+func TestTaskAddedMsg_FromDoors_ShowsNextSteps(t *testing.T) {
 	m := makeModel("task1", "task2", "task3")
 	m.previousView = ViewDoors
 	m.viewMode = ViewAddTask
@@ -686,8 +705,11 @@ func TestTaskAddedMsg_FromDoors_ReturnsToDoors(t *testing.T) {
 	newTask := tasks.NewTask("new task from doors")
 	m.Update(TaskAddedMsg{Task: newTask})
 
-	if m.viewMode != ViewDoors {
-		t.Errorf("expected ViewDoors after TaskAddedMsg from doors context, got %d", m.viewMode)
+	if m.viewMode != ViewNextSteps {
+		t.Errorf("expected ViewNextSteps after TaskAddedMsg from doors context, got %d", m.viewMode)
+	}
+	if m.nextStepsView == nil {
+		t.Error("nextStepsView should not be nil")
 	}
 }
 

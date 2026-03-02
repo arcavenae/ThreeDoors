@@ -125,12 +125,20 @@ func TestDoorsView_View_CompletionCounter_ZeroNotShown(t *testing.T) {
 	}
 }
 
-func TestDoorsView_View_ProgressMessage(t *testing.T) {
+func TestDoorsView_View_FooterMessage(t *testing.T) {
 	dv := newTestDoorsView("t1", "t2", "t3")
 	dv.SetWidth(80)
 	view := dv.View()
-	if !strings.Contains(view, "Progress over perfection") {
-		t.Error("View should contain 'Progress over perfection' message")
+	// Footer should contain one of the greeting messages (rotating pool)
+	found := false
+	for _, msg := range greetingMessages {
+		if strings.Contains(view, msg) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("View should contain a footer message from the greeting pool")
 	}
 }
 

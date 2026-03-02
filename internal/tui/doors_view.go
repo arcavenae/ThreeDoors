@@ -18,6 +18,7 @@ type DoorsView struct {
 	width             int
 	tracker           *tasks.SessionTracker
 	greeting          string
+	footerMessage     string
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -27,6 +28,7 @@ func NewDoorsView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *DoorsVie
 		selectedDoorIndex: -1,
 		tracker:           tracker,
 		greeting:          pickGreeting(-1),
+		footerMessage:     pickFooterMessage(-1),
 	}
 	dv.RefreshDoors()
 	return dv
@@ -47,6 +49,24 @@ func pickGreeting(lastIdx int) string {
 // Greeting returns the current startup greeting message.
 func (dv *DoorsView) Greeting() string {
 	return dv.greeting
+}
+
+// pickFooterMessage selects a random footer message from the greeting pool,
+// avoiding lastIdx to prevent consecutive repeats.
+func pickFooterMessage(lastIdx int) string {
+	if len(greetingMessages) <= 1 {
+		return greetingMessages[0]
+	}
+	idx := rand.IntN(len(greetingMessages))
+	for idx == lastIdx {
+		idx = rand.IntN(len(greetingMessages))
+	}
+	return greetingMessages[idx]
+}
+
+// RotateFooterMessage picks a new footer message (called on refresh/return).
+func (dv *DoorsView) RotateFooterMessage() {
+	dv.footerMessage = pickFooterMessage(-1)
 }
 
 // RefreshDoors selects new random doors from the pool.
@@ -126,7 +146,7 @@ func (dv *DoorsView) View() string {
 	s.WriteString("\n\n")
 	s.WriteString(helpStyle.Render("a/left, w/up, d/right to select | s/down to re-roll | Enter to open | N feedback | / search | M mood | q quit"))
 	s.WriteString("\n")
-	s.WriteString(greetingStyle.Render("Progress over perfection. Just pick one and start."))
+	s.WriteString(greetingStyle.Render(dv.footerMessage))
 
 	return s.String()
 }

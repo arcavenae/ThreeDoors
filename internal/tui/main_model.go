@@ -23,6 +23,7 @@ const (
 	ViewValuesGoals
 	ViewFeedback
 	ViewImprovement
+	ViewNextSteps
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -38,6 +39,7 @@ type MainModel struct {
 	valuesView          *ValuesView
 	feedbackView        *FeedbackView
 	improvementView     *ImprovementView
+	nextStepsView       *NextStepsView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
@@ -119,6 +121,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.improvementView != nil {
 			m.improvementView.SetWidth(msg.Width)
+		}
+		if m.nextStepsView != nil {
+			m.nextStepsView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -204,17 +209,19 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 		}
-		m.flash = "Task added"
+		m.flash = taskAddedMessages[rand.IntN(len(taskAddedMessages))]
 		m.addTaskView = nil
-		// Return to previous view if it was search, otherwise doors
+		// Return to previous view if it was search, otherwise show next steps
 		if m.previousView == ViewSearch {
 			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 		} else {
-			m.viewMode = ViewDoors
 			m.doorsView.RefreshDoors()
+			m.nextStepsView = NewNextStepsView("added", m.pool, m.completionCounter)
+			m.nextStepsView.SetWidth(m.width)
+			m.viewMode = ViewNextSteps
 		}
 		return m, ClearFlashCmd()
 
@@ -232,9 +239,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			celebration += " | " + dailyMsg
 		}
 		m.flash = celebration
-		m.viewMode = ViewDoors
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
+		// Show next-steps view instead of returning directly to doors
+		m.nextStepsView = NewNextStepsView("completed", m.pool, m.completionCounter)
+		m.nextStepsView.SetWidth(m.width)
+		m.viewMode = ViewNextSteps
 		return m, ClearFlashCmd()
 
 	case TaskUpdatedMsg:
@@ -338,6 +348,48 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ImprovementSkippedMsg:
 		return m, tea.Quit
 
+	case ShowNextStepsMsg:
+		m.nextStepsView = NewNextStepsView(msg.Context, m.pool, m.completionCounter)
+		m.nextStepsView.SetWidth(m.width)
+		m.viewMode = ViewNextSteps
+		return m, nil
+
+	case NextStepSelectedMsg:
+		m.nextStepsView = nil
+		switch msg.Action {
+		case "doors":
+			m.viewMode = ViewDoors
+			m.doorsView.RefreshDoors()
+			m.doorsView.RotateFooterMessage()
+		case "add":
+			return m, func() tea.Msg { return AddTaskPromptMsg{} }
+		case "mood":
+			return m, func() tea.Msg { return ShowMoodMsg{} }
+		case "search":
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView.SetWidth(m.width)
+			m.viewMode = ViewSearch
+			m.previousView = ViewDoors
+		case "stats":
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView.SetWidth(m.width)
+			m.searchView.textInput.SetValue(":stats")
+			m.searchView.checkCommandMode()
+			m.viewMode = ViewSearch
+			m.previousView = ViewDoors
+		default:
+			m.viewMode = ViewDoors
+			m.doorsView.RefreshDoors()
+		}
+		return m, nil
+
+	case NextStepDismissedMsg:
+		m.nextStepsView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		m.doorsView.RotateFooterMessage()
+		return m, nil
+
 	case FlashMsg:
 		m.flash = msg.Text
 		return m, ClearFlashCmd()
@@ -363,6 +415,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateFeedback(msg)
 	case ViewImprovement:
 		return m.updateImprovement(msg)
+	case ViewNextSteps:
+		return m.updateNextSteps(msg)
 	}
 
 	return m, nil
@@ -393,6 +447,9 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.tracker.RecordRefresh(m.doorsView.GetCurrentDoorTexts())
 			}
 			m.doorsView.RefreshDoors()
+			m.doorsView.RotateFooterMessage()
+			m.flash = doorRefreshMessages[rand.IntN(len(doorRefreshMessages))]
+			return m, ClearFlashCmd()
 		case "enter":
 			if m.doorsView.selectedDoorIndex >= 0 && m.doorsView.selectedDoorIndex < len(m.doorsView.currentDoors) {
 				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
@@ -477,6 +534,14 @@ func (m *MainModel) updateFeedback(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateNextSteps(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.nextStepsView == nil {
+		return m, nil
+	}
+	cmd := m.nextStepsView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.valuesView == nil {
 		return m, nil
@@ -530,6 +595,11 @@ func (m *MainModel) View() string {
 		if m.improvementView != nil {
 			view = m.improvementView.View()
 		}
+	case ViewNextSteps:
+		if m.nextStepsView != nil {
+			view = m.nextStepsView.View()
+		}
+		showValuesFooter = true
 	default:
 		view = m.doorsView.View()
 		showValuesFooter = true

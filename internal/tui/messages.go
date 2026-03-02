@@ -99,6 +99,19 @@ type ImprovementSubmittedMsg struct {
 // ImprovementSkippedMsg is sent when the user skips the improvement prompt.
 type ImprovementSkippedMsg struct{}
 
+// ShowNextStepsMsg is sent to open the contextual next-steps view.
+type ShowNextStepsMsg struct {
+	Context string // what triggered it: "completed", "added"
+}
+
+// NextStepSelectedMsg is sent when the user picks a next-step option.
+type NextStepSelectedMsg struct {
+	Action string // action identifier: "doors", "add", "mood", "search", "stats"
+}
+
+// NextStepDismissedMsg is sent when the user dismisses the next-steps view.
+type NextStepDismissedMsg struct{}
+
 // ReturnToSearchMsg is sent to restore search view from detail view.
 type ReturnToSearchMsg struct {
 	Query         string

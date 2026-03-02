@@ -106,6 +106,36 @@ var (
 		"Well done! The best task is a done task.",
 	}
 
+	// Task-added messages pool — encouraging messages after adding a task
+	taskAddedMessages = []string{
+		"Task captured! Every task written down is a weight lifted.",
+		"Added! Getting it out of your head is step one.",
+		"New task logged. You're staying on top of things.",
+		"Got it! One more thing you won't forget.",
+		"Task added. Naming it is half the battle.",
+		"Captured! Your future self will thank you.",
+		"Added to the mix. Progress starts with awareness.",
+		"Logged! You're building momentum just by tracking.",
+	}
+
+	// Door-refresh messages pool — encouraging messages when re-rolling doors
+	doorRefreshMessages = []string{
+		"Fresh options! Sometimes a new perspective helps.",
+		"New doors, new possibilities.",
+		"Shuffled! Trust your gut on the next pick.",
+		"Re-rolled. Every choice is a good one.",
+		"New set! The right task will catch your eye.",
+		"Fresh draw. No wrong answers here.",
+	}
+
+	// Next-steps view styles
+	nextStepsHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("86"))
+
+	nextStepsOptionStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("252"))
+
 	// Health check styles
 	healthOKStyle = lipgloss.NewStyle().
 			Foreground(colorComplete).
