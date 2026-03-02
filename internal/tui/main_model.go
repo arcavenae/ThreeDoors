@@ -18,6 +18,7 @@ const (
 	ViewMood
 	ViewSearch
 	ViewHealth
+	ViewAddTask
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -29,6 +30,7 @@ type MainModel struct {
 	moodView            *MoodView
 	searchView          *SearchView
 	healthView          *HealthView
+	addTaskView         *AddTaskView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
@@ -76,6 +78,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.healthView != nil {
 			m.healthView.SetWidth(msg.Width)
 		}
+		if m.addTaskView != nil {
+			m.addTaskView.SetWidth(msg.Width)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -90,6 +95,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
 			m.viewMode = ViewSearch
 			m.detailView = nil
+			m.addTaskView = nil
 			m.previousView = ViewDoors
 			return m, nil
 		}
@@ -97,6 +103,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.detailView = nil
 		m.moodView = nil
 		m.healthView = nil
+		m.addTaskView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
 
@@ -134,12 +141,30 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewDetail
 		return m, nil
 
+	case AddTaskPromptMsg:
+		m.addTaskView = NewAddTaskView()
+		m.addTaskView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewAddTask
+		return m, nil
+
 	case TaskAddedMsg:
 		m.pool.AddTask(msg.Task)
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 		}
 		m.flash = "Task added"
+		m.addTaskView = nil
+		// Return to previous view if it was search, otherwise doors
+		if m.previousView == ViewSearch {
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+			m.searchView.SetWidth(m.width)
+			m.viewMode = ViewSearch
+			m.previousView = ViewDoors
+		} else {
+			m.viewMode = ViewDoors
+			m.doorsView.RefreshDoors()
+		}
 		return m, ClearFlashCmd()
 
 	case TaskCompletedMsg:
@@ -197,6 +222,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSearch(msg)
 	case ViewHealth:
 		return m.updateHealth(msg)
+	case ViewAddTask:
+		return m.updateAddTask(msg)
 	}
 
 	return m, nil
@@ -237,6 +264,14 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 			return m, nil
+		case ":":
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+			m.searchView.SetWidth(m.width)
+			m.searchView.textInput.SetValue(":")
+			m.searchView.checkCommandMode()
+			m.viewMode = ViewSearch
+			m.previousView = ViewDoors
+			return m, nil
 		}
 	}
 	return m, nil
@@ -274,6 +309,14 @@ func (m *MainModel) updateSearch(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateAddTask(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.addTaskView == nil {
+		return m, nil
+	}
+	cmd := m.addTaskView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
 	return m.provider.SaveTasks(allTasks)
@@ -298,6 +341,10 @@ func (m *MainModel) View() string {
 	case ViewHealth:
 		if m.healthView != nil {
 			view = m.healthView.View()
+		}
+	case ViewAddTask:
+		if m.addTaskView != nil {
+			view = m.addTaskView.View()
 		}
 	default:
 		view = m.doorsView.View()

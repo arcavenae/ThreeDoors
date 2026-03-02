@@ -346,7 +346,7 @@ func TestSearchView_AddCommand_CreatesTask(t *testing.T) {
 	}
 }
 
-func TestSearchView_AddCommand_NoText_ShowsUsageError(t *testing.T) {
+func TestSearchView_AddCommand_NoText_EmitsAddTaskPromptMsg(t *testing.T) {
 	sv := newTestSearchView("existing task")
 	sv.textInput.SetValue(":add")
 	cmd := sv.executeCommand()
@@ -354,12 +354,9 @@ func TestSearchView_AddCommand_NoText_ShowsUsageError(t *testing.T) {
 		t.Fatal(":add with no text should return a command")
 	}
 	msg := cmd()
-	fm, ok := msg.(FlashMsg)
+	_, ok := msg.(AddTaskPromptMsg)
 	if !ok {
-		t.Errorf("expected FlashMsg, got %T", msg)
-	}
-	if !strings.Contains(fm.Text, "Usage") {
-		t.Errorf("expected usage message, got %q", fm.Text)
+		t.Errorf("expected AddTaskPromptMsg, got %T", msg)
 	}
 }
 
