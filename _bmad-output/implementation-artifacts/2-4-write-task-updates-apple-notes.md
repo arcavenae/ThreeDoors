@@ -1,0 +1,346 @@
+# Story 2.4: Write Task Updates to Apple Notes
+
+Status: ready-for-dev
+
+<!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
+
+## Story
+
+As a user,
+I want task status changes in Three Doors to sync back to Apple Notes,
+so that my iPhone shows the latest task state.
+
+## Acceptance Criteria
+
+1. **Status changes written back to Apple Notes via osascript:**
+   - Given a task from Apple Notes is displayed in Three Doors
+   - When the user marks the task as complete, blocked, in-progress, or any other status
+   - Then the status change is written back to Apple Notes within 5 seconds
+   - And the change is visible when viewing the note on iPhone
+   - And the checkbox prefix in the note is updated: `- [x]` for complete, `- [ ]` for all other statuses
+
+2. **Write failure caching and retry:**
+   - Given a write operation to Apple Notes fails (osascript error, timeout, permission denied)
+   - When the error occurs
+   - Then the change is cached locally in a retry queue file (`~/.threedoors/pending_writes.yaml`)
+   - And a non-intrusive warning is shown to the user via stderr
+   - And the local in-memory state reflects the intended change (optimistic update)
+   - And on next successful `LoadTasks()` or `SaveTask()`, pending writes are retried
+
+3. **Completed task logging to completed.txt:**
+   - Given the user completes a task in Three Doors
+   - When the completion is synced to Apple Notes
+   - Then the task is marked as complete in Apple Notes (checkbox `[x]`, NOT deleted from the note)
+   - And the task appears in the local `~/.threedoors/completed.txt` log with timestamp
+   - **Note:** `AppendCompleted()` is already called by the TUI layer (`main_model.go:132`) — the provider does NOT call it. Provider only writes to Apple Notes.
+
+4. **Note body rewrite via osascript:**
+   - Given the note body needs to be updated
+   - When `SaveTask()` is called on the AppleNotesProvider
+   - Then the provider reads the current note body, modifies the matching line, and writes the full body back
+   - And the write uses `set body of note "<title>" to "<html_body>"` via osascript
+   - And the HTML body preserves the original structure (line breaks as `<br>`, paragraphs as `<div>`)
+
+5. **SaveTasks batch operation:**
+   - Given multiple tasks need to be saved simultaneously
+   - When `SaveTasks()` is called
+   - Then the provider performs a single read-modify-write cycle (not N individual cycles)
+   - And all matching lines are updated in one osascript call
+
+6. **DeleteTask removes line from note:**
+   - Given a task needs to be deleted from Apple Notes
+   - When `DeleteTask()` is called
+   - Then the matching line is removed from the note body
+   - And the note is rewritten without the line
+
+## Definition of Done
+
+- All unit and integration tests pass (`go test ./...`)
+- `gofumpt` formatting applied to all new/modified files
+- `golangci-lint run ./...` passes with zero warnings
+- 80%+ test coverage on modified `apple_notes_provider.go` and new `write_queue.go`
+- All existing tests pass (zero regressions)
+- All 6 acceptance criteria verified via automated tests
+- No integration tests require Notes.app — all osascript calls mocked via `CommandExecutor`
+- Retry queue tested with file persistence (using `t.TempDir()`)
+
+## Tasks / Subtasks
+
+- [ ] Task 1: Spike — validate AppleScript write approach (AC: 1, 4) **MUST COMPLETE BEFORE TASK 2**
+  - [ ] 1.1: Create `scripts/spike_applenotes_write.sh` testing write approaches:
+    - Approach A: `tell application "Notes" to set body of note "<title>" to "<html>"` (sets HTML body)
+    - Approach B: `tell application "Notes" to set plaintext text of note "<title>" to "<text>"` (may not be writable)
+  - [ ] 1.2: Test HTML format requirements — Apple Notes `body` property expects HTML (not plaintext), so writes MUST convert plaintext to HTML:
+    - Checkbox lines: `<div>- [ ] text</div>` or `<div>☐ text</div>` (test which renders as checkbox)
+    - Line breaks: `<br>` or `<div>` wrapping
+    - Preserving existing HTML structure
+    - **Expected HTML fixture** (update based on spike findings):
+      ```html
+      <div>- [ ] Buy milk</div>
+      <div>- [x] Buy eggs</div>
+      <div><br></div>
+      <div>- [ ] Buy bread</div>
+      ```
+    - If spike reveals different HTML structure (e.g., `<ul><li>` for checkboxes), update `plaintextToHTML()` accordingly
+  - [ ] 1.3: Test read-modify-write cycle: read `plaintext text`, modify lines, convert to HTML, write back via `set body`
+  - [ ] 1.4: Test edge case: duplicate note titles — verify AppleScript behavior when multiple notes share the same title
+  - [ ] 1.5: Document findings in code comments on chosen approach
+  - **Spike Definition of Done:** Spike is complete when: (a) write AppleScript command identified and documented, (b) HTML format requirements confirmed with working example, (c) read-modify-write cycle validated manually, (d) duplicate title behavior documented
+
+- [ ] Task 2: Implement write operations on AppleNotesProvider (AC: 1, 4, 5, 6)
+  - [ ] 2.1: Extract `readRawNoteBody() (string, error)` method from existing `LoadTasks()`:
+    - Separates raw plaintext read from parsing logic
+    - Reuses existing `executeAppleScript` with its own 2s read timeout context
+    - `LoadTasks()` should call `readRawNoteBody()` then `parseNoteBody()` (refactor, not new behavior)
+    - This is needed because `SaveTask`/`SaveTasks`/`DeleteTask` all need raw text, not parsed tasks
+  - [ ] 2.2: Add `writeNoteBody(body string) error` method to `AppleNotesProvider`:
+    - Accept plaintext body, convert to HTML for `set body` osascript call
+    - Use **single `context.WithTimeout` of 5 seconds** for the entire read-modify-write cycle (not separate timeouts)
+    - Escape HTML entities and quotes for AppleScript string embedding
+    - Error wrapping follows existing `wrapError()` pattern
+  - [ ] 2.3: Add `plaintextToHTML(body string) string` helper:
+    - Convert each line to `<div>line</div>` format (update based on spike findings)
+    - Preserve empty lines as `<div><br></div>`
+    - Handle checkbox prefixes appropriately
+    - Must handle HTML special characters in task text (`<`, `>`, `&`, `"`)
+  - [ ] 2.4: Add `taskToNoteLine(task *Task) string` helper:
+    - StatusComplete → `- [x] <task.Text>`
+    - All other statuses → `- [ ] <task.Text>`
+  - [ ] 2.5: Implement `SaveTask(task *Task) error`:
+    - Read current raw note body via `readRawNoteBody()` (NOT `LoadTasks()`)
+    - Split raw text into lines
+    - For each line, compute the deterministic ID (same logic as `parseNoteBody`): `uuid.NewSHA1(uuid.NameSpaceURL, []byte(noteTitle+":"+strconv.Itoa(lineIndex)))`
+    - Find matching line by comparing computed ID to `task.ID`
+    - If found: replace the line with `taskToNoteLine(task)`
+    - If not found: append new line to note body
+    - Convert modified plaintext back to HTML via `plaintextToHTML()`
+    - Write via `writeNoteBody()`
+    - **Completed.txt logging:** Only call `AppendCompleted(task)` if `task.Status == StatusComplete`. The **caller** (TUI layer in `main_model.go`) is responsible for determining whether this is a *new* completion (it already does this — see `main_model.go:132`). Do NOT call `AppendCompleted` inside `SaveTask` — let the existing caller handle it to avoid double-logging.
+  - [ ] 2.6: Implement `SaveTasks(tasks []*Task) error`:
+    - Single read of raw note body via `readRawNoteBody()`
+    - Build map of task ID → updated task from the `tasks` parameter
+    - For each line in raw body, compute deterministic ID, check if it's in the update map
+    - If found in map: replace the line with `taskToNoteLine(updatedTask)`
+    - Append any tasks from map not found in existing lines
+    - Single write of modified body via `writeNoteBody()`
+    - **Do NOT call `AppendCompleted` here** — caller handles it
+  - [ ] 2.7: Implement `DeleteTask(taskID string) error`:
+    - Read current raw note body via `readRawNoteBody()`
+    - For each line, compute deterministic ID
+    - Remove the line matching `taskID`
+    - Write modified body back via `writeNoteBody()`
+  - [ ] 2.8: Remove `ErrReadOnly` returns from `SaveTask`, `SaveTasks`, `DeleteTask`
+  - [ ] 2.9: Keep `ErrReadOnly` sentinel error defined (FallbackProvider still checks for it; other future providers may use it)
+
+- [ ] Task 3: Implement write retry queue (AC: 2)
+  - [ ] 3.1: Create `internal/tasks/write_queue.go`:
+    ```go
+    type PendingWrite struct {
+        TaskID    string     `yaml:"task_id"`
+        Task      *Task      `yaml:"task"`
+        Operation string     `yaml:"operation"` // "save" or "delete"
+        FailedAt  time.Time  `yaml:"failed_at"`
+        Retries   int        `yaml:"retries"`
+        LastError string     `yaml:"last_error"`
+    }
+
+    type WriteQueue struct {
+        path    string
+        pending []PendingWrite
+    }
+
+    func NewWriteQueue(configDir string) *WriteQueue
+    func (q *WriteQueue) Enqueue(op PendingWrite) error    // persist to file
+    func (q *WriteQueue) Dequeue(taskID string) error      // remove after success
+    func (q *WriteQueue) Pending() []PendingWrite           // get all pending
+    func (q *WriteQueue) RetryAll(provider TaskProvider) []error  // uses interface for testability
+    ```
+  - [ ] 3.2: Persist queue to `~/.threedoors/pending_writes.yaml` using atomic write pattern (write-to-temp, fsync, rename)
+  - [ ] 3.3: Integrate retry queue into AppleNotesProvider:
+    - On `SaveTask()` failure: enqueue the write, log warning to stderr, return nil (optimistic)
+    - On `LoadTasks()` success: attempt `RetryAll()` for pending writes
+    - Max retries: 5 (after that, log error and remove from queue)
+  - [ ] 3.4: Cleanup: remove completed retries from queue file
+
+- [ ] Task 4: Update FallbackProvider behavior (AC: 1, 2)
+  - [ ] 4.1: FallbackProvider `SaveTask/SaveTasks/DeleteTask` currently check `ErrReadOnly` — once AppleNotesProvider supports writes, these methods will naturally delegate to the primary provider instead of falling back
+  - [ ] 4.2: No code changes needed in FallbackProvider — verify behavior via tests
+  - [ ] 4.3: Update `fallback_provider_test.go` to add test case: "primary supports writes, delegates to primary" (currently tests only ErrReadOnly delegation)
+
+- [ ] Task 5: Write comprehensive tests (AC: all) — table-driven. All write tests go in existing `apple_notes_provider_test.go` (Go convention: same package, same file). Follow existing test file patterns for `//nolint` directives.
+  - [ ] 5.1: **Write test fixtures** (concrete before/after data for all write tests):
+    ```
+    Read fixture:  "- [ ] Buy milk\n- [x] Buy eggs\n- [ ] Buy bread"
+    After marking "Buy milk" complete: "- [x] Buy milk\n- [x] Buy eggs\n- [ ] Buy bread"
+    After deleting "Buy eggs": "- [ ] Buy milk\n- [ ] Buy bread"
+    Expected HTML for write: "<div>- [x] Buy milk</div>\n<div>- [x] Buy eggs</div>\n<div>- [ ] Buy bread</div>"
+    ```
+  - [ ] 5.2: **`readRawNoteBody()` tests:**
+    - `TestAppleNotesProvider_ReadRawNoteBody_Success`: mock returns plaintext → verify raw text returned
+    - `TestAppleNotesProvider_ReadRawNoteBody_Error`: mock returns error → verify wrapped error
+  - [ ] 5.3: Update `apple_notes_provider_test.go` with write operation tests:
+    - **Core write tests (mock executor):**
+      - `TestAppleNotesProvider_SaveTask_Success`: mock returns current body on read, accepts write → verify script contains updated line, assert exactly 2 executor calls (first contains `"get plaintext text"`, second contains `"set body"`)
+      - `TestAppleNotesProvider_SaveTask_NotFound_Appends`: task not in note → appended to end
+      - `TestAppleNotesProvider_SaveTask_Complete_UpdatesCheckbox`: verify `- [x]` in written body
+      - `TestAppleNotesProvider_SaveTasks_BatchUpdate`: multiple tasks updated in single read-modify-write cycle
+      - `TestAppleNotesProvider_SaveTasks_EmptyInput`: `SaveTasks([]*Task{})` is a no-op (no osascript calls)
+      - `TestAppleNotesProvider_DeleteTask_RemovesLine`: verify line removed from body
+      - `TestAppleNotesProvider_SaveTask_WriteFails`: mock write error → returns error (not nil)
+      - `TestAppleNotesProvider_SaveTask_ReadFails`: mock read error → returns error
+    - **Line-index ID matching test (CRITICAL):**
+      - `TestAppleNotesProvider_SaveTask_CorrectLineMatched`: Given a 5-line note body and a task ID computed from line index 2, verify that ONLY line 2 is modified and all other lines are preserved unchanged. This validates that the write path recomputes IDs using the same algorithm as `parseNoteBody`.
+    - **AppleScript escaping tests:**
+      - `TestAppleNotesProvider_SaveTask_SpecialCharacters`: Task text containing `"`, `\`, `<`, `>`, `&` characters → verify proper escaping in osascript command
+    - **Concurrent modification test:**
+      - `TestAppleNotesProvider_SaveTask_ConcurrentModification`: Mock returns different body on sequential reads (simulating iPhone edit between operations) → verify write uses latest read data
+    - **HTML conversion tests:**
+      - `TestPlaintextToHTML` (table-driven with these cases):
+        | Input | Expected HTML |
+        |-------|--------------|
+        | `"- [ ] Buy milk"` | `"<div>- [ ] Buy milk</div>"` |
+        | `"- [x] Done task"` | `"<div>- [x] Done task</div>"` |
+        | `""` | `""` |
+        | `"Line 1\nLine 2"` | `"<div>Line 1</div>\n<div>Line 2</div>"` |
+        | `"Line 1\n\nLine 3"` | `"<div>Line 1</div>\n<div><br></div>\n<div>Line 3</div>"` |
+        | `"Task with <html> chars"` | `"<div>Task with &lt;html&gt; chars</div>"` |
+        | `"Task with \"quotes\""` | `"<div>Task with &quot;quotes&quot;</div>"` |
+        | `"  "` (whitespace only) | `""` |
+    - **taskToNoteLine tests:**
+      - StatusComplete → `- [x] text`
+      - StatusTodo → `- [ ] text`
+      - StatusBlocked → `- [ ] text`
+      - StatusInProgress → `- [ ] text`
+    - **Verify ErrReadOnly no longer returned:**
+      - `TestAppleNotesProvider_SaveTask_NoLongerReadOnly`
+      - `TestAppleNotesProvider_SaveTasks_NoLongerReadOnly`
+      - `TestAppleNotesProvider_DeleteTask_NoLongerReadOnly`
+  - [ ] 5.4: Create `internal/tasks/write_queue_test.go`:
+    - `TestWriteQueue_EnqueueDequeue`: add then remove
+    - `TestWriteQueue_Persistence`: enqueue, create new queue from same path, verify loaded
+    - `TestWriteQueue_RetryAll_Success`: use `MockProvider{SaveErr: nil}` → queue cleared after retry
+    - `TestWriteQueue_RetryAll_PartialFailure`: use `MockProvider` that returns error for specific task IDs → only failures remain in queue
+    - `TestWriteQueue_RetryAll_AllFail`: use `MockProvider{SaveErr: fmt.Errorf("still broken")}` → all items remain, retry count incremented
+    - `TestWriteQueue_MaxRetries`: after 5 retries, item removed from queue with log
+    - `TestWriteQueue_EmptyQueue`: no-op on empty (no provider calls made)
+    - `TestWriteQueue_CrashRecovery`: Write partial/corrupt YAML to queue file → create new WriteQueue → verify corrupt entries skipped, valid entries preserved
+  - [ ] 5.5: Update `fallback_provider_test.go`:
+    - Add: `TestFallbackProvider_PrimarySupportsWrites`: primary SaveTask succeeds → no fallback
+  - [ ] 5.6: **Integration test for retry flow** (in `apple_notes_provider_test.go`):
+    - `TestAppleNotesProvider_RetryFlow_EndToEnd`: SaveTask fails (mock write error) → verify enqueued → mock now succeeds → LoadTasks triggers RetryAll → verify queue is empty and task was saved
+  - [ ] 5.4: **Mock executor pattern for write tests:**
+    ```go
+    // recordingExecutor tracks all scripts executed for write verification.
+    // Returns executor func and slice of captured scripts (via closure, not pointer-to-slice).
+    type scriptRecord struct {
+        scripts []string
+    }
+
+    func recordingExecutor(responses map[string]struct{ output string; err error }) (CommandExecutor, *scriptRecord) {
+        rec := &scriptRecord{}
+        executor := func(ctx context.Context, script string) (string, error) {
+            rec.scripts = append(rec.scripts, script)
+            for prefix, resp := range responses {
+                if strings.Contains(script, prefix) {
+                    return resp.output, resp.err
+                }
+            }
+            return "", fmt.Errorf("unexpected script: %s", script)
+        }
+        return executor, rec
+    }
+    ```
+    **Example usage for read vs write differentiation:**
+    ```go
+    executor, rec := recordingExecutor(map[string]struct{ output string; err error }{
+        "get plaintext text": {output: "- [ ] Buy milk\n- [x] Buy eggs", err: nil},  // read response
+        "set body":           {output: "", err: nil},                                   // write response
+    })
+    ```
+  - [ ] 5.5: **Round-trip test for HTML conversion:**
+    - `TestPlaintextToHTML_RoundTrip`: Convert plaintext → HTML → write → mock read back → verify content matches
+    - This validates that the HTML produced by `plaintextToHTML()` would survive a read-modify-write cycle
+  - [ ] 5.6: **Crash recovery test for write queue:**
+    - `TestWriteQueue_CrashRecovery`: Write partial YAML to queue file → create new WriteQueue → verify it handles corruption gracefully (skip corrupt entries, preserve valid ones)
+
+## Dev Notes
+
+### Architecture Patterns & Constraints
+
+- **AppleScript Communication:** All Apple Notes interaction goes through `osascript -e`. Read uses `get plaintext text of note`, write uses `set body of note` (HTML format). The `CommandExecutor` function type enables mocking for tests.
+- **HTML Format for Writes:** Apple Notes `body` property is HTML. Read returns plaintext (via `plaintext text`), but writes must provide HTML. Need `plaintextToHTML()` converter.
+- **Optimistic Local Updates:** On write failure, the in-memory TaskPool already reflects the change. Queue the write for retry — the user sees the change immediately.
+- **Atomic Write Pattern:** Use existing pattern from `file_manager.go` (write temp → fsync → rename) for the retry queue YAML file.
+- **Error Wrapping:** Follow existing `wrapError()` pattern in `apple_notes_provider.go` for all new error paths.
+- **Timeout:** Write operations should use a 5-second timeout (vs 2s for reads) since write involves read-modify-write cycle.
+
+### Source Tree Components to Touch
+
+| File | Action | Description |
+|------|--------|-------------|
+| `internal/tasks/apple_notes_provider.go` | **MODIFY** | Replace ErrReadOnly returns with real write implementations; add writeNoteBody, plaintextToHTML, taskToNoteLine helpers |
+| `internal/tasks/apple_notes_provider_test.go` | **MODIFY** | Add write operation tests, HTML conversion tests, remove ErrReadOnly tests |
+| `internal/tasks/write_queue.go` | **CREATE** | New file for retry queue (PendingWrite struct, WriteQueue with enqueue/dequeue/retry) |
+| `internal/tasks/write_queue_test.go` | **CREATE** | Tests for retry queue persistence and retry logic |
+| `internal/tasks/fallback_provider_test.go` | **MODIFY** | Add test for primary-supports-writes scenario |
+
+### Files NOT to Modify
+
+| File | Reason |
+|------|--------|
+| `internal/tasks/provider.go` | TaskProvider interface is stable — no new methods needed |
+| `internal/tasks/provider_factory.go` | Factory wiring is correct — AppleNotesProvider still wrapped by FallbackProvider |
+| `internal/tasks/provider_config.go` | Config structure unchanged |
+| `internal/tasks/fallback_provider.go` | Logic already handles non-ErrReadOnly responses correctly |
+| `internal/tasks/text_file_provider.go` | No changes needed |
+| `internal/tasks/sync_engine.go` | Sync engine is independent — Story 2.5 already handled this |
+| `cmd/threedoors/main.go` | Provider wiring is already correct from Story 2.3 |
+| `internal/tui/main_model.go` | Already calls `provider.SaveTasks()` — will now work with real writes |
+
+### Testing Standards Summary
+
+- **Table-driven tests** (Go convention) for all parameterized cases
+- **Mock executor** pattern: `CommandExecutor` function type for injecting test responses
+- **Recording executor** for write tests: captures scripts sent to osascript for assertion
+- **`t.TempDir()`** for retry queue file persistence tests
+- **No `//go:build darwin` tags** — all tests use mocked executor, run on any platform
+- **Coverage target:** 80%+ on modified/new files
+- **Lint:** `gofumpt` formatting, `golangci-lint` zero warnings
+
+### Project Structure Notes
+
+- All new code lives in `internal/tasks/` package (domain layer)
+- No TUI layer changes needed — `main_model.go` already delegates to `provider.SaveTasks()`
+- Retry queue file goes in `~/.threedoors/` alongside existing `tasks.yaml`, `completed.txt`, `config.yaml`
+- No new dependencies needed — uses stdlib `os/exec`, `context`, `strings`, `gopkg.in/yaml.v3` (already in go.mod)
+
+### Key Design Decisions
+
+1. **Read-Modify-Write Pattern:** Each write reads current note, modifies, writes back. This ensures we don't lose changes made on iPhone between reads. Single osascript call for write. **Known limitation (v1):** The read-modify-write is NOT atomic with respect to concurrent iPhone edits. If a user edits the note on iPhone during the ~100ms gap between our read and write, their change may be overwritten. This is acceptable for v1 — Story 2.5's sync engine handles conflict detection at a higher level.
+2. **ID-Based Matching:** Tasks from Apple Notes have deterministic IDs based on `noteTitle:lineIndex`. When writing back, we recompute IDs per-line (same algorithm as `parseNoteBody`) and match against the task's ID. If lines were reordered on iPhone, IDs change — this shows as "delete + add" not "move." Acceptable for v1.
+3. **HTML Conversion:** Apple Notes `body` is HTML but `plaintext text` strips HTML. We convert back to HTML for writes using simple `<div>line</div>` wrapping. This may lose rich formatting in the original note — acceptable tradeoff for task management. Spike (Task 1) MUST confirm the exact HTML format.
+4. **Retry Queue:** Persisted to YAML file for crash resilience. Retried on next successful provider interaction. Max 5 retries prevents infinite loops. Uses `TaskProvider` interface (not concrete `*AppleNotesProvider`) for testability.
+5. **Completed.txt Logging:** The TUI layer (`main_model.go:132`) already calls `AppendCompleted()` when a task is completed. The provider (`SaveTask`/`SaveTasks`) must NOT also call it — this would cause double-logging. Provider is responsible only for writing to Apple Notes.
+6. **Timeout Strategy:** Use a single 5-second `context.WithTimeout` for the entire read-modify-write cycle. Do NOT use separate 2s+5s timeouts (that would total 7s, exceeding the 5s AC). The `readRawNoteBody()` method shares the parent context.
+7. **Duplicate Note Titles:** If multiple notes share the same title, AppleScript returns the first match. Document this as a known limitation. Config's `note_title` should be unique.
+
+### References
+
+- [Source: docs/prd/epics-and-stories.md#Story 2.4] — Original AC specification
+- [Source: internal/tasks/apple_notes_provider.go] — Story 2.3 read-only implementation to extend
+- [Source: internal/tasks/fallback_provider.go] — ErrReadOnly delegation pattern
+- [Source: internal/tasks/file_manager.go#AppendCompleted] — Existing completed.txt logging
+- [Source: internal/tasks/file_manager.go#SaveTasks] — Atomic write pattern to follow
+- [Source: docs/architecture/error-handling-strategy.md] — Error wrapping conventions
+- [Source: docs/architecture/coding-standards.md] — gofumpt, naming, error patterns
+- [Source: docs/architecture/test-strategy-and-standards.md] — Table-driven test conventions
+
+## Dev Agent Record
+
+### Agent Model Used
+
+### Debug Log References
+
+### Completion Notes List
+
+### File List
