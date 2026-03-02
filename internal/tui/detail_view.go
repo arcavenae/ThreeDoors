@@ -163,6 +163,8 @@ func (dv *DetailView) View() string {
 	}
 
 	s.WriteString("\n")
+	s.WriteString(separatorStyle.Render("─────────────────────────────────"))
+	s.WriteString("\n\n")
 
 	if dv.mode == DetailModeBlockerInput {
 		s.WriteString("Blocker reason (Enter to submit, Esc to cancel):\n")

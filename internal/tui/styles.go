@@ -17,6 +17,15 @@ var (
 	colorComplete   = lipgloss.Color("82")
 	colorAccent     = lipgloss.Color("63")
 	colorSelected   = lipgloss.Color("86")
+	colorGreeting   = lipgloss.Color("229")
+	colorDoorBright = lipgloss.Color("255")
+
+	// Per-door accent colors (left, center, right)
+	doorColors = []lipgloss.Color{
+		lipgloss.Color("86"),  // Door 0 (left) — cyan
+		lipgloss.Color("212"), // Door 1 (center) — magenta
+		lipgloss.Color("220"), // Door 2 (right) — yellow
+	}
 
 	// Door styles
 	doorStyle = lipgloss.NewStyle().
@@ -26,7 +35,7 @@ var (
 
 	selectedDoorStyle = lipgloss.NewStyle().
 				Border(lipgloss.ThickBorder()).
-				BorderForeground(colorSelected).
+				BorderForeground(colorDoorBright).
 				Padding(1, 2)
 
 	// Detail view styles
@@ -62,6 +71,40 @@ var (
 	commandModeStyle = lipgloss.NewStyle().
 				Bold(true).
 				Foreground(lipgloss.Color("214"))
+
+	// Greeting style
+	greetingStyle = lipgloss.NewStyle().
+			Foreground(colorGreeting)
+
+	// Separator style
+	separatorStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("238"))
+
+	// Greeting messages pool — "progress over perfection" theme
+	greetingMessages = []string{
+		"Pick one. Start small. That's progress.",
+		"Perfection is a trap. Progress is a practice.",
+		"Three doors. One choice. Zero wrong answers.",
+		"The best task to do is the one you actually start.",
+		"You don't need to do it all. Just do one.",
+		"Small steps count. Open a door.",
+		"Done is better than perfect. Let's go.",
+		"Every completed task is a win.",
+	}
+
+	// Celebration messages pool — varied completion messages
+	celebrationMessages = []string{
+		"Progress over perfection. Just pick one and start.",
+		"Another one done! You're on a roll.",
+		"Task complete! Small wins add up.",
+		"Nice work. What's behind the next door?",
+		"Done! That's one less thing on your plate.",
+		"Crushed it! Keep the momentum going.",
+		"One down. Progress feels good, doesn't it?",
+		"Completed! You showed up and shipped it.",
+		"That's progress! Every task matters.",
+		"Well done! The best task is a done task.",
+	}
 )
 
 // StatusColor returns the lipgloss color for a given status string.

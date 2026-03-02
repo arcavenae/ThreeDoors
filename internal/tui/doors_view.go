@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/tasks"
@@ -16,6 +17,7 @@ type DoorsView struct {
 	completedCount    int
 	width             int
 	tracker           *tasks.SessionTracker
+	greeting          string
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -24,9 +26,27 @@ func NewDoorsView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *DoorsVie
 		pool:              pool,
 		selectedDoorIndex: -1,
 		tracker:           tracker,
+		greeting:          pickGreeting(-1),
 	}
 	dv.RefreshDoors()
 	return dv
+}
+
+// pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
+func pickGreeting(lastIdx int) string {
+	if len(greetingMessages) <= 1 {
+		return greetingMessages[0]
+	}
+	idx := rand.IntN(len(greetingMessages))
+	for idx == lastIdx {
+		idx = rand.IntN(len(greetingMessages))
+	}
+	return greetingMessages[idx]
+}
+
+// Greeting returns the current startup greeting message.
+func (dv *DoorsView) Greeting() string {
+	return dv.greeting
 }
 
 // RefreshDoors selects new random doors from the pool.
@@ -58,6 +78,8 @@ func (dv *DoorsView) SetWidth(w int) {
 func (dv *DoorsView) View() string {
 	s := strings.Builder{}
 	s.WriteString(headerStyle.Render("ThreeDoors - Technical Demo"))
+	s.WriteString("\n")
+	s.WriteString(greetingStyle.Render(dv.greeting))
 	s.WriteString("\n\n")
 
 	if len(dv.currentDoors) == 0 {
@@ -65,6 +87,8 @@ func (dv *DoorsView) View() string {
 		s.WriteString("\n\nPress 'q' to quit.\n")
 		return s.String()
 	}
+
+	usePerDoorColors := dv.width >= 60
 
 	doorWidth := 30
 	if dv.width > 20 {
@@ -82,9 +106,13 @@ func (dv *DoorsView) View() string {
 			Render(fmt.Sprintf("[%s]", task.Status))
 		content = statusIndicator + "\n\n" + content
 
-		style := doorStyle.Width(doorWidth)
+		var style lipgloss.Style
 		if i == dv.selectedDoorIndex {
 			style = selectedDoorStyle.Width(doorWidth)
+		} else if usePerDoorColors && i < len(doorColors) {
+			style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth)
+		} else {
+			style = doorStyle.Width(doorWidth)
 		}
 		renderedDoors = append(renderedDoors, style.Render(content))
 	}
@@ -98,7 +126,7 @@ func (dv *DoorsView) View() string {
 	s.WriteString("\n\n")
 	s.WriteString(helpStyle.Render("a/left, w/up, d/right to select | s/down to re-roll | Enter to open | / search | M mood | q quit"))
 	s.WriteString("\n")
-	s.WriteString(helpStyle.Render("Progress over perfection. Just pick one and start."))
+	s.WriteString(greetingStyle.Render("Progress over perfection. Just pick one and start."))
 
 	return s.String()
 }
