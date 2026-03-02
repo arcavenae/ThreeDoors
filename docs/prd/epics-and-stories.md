@@ -140,6 +140,31 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR19 | Epic 3 | Blocker capture |
 | FR20 | Epic 4 | Learning from patterns |
 | FR21 | Epic 4 | Task categorization |
+| FR27 | Epic 8 | Obsidian vault integration |
+| FR28 | Epic 8 | Obsidian bidirectional sync |
+| FR29 | Epic 8 | Obsidian vault configuration |
+| FR30 | Epic 8 | Obsidian daily note integration |
+| FR31 | Epic 7 | Adapter registry |
+| FR32 | Epic 7 | Config-driven provider selection |
+| FR33 | Epic 7 | Adapter developer guide |
+| FR34 | Epic 15 | Psychology research documentation |
+| FR35 | Epic 14 | LLM task decomposition |
+| FR36 | Epic 14 | Git repo output for coding agents |
+| FR37 | Epic 14 | Configurable LLM backends |
+| FR38 | Epic 10 | First-run welcome flow |
+| FR39 | Epic 10 | Import from existing sources |
+| FR40 | Epic 11 | Offline-first with local queue |
+| FR41 | Epic 11 | Sync status indicator |
+| FR42 | Epic 11 | Conflict visualization |
+| FR43 | Epic 11 | Sync log |
+| FR44 | Epic 12 | Local calendar reading |
+| FR45 | Epic 12 | Time-contextual door selection |
+| FR46 | Epic 13 | Cross-provider task aggregation |
+| FR47 | Epic 13 | Duplicate detection |
+| FR48 | Epic 13 | Source attribution in TUI |
+| FR49 | Epic 9 | Apple Notes integration E2E tests |
+| FR50 | Epic 9 | Contract tests for adapters |
+| FR51 | Epic 9 | Functional E2E tests |
 
 ## Epic List
 
@@ -178,10 +203,68 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 **Dependencies:** Epic 4 (proven need)
 **Timeline:** 2-3 weeks at 2-4 hrs/week
 
-### Epic 6: Extended Integrations & Advanced Features (Future)
-**Goal:** Extend ThreeDoors with additional integrations (Jira, Linear, Google Calendar, Slack), cross-computer sync, LLM integration, voice interface, and mobile apps.
+### Epic 7: Plugin/Adapter SDK & Registry
+**Goal:** Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide.
+**FRs covered:** FR31, FR32, FR33
+**NFRs covered:** NFR11
+**Dependencies:** Epic 2 (adapter pattern established)
+**Timeline:** 2-3 weeks at 2-4 hrs/week
+
+### Epic 8: Obsidian Integration (P0 - #2 Integration)
+**Goal:** Add Obsidian vault as second task storage backend. Local-first Markdown with bidirectional sync.
+**FRs covered:** FR27, FR28, FR29, FR30
+**Dependencies:** Epic 7 (adapter SDK)
+**Timeline:** 2-3 weeks at 2-4 hrs/week
+
+### Epic 9: Testing Strategy & Quality Gates
+**Goal:** Comprehensive testing infrastructure with integration, contract, performance, and E2E tests.
+**FRs covered:** FR49, FR50, FR51
+**NFRs covered:** NFR13, NFR16
+**Dependencies:** Epic 2, Epic 7
+**Timeline:** 2-3 weeks at 2-4 hrs/week
+
+### Epic 10: First-Run Onboarding Experience
+**Goal:** Guided welcome flow for new users.
+**FRs covered:** FR38, FR39
+**Dependencies:** Epic 3
+**Timeline:** 1-2 weeks at 2-4 hrs/week
+
+### Epic 11: Sync Observability & Offline-First
+**Goal:** Robust offline-first operation with sync status visibility, conflict visualization, and debugging.
+**FRs covered:** FR40, FR41, FR42, FR43
+**NFRs covered:** NFR14
+**Dependencies:** Epic 2
+**Timeline:** 2-3 weeks at 2-4 hrs/week
+
+### Epic 12: Calendar Awareness (Local-First, No OAuth)
+**Goal:** Time-contextual door selection from local calendar sources only.
+**FRs covered:** FR44, FR45
+**NFRs covered:** NFR15
+**Dependencies:** Epic 4
+**Timeline:** 2-3 weeks at 2-4 hrs/week
+
+### Epic 13: Multi-Source Task Aggregation View
+**Goal:** Unified cross-provider task pool with dedup detection and source attribution.
+**FRs covered:** FR46, FR47, FR48
+**Dependencies:** Epic 7, Epic 8+
+**Timeline:** 2-3 weeks at 2-4 hrs/week
+
+### Epic 14: LLM Task Decomposition & Agent Action Queue (Future)
+**Goal:** LLM-powered task breakdown with git repo output for coding agent pickup.
+**FRs covered:** FR35, FR36, FR37
+**Dependencies:** Epic 3+
+**Timeline:** 3-4 weeks at 2-4 hrs/week (spike-driven)
+
+### Epic 15: Psychology Research & Validation (Parallel Track)
+**Goal:** Evidence base for ThreeDoors design decisions.
+**FRs covered:** FR34
+**Dependencies:** None (parallel research track)
+**Timeline:** Ongoing (2-4 hrs/week)
+
+### Epic 16+: Additional Integrations & Advanced Features (Future)
+**Goal:** Jira, Linear, Slack, cross-computer sync, voice interface, mobile apps.
 **FRs covered:** Future FRs (not yet specified)
-**Dependencies:** Epic 2+ (stable adapter pattern)
+**Dependencies:** Epic 7+ (stable adapter SDK)
 **Timeline:** 12+ months out
 
 ---
@@ -1165,6 +1248,689 @@ So that I don't lose enrichment data during upgrades or system changes.
 
 ---
 
-## Epic 6: Extended Integrations & Advanced Features (Future)
+## Epic 7: Plugin/Adapter SDK & Registry
 
-*Stories to be defined when Phase 3 planning begins. Potential integrations include Jira, Linear, Google Calendar, Slack, LLM-powered task breakdown, voice interface, and mobile apps. Each integration will follow the adapter pattern established in Epic 2.*
+Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide. Unblocks all future integrations.
+
+### Story 7.1: Adapter Registry & Runtime Discovery
+
+As a developer building integrations,
+I want a formal adapter registry that discovers and loads task providers at runtime,
+So that new integrations can be added without modifying core application code.
+
+**Acceptance Criteria:**
+
+**Given** the adapter registry is initialized
+**When** the application starts
+**Then** it discovers all registered TaskProvider implementations
+**And** loads them based on configuration
+
+**Given** an adapter is registered
+**When** it fails to initialize
+**Then** the system logs a warning and continues with other adapters
+**And** graceful degradation is maintained
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 7.2: Config-Driven Provider Selection
+
+As a user with multiple task sources,
+I want to configure active backends via `~/.threedoors/config.yaml`,
+So that I can choose which task providers are active without code changes.
+
+**Acceptance Criteria:**
+
+**Given** a config.yaml exists with provider configuration
+**When** the application starts
+**Then** only configured providers are loaded and activated
+**And** provider-specific settings are passed to each adapter
+
+**Given** no config.yaml exists
+**When** the application starts
+**Then** it falls back to the default text file provider
+**And** a sample config.yaml is generated for reference
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 7.3: Adapter Developer Guide
+
+As an integration developer,
+I want a clear guide and interface specification for building adapters,
+So that I can create new task provider integrations with confidence.
+
+**Acceptance Criteria:**
+
+**Given** the developer guide exists
+**When** a developer reads it
+**Then** it covers: TaskProvider interface spec, registration process, config schema, testing requirements, and example adapter implementation
+
+**Given** the contract test suite exists
+**When** a new adapter is developed
+**Then** it can validate compliance by running the contract test suite against its implementation
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 8: Obsidian Integration (P0 - #2 Integration)
+
+Add Obsidian vault as second task storage backend after Apple Notes. Local-first Markdown integration with bidirectional sync.
+
+### Story 8.1: Obsidian Vault Reader/Writer Adapter
+
+As a user who manages tasks in Obsidian,
+I want ThreeDoors to read and write tasks from my Obsidian vault,
+So that I can use Three Doors with my existing Obsidian workflow.
+
+**Acceptance Criteria:**
+
+**Given** an Obsidian vault path is configured
+**When** the application starts
+**Then** it reads Markdown files from the configured vault folder
+**And** parses task items (checkbox syntax: `- [ ]`, `- [x]`) from the files
+
+**Given** a task is completed in ThreeDoors
+**When** the status change is persisted
+**Then** the corresponding Markdown file is updated with the new checkbox state
+**And** file writes use atomic operations to prevent corruption
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 8.2: Obsidian Bidirectional Sync
+
+As an Obsidian user,
+I want changes made in Obsidian to be reflected in ThreeDoors and vice versa,
+So that my tasks stay in sync regardless of where I edit them.
+
+**Acceptance Criteria:**
+
+**Given** a vault file is modified externally (in Obsidian)
+**When** ThreeDoors refreshes or polls for changes
+**Then** the updated tasks are reflected in the Three Doors interface
+**And** no data is lost from concurrent edits
+
+**Given** ThreeDoors modifies a task
+**When** the change is written to the vault
+**Then** Obsidian reflects the change on its next file reload
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 8.3: Obsidian Vault Configuration
+
+As a user,
+I want to configure my Obsidian vault path, target folder, and file naming via config.yaml,
+So that ThreeDoors integrates with my specific vault structure.
+
+**Acceptance Criteria:**
+
+**Given** config.yaml contains Obsidian provider settings
+**When** the application starts
+**Then** it uses the configured vault path, folder, and naming conventions
+**And** validates the vault path exists and is accessible
+
+**Given** an invalid vault path is configured
+**When** the application starts
+**Then** a clear error message indicates the vault path issue
+**And** the application falls back to other configured providers
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 8.4: Obsidian Daily Note Integration
+
+As an Obsidian user who uses daily notes,
+I want ThreeDoors to read/write tasks from my daily note files,
+So that tasks captured in daily notes appear in Three Doors and vice versa.
+
+**Acceptance Criteria:**
+
+**Given** daily note integration is enabled in config
+**When** the application loads tasks
+**Then** it also reads tasks from today's daily note file
+**And** uses the configured daily note path pattern (e.g., `YYYY-MM-DD.md`)
+
+**Given** a task is added via ThreeDoors quick add
+**When** daily note mode is active
+**Then** the task is appended to today's daily note under a configurable heading
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 9: Testing Strategy & Quality Gates
+
+Establish comprehensive testing infrastructure with integration, contract, performance, and E2E tests.
+
+### Story 9.1: Apple Notes Integration E2E Tests
+
+As a developer,
+I want end-to-end tests for the Apple Notes integration workflow,
+So that regressions in the sync pipeline are caught automatically.
+
+**Acceptance Criteria:**
+
+**Given** the test suite runs
+**When** Apple Notes integration tests execute
+**Then** they validate: note creation, task read, task update, bidirectional sync, and error handling
+**And** tests use mock/stub AppleScript responses for CI compatibility
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 9.2: Contract Tests for Adapter Compliance
+
+As an adapter developer,
+I want a contract test suite that validates any TaskProvider implementation,
+So that all adapters behave consistently regardless of backend.
+
+**Acceptance Criteria:**
+
+**Given** a TaskProvider implementation exists
+**When** the contract test suite runs against it
+**Then** it validates: CRUD operations, error handling, concurrent access safety, and interface compliance
+**And** the test suite is reusable across all adapter implementations
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 9.3: Performance Benchmarks
+
+As a developer,
+I want automated performance benchmarks validating the <100ms NFR,
+So that performance regressions are caught before they reach users.
+
+**Acceptance Criteria:**
+
+**Given** the benchmark suite runs
+**When** adapter operations (read, write, sync) are benchmarked
+**Then** results are compared against the <100ms threshold (NFR13)
+**And** benchmark results are reported in CI output
+**And** regressions beyond threshold fail the CI pipeline
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 9.4: Functional E2E Tests
+
+As a developer,
+I want functional end-to-end tests covering full user workflows,
+So that the complete user experience is validated automatically.
+
+**Acceptance Criteria:**
+
+**Given** the E2E test suite runs
+**When** full user workflows are exercised (launch → select door → manage task → exit)
+**Then** each workflow completes successfully
+**And** session metrics are correctly generated
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 9.5: CI Coverage Gates
+
+As a team,
+I want CI coverage gates that prevent test coverage from regressing,
+So that code quality is maintained as the codebase grows.
+
+**Acceptance Criteria:**
+
+**Given** a PR is submitted
+**When** CI runs the test suite
+**Then** coverage is measured and compared against the established threshold
+**And** PRs that reduce coverage below the threshold are blocked
+**And** coverage reports are generated and accessible
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 10: First-Run Onboarding Experience
+
+Guided welcome flow for new users to set up values/goals, understand Three Doors, learn key bindings, and optionally import existing tasks.
+
+### Story 10.1: Welcome Flow & Three Doors Explanation
+
+As a new user,
+I want a guided welcome experience on first launch,
+So that I understand the Three Doors concept and feel confident using the tool.
+
+**Acceptance Criteria:**
+
+**Given** the application launches for the first time (no `~/.threedoors/` directory exists)
+**When** the welcome flow starts
+**Then** it explains the Three Doors concept (choice architecture, why 3 options)
+**And** walks through key bindings with interactive examples
+**And** the user can skip the walkthrough at any time
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 10.2: Values/Goals Setup & Task Import
+
+As a new user,
+I want to set up my values/goals and import existing tasks during onboarding,
+So that the tool is immediately useful with my real data.
+
+**Acceptance Criteria:**
+
+**Given** the welcome flow reaches the setup step
+**When** the user is prompted for values/goals
+**Then** they can enter values and goals that will be displayed during sessions (per FR6)
+
+**Given** the import step is reached
+**When** existing task sources are detected (text files, other tools)
+**Then** the user can select sources to import from
+**And** imported tasks populate the task pool
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 11: Sync Observability & Offline-First
+
+Robust offline-first operation with local change queue, sync status visibility, conflict visualization, and sync debugging.
+
+### Story 11.1: Offline-First Local Change Queue
+
+As a user working without connectivity,
+I want all changes queued locally and replayed when sync targets are available,
+So that I never lose work due to connectivity issues.
+
+**Acceptance Criteria:**
+
+**Given** a sync target is unavailable
+**When** the user makes changes (complete, add, update tasks)
+**Then** changes are queued in a local write-ahead log
+**And** core functionality remains fully operational
+
+**Given** a sync target becomes available
+**When** the queue is replayed
+**Then** all queued changes are applied in order
+**And** failures are retried with exponential backoff
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 11.2: Sync Status Indicator
+
+As a user,
+I want to see the sync status of each provider in the TUI,
+So that I know whether my changes are synchronized.
+
+**Acceptance Criteria:**
+
+**Given** the TUI is displayed
+**When** sync providers are configured
+**Then** a status indicator shows per-provider sync state (synced, syncing, pending, error)
+**And** the indicator updates in real-time as sync operations complete
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 11.3: Conflict Visualization & Sync Log
+
+As a user encountering sync conflicts,
+I want to see what conflicted and review a sync log for debugging,
+So that I can resolve issues and trust the sync system.
+
+**Acceptance Criteria:**
+
+**Given** a sync conflict is detected
+**When** the conflict visualization is shown
+**Then** it displays both local and remote versions of the conflicting item
+**And** provides resolution options (keep local, keep remote, keep both)
+
+**Given** sync operations occur
+**When** the user types `:synclog` in the command palette
+**Then** a chronological sync log is displayed with timestamps, operations, and outcomes
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 12: Calendar Awareness (Local-First, No OAuth)
+
+Time-contextual door selection by reading local calendar sources. No OAuth, no cloud APIs.
+
+### Story 12.1: Local Calendar Source Reader
+
+As a user,
+I want ThreeDoors to read my local calendar to understand my available time,
+So that doors can suggest tasks appropriate for my current time context.
+
+**Acceptance Criteria:**
+
+**Given** calendar integration is enabled in config
+**When** the application loads
+**Then** it reads events from macOS Calendar.app via AppleScript
+**And/or** parses .ics files from configured paths
+**And/or** reads CalDAV cache from local filesystem
+**And** no OAuth or cloud API calls are made
+
+**Given** calendar reading fails
+**When** the application continues
+**Then** it falls back to non-time-contextual door selection
+**And** logs a warning about calendar unavailability
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 12.2: Time-Contextual Door Selection
+
+As a user with calendar awareness enabled,
+I want doors to suggest tasks that fit my available time blocks,
+So that I'm not shown a 2-hour task when I have a meeting in 15 minutes.
+
+**Acceptance Criteria:**
+
+**Given** calendar data indicates a short time block (< 30 min)
+**When** doors are generated
+**Then** the algorithm prefers quick tasks over long ones
+
+**Given** calendar data indicates a large open block
+**When** doors are generated
+**Then** the algorithm includes tasks of any estimated duration
+
+**Given** no calendar data is available
+**When** doors are generated
+**Then** the standard selection algorithm is used (no degradation)
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 13: Multi-Source Task Aggregation View
+
+Unified cross-provider task pool with dedup detection and source attribution.
+
+### Story 13.1: Cross-Provider Task Pool Aggregation
+
+As a user with multiple task sources,
+I want all tasks aggregated into a single pool for Three Doors selection,
+So that I see tasks from all my sources without switching between them.
+
+**Acceptance Criteria:**
+
+**Given** multiple providers are configured and active
+**When** the task pool is loaded
+**Then** tasks from all providers are merged into a single pool
+**And** the Three Doors selection draws from the unified pool
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 13.2: Duplicate Detection & Source Attribution
+
+As a user with overlapping task sources,
+I want duplicates flagged and each task's source clearly shown,
+So that I don't work on the same task twice and know where each task lives.
+
+**Acceptance Criteria:**
+
+**Given** tasks are aggregated from multiple providers
+**When** potential duplicates are detected (fuzzy text matching)
+**Then** they are flagged with a visual indicator
+**And** the user can merge or dismiss duplicate flags
+
+**Given** a task is displayed in any view (doors, search, detail)
+**When** multiple providers are active
+**Then** the task's source provider is shown as a badge or label
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 14: LLM Task Decomposition & Agent Action Queue (Future)
+
+LLM-powered task breakdown with git repo output for coding agent pickup. Spike-first approach.
+
+### Story 14.1: LLM Task Decomposition Spike
+
+As a developer,
+I want to spike on LLM-powered task decomposition,
+So that we understand the feasibility, prompt engineering, and output quality before committing to full implementation.
+
+**Acceptance Criteria:**
+
+**Given** a user selects a task for decomposition
+**When** the LLM spike is triggered
+**Then** it generates BMAD-style stories/specs from the task description
+**And** outputs follow a defined schema
+
+**Spike deliverables:**
+- Prompt engineering experiments with multiple LLM providers
+- Output schema definition for stories/specs
+- Git automation proof-of-concept (writing to repo structure)
+- Agent handoff protocol draft (how Claude Code / multiclaude picks up work)
+- Local vs cloud LLM comparison
+- Recommendation document for full implementation
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+### Story 14.2: Agent Action Queue Integration
+
+As a developer using ThreeDoors with coding agents,
+I want decomposed tasks output to a git repo structure that coding agents can pick up,
+So that task decomposition flows directly into automated implementation.
+
+**Acceptance Criteria:**
+
+**Given** the LLM generates stories/specs from a task
+**When** the output is committed to the repo
+**Then** it follows the BMAD story file structure
+**And** multiclaude / Claude Code can discover and pick up the stories
+**And** the task in ThreeDoors is updated with a link to the generated work
+
+#### Pre-PR Submission Checklist
+
+- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
+- [ ] Run gofumpt: `gofumpt -l .` — verify no output
+- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
+- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
+- [ ] Check for dead code: `go vet ./...`
+- [ ] Verify no out-of-scope files: Review `git diff --stat`
+- [ ] Single clean commit preferred: Squash fix-ups before pushing
+
+---
+
+## Epic 15: Psychology Research & Validation (Parallel Track)
+
+Evidence base for ThreeDoors design decisions through literature review and validation studies.
+
+### Story 15.1: Choice Architecture Literature Review
+
+As the product team,
+I want a literature review documenting the evidence for the Three Doors choice architecture,
+So that design decisions are grounded in behavioral science.
+
+**Acceptance Criteria:**
+
+**Given** the literature review is complete
+**When** it is documented in `docs/research/choice-architecture.md`
+**Then** it covers: why 3 options (choice overload research), paradox of choice, decision fatigue, and comparable systems
+**And** includes citations and practical implications for ThreeDoors design
+
+### Story 15.2: Mood-Task Correlation & Procrastination Research
+
+As the product team,
+I want research on mood-task correlation models and procrastination interventions,
+So that Epic 4's learning algorithm is informed by evidence.
+
+**Acceptance Criteria:**
+
+**Given** the research is complete
+**When** it is documented in `docs/research/mood-correlation.md` and `docs/research/procrastination.md`
+**Then** it covers: mood-productivity correlations, procrastination intervention mechanisms, "progress over perfection" as motivational framework
+**And** provides actionable recommendations for Epic 4 implementation
+
+---
+
+## Epic 16+: Additional Integrations & Advanced Features (Future)
+
+*Stories to be defined when Phase 4 planning begins. Potential integrations include Jira, Linear, Slack, cross-computer sync, voice interface, and mobile apps. Each integration will follow the adapter SDK established in Epic 7.*

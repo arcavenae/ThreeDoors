@@ -90,12 +90,115 @@
 
 ---
 
-## Phase 3: Future Expansion (12+ months out)
+## Phase 3: Platform Expansion & Intelligence (Post-MVP)
 
-**Epic 7+: Additional Integrations** (Jira, Linear, Google Calendar, Slack, etc.)
-**Epic 8+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 9+: LLM Integration** (Task breakdown assistance, assumption challenging, dependency collapse)
-**Epic 10+: Advanced Features** (Voice interface, mobile app, web interface, trading mechanic, gamification)
+**Epic 7: Plugin/Adapter SDK & Registry**
+- **Goal:** Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide. Unblocks all future integrations.
+- **Prerequisites:** Epic 2 (adapter pattern established)
+- **Deliverables:**
+  - Adapter registry with runtime discovery and loading
+  - Config-driven provider selection via `~/.threedoors/config.yaml`
+  - Adapter developer guide and interface specification
+  - Contract test suite for adapter compliance validation
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Risk:** Over-engineering the plugin system; keep minimal until 3+ adapters exist
+
+**Epic 8: Obsidian Integration (P0 - #2 Integration)**
+- **Goal:** Add Obsidian vault as second task storage backend after Apple Notes. Local-first Markdown integration with bidirectional sync.
+- **Prerequisites:** Epic 7 (adapter SDK), Epic 2 (adapter pattern)
+- **Deliverables:**
+  - Obsidian vault reader/writer adapter
+  - Bidirectional sync with external vault changes
+  - Vault configuration (path, folder, file naming) via config.yaml
+  - Daily note integration for task read/write
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Risk:** Obsidian file format edge cases; daily note plugin variations
+
+**Epic 9: Testing Strategy & Quality Gates**
+- **Goal:** Establish comprehensive testing infrastructure with integration, contract, performance, and E2E tests
+- **Prerequisites:** Epic 2 (adapters to test), Epic 7 (contract test framework)
+- **Deliverables:**
+  - Apple Notes integration E2E tests
+  - Contract tests for adapter compliance
+  - Performance benchmarks (<100ms NFR validation)
+  - Functional E2E tests for full user workflows
+  - CI coverage gates preventing regression
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Risk:** Test infrastructure overhead; keep pragmatic
+
+**Epic 10: First-Run Onboarding Experience**
+- **Goal:** Provide a guided welcome flow for new users to set up values/goals, understand Three Doors, learn key bindings, and optionally import existing tasks
+- **Prerequisites:** Epic 3 (values/goals features exist to configure)
+- **Deliverables:**
+  - Welcome flow with Three Doors concept explanation
+  - Values/goals setup wizard
+  - Key bindings walkthrough
+  - Import from existing task sources
+- **Estimated Effort:** 1-2 weeks at 2-4 hrs/week
+- **Risk:** Over-designing onboarding for a CLI tool; keep lightweight
+
+**Epic 11: Sync Observability & Offline-First**
+- **Goal:** Ensure robust offline-first operation with local queue, sync status visibility, conflict visualization, and sync debugging
+- **Prerequisites:** Epic 2 (sync infrastructure exists)
+- **Deliverables:**
+  - Offline-first local change queue with replay
+  - Sync status indicator in TUI per provider
+  - Conflict visualization and resolution UI
+  - Sync log for debugging
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Risk:** Conflict resolution complexity; start with last-write-wins, iterate
+
+**Epic 12: Calendar Awareness (Local-First, No OAuth)**
+- **Goal:** Add time-contextual door selection by reading local calendar sources. No OAuth, no cloud APIs.
+- **Prerequisites:** Epic 4 (intelligent door selection to integrate with)
+- **Deliverables:**
+  - macOS Calendar.app reader via AppleScript
+  - .ics file parser
+  - CalDAV cache reader
+  - Time-contextual door selection based on available time blocks
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Risk:** AppleScript reliability; calendar format edge cases
+
+**Epic 13: Multi-Source Task Aggregation View**
+- **Goal:** Unified cross-provider task pool with dedup detection and source attribution in the TUI
+- **Prerequisites:** Epic 7 (multiple providers configured), Epic 8 or additional adapters
+- **Deliverables:**
+  - Cross-provider task pool aggregation
+  - Duplicate detection across providers
+  - Source attribution display in TUI
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Risk:** Dedup heuristics may produce false positives; provide manual override
+
+---
+
+## Phase 4: Future Expansion (12+ months out)
+
+**Epic 14: LLM Task Decomposition & Agent Action Queue**
+- **Goal:** Enable LLM-powered task breakdown where selected tasks are decomposed into stories/specs output to git repos for coding agent pickup
+- **Prerequisites:** Epic 3+ (task management mature enough to decompose from)
+- **Deliverables:**
+  - Spike: prompt engineering, output schema, git automation, agent handoff
+  - LLM-generated BMAD-style stories/specs
+  - Git repo structure output for Claude Code / multiclaude pickup
+  - Configurable LLM backend (local vs cloud)
+- **Estimated Effort:** 3-4 weeks at 2-4 hrs/week (spike-driven)
+- **Risk:** High uncertainty; spike-first approach essential. Output quality depends on prompt engineering.
+
+**Epic 15: Psychology Research & Validation**
+- **Goal:** Build evidence base for ThreeDoors design decisions through literature review and validation studies
+- **Prerequisites:** None (can run in parallel with development)
+- **Deliverables:**
+  - Literature review: choice architecture (why 3 doors?)
+  - Mood-task correlation validation study
+  - Procrastination intervention research summary
+  - Evidence for "progress over perfection" as motivational framework
+  - Findings feed into Epic 4 learning algorithm refinement
+- **Estimated Effort:** Ongoing research track (2-4 hrs/week)
+- **Risk:** Academic research may not yield actionable insights; focus on practical findings
+
+**Epic 16+: Additional Integrations** (Jira, Linear, Google Calendar, Slack, etc.)
+**Epic 17+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 18+: Advanced Features** (Voice interface, mobile app, web interface, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 

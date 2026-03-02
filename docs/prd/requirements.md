@@ -90,6 +90,80 @@
 
 **FR11:** The system shall maintain a local enrichment layer (SQLite and/or vector database) for metadata, cross-references, and relationships that cannot be stored in source systems
 
+---
+
+## Phase 6+ - Party Mode Recommendations (Accepted)
+
+*The following requirements were accepted through party mode consensus review and extend the product roadmap.*
+
+**Obsidian Integration (P0 - #2 Integration After Apple Notes):**
+
+**FR27:** The system shall integrate with Obsidian vaults as a task storage backend, reading and writing Markdown files in a configurable vault directory
+
+**FR28:** The system shall support bidirectional sync with Obsidian, detecting external changes to vault files and reflecting them in the application
+
+**FR29:** The system shall support Obsidian vault configuration via `~/.threedoors/config.yaml`, including vault path, target folder, and file naming conventions
+
+**FR30:** The system shall integrate with Obsidian daily notes, optionally reading/writing tasks from/to daily note files
+
+**Plugin/Adapter SDK:**
+
+**FR31:** The system shall provide an adapter registry that discovers and loads task provider adapters at runtime
+
+**FR32:** The system shall support config-driven provider selection via `~/.threedoors/config.yaml`, allowing users to specify active backends and their configuration
+
+**FR33:** The system shall provide an adapter developer guide and interface specification enabling third-party integration development
+
+**Psychology Research & Validation:**
+
+**FR34:** The system shall document the evidence base for the Three Doors choice architecture (why three options), mood-task correlation models, procrastination intervention mechanisms, and the "progress over perfection" motivational framework
+
+**LLM Task Decomposition & Agent Action Queue:**
+
+**FR35:** The system shall support LLM-powered task decomposition, where a user-selected task is broken into implementable stories/specs by a language model
+
+**FR36:** The system shall output LLM-generated stories/specs to a git repository structure compatible with coding agents (Claude Code, multiclaude)
+
+**FR37:** The system shall support configurable LLM backends (local and cloud) for task decomposition
+
+**First-Run Onboarding Experience:**
+
+**FR38:** The system shall provide a first-run welcome flow that guides users through setting up values/goals, explains the Three Doors concept, and walks through key bindings
+
+**FR39:** The system shall support optional import from existing task sources (text files, other tools) during onboarding
+
+**Sync Observability & Offline-First:**
+
+**FR40:** The system shall operate offline-first, queuing changes locally when sync targets are unavailable and replaying them when connectivity is restored
+
+**FR41:** The system shall display a sync status indicator in the TUI showing current sync state per provider
+
+**FR42:** The system shall provide conflict visualization when sync conflicts are detected between local and remote state
+
+**FR43:** The system shall maintain a sync log for debugging synchronization issues
+
+**Calendar Awareness (Local-First, No OAuth):**
+
+**FR44:** The system shall read local calendar sources only (macOS Calendar.app via AppleScript, .ics files, CalDAV cache) with no OAuth or cloud API dependencies
+
+**FR45:** The system shall use calendar context to inform time-contextual door selection (e.g., suggesting tasks appropriate for available time blocks)
+
+**Multi-Source Task Aggregation:**
+
+**FR46:** The system shall aggregate tasks from all configured providers into a unified cross-provider task pool
+
+**FR47:** The system shall detect and flag potential duplicate tasks across providers
+
+**FR48:** The system shall display source attribution in the TUI, indicating which provider each task originates from
+
+**Testing Strategy:**
+
+**FR49:** The system shall include integration tests for Apple Notes E2E workflows
+
+**FR50:** The system shall include contract tests validating adapter compliance with the TaskProvider interface
+
+**FR51:** The system shall include functional E2E tests covering full user workflows
+
 ## Non-Functional Requirements
 
 **Technical Demo Phase:**
@@ -135,6 +209,14 @@
 **NFR11:** The system shall maintain clear architectural separation between core engine, TUI layer, integration adapters, and enrichment storage
 
 **NFR12:** The system shall maintain data integrity even when Apple Notes is modified externally while app is running
+
+**NFR13:** The system shall enforce <100ms response time for adapter operations (read/write/sync) as a performance benchmark, validated by automated performance tests
+
+**NFR14:** The system shall operate offline-first, with all core functionality available without network connectivity; sync operations shall be queued and replayed when targets become available
+
+**NFR15:** The system shall never require OAuth or cloud API credentials for calendar integration; only local calendar sources (AppleScript, .ics files, CalDAV cache) are permitted
+
+**NFR16:** The system shall maintain CI coverage gates ensuring test coverage does not regress below established thresholds
 
 ---
 

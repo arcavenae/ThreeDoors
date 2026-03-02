@@ -412,3 +412,507 @@
 *Stories to be defined only if clear need emerges from Epic 4*
 
 ---
+
+## Epic 7: Plugin/Adapter SDK & Registry
+
+**Epic Goal:** Formalize the adapter pattern (established in Epic 2) into a plugin SDK with runtime registry, config-driven provider selection, and developer documentation. This epic unblocks all future integrations by providing a stable, well-documented foundation.
+
+**Scope:** Adapter registry, config.yaml-driven provider management, contract test suite, developer guide.
+
+---
+
+### Story 7.1: Adapter Registry & Runtime Discovery
+
+**As a** developer building integrations,
+**I want** a formal adapter registry that discovers and loads task providers at runtime,
+**so that** new integrations can be added without modifying core application code.
+
+**Acceptance Criteria:**
+1. `AdapterRegistry` component created in `internal/adapters/registry.go`
+2. Registry discovers all registered `TaskProvider` implementations at startup
+3. Adapters register themselves via `registry.Register(name, factory)` pattern
+4. Failed adapter initialization logs a warning and continues with other adapters
+5. Registry exposes `ListProviders()`, `GetProvider(name)`, and `ActiveProviders()` methods
+6. Existing text file and Apple Notes adapters migrated to use registry pattern
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+### Story 7.2: Config-Driven Provider Selection
+
+**As a** user with multiple task sources,
+**I want** to configure active backends via `~/.threedoors/config.yaml`,
+**so that** I can choose which task providers are active without code changes.
+
+**Acceptance Criteria:**
+1. Config parser reads `~/.threedoors/config.yaml` for provider configuration
+2. YAML schema supports `providers:` section with per-provider settings
+3. Only configured providers are loaded and activated at startup
+4. Provider-specific settings (paths, credentials, options) passed to adapter factory
+5. Missing config.yaml falls back to text file provider (backward compatible)
+6. Sample config.yaml generated on first run with commented-out provider examples
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+### Story 7.3: Adapter Developer Guide & Contract Tests
+
+**As an** integration developer,
+**I want** a clear guide and contract test suite for building adapters,
+**so that** I can create new task provider integrations with confidence.
+
+**Acceptance Criteria:**
+1. Developer guide created at `docs/adapter-developer-guide.md`
+2. Guide covers: `TaskProvider` interface spec, registration process, config schema, testing requirements
+3. Example adapter implementation included (or reference to text file adapter)
+4. Contract test suite in `internal/adapters/contract_test.go` validates any `TaskProvider`
+5. Contract tests cover: CRUD operations, error handling, concurrent access, interface compliance
+6. Contract test suite is reusable - adapters import and run it against their implementation
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+## Epic 8: Obsidian Integration (P0 - #2 Integration)
+
+**Epic Goal:** Add Obsidian vault as the second task storage backend after Apple Notes. Obsidian's local-first Markdown approach makes it a natural fit for ThreeDoors' local-first philosophy.
+
+**Scope:** Vault reader/writer, bidirectional sync, vault configuration, daily note integration.
+
+---
+
+### Story 8.1: Obsidian Vault Reader/Writer Adapter
+
+**As a** user who manages tasks in Obsidian,
+**I want** ThreeDoors to read and write tasks from my Obsidian vault,
+**so that** I can use Three Doors with my existing Obsidian workflow.
+
+**Acceptance Criteria:**
+1. `ObsidianAdapter` implements `TaskProvider` interface
+2. Reads Markdown files from configured vault folder
+3. Parses task items using Obsidian checkbox syntax (`- [ ]`, `- [x]`, `- [/]`)
+4. Supports Obsidian task metadata (due dates, tags, priorities in `📅`, `#tag`, `⏫` format)
+5. Writes task status changes back to Markdown files using atomic file operations
+6. Passes adapter contract test suite (Story 7.3)
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+### Story 8.2: Obsidian Bidirectional Sync
+
+**As an** Obsidian user,
+**I want** changes made in Obsidian reflected in ThreeDoors and vice versa,
+**so that** my tasks stay in sync regardless of where I edit them.
+
+**Acceptance Criteria:**
+1. File watcher (fsnotify or polling) detects external changes to vault files
+2. Changed files are re-parsed and task pool updated without full reload
+3. ThreeDoors writes use atomic operations to prevent mid-write corruption
+4. Concurrent edit handling: last-write-wins with conflict detection logging
+5. Sync latency under 2 seconds for file change detection
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+### Story 8.3: Obsidian Vault Configuration
+
+**As a** user,
+**I want** to configure my Obsidian vault path, target folder, and file naming via config.yaml,
+**so that** ThreeDoors integrates with my specific vault structure.
+
+**Acceptance Criteria:**
+1. Config.yaml supports `obsidian:` section with `vault_path`, `task_folder`, `file_pattern` settings
+2. Vault path validated on startup (exists, readable, writable)
+3. Invalid vault path produces clear error message and fallback to other providers
+4. Default task folder is vault root; configurable to any subfolder
+5. File pattern supports glob matching (e.g., `*.md`, `tasks/*.md`)
+
+**Estimated Time:** 45-60 minutes
+
+---
+
+### Story 8.4: Obsidian Daily Note Integration
+
+**As an** Obsidian user who uses daily notes,
+**I want** ThreeDoors to read/write tasks from my daily note files,
+**so that** tasks captured in daily notes appear in Three Doors.
+
+**Acceptance Criteria:**
+1. Config supports `daily_notes:` section with `enabled`, `folder`, `format` (date pattern)
+2. Reads tasks from today's daily note file
+3. Quick-add tasks can be appended to today's daily note under configurable heading
+4. Supports common daily note formats: `YYYY-MM-DD.md`, `YYYY/MM/YYYY-MM-DD.md`
+5. Missing daily note file handled gracefully (no error, just no tasks from that source)
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+## Epic 9: Testing Strategy & Quality Gates
+
+**Epic Goal:** Establish comprehensive testing infrastructure ensuring reliability as the adapter ecosystem grows. Covers integration tests, contract tests, performance benchmarks, E2E tests, and CI coverage gates.
+
+**Scope:** Apple Notes E2E, adapter contract tests, performance benchmarks, functional E2E, CI gates.
+
+---
+
+### Story 9.1: Apple Notes Integration E2E Tests
+
+**As a** developer,
+**I want** end-to-end tests for the Apple Notes integration workflow,
+**so that** regressions in the sync pipeline are caught automatically.
+
+**Acceptance Criteria:**
+1. E2E test suite in `internal/adapters/applenotes/e2e_test.go`
+2. Tests validate: note creation, task read, task update, bidirectional sync, error handling
+3. Uses mock/stub AppleScript responses for CI compatibility (no real Apple Notes needed)
+4. Tests cover: connectivity failure, partial sync, concurrent modification
+5. Test fixtures in `testdata/applenotes/` for reproducible scenarios
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+### Story 9.2: Contract Tests for Adapter Compliance
+
+**As an** adapter developer,
+**I want** a reusable contract test suite validating any TaskProvider implementation,
+**so that** all adapters behave consistently regardless of backend.
+
+**Acceptance Criteria:**
+1. Contract test suite in `internal/adapters/contract_test.go`
+2. Tests: Create, Read, Update, Delete operations
+3. Tests: Error handling (not found, permission denied, timeout)
+4. Tests: Concurrent access safety
+5. Tests: Interface compliance (all methods implemented correctly)
+6. Each adapter runs the contract suite in its own test file
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+### Story 9.3: Performance Benchmarks
+
+**As a** developer,
+**I want** automated performance benchmarks validating the <100ms NFR,
+**so that** performance regressions are caught before they reach users.
+
+**Acceptance Criteria:**
+1. Benchmark suite using Go's `testing.B` framework
+2. Benchmarks for: adapter read, adapter write, adapter sync, door selection algorithm
+3. Results compared against <100ms threshold (NFR13)
+4. CI integration: benchmarks run on every PR
+5. Benchmark results stored for trend analysis
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+### Story 9.4: Functional E2E Tests
+
+**As a** developer,
+**I want** functional end-to-end tests covering full user workflows,
+**so that** the complete user experience is validated automatically.
+
+**Acceptance Criteria:**
+1. E2E tests exercise: launch → view doors → select door → manage task → exit
+2. Tests verify session metrics are correctly generated
+3. Tests cover: search, command palette, mood tracking workflows
+4. Uses Bubbletea's `teatest` package for TUI testing
+5. Tests run in CI without requiring a real terminal
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+### Story 9.5: CI Coverage Gates
+
+**As a** team,
+**I want** CI coverage gates preventing test coverage regression,
+**so that** code quality is maintained as the codebase grows.
+
+**Acceptance Criteria:**
+1. Coverage measurement added to CI pipeline (`go test -coverprofile`)
+2. Coverage threshold configured (starting at current coverage level)
+3. PRs that reduce coverage below threshold are blocked
+4. Coverage report generated and posted as PR comment
+5. Threshold documented and adjustable in CI config
+
+**Estimated Time:** 45-60 minutes
+
+---
+
+## Epic 10: First-Run Onboarding Experience
+
+**Epic Goal:** Provide a guided welcome flow for new users, reducing time-to-value by explaining the Three Doors concept, setting up values/goals, and importing existing tasks.
+
+**Scope:** Welcome flow, concept explanation, key bindings walkthrough, values/goals setup, task import.
+
+---
+
+### Story 10.1: Welcome Flow & Three Doors Explanation
+
+**As a** new user,
+**I want** a guided welcome experience on first launch,
+**so that** I understand the Three Doors concept and feel confident using the tool.
+
+**Acceptance Criteria:**
+1. First-run detection based on absence of `~/.threedoors/` directory
+2. Welcome screen with ThreeDoors branding and concept explanation
+3. Interactive key bindings walkthrough (show keys, let user try them)
+4. Skip option available at every step
+5. Onboarding state persisted so it doesn't repeat on subsequent launches
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+### Story 10.2: Values/Goals Setup & Task Import
+
+**As a** new user,
+**I want** to set up my values/goals and import existing tasks during onboarding,
+**so that** the tool is immediately useful with my real data.
+
+**Acceptance Criteria:**
+1. Values/goals input screen during onboarding (feeds into FR6 persistent display)
+2. Import detection for common task sources (text files, Markdown files)
+3. Import preview showing tasks to be imported
+4. Imported tasks populate the task pool
+5. Import step skippable; manual import available later via `:import` command
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+## Epic 11: Sync Observability & Offline-First
+
+**Epic Goal:** Ensure robust offline-first operation with local change queue, sync status visibility in the TUI, conflict visualization, and sync debugging tools.
+
+**Scope:** Offline queue, sync status indicator, conflict resolution UI, sync log.
+
+---
+
+### Story 11.1: Offline-First Local Change Queue
+
+**As a** user working without connectivity,
+**I want** all changes queued locally and replayed when sync targets are available,
+**so that** I never lose work due to connectivity issues.
+
+**Acceptance Criteria:**
+1. Write-ahead log (WAL) in `~/.threedoors/sync-queue.jsonl` for pending changes
+2. All adapter write operations go through the queue
+3. Queue replay on connectivity restoration with ordered application
+4. Failed replays retry with exponential backoff
+5. Queue size limit with oldest-first eviction (configurable, default 10000 entries)
+6. Core functionality (door selection, local task management) unaffected by sync state
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+### Story 11.2: Sync Status Indicator
+
+**As a** user,
+**I want** to see sync status per provider in the TUI,
+**so that** I know whether my changes are synchronized.
+
+**Acceptance Criteria:**
+1. Status bar area in TUI shows per-provider sync state
+2. States: ✓ synced, ↻ syncing, ⏳ pending (N items), ✗ error
+3. Real-time updates as sync operations complete
+4. Clicking/selecting the indicator shows last sync timestamp
+5. Minimal screen real estate usage (icon + provider name)
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+### Story 11.3: Conflict Visualization & Sync Log
+
+**As a** user encountering sync conflicts,
+**I want** to see what conflicted and review a sync log,
+**so that** I can resolve issues and trust the sync system.
+
+**Acceptance Criteria:**
+1. Conflict notification appears when detected during sync
+2. Conflict detail view shows local vs remote versions side-by-side
+3. Resolution options: keep local, keep remote, keep both
+4. `:synclog` command shows chronological sync operations with timestamps
+5. Sync log persisted to `~/.threedoors/sync.log` (rotated at 1MB)
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+## Epic 12: Calendar Awareness (Local-First, No OAuth)
+
+**Epic Goal:** Add time-contextual door selection by reading local calendar sources. Strictly no OAuth, no cloud APIs - local data only.
+
+**Scope:** macOS Calendar.app reader, .ics parser, CalDAV cache reader, time-aware door algorithm.
+
+---
+
+### Story 12.1: Local Calendar Source Reader
+
+**As a** user,
+**I want** ThreeDoors to read my local calendar,
+**so that** it understands my available time for task-appropriate door selection.
+
+**Acceptance Criteria:**
+1. macOS Calendar.app events read via AppleScript (no OAuth)
+2. .ics file parser for configured paths
+3. CalDAV cache reader from local filesystem (`~/Library/Calendars/`)
+4. Calendar events parsed into time blocks (start, end, title)
+5. Config.yaml `calendar:` section for enabling sources and paths
+6. Graceful fallback when calendar sources are unavailable
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+### Story 12.2: Time-Contextual Door Selection
+
+**As a** user with calendar awareness enabled,
+**I want** doors to suggest tasks fitting my available time,
+**so that** I'm not shown a 2-hour task when I have a meeting in 15 minutes.
+
+**Acceptance Criteria:**
+1. Door selection algorithm considers next event time when choosing tasks
+2. Short time blocks (< 30 min) prefer quick tasks (if effort metadata available)
+3. Large open blocks include tasks of any duration
+4. No calendar data = standard selection (graceful degradation)
+5. Time context shown in TUI (e.g., "Next event in 45 min")
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+## Epic 13: Multi-Source Task Aggregation View
+
+**Epic Goal:** Unified cross-provider task pool with duplicate detection and source attribution, enabling users to see all their tasks from all configured sources in one place.
+
+**Scope:** Task pool aggregation, dedup detection, source attribution badges.
+
+---
+
+### Story 13.1: Cross-Provider Task Pool Aggregation
+
+**As a** user with multiple task sources,
+**I want** all tasks merged into a single pool for Three Doors selection,
+**so that** I see tasks from all sources without switching between them.
+
+**Acceptance Criteria:**
+1. Task pool collects tasks from all active providers via registry
+2. Unified pool used for door selection, search, and all task views
+3. Provider load failures are isolated (one failing provider doesn't block others)
+4. Refresh operation re-queries all active providers
+5. Task pool maintains provider origin metadata for attribution
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+### Story 13.2: Duplicate Detection & Source Attribution
+
+**As a** user with overlapping task sources,
+**I want** duplicates flagged and each task's source clearly shown,
+**so that** I don't work on the same task twice and know where each task lives.
+
+**Acceptance Criteria:**
+1. Fuzzy text matching identifies potential duplicates across providers
+2. Duplicate pairs shown with visual indicator (e.g., "⚠ Possible duplicate")
+3. User can merge or dismiss duplicate flags
+4. Source provider shown as badge in door view, search results, and detail view
+5. Badge format: provider icon/abbreviation (e.g., "📝" for text, "🍎" for Apple Notes, "💎" for Obsidian)
+
+**Estimated Time:** 90-120 minutes
+
+---
+
+## Epic 14: LLM Task Decomposition & Agent Action Queue
+
+**Epic Goal:** Enable LLM-powered task decomposition where selected tasks are broken into implementable stories/specs, output to git repos for coding agent (Claude Code, multiclaude) pickup.
+
+**Scope:** Spike-first approach. Prompt engineering, output schema, git automation, agent handoff.
+
+---
+
+### Story 14.1: LLM Task Decomposition Spike
+
+**As a** developer,
+**I want** to spike on LLM-powered task decomposition,
+**so that** we understand feasibility before committing to full implementation.
+
+**Acceptance Criteria:**
+1. Spike document in `docs/spikes/llm-decomposition.md`
+2. Covers: prompt engineering experiments, output schema definition, git automation PoC
+3. Tests multiple LLM providers (local: Ollama/llama.cpp; cloud: Claude API)
+4. Agent handoff protocol drafted (how Claude Code / multiclaude discovers work)
+5. Recommendation: build vs wait, local vs cloud, estimated effort for full implementation
+
+**Estimated Time:** 3-4 hours (spike)
+
+---
+
+### Story 14.2: Agent Action Queue Integration
+
+**As a** developer using ThreeDoors with coding agents,
+**I want** decomposed tasks output to a git repo structure for agent pickup,
+**so that** task decomposition flows into automated implementation.
+
+**Acceptance Criteria:**
+1. LLM output follows BMAD story file structure
+2. Stories written to configurable repo path
+3. Git operations: branch creation, commit, optional PR creation
+4. ThreeDoors task updated with link to generated stories
+5. Configurable LLM backend (local/cloud) via config.yaml
+
+**Estimated Time:** 120-150 minutes
+
+---
+
+## Epic 15: Psychology Research & Validation
+
+**Epic Goal:** Build evidence base for ThreeDoors design decisions through literature review. Findings feed into Epic 4's learning algorithm design.
+
+**Scope:** Choice architecture review, mood-task correlation, procrastination research, motivational framework evidence.
+
+---
+
+### Story 15.1: Choice Architecture Literature Review
+
+**As the** product team,
+**I want** a literature review on the Three Doors choice architecture,
+**so that** design decisions are grounded in behavioral science.
+
+**Acceptance Criteria:**
+1. Document at `docs/research/choice-architecture.md`
+2. Covers: choice overload research (Iyengar & Lepper), paradox of choice, decision fatigue
+3. Specific evidence for why 3 options (not 2, 4, or 5)
+4. Comparable systems analysis (Tinder-like interfaces, binary choices, etc.)
+5. Practical implications and recommendations for ThreeDoors
+
+**Estimated Time:** 4-6 hours (research)
+
+---
+
+### Story 15.2: Mood-Task Correlation & Procrastination Research
+
+**As the** product team,
+**I want** research on mood-task correlation and procrastination interventions,
+**so that** Epic 4's learning algorithm is evidence-informed.
+
+**Acceptance Criteria:**
+1. `docs/research/mood-correlation.md` covering mood-productivity models
+2. `docs/research/procrastination.md` covering intervention mechanisms
+3. Evidence assessment for "progress over perfection" as motivational framework
+4. Actionable recommendations for Epic 4 adaptive algorithm design
+5. Bibliography with accessible references
+
+**Estimated Time:** 4-6 hours (research)
+
+---
