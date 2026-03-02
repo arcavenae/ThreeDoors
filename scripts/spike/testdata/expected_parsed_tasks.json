@@ -1,0 +1,8 @@
+[
+  {"text": "Buy groceries for the week", "status": "todo"},
+  {"text": "Review pull request #42", "status": "todo"},
+  {"text": "Set up development environment", "status": "complete"},
+  {"text": "Write architecture decision record", "status": "todo"},
+  {"text": "Schedule team sync meeting", "status": "todo"},
+  {"text": "Update project README", "status": "complete"}
+]
