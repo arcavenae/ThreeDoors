@@ -98,7 +98,7 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "add":
 		if args == "" {
 			return func() tea.Msg {
-				return FlashMsg{Text: "Usage: :add <task text>"}
+				return AddTaskPromptMsg{}
 			}
 		}
 		newTask := tasks.NewTask(args)
