@@ -77,3 +77,135 @@ func TestSessionTracker_Finalize(t *testing.T) {
 		t.Errorf("Expected 1 task completed, got %d", metrics.TasksCompleted)
 	}
 }
+
+func TestSessionTracker_RecordDoorViewed_FirstDoorCapturesTime(t *testing.T) {
+	st := NewSessionTracker()
+
+	// Initially -1
+	if st.metrics.TimeToFirstDoorSecs != -1 {
+		t.Errorf("Expected initial TimeToFirstDoorSecs = -1, got %f", st.metrics.TimeToFirstDoorSecs)
+	}
+
+	// First call should set time-to-first-door
+	st.RecordDoorViewed()
+	if st.metrics.TimeToFirstDoorSecs < 0 {
+		t.Errorf("Expected TimeToFirstDoorSecs >= 0 after first view, got %f", st.metrics.TimeToFirstDoorSecs)
+	}
+	firstDoorTime := st.metrics.TimeToFirstDoorSecs
+
+	// Second call should NOT overwrite
+	st.RecordDoorViewed()
+	if st.metrics.TimeToFirstDoorSecs != firstDoorTime {
+		t.Errorf("TimeToFirstDoorSecs changed on second call: %f != %f", st.metrics.TimeToFirstDoorSecs, firstDoorTime)
+	}
+
+	// Should increment DoorsViewed for both calls
+	if st.metrics.DoorsViewed != 2 {
+		t.Errorf("Expected DoorsViewed = 2, got %d", st.metrics.DoorsViewed)
+	}
+}
+
+func TestSessionTracker_RecordDoorSelection_IncrementsDoorsViewed(t *testing.T) {
+	st := NewSessionTracker()
+
+	// RecordDoorSelection calls RecordDoorViewed internally
+	st.RecordDoorSelection(1, "Task A")
+
+	if st.metrics.DoorsViewed != 1 {
+		t.Errorf("Expected DoorsViewed = 1, got %d", st.metrics.DoorsViewed)
+	}
+
+	// Calling RecordDoorViewed directly adds 1, then RecordDoorSelection adds 1 more internally
+	// Total: 1 (first selection) + 1 (direct view) + 1 (second selection's internal view) = 3
+	st.RecordDoorViewed()
+	st.RecordDoorSelection(2, "Task B")
+	if st.metrics.DoorsViewed != 3 {
+		t.Errorf("Expected DoorsViewed = 3 (1 selection + 1 direct + 1 selection), got %d", st.metrics.DoorsViewed)
+	}
+}
+
+func TestSessionTracker_RecordDetailView(t *testing.T) {
+	st := NewSessionTracker()
+
+	st.RecordDetailView()
+	if st.metrics.DetailViews != 1 {
+		t.Errorf("Expected DetailViews = 1, got %d", st.metrics.DetailViews)
+	}
+
+	st.RecordDetailView()
+	st.RecordDetailView()
+	if st.metrics.DetailViews != 3 {
+		t.Errorf("Expected DetailViews = 3, got %d", st.metrics.DetailViews)
+	}
+}
+
+func TestSessionTracker_RecordNoteAdded(t *testing.T) {
+	st := NewSessionTracker()
+
+	st.RecordNoteAdded()
+	if st.metrics.NotesAdded != 1 {
+		t.Errorf("Expected NotesAdded = 1, got %d", st.metrics.NotesAdded)
+	}
+
+	st.RecordNoteAdded()
+	if st.metrics.NotesAdded != 2 {
+		t.Errorf("Expected NotesAdded = 2, got %d", st.metrics.NotesAdded)
+	}
+}
+
+func TestSessionTracker_RecordStatusChange(t *testing.T) {
+	st := NewSessionTracker()
+
+	st.RecordStatusChange()
+	if st.metrics.StatusChanges != 1 {
+		t.Errorf("Expected StatusChanges = 1, got %d", st.metrics.StatusChanges)
+	}
+
+	st.RecordStatusChange()
+	st.RecordStatusChange()
+	if st.metrics.StatusChanges != 3 {
+		t.Errorf("Expected StatusChanges = 3, got %d", st.metrics.StatusChanges)
+	}
+}
+
+func TestSessionTracker_RecordTaskCompleted(t *testing.T) {
+	st := NewSessionTracker()
+
+	st.RecordTaskCompleted()
+	if st.metrics.TasksCompleted != 1 {
+		t.Errorf("Expected TasksCompleted = 1, got %d", st.metrics.TasksCompleted)
+	}
+
+	st.RecordTaskCompleted()
+	if st.metrics.TasksCompleted != 2 {
+		t.Errorf("Expected TasksCompleted = 2, got %d", st.metrics.TasksCompleted)
+	}
+}
+
+func TestSessionTracker_RecordRefresh_EmptySlice(t *testing.T) {
+	st := NewSessionTracker()
+
+	// Empty slice should still increment refresh count but not add nil bypass entry
+	st.RecordRefresh([]string{})
+
+	if st.metrics.RefreshesUsed != 1 {
+		t.Errorf("Expected RefreshesUsed = 1, got %d", st.metrics.RefreshesUsed)
+	}
+	// Empty slice should NOT be appended to TaskBypasses
+	if len(st.metrics.TaskBypasses) != 0 {
+		t.Errorf("Expected 0 bypass records for empty slice, got %d", len(st.metrics.TaskBypasses))
+	}
+}
+
+func TestSessionTracker_RecordRefresh_NilSlice(t *testing.T) {
+	st := NewSessionTracker()
+
+	st.RecordRefresh(nil)
+
+	if st.metrics.RefreshesUsed != 1 {
+		t.Errorf("Expected RefreshesUsed = 1, got %d", st.metrics.RefreshesUsed)
+	}
+	if len(st.metrics.TaskBypasses) != 0 {
+		t.Errorf("Expected 0 bypass records for nil slice, got %d", len(st.metrics.TaskBypasses))
+	}
+}
