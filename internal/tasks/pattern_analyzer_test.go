@@ -741,6 +741,192 @@ func TestPatternAnalyzer_EndToEnd(t *testing.T) {
 	}
 }
 
+// --- Mood Correlation with Category Data Tests (Story 4.3) ---
+
+func TestAnalyzeMoodCorrelations_PopulatesPreferredType(t *testing.T) {
+	sessions := []SessionMetrics{
+		makeTestSession("s1", baseSessionTime, 2,
+			[]DoorSelectionRecord{{TaskText: "Fix login bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s2", baseSessionTime.Add(1*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Write unit tests", DoorPosition: 1}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s3", baseSessionTime.Add(2*time.Hour), 2,
+			[]DoorSelectionRecord{{TaskText: "Fix login bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s4", baseSessionTime.Add(3*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Write unit tests", DoorPosition: 2}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s5", baseSessionTime.Add(4*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix login bug", DoorPosition: 1}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+	}
+
+	analyzer := NewPatternAnalyzer()
+	analyzer.SetTaskCategories(map[string]TaskCategoryInfo{
+		"Fix login bug":    {Type: TypeTechnical, Effort: EffortDeepWork},
+		"Write unit tests": {Type: TypeTechnical, Effort: EffortMedium},
+	})
+
+	report, err := analyzer.Analyze(sessions)
+	if err != nil {
+		t.Fatalf("Analyze() error = %v", err)
+	}
+	if report == nil {
+		t.Fatal("Analyze() returned nil with 5 sessions")
+	}
+
+	// Find focused mood correlation
+	var focusedCorrelation *MoodCorrelation
+	for i := range report.MoodCorrelations {
+		if report.MoodCorrelations[i].Mood == "focused" {
+			focusedCorrelation = &report.MoodCorrelations[i]
+			break
+		}
+	}
+	if focusedCorrelation == nil {
+		t.Fatal("Expected mood correlation for 'focused'")
+	}
+	if focusedCorrelation.PreferredType != string(TypeTechnical) {
+		t.Errorf("Expected PreferredType 'technical', got %q", focusedCorrelation.PreferredType)
+	}
+}
+
+func TestAnalyzeMoodCorrelations_MixedTypes_MostFrequentWins(t *testing.T) {
+	sessions := []SessionMetrics{
+		makeTestSession("s1", baseSessionTime, 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "calm"}}),
+		makeTestSession("s2", baseSessionTime.Add(1*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "calm"}}),
+		makeTestSession("s3", baseSessionTime.Add(2*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Reply emails", DoorPosition: 1}},
+			nil, []MoodEntry{{Mood: "calm"}}),
+		makeTestSession("s4", baseSessionTime.Add(3*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "calm"}}),
+		makeTestSession("s5", baseSessionTime.Add(4*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "calm"}}),
+	}
+
+	analyzer := NewPatternAnalyzer()
+	analyzer.SetTaskCategories(map[string]TaskCategoryInfo{
+		"Fix bug":      {Type: TypeTechnical, Effort: EffortDeepWork},
+		"Reply emails": {Type: TypeAdministrative, Effort: EffortQuickWin},
+	})
+
+	report, err := analyzer.Analyze(sessions)
+	if err != nil {
+		t.Fatalf("Analyze() error = %v", err)
+	}
+
+	var calmCorrelation *MoodCorrelation
+	for i := range report.MoodCorrelations {
+		if report.MoodCorrelations[i].Mood == "calm" {
+			calmCorrelation = &report.MoodCorrelations[i]
+			break
+		}
+	}
+	if calmCorrelation == nil {
+		t.Fatal("Expected mood correlation for 'calm'")
+	}
+	// 4 technical selections vs 1 administrative — technical wins
+	if calmCorrelation.PreferredType != string(TypeTechnical) {
+		t.Errorf("Expected PreferredType 'technical' (most frequent), got %q", calmCorrelation.PreferredType)
+	}
+}
+
+func TestAnalyzeMoodCorrelations_NoCategoryMap_EmptyPreferredType(t *testing.T) {
+	sessions := []SessionMetrics{
+		makeTestSession("s1", baseSessionTime, 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s2", baseSessionTime.Add(1*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s3", baseSessionTime.Add(2*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s4", baseSessionTime.Add(3*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s5", baseSessionTime.Add(4*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+	}
+
+	analyzer := NewPatternAnalyzer()
+	// No SetTaskCategories called
+
+	report, err := analyzer.Analyze(sessions)
+	if err != nil {
+		t.Fatalf("Analyze() error = %v", err)
+	}
+
+	var focusedCorrelation *MoodCorrelation
+	for i := range report.MoodCorrelations {
+		if report.MoodCorrelations[i].Mood == "focused" {
+			focusedCorrelation = &report.MoodCorrelations[i]
+			break
+		}
+	}
+	if focusedCorrelation == nil {
+		t.Fatal("Expected mood correlation for 'focused'")
+	}
+	// Without category map, PreferredType should remain empty
+	if focusedCorrelation.PreferredType != "" {
+		t.Errorf("Expected empty PreferredType without category map, got %q", focusedCorrelation.PreferredType)
+	}
+}
+
+func TestAnalyzeMoodCorrelations_TaskNotInMap_Skipped(t *testing.T) {
+	sessions := []SessionMetrics{
+		makeTestSession("s1", baseSessionTime, 1,
+			[]DoorSelectionRecord{{TaskText: "Deleted task", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s2", baseSessionTime.Add(1*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s3", baseSessionTime.Add(2*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 1}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s4", baseSessionTime.Add(3*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Deleted task", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+		makeTestSession("s5", baseSessionTime.Add(4*time.Hour), 1,
+			[]DoorSelectionRecord{{TaskText: "Fix bug", DoorPosition: 0}},
+			nil, []MoodEntry{{Mood: "focused"}}),
+	}
+
+	analyzer := NewPatternAnalyzer()
+	analyzer.SetTaskCategories(map[string]TaskCategoryInfo{
+		"Fix bug": {Type: TypeTechnical, Effort: EffortDeepWork},
+		// "Deleted task" not in map — should be skipped
+	})
+
+	report, err := analyzer.Analyze(sessions)
+	if err != nil {
+		t.Fatalf("Analyze() error = %v", err)
+	}
+
+	var focusedCorrelation *MoodCorrelation
+	for i := range report.MoodCorrelations {
+		if report.MoodCorrelations[i].Mood == "focused" {
+			focusedCorrelation = &report.MoodCorrelations[i]
+			break
+		}
+	}
+	if focusedCorrelation == nil {
+		t.Fatal("Expected mood correlation for 'focused'")
+	}
+	// "Deleted task" skipped, only "Fix bug" counted → technical
+	if focusedCorrelation.PreferredType != string(TypeTechnical) {
+		t.Errorf("Expected PreferredType 'technical' (skipping unknown tasks), got %q", focusedCorrelation.PreferredType)
+	}
+}
+
 // --- Helper ---
 
 func patternContains(s, substr string) bool {

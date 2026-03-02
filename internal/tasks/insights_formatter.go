@@ -100,6 +100,64 @@ func FormatInsights(report *PatternReport) string {
 	return b.String()
 }
 
+// FormatMoodInsights returns a focused mood-correlation summary.
+// Returns appropriate messages for nil report or empty correlations.
+func FormatMoodInsights(report *PatternReport) string {
+	if report == nil {
+		return "Not enough data yet — need at least 5 sessions for insights."
+	}
+	if len(report.MoodCorrelations) == 0 {
+		return "No mood correlation data yet. Log moods during sessions (press M) to build patterns. Need at least 3 sessions with the same mood."
+	}
+
+	var b strings.Builder
+
+	// Count sessions with mood data
+	totalMoodSessions := 0
+	for _, mc := range report.MoodCorrelations {
+		totalMoodSessions += mc.SessionCount
+	}
+
+	fmt.Fprintf(&b, "Mood Correlation Analysis (%d sessions with mood data)\n\n", totalMoodSessions)
+
+	// Table header
+	fmt.Fprintf(&b, "%-12s | %-8s | %-16s | %-16s | %s\n",
+		"Mood", "Sessions", "Preferred Type", "Preferred Effort", "Avg Completed")
+	fmt.Fprintf(&b, "%-12s-+-%-8s-+-%-16s-+-%-16s-+-%s\n",
+		"------------", "--------", "----------------", "----------------", "-------------")
+
+	// Find most productive mood
+	var mostProductiveMood string
+	bestAvg := 0.0
+
+	for _, mc := range report.MoodCorrelations {
+		typeStr := mc.PreferredType
+		if typeStr == "" {
+			typeStr = "-"
+		}
+		effortStr := mc.PreferredEffort
+		if effortStr == "" {
+			effortStr = "-"
+		}
+		fmt.Fprintf(&b, "%-12s | %-8d | %-16s | %-16s | %.1f\n",
+			mc.Mood, mc.SessionCount, typeStr, effortStr, mc.AvgTasksCompleted)
+
+		if mc.AvgTasksCompleted > bestAvg {
+			bestAvg = mc.AvgTasksCompleted
+			mostProductiveMood = mc.Mood
+		}
+	}
+
+	// Insights section
+	b.WriteString("\nInsights:\n")
+	if mostProductiveMood != "" {
+		fmt.Fprintf(&b, "  - Your most productive mood is %q (avg %.1f tasks/session)\n", mostProductiveMood, bestAvg)
+	}
+	b.WriteString("  - Mood data improves door selection — keep logging moods!\n")
+
+	return b.String()
+}
+
 func truncate(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
