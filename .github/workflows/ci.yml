@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   quality-gate:
@@ -71,3 +71,27 @@ jobs:
           name: threedoors-binaries-${{ github.sha }}
           path: threedoors-*
           retention-days: 14
+
+      - name: Generate release tag
+        id: tag
+        run: echo "tag=alpha-$(date -u +%Y%m%d)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Alpha ${{ steps.tag.outputs.tag }}
+          body: |
+            Automated alpha release from merge to main.
+
+            **Commit:** ${{ github.sha }}
+
+            **Binaries:**
+            - `threedoors-darwin-arm64` — macOS Apple Silicon
+            - `threedoors-darwin-amd64` — macOS Intel
+            - `threedoors-linux-amd64` — Linux x86_64
+          prerelease: true
+          files: |
+            threedoors-darwin-arm64
+            threedoors-darwin-amd64
+            threedoors-linux-amd64
