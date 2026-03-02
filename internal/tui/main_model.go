@@ -103,6 +103,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case HealthCheckMsg:
 		m.healthView = NewHealthView(msg.Result)
 		m.healthView.SetWidth(m.width)
+		m.previousView = m.viewMode
 		m.viewMode = ViewHealth
 		return m, nil
 

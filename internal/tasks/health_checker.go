@@ -3,6 +3,7 @@ package tasks
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -60,15 +61,17 @@ func (hc *HealthChecker) CheckTaskFile() HealthCheckItem {
 		return item
 	}
 
-	// Test writability by opening the actual file for writing
-	f, err := os.OpenFile(tasksPath, os.O_WRONLY, 0o644)
+	// Test writability by creating a temp file in the same directory (mirrors atomic write pattern)
+	tmpPath := filepath.Join(filepath.Dir(tasksPath), ".healthcheck.tmp")
+	f, err := os.Create(tmpPath)
 	if err != nil {
 		item.Status = HealthFail
-		item.Message = "Task file is not writable"
+		item.Message = "Task file directory is not writable"
 		item.Suggestion = "Check file permissions on ~/.threedoors/tasks.yaml"
 		return item
 	}
 	_ = f.Close()
+	_ = os.Remove(tmpPath)
 
 	item.Status = HealthOK
 	item.Message = "Task file exists and is writable"
@@ -165,16 +168,71 @@ func (hc *HealthChecker) CheckAppleNotesAccess() HealthCheckItem {
 // RunAll runs all health checks and returns the combined result.
 func (hc *HealthChecker) RunAll() HealthCheckResult {
 	start := time.Now()
+
+	// Pre-load tasks once to avoid double provider calls
+	var cachedTasks []*Task
+	var cachedErr error
+	if hc.provider != nil {
+		cachedTasks, cachedErr = hc.provider.LoadTasks()
+	}
+
 	var items []HealthCheckItem
 	items = append(items, hc.CheckTaskFile())
-	items = append(items, hc.CheckDatabaseReadWrite())
+	items = append(items, hc.checkDatabaseWithCache(cachedTasks, cachedErr))
 	items = append(items, hc.CheckSyncStatus())
-	items = append(items, hc.CheckAppleNotesAccess())
+	items = append(items, hc.checkAppleNotesWithCache(cachedErr))
 
 	return HealthCheckResult{
 		Items:    items,
 		Overall:  computeOverallStatus(items),
 		Duration: time.Since(start),
+	}
+}
+
+// checkDatabaseWithCache checks database using pre-loaded task data.
+func (hc *HealthChecker) checkDatabaseWithCache(tasks []*Task, err error) HealthCheckItem {
+	item := HealthCheckItem{Name: "Database"}
+	if hc.provider == nil {
+		item.Status = HealthFail
+		item.Message = "No provider configured"
+		item.Suggestion = "Configure a task provider"
+		return item
+	}
+	if err != nil {
+		item.Status = HealthFail
+		item.Message = fmt.Sprintf("Failed to load tasks: %v", err)
+		item.Suggestion = "Task file may be corrupt. Try backing up and recreating ~/.threedoors/tasks.yaml"
+		return item
+	}
+	item.Status = HealthOK
+	item.Message = fmt.Sprintf("%d tasks loaded successfully", len(tasks))
+	return item
+}
+
+// checkAppleNotesWithCache checks Apple Notes using cached load result.
+func (hc *HealthChecker) checkAppleNotesWithCache(loadErr error) HealthCheckItem {
+	item := HealthCheckItem{Name: "Apple Notes"}
+	if hc.provider == nil {
+		item.Status = HealthFail
+		item.Message = "No provider configured"
+		item.Suggestion = "Configure a task provider"
+		return item
+	}
+	switch hc.provider.(type) {
+	case *TextFileProvider:
+		item.Status = HealthWarn
+		item.Message = "Apple Notes not configured - using text file backend"
+		return item
+	default:
+		if loadErr != nil {
+			item.Status = HealthFail
+			item.Message = fmt.Sprintf("Cannot access Apple Notes: %v", loadErr)
+			item.Suggestion = "Grant Full Disk Access in System Settings > Privacy & Security"
+			return item
+		}
+		item.Status = HealthOK
+		item.Message = "Apple Notes accessible"
+		return item
 	}
 }
 

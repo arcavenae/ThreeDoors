@@ -54,7 +54,7 @@ func TestCheckTaskFile_FileMissing(t *testing.T) {
 	}
 }
 
-func TestCheckTaskFile_FileNotWritable(t *testing.T) {
+func TestCheckTaskFile_DirNotWritable(t *testing.T) {
 	if os.Getuid() == 0 {
 		t.Skip("test requires non-root user")
 	}
@@ -63,14 +63,15 @@ func TestCheckTaskFile_FileNotWritable(t *testing.T) {
 	if err := SaveTasks(testTasks); err != nil {
 		t.Fatal(err)
 	}
-	path, err := GetTasksFilePath()
+	// Make the directory read-only so temp file creation fails
+	configPath, err := GetConfigDirPath()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Chmod(path, 0o444); err != nil {
+	if err := os.Chmod(configPath, 0o555); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.Chmod(path, 0o644) })
+	t.Cleanup(func() { _ = os.Chmod(configPath, 0o755) })
 
 	hc := NewHealthChecker(&MockProvider{Tasks: testTasks})
 	item := hc.CheckTaskFile()

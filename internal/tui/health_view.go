@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
@@ -76,7 +77,7 @@ func (hv *HealthView) View() string {
 	}
 
 	s.WriteString(overallStyle(fmt.Sprintf("Overall: %s", hv.result.Overall)))
-	fmt.Fprintf(&s, " | Completed in %s", hv.result.Duration)
+	fmt.Fprintf(&s, " | Completed in %s", hv.result.Duration.Round(time.Millisecond))
 	s.WriteString("\n\n")
 	s.WriteString(helpStyle.Render("Press Esc to return"))
 
