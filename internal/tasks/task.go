@@ -1,0 +1,97 @@
+package tasks
+
+import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// TaskNote captures a progress update added to a task.
+type TaskNote struct {
+	Timestamp time.Time `yaml:"timestamp" json:"timestamp"`
+	Text      string    `yaml:"text" json:"text"`
+}
+
+// Task represents a single task with full lifecycle metadata.
+type Task struct {
+	ID          string     `yaml:"id" json:"id"`
+	Text        string     `yaml:"text" json:"text"`
+	Status      TaskStatus `yaml:"status" json:"status"`
+	Notes       []TaskNote `yaml:"notes,omitempty" json:"notes,omitempty"`
+	Blocker     string     `yaml:"blocker,omitempty" json:"blocker,omitempty"`
+	CreatedAt   time.Time  `yaml:"created_at" json:"created_at"`
+	UpdatedAt   time.Time  `yaml:"updated_at" json:"updated_at"`
+	CompletedAt *time.Time `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
+}
+
+// NewTask creates a new task with a UUID and default "todo" status.
+func NewTask(text string) *Task {
+	now := time.Now().UTC()
+	return &Task{
+		ID:        uuid.New().String(),
+		Text:      strings.TrimSpace(text),
+		Status:    StatusTodo,
+		Notes:     []TaskNote{},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+}
+
+// UpdateStatus changes the task's status after validating the transition.
+func (t *Task) UpdateStatus(newStatus TaskStatus) error {
+	if !IsValidTransition(t.Status, newStatus) {
+		return fmt.Errorf("invalid transition from %q to %q", t.Status, newStatus)
+	}
+	t.Status = newStatus
+	t.UpdatedAt = time.Now().UTC()
+	if newStatus == StatusComplete {
+		now := time.Now().UTC()
+		t.CompletedAt = &now
+	}
+	if newStatus != StatusBlocked {
+		t.Blocker = ""
+	}
+	return nil
+}
+
+// AddNote appends a progress note to the task.
+func (t *Task) AddNote(text string) {
+	t.Notes = append(t.Notes, TaskNote{
+		Timestamp: time.Now().UTC(),
+		Text:      strings.TrimSpace(text),
+	})
+	t.UpdatedAt = time.Now().UTC()
+}
+
+// SetBlocker sets the blocker description. Only valid when status is blocked.
+func (t *Task) SetBlocker(reason string) error {
+	if t.Status != StatusBlocked {
+		return fmt.Errorf("cannot set blocker on task with status %q", t.Status)
+	}
+	t.Blocker = strings.TrimSpace(reason)
+	t.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+// Validate checks all fields for consistency.
+func (t *Task) Validate() error {
+	if t.ID == "" {
+		return fmt.Errorf("task ID is required")
+	}
+	text := strings.TrimSpace(t.Text)
+	if text == "" || len(text) > 500 {
+		return fmt.Errorf("task text must be 1-500 characters")
+	}
+	if err := ValidateStatus(string(t.Status)); err != nil {
+		return err
+	}
+	if t.Status == StatusBlocked && t.Blocker == "" {
+		// Blocker is optional per design decision
+	}
+	if t.CreatedAt.IsZero() {
+		return fmt.Errorf("createdAt is required")
+	}
+	return nil
+}
