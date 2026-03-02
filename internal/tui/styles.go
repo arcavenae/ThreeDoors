@@ -121,6 +121,19 @@ var (
 
 	healthSuggestionStyle = lipgloss.NewStyle().
 				Foreground(colorInProgress)
+
+	// Values/goals styles
+	valuesFooterStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("243")).
+				Italic(true)
+
+	valuesHeaderStyle = lipgloss.NewStyle().
+				Foreground(colorAccent).
+				Bold(true)
+
+	valuesFooterSeparator = "  ·  "
+
+	valuesSelectedPrefix = "▸ "
 )
 
 // StatusColor returns the lipgloss color for a given status string.

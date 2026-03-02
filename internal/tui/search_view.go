@@ -148,9 +148,15 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "health":
 		return sv.runHealthCheck()
 
+	case "goals":
+		if args == "edit" {
+			return func() tea.Msg { return ShowValuesEditMsg{} }
+		}
+		return func() tea.Msg { return ShowValuesSetupMsg{} }
+
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :mood [mood], :stats, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :goals [edit], :mood [mood], :stats, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
 		}
 
 	case "quit", "exit":

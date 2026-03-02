@@ -19,6 +19,7 @@ const (
 	ViewSearch
 	ViewHealth
 	ViewAddTask
+	ViewValuesGoals
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -31,10 +32,12 @@ type MainModel struct {
 	searchView          *SearchView
 	healthView          *HealthView
 	addTaskView         *AddTaskView
+	valuesView          *ValuesView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
 	healthChecker       *tasks.HealthChecker
+	valuesConfig        *tasks.ValuesConfig
 	flash               string
 	width               int
 	height              int
@@ -44,6 +47,17 @@ type MainModel struct {
 
 // NewMainModel creates the root application model.
 func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker) *MainModel {
+	// Load values config
+	var valuesConfig *tasks.ValuesConfig
+	if path, err := tasks.GetValuesConfigPath(); err == nil {
+		if cfg, err := tasks.LoadValuesConfig(path); err == nil {
+			valuesConfig = cfg
+		}
+	}
+	if valuesConfig == nil {
+		valuesConfig = &tasks.ValuesConfig{}
+	}
+
 	return &MainModel{
 		viewMode:      ViewDoors,
 		doorsView:     NewDoorsView(pool, tracker),
@@ -51,6 +65,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		tracker:       tracker,
 		provider:      provider,
 		healthChecker: hc,
+		valuesConfig:  valuesConfig,
 	}
 }
 
@@ -80,6 +95,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.addTaskView != nil {
 			m.addTaskView.SetWidth(msg.Width)
+		}
+		if m.valuesView != nil {
+			m.valuesView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -217,6 +235,33 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewMood
 		return m, nil
 
+	case ShowValuesSetupMsg:
+		m.valuesView = NewValuesSetupView(m.valuesConfig)
+		m.valuesView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewValuesGoals
+		return m, nil
+
+	case ShowValuesEditMsg:
+		m.valuesView = NewValuesEditView(m.valuesConfig)
+		m.valuesView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewValuesGoals
+		return m, nil
+
+	case ValuesSavedMsg:
+		m.valuesConfig = msg.Config
+		if path, err := tasks.GetValuesConfigPath(); err == nil {
+			if saveErr := tasks.SaveValuesConfig(path, msg.Config); saveErr != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to save values config: %v\n", saveErr)
+			}
+		}
+		m.valuesView = nil
+		m.flash = "Values saved"
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		return m, ClearFlashCmd()
+
 	case FlashMsg:
 		m.flash = msg.Text
 		return m, ClearFlashCmd()
@@ -236,6 +281,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateHealth(msg)
 	case ViewAddTask:
 		return m.updateAddTask(msg)
+	case ViewValuesGoals:
+		return m.updateValues(msg)
 	}
 
 	return m, nil
@@ -329,6 +376,14 @@ func (m *MainModel) updateAddTask(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.valuesView == nil {
+		return m, nil
+	}
+	cmd := m.valuesView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
 	return m.provider.SaveTasks(allTasks)
@@ -337,11 +392,14 @@ func (m *MainModel) saveTasks() error {
 // View implements tea.Model.
 func (m *MainModel) View() string {
 	var view string
+	showValuesFooter := false
+
 	switch m.viewMode {
 	case ViewDetail:
 		if m.detailView != nil {
 			view = m.detailView.View()
 		}
+		showValuesFooter = true
 	case ViewMood:
 		if m.moodView != nil {
 			view = m.moodView.View()
@@ -350,6 +408,7 @@ func (m *MainModel) View() string {
 		if m.searchView != nil {
 			view = m.searchView.View()
 		}
+		showValuesFooter = true
 	case ViewHealth:
 		if m.healthView != nil {
 			view = m.healthView.View()
@@ -358,12 +417,21 @@ func (m *MainModel) View() string {
 		if m.addTaskView != nil {
 			view = m.addTaskView.View()
 		}
+	case ViewValuesGoals:
+		if m.valuesView != nil {
+			view = m.valuesView.View()
+		}
 	default:
 		view = m.doorsView.View()
+		showValuesFooter = true
 	}
 
 	if m.flash != "" {
 		view += "\n" + flashStyle.Render(m.flash)
+	}
+
+	if showValuesFooter {
+		view += RenderValuesFooter(m.valuesConfig)
 	}
 
 	return view
