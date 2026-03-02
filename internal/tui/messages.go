@@ -55,6 +55,9 @@ type HealthCheckMsg struct {
 // SearchClosedMsg is sent when the user exits search mode.
 type SearchClosedMsg struct{}
 
+// AddTaskPromptMsg is sent when :add is typed without text to open inline add mode.
+type AddTaskPromptMsg struct{}
+
 // ReturnToSearchMsg is sent to restore search view from detail view.
 type ReturnToSearchMsg struct {
 	Query         string

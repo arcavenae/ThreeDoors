@@ -600,3 +600,78 @@ func TestTaskCompleted_PoolRemainsOnProviderFailure(t *testing.T) {
 		t.Errorf("flash should show error, got %q", m.flash)
 	}
 }
+
+// --- Story 3.1: Quick Add Mode Tests ---
+
+// T7: AddTaskPromptMsg transitions to ViewAddTask
+func TestAddTaskPromptMsg_TransitionsToAddTaskView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(AddTaskPromptMsg{})
+	if m.viewMode != ViewAddTask {
+		t.Errorf("expected ViewAddTask, got %d", m.viewMode)
+	}
+}
+
+// T8: TaskAddedMsg adds to pool, sets flash
+func TestTaskAddedMsg_AddsToPool(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	initialCount := m.pool.Count()
+
+	newTask := tasks.NewTask("brand new task")
+	m.Update(TaskAddedMsg{Task: newTask})
+
+	if m.pool.Count() != initialCount+1 {
+		t.Errorf("expected pool count %d, got %d", initialCount+1, m.pool.Count())
+	}
+	if m.flash != "Task added" {
+		t.Errorf("expected flash 'Task added', got %q", m.flash)
+	}
+}
+
+// T9: Colon key from doors view opens search in command mode
+func TestColonKey_OpensSearchInCommandMode(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(keyMsg(":"))
+	if m.viewMode != ViewSearch {
+		t.Errorf("expected ViewSearch after ':', got %d", m.viewMode)
+	}
+	if m.searchView == nil {
+		t.Fatal("searchView should be created")
+	}
+	val := m.searchView.textInput.Value()
+	if val != ":" {
+		t.Errorf("expected search input pre-populated with ':', got %q", val)
+	}
+}
+
+// T10: TaskAddedMsg with empty pool - pool gets the task
+func TestTaskAddedMsg_EmptyPool_AddsTask(t *testing.T) {
+	pool := tasks.NewTaskPool()
+	tracker := tasks.NewSessionTracker()
+	m := NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil)
+
+	if m.pool.Count() != 0 {
+		t.Fatal("pool should start empty")
+	}
+
+	newTask := tasks.NewTask("first task ever")
+	m.Update(TaskAddedMsg{Task: newTask})
+
+	if m.pool.Count() != 1 {
+		t.Errorf("expected pool count 1, got %d", m.pool.Count())
+	}
+}
+
+// AddTaskPromptMsg preserves previousView
+func TestAddTaskPromptMsg_PreservesPreviousView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	// Start from doors view
+	m.viewMode = ViewDoors
+	m.Update(AddTaskPromptMsg{})
+	if m.viewMode != ViewAddTask {
+		t.Errorf("expected ViewAddTask, got %d", m.viewMode)
+	}
+	if m.previousView != ViewDoors {
+		t.Errorf("expected previousView ViewDoors, got %d", m.previousView)
+	}
+}
