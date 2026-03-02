@@ -118,6 +118,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.moodView.SetWidth(m.width)
 		m.viewMode = ViewMood
 		return m, nil
+
+	case FlashMsg:
+		m.flash = msg.Text
+		return m, ClearFlashCmd()
 	}
 
 	// Delegate to current view

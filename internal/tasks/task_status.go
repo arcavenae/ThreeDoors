@@ -15,10 +15,10 @@ const (
 
 // validTransitions maps each status to its allowed next states.
 var validTransitions = map[TaskStatus][]TaskStatus{
-	StatusTodo:       {StatusTodo, StatusInProgress, StatusBlocked, StatusComplete},
-	StatusBlocked:    {StatusBlocked, StatusTodo, StatusInProgress, StatusComplete},
-	StatusInProgress: {StatusInProgress, StatusBlocked, StatusInReview, StatusComplete},
-	StatusInReview:   {StatusInReview, StatusInProgress, StatusComplete},
+	StatusTodo:       {StatusInProgress, StatusBlocked, StatusComplete},
+	StatusBlocked:    {StatusTodo, StatusInProgress, StatusComplete},
+	StatusInProgress: {StatusBlocked, StatusInReview, StatusComplete},
+	StatusInReview:   {StatusInProgress, StatusComplete},
 	StatusComplete:   {},
 }
 

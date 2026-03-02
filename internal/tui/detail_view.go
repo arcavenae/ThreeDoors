@@ -60,50 +60,38 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 	case "esc":
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "c", "C":
-		if err := dv.task.UpdateStatus(tasks.StatusComplete); err == nil {
-			if dv.tracker != nil {
-				dv.tracker.RecordStatusChange()
-				dv.tracker.RecordTaskCompleted()
-			}
-			return func() tea.Msg { return TaskCompletedMsg{Task: dv.task} }
+		if err := dv.task.UpdateStatus(tasks.StatusComplete); err != nil {
+			return func() tea.Msg { return FlashMsg{Text: "Cannot complete: " + err.Error()} }
 		}
+		if dv.tracker != nil {
+			dv.tracker.RecordStatusChange()
+			dv.tracker.RecordTaskCompleted()
+		}
+		return func() tea.Msg { return TaskCompletedMsg{Task: dv.task} }
 	case "b", "B":
 		if tasks.IsValidTransition(dv.task.Status, tasks.StatusBlocked) {
 			dv.mode = DetailModeBlockerInput
 			dv.blockerInput = ""
 		}
 	case "i", "I":
-		if err := dv.task.UpdateStatus(tasks.StatusInProgress); err == nil {
-			if dv.tracker != nil {
-				dv.tracker.RecordStatusChange()
-			}
-			return func() tea.Msg { return TaskUpdatedMsg{Task: dv.task} }
+		if err := dv.task.UpdateStatus(tasks.StatusInProgress); err != nil {
+			return func() tea.Msg { return FlashMsg{Text: "Cannot change status: " + err.Error()} }
 		}
-	case "e", "E":
-		// Expand: for now, just mark complete (full expand UX deferred)
-		if err := dv.task.UpdateStatus(tasks.StatusComplete); err == nil {
-			if dv.tracker != nil {
-				dv.tracker.RecordStatusChange()
-			}
-			return func() tea.Msg { return TaskCompletedMsg{Task: dv.task} }
-		}
-	case "f", "F":
-		// Fork: create a copy
 		if dv.tracker != nil {
 			dv.tracker.RecordStatusChange()
 		}
 		return func() tea.Msg { return TaskUpdatedMsg{Task: dv.task} }
+	case "e", "E":
+		// Expand: not yet implemented (deferred UX)
+		return func() tea.Msg { return FlashMsg{Text: "Expand not yet implemented"} }
+	case "f", "F":
+		// Fork: not yet implemented (deferred UX)
+		return func() tea.Msg { return FlashMsg{Text: "Fork not yet implemented"} }
 	case "p", "P":
 		// Procrastinate: just return to doors (task stays in pool)
-		if dv.tracker != nil {
-			dv.tracker.RecordStatusChange()
-		}
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "r", "R":
 		// Rework: keep in pool, just return
-		if dv.tracker != nil {
-			dv.tracker.RecordStatusChange()
-		}
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "m", "M":
 		return func() tea.Msg { return ShowMoodMsg{} }
