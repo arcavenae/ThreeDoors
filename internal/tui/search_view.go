@@ -101,9 +101,35 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 				return AddTaskPromptMsg{}
 			}
 		}
+		if args == "--why" {
+			return func() tea.Msg {
+				return AddTaskWithContextPromptMsg{}
+			}
+		}
+		if strings.HasPrefix(args, "--why ") {
+			taskText := strings.TrimPrefix(args, "--why ")
+			if taskText = strings.TrimSpace(taskText); taskText != "" {
+				return func() tea.Msg {
+					return AddTaskWithContextPromptMsg{PrefilledText: taskText}
+				}
+			}
+			return func() tea.Msg {
+				return AddTaskWithContextPromptMsg{}
+			}
+		}
 		newTask := tasks.NewTask(args)
 		return func() tea.Msg {
 			return TaskAddedMsg{Task: newTask}
+		}
+
+	case "add-ctx":
+		if args == "" {
+			return func() tea.Msg {
+				return AddTaskWithContextPromptMsg{}
+			}
+		}
+		return func() tea.Msg {
+			return AddTaskWithContextPromptMsg{PrefilledText: args}
 		}
 
 	case "mood":
@@ -124,7 +150,7 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :mood [mood], :stats, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :mood [mood], :stats, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
 		}
 
 	case "quit", "exit":

@@ -18,6 +18,7 @@ type TaskNote struct {
 type Task struct {
 	ID          string     `yaml:"id" json:"id"`
 	Text        string     `yaml:"text" json:"text"`
+	Context     string     `yaml:"context,omitempty" json:"context,omitempty"`
 	Status      TaskStatus `yaml:"status" json:"status"`
 	Notes       []TaskNote `yaml:"notes,omitempty" json:"notes,omitempty"`
 	Blocker     string     `yaml:"blocker,omitempty" json:"blocker,omitempty"`
@@ -37,6 +38,13 @@ func NewTask(text string) *Task {
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
+}
+
+// NewTaskWithContext creates a new task with a UUID, default "todo" status, and context.
+func NewTaskWithContext(text, context string) *Task {
+	task := NewTask(text)
+	task.Context = strings.TrimSpace(context)
+	return task
 }
 
 // UpdateStatus changes the task's status after validating the transition.

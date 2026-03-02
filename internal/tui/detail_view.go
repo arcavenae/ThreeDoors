@@ -155,6 +155,11 @@ func (dv *DetailView) View() string {
 	s.WriteString(dv.task.Text)
 	s.WriteString("\n")
 
+	if dv.task.Context != "" {
+		contextStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("243")).Italic(true)
+		fmt.Fprintf(&s, "\nWhy: %s\n", contextStyle.Render(dv.task.Context))
+	}
+
 	if len(dv.task.Notes) > 0 {
 		s.WriteString("\nNotes:\n")
 		for _, note := range dv.task.Notes {

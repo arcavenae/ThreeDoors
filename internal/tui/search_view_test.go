@@ -360,6 +360,73 @@ func TestSearchView_AddCommand_NoText_EmitsAddTaskPromptMsg(t *testing.T) {
 	}
 }
 
+// --- :add-ctx Command Tests ---
+
+func TestSearchView_AddCtxCommand_NoArgs_EmitsPromptMsg(t *testing.T) {
+	sv := newTestSearchView("existing task")
+	sv.textInput.SetValue(":add-ctx")
+	cmd := sv.executeCommand()
+	if cmd == nil {
+		t.Fatal(":add-ctx should return a command")
+	}
+	msg := cmd()
+	ctxMsg, ok := msg.(AddTaskWithContextPromptMsg)
+	if !ok {
+		t.Errorf("expected AddTaskWithContextPromptMsg, got %T", msg)
+	}
+	if ctxMsg.PrefilledText != "" {
+		t.Errorf("expected empty prefilled text, got %q", ctxMsg.PrefilledText)
+	}
+}
+
+func TestSearchView_AddCtxCommand_WithArgs_EmitsPromptMsgWithPrefill(t *testing.T) {
+	sv := newTestSearchView("existing task")
+	sv.textInput.SetValue(":add-ctx Buy groceries")
+	cmd := sv.executeCommand()
+	if cmd == nil {
+		t.Fatal(":add-ctx with args should return a command")
+	}
+	msg := cmd()
+	ctxMsg, ok := msg.(AddTaskWithContextPromptMsg)
+	if !ok {
+		t.Errorf("expected AddTaskWithContextPromptMsg, got %T", msg)
+	}
+	if ctxMsg.PrefilledText != "Buy groceries" {
+		t.Errorf("expected prefilled text 'Buy groceries', got %q", ctxMsg.PrefilledText)
+	}
+}
+
+func TestSearchView_AddWhyFlag_EmitsPromptMsg(t *testing.T) {
+	sv := newTestSearchView("existing task")
+	sv.textInput.SetValue(":add --why")
+	cmd := sv.executeCommand()
+	if cmd == nil {
+		t.Fatal(":add --why should return a command")
+	}
+	msg := cmd()
+	_, ok := msg.(AddTaskWithContextPromptMsg)
+	if !ok {
+		t.Errorf("expected AddTaskWithContextPromptMsg, got %T", msg)
+	}
+}
+
+func TestSearchView_AddWhyFlag_WithText_EmitsPromptMsgWithPrefill(t *testing.T) {
+	sv := newTestSearchView("existing task")
+	sv.textInput.SetValue(":add --why Buy groceries")
+	cmd := sv.executeCommand()
+	if cmd == nil {
+		t.Fatal(":add --why with text should return a command")
+	}
+	msg := cmd()
+	ctxMsg, ok := msg.(AddTaskWithContextPromptMsg)
+	if !ok {
+		t.Errorf("expected AddTaskWithContextPromptMsg, got %T", msg)
+	}
+	if ctxMsg.PrefilledText != "Buy groceries" {
+		t.Errorf("expected prefilled text 'Buy groceries', got %q", ctxMsg.PrefilledText)
+	}
+}
+
 // --- :quit / :exit Commands ---
 
 func TestSearchView_QuitCommand_SendsQuit(t *testing.T) {

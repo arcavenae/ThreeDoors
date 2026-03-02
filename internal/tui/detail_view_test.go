@@ -30,6 +30,29 @@ func TestDetailView_RendersFullTaskText(t *testing.T) {
 	}
 }
 
+func TestDetailView_RendersContext(t *testing.T) {
+	task := tasks.NewTaskWithContext("Buy groceries", "Need healthy food for the week")
+	dv := NewDetailView(task, nil)
+	dv.SetWidth(80)
+	view := dv.View()
+	if !strings.Contains(view, "Why:") {
+		t.Error("DetailView should show 'Why:' label when context is present")
+	}
+	if !strings.Contains(view, "Need healthy food for the week") {
+		t.Error("DetailView should show the context text")
+	}
+}
+
+func TestDetailView_NoContext_DoesNotShowWhy(t *testing.T) {
+	task := tasks.NewTask("Simple task")
+	dv := NewDetailView(task, nil)
+	dv.SetWidth(80)
+	view := dv.View()
+	if strings.Contains(view, "Why:") {
+		t.Error("DetailView should NOT show 'Why:' when context is empty")
+	}
+}
+
 func TestDetailView_RendersStatusMenu(t *testing.T) {
 	dv := newTestDetailView("test task")
 	dv.SetWidth(80)

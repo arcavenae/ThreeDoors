@@ -144,6 +144,191 @@ func TestAddTaskView_CharLimit_500(t *testing.T) {
 	}
 }
 
+// --- Multi-step Context Flow Tests ---
+
+func TestAddTaskWithContextView_New(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	if av == nil {
+		t.Fatal("NewAddTaskWithContextView should not return nil")
+	}
+	if !av.withContext {
+		t.Error("withContext should be true")
+	}
+	if av.step != stepTaskText {
+		t.Errorf("expected initial step to be stepTaskText, got %d", av.step)
+	}
+}
+
+func TestAddTaskWithContextView_Step1_Enter_AdvancesToStep2(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+
+	// Type task text
+	for _, r := range "Buy groceries" {
+		av.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+
+	// Press Enter → should advance to step 2, not create task
+	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd != nil {
+		t.Error("expected nil command when advancing to step 2")
+	}
+	if av.step != stepContext {
+		t.Errorf("expected step to be stepContext, got %d", av.step)
+	}
+	if av.capturedText != "Buy groceries" {
+		t.Errorf("expected captured text 'Buy groceries', got %q", av.capturedText)
+	}
+}
+
+func TestAddTaskWithContextView_Step2_Enter_WithContext_CreatesTask(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+
+	// Step 1: type task text and press Enter
+	for _, r := range "Buy groceries" {
+		av.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	// Step 2: type context and press Enter
+	for _, r := range "Need healthy food" {
+		av.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("expected a command from step 2 Enter")
+	}
+
+	msg := cmd()
+	taskMsg, ok := msg.(TaskAddedMsg)
+	if !ok {
+		t.Fatalf("expected TaskAddedMsg, got %T", msg)
+	}
+	if taskMsg.Task.Text != "Buy groceries" {
+		t.Errorf("expected task text 'Buy groceries', got %q", taskMsg.Task.Text)
+	}
+	if taskMsg.Task.Context != "Need healthy food" {
+		t.Errorf("expected context 'Need healthy food', got %q", taskMsg.Task.Context)
+	}
+}
+
+func TestAddTaskWithContextView_Step2_Enter_EmptyContext_SkipsContext(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+
+	// Step 1: type task text and press Enter
+	for _, r := range "Buy groceries" {
+		av.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	// Step 2: press Enter with empty input (skip context)
+	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("expected a command from step 2 Enter")
+	}
+
+	msg := cmd()
+	taskMsg, ok := msg.(TaskAddedMsg)
+	if !ok {
+		t.Fatalf("expected TaskAddedMsg, got %T", msg)
+	}
+	if taskMsg.Task.Text != "Buy groceries" {
+		t.Errorf("expected task text 'Buy groceries', got %q", taskMsg.Task.Text)
+	}
+	if taskMsg.Task.Context != "" {
+		t.Errorf("expected empty context, got %q", taskMsg.Task.Context)
+	}
+}
+
+func TestAddTaskWithContextView_Step1_EmptyText_ShowsError(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+
+	// Press Enter with no text
+	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("expected a command from Enter with empty text")
+	}
+
+	msg := cmd()
+	flashMsg, ok := msg.(FlashMsg)
+	if !ok {
+		t.Fatalf("expected FlashMsg for empty text, got %T", msg)
+	}
+	if !strings.Contains(flashMsg.Text, "cannot be empty") {
+		t.Errorf("expected error about empty text, got %q", flashMsg.Text)
+	}
+	if av.step != stepTaskText {
+		t.Error("should remain on step 1 after empty text error")
+	}
+}
+
+func TestAddTaskWithContextView_Esc_FromStep1_Cancels(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	if cmd == nil {
+		t.Fatal("expected a command from Esc")
+	}
+	msg := cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Fatalf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+}
+
+func TestAddTaskWithContextView_Esc_FromStep2_Cancels(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+
+	// Advance to step 2
+	for _, r := range "Some task" {
+		av.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	// Esc from step 2
+	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	if cmd == nil {
+		t.Fatal("expected a command from Esc")
+	}
+	msg := cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Fatalf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+}
+
+func TestAddTaskWithContextView_View_ShowsStepIndicator(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+	view := av.View()
+	if !strings.Contains(view, "Step 1") {
+		t.Error("view should show 'Step 1' on initial state")
+	}
+	if !strings.Contains(view, "Context") {
+		t.Error("view should mention 'Context' in header")
+	}
+}
+
+func TestAddTaskWithContextView_View_Step2_ShowsStep2(t *testing.T) {
+	av := NewAddTaskWithContextView()
+	av.SetWidth(80)
+
+	// Advance to step 2
+	for _, r := range "Task text" {
+		av.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	av.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	view := av.View()
+	if !strings.Contains(view, "Step 2") {
+		t.Error("view should show 'Step 2' after advancing")
+	}
+	if !strings.Contains(view, "skip") {
+		t.Error("step 2 should mention 'skip' option")
+	}
+}
+
 // --- View Rendering ---
 
 func TestAddTaskView_View_ContainsHelpText(t *testing.T) {

@@ -90,6 +90,39 @@ func TestTask_UpdateStatus_ClearBlocker(t *testing.T) {
 	}
 }
 
+func TestNewTaskWithContext(t *testing.T) {
+	task := NewTaskWithContext("  Buy groceries  ", "  Need healthy food for the week  ")
+	if task.Text != "Buy groceries" {
+		t.Errorf("Expected trimmed text %q, got %q", "Buy groceries", task.Text)
+	}
+	if task.Context != "Need healthy food for the week" {
+		t.Errorf("Expected trimmed context %q, got %q", "Need healthy food for the week", task.Context)
+	}
+	if task.ID == "" {
+		t.Error("Expected non-empty UUID")
+	}
+	if task.Status != StatusTodo {
+		t.Errorf("Expected status %q, got %q", StatusTodo, task.Status)
+	}
+}
+
+func TestNewTaskWithContext_EmptyContext(t *testing.T) {
+	task := NewTaskWithContext("Buy groceries", "")
+	if task.Context != "" {
+		t.Errorf("Expected empty context, got %q", task.Context)
+	}
+	if task.Text != "Buy groceries" {
+		t.Errorf("Expected text %q, got %q", "Buy groceries", task.Text)
+	}
+}
+
+func TestNewTask_HasNoContext(t *testing.T) {
+	task := NewTask("Simple task")
+	if task.Context != "" {
+		t.Errorf("Expected empty context for NewTask, got %q", task.Context)
+	}
+}
+
 func TestTask_Validate(t *testing.T) {
 	task := NewTask("Valid task")
 	if err := task.Validate(); err != nil {

@@ -148,6 +148,18 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewAddTask
 		return m, nil
 
+	case AddTaskWithContextPromptMsg:
+		m.addTaskView = NewAddTaskWithContextView()
+		m.addTaskView.SetWidth(m.width)
+		if msg.PrefilledText != "" {
+			m.addTaskView.capturedText = msg.PrefilledText
+			m.addTaskView.step = stepContext
+			m.addTaskView.textInput.Placeholder = "Why does this matter? (Enter to skip)"
+		}
+		m.previousView = m.viewMode
+		m.viewMode = ViewAddTask
+		return m, nil
+
 	case TaskAddedMsg:
 		m.pool.AddTask(msg.Task)
 		if err := m.saveTasks(); err != nil {

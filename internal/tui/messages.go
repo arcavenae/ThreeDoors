@@ -58,6 +58,12 @@ type SearchClosedMsg struct{}
 // AddTaskPromptMsg is sent when :add is typed without text to open inline add mode.
 type AddTaskPromptMsg struct{}
 
+// AddTaskWithContextPromptMsg is sent when :add-ctx or :add --why is used
+// to open the multi-step context capture flow.
+type AddTaskWithContextPromptMsg struct {
+	PrefilledText string
+}
+
 // ReturnToSearchMsg is sent to restore search view from detail view.
 type ReturnToSearchMsg struct {
 	Query         string

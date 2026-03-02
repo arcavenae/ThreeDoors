@@ -8,10 +8,22 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// AddTaskView handles inline task creation when :add is used without arguments.
+// addTaskStep tracks which step of the multi-step add flow we're on.
+type addTaskStep int
+
+const (
+	stepTaskText addTaskStep = iota
+	stepContext
+)
+
+// AddTaskView handles inline task creation when :add is used without arguments,
+// and multi-step context capture when :add-ctx or :add --why is used.
 type AddTaskView struct {
-	textInput textinput.Model
-	width     int
+	textInput    textinput.Model
+	width        int
+	withContext  bool
+	step         addTaskStep
+	capturedText string
 }
 
 // NewAddTaskView creates a new AddTaskView with a focused text input.
@@ -25,6 +37,14 @@ func NewAddTaskView() *AddTaskView {
 	return &AddTaskView{
 		textInput: ti,
 	}
+}
+
+// NewAddTaskWithContextView creates an AddTaskView that uses the multi-step
+// context capture flow (step 1: task text, step 2: why/context).
+func NewAddTaskWithContextView() *AddTaskView {
+	av := NewAddTaskView()
+	av.withContext = true
+	return av
 }
 
 // SetWidth sets the terminal width for rendering.
@@ -45,12 +65,29 @@ func (av *AddTaskView) Update(msg tea.Msg) tea.Cmd {
 
 		case tea.KeyEnter:
 			text := strings.TrimSpace(av.textInput.Value())
-			if text == "" {
+
+			if av.step == stepTaskText {
+				if text == "" {
+					return func() tea.Msg {
+						return FlashMsg{Text: "Task text cannot be empty"}
+					}
+				}
+				if av.withContext {
+					av.capturedText = text
+					av.step = stepContext
+					av.textInput.SetValue("")
+					av.textInput.Placeholder = "Why does this matter? (Enter to skip)"
+					av.textInput.CharLimit = 500
+					return nil
+				}
+				newTask := tasks.NewTask(text)
 				return func() tea.Msg {
-					return FlashMsg{Text: "Task text cannot be empty"}
+					return TaskAddedMsg{Task: newTask}
 				}
 			}
-			newTask := tasks.NewTask(text)
+
+			// step == stepContext
+			newTask := tasks.NewTaskWithContext(av.capturedText, text)
 			return func() tea.Msg {
 				return TaskAddedMsg{Task: newTask}
 			}
@@ -66,13 +103,27 @@ func (av *AddTaskView) Update(msg tea.Msg) tea.Cmd {
 func (av *AddTaskView) View() string {
 	s := strings.Builder{}
 
-	s.WriteString(headerStyle.Render("ThreeDoors - Add Task"))
+	if av.withContext {
+		s.WriteString(headerStyle.Render("ThreeDoors - Add Task with Context"))
+	} else {
+		s.WriteString(headerStyle.Render("ThreeDoors - Add Task"))
+	}
 	s.WriteString("\n\n")
-	s.WriteString(helpStyle.Render("Enter a new task:"))
+
+	if av.step == stepTaskText {
+		s.WriteString(helpStyle.Render("Step 1: What's the task?"))
+	} else {
+		s.WriteString(helpStyle.Render("Step 2: Why does this matter?"))
+	}
 	s.WriteString("\n\n")
 	s.WriteString(av.textInput.View())
 	s.WriteString("\n\n")
-	s.WriteString(helpStyle.Render("Enter submit | Esc cancel"))
+
+	if av.step == stepContext {
+		s.WriteString(helpStyle.Render("Enter submit | Enter (empty) skip | Esc cancel"))
+	} else {
+		s.WriteString(helpStyle.Render("Enter submit | Esc cancel"))
+	}
 
 	return s.String()
 }
