@@ -49,6 +49,19 @@ var (
 	moodHeaderStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("205"))
+
+	// Search styles
+	searchResultStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("252"))
+
+	searchSelectedStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(colorSelected).
+				Background(lipgloss.Color("236"))
+
+	commandModeStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("214"))
 )
 
 // StatusColor returns the lipgloss color for a given status string.

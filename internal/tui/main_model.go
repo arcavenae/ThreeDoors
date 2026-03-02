@@ -15,19 +15,24 @@ const (
 	ViewDoors ViewMode = iota
 	ViewDetail
 	ViewMood
+	ViewSearch
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
 type MainModel struct {
-	viewMode   ViewMode
-	doorsView  *DoorsView
-	detailView *DetailView
-	moodView   *MoodView
-	pool       *tasks.TaskPool
-	tracker    *tasks.SessionTracker
-	flash      string
-	width      int
-	height     int
+	viewMode            ViewMode
+	previousView        ViewMode
+	doorsView           *DoorsView
+	detailView          *DetailView
+	moodView            *MoodView
+	searchView          *SearchView
+	pool                *tasks.TaskPool
+	tracker             *tasks.SessionTracker
+	flash               string
+	width               int
+	height              int
+	searchQuery         string
+	searchSelectedIndex int
 }
 
 // NewMainModel creates the root application model.
@@ -58,6 +63,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.moodView != nil {
 			m.moodView.SetWidth(msg.Width)
 		}
+		if m.searchView != nil {
+			m.searchView.SetWidth(msg.Width)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -65,11 +73,56 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case ReturnToDoorsMsg:
+		// If we came from search, return to search instead
+		if m.previousView == ViewSearch {
+			m.searchView = NewSearchView(m.pool, m.tracker)
+			m.searchView.SetWidth(m.width)
+			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
+			m.viewMode = ViewSearch
+			m.detailView = nil
+			m.previousView = ViewDoors
+			return m, nil
+		}
 		m.viewMode = ViewDoors
 		m.detailView = nil
 		m.moodView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
+
+	case ReturnToSearchMsg:
+		m.searchView = NewSearchView(m.pool, m.tracker)
+		m.searchView.SetWidth(m.width)
+		m.searchView.RestoreState(msg.Query, msg.SelectedIndex)
+		m.viewMode = ViewSearch
+		m.detailView = nil
+		m.previousView = ViewDoors
+		return m, nil
+
+	case SearchClosedMsg:
+		m.viewMode = ViewDoors
+		m.searchView = nil
+		m.previousView = ViewDoors
+		return m, nil
+
+	case SearchResultSelectedMsg:
+		// Save search state for context-aware return
+		if m.searchView != nil {
+			m.searchQuery = m.searchView.textInput.Value()
+			m.searchSelectedIndex = m.searchView.selectedIndex
+		}
+		m.previousView = ViewSearch
+		m.detailView = NewDetailView(msg.Task, m.tracker)
+		m.detailView.SetWidth(m.width)
+		m.viewMode = ViewDetail
+		return m, nil
+
+	case TaskAddedMsg:
+		m.pool.AddTask(msg.Task)
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.flash = "Task added"
+		return m, ClearFlashCmd()
 
 	case TaskCompletedMsg:
 		m.doorsView.IncrementCompleted()
@@ -123,6 +176,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateDetail(msg)
 	case ViewMood:
 		return m.updateMood(msg)
+	case ViewSearch:
+		return m.updateSearch(msg)
 	}
 
 	return m, nil
@@ -157,6 +212,12 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
+		case "/":
+			m.searchView = NewSearchView(m.pool, m.tracker)
+			m.searchView.SetWidth(m.width)
+			m.viewMode = ViewSearch
+			m.previousView = ViewDoors
+			return m, nil
 		}
 	}
 	return m, nil
@@ -178,6 +239,14 @@ func (m *MainModel) updateMood(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateSearch(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.searchView == nil {
+		return m, nil
+	}
+	cmd := m.searchView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
 	return tasks.SaveTasks(allTasks)
@@ -194,6 +263,10 @@ func (m *MainModel) View() string {
 	case ViewMood:
 		if m.moodView != nil {
 			view = m.moodView.View()
+		}
+	case ViewSearch:
+		if m.searchView != nil {
+			view = m.searchView.View()
 		}
 	default:
 		view = m.doorsView.View()
