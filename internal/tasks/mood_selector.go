@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"math/rand/v2"
+	"strings"
 	"time"
 )
 
@@ -16,7 +17,7 @@ func MoodAlignmentScore(tasks []*Task, preferredType TaskType, preferredEffort T
 			score += 2
 		}
 		if t.Effort == preferredEffort && preferredEffort != "" {
-			score += 1
+			score++
 		}
 	}
 	return score
@@ -36,10 +37,11 @@ func selectDoorsWithMoodAndRand(pool *TaskPool, count int, currentMood string, p
 		return selectDoorsWithRand(pool, count, rng)
 	}
 
-	// Find matching mood correlation
+	// Find matching mood correlation (case-insensitive — moods are lowercased in analysis)
+	normalizedMood := strings.ToLower(strings.TrimSpace(currentMood))
 	var correlation *MoodCorrelation
 	for i := range patterns.MoodCorrelations {
-		if patterns.MoodCorrelations[i].Mood == currentMood {
+		if patterns.MoodCorrelations[i].Mood == normalizedMood {
 			correlation = &patterns.MoodCorrelations[i]
 			break
 		}
@@ -98,10 +100,14 @@ func selectDoorsWithMoodAndRand(pool *TaskPool, count int, currentMood string, p
 		}
 	}
 	if matchCount == count {
-		// Find a non-matching task from pool to swap in
+		// Find a non-matching task from pool to swap in (excluding tasks already in bestSet)
+		bestSetIDs := make(map[string]bool, count)
+		for _, t := range bestSet {
+			bestSetIDs[t.ID] = true
+		}
 		var nonMatching []*Task
 		for _, t := range available {
-			if t.Type != preferredType {
+			if t.Type != preferredType && !bestSetIDs[t.ID] {
 				nonMatching = append(nonMatching, t)
 			}
 		}
