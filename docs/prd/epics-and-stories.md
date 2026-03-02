@@ -1,22 +1,26 @@
 ---
 stepsCompleted: ["step-01-validate-prerequisites", "step-02-design-epics", "step-03-create-stories", "step-04-final-validation"]
 inputDocuments:
-  - docs/prd/index.md (sharded PRD - 10 files)
-  - docs/architecture/index.md (sharded Architecture - 19 files)
+  - docs/prd/index.md (sharded PRD - 14 files, v2.0 with 9 party mode recommendations)
+  - docs/architecture/index.md (sharded Architecture v2.0 - 19 files)
   - docs/prd/user-interface-design-goals.md (UX embedded in PRD)
+  - docs/sprint-status-report.md (Epics 1-3 complete, 22 stories implemented)
+regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)"
 ---
 
 # ThreeDoors - Epic Breakdown
 
 ## Overview
 
-This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD, UX Design, and Architecture into implementable stories.
+This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
+
+**Implementation Status:** Epics 1-3 are COMPLETE (22 stories, 34 merged PRs). Epic 5 is partially complete. Epics 4, 6-15 are not yet started.
 
 ## Requirements Inventory
 
 ### Functional Requirements
 
-**Technical Demo Phase:**
+**Technical Demo Phase (COMPLETE):**
 - TD1: The system shall provide a CLI/TUI interface optimized for terminal emulators (iTerm2 and similar)
 - TD2: The system shall read tasks from a simple local text file (~/.threedoors/tasks.txt)
 - TD3: The system shall display the Three Doors interface showing three tasks selected from the text file
@@ -27,28 +31,84 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - TD8: The system shall embed "progress over perfection" messaging in the interface
 - TD9: The system shall write completed tasks to a separate file (~/.threedoors/completed.txt) with timestamp
 
-**Full MVP Phase:**
+**Phase 2 - Apple Notes Integration (COMPLETE):**
 - FR2: The system shall integrate with Apple Notes as primary task storage backend with bidirectional sync
-- FR3: The system shall allow task capture with optional context (what and why) through CLI/TUI
 - FR4: The system shall retrieve and display tasks from Apple Notes
 - FR5: The system shall mark tasks complete, updating both app state and Apple Notes
-- FR6: The system shall display user-defined values and goals persistently throughout sessions
-- FR7: The system shall provide choose-your-own-adventure interactive navigation
-- FR8: The system shall track daily task completion count with day-over-day comparison
-- FR9: The system shall prompt user once per session for improvement suggestion
-- FR10: The system shall embed enhanced "progress over perfection" messaging
-- FR11: The system shall maintain a local enrichment layer (SQLite/vector DB) for metadata and cross-references
 - FR12: The system shall support bidirectional sync with Apple Notes on iPhone
 - FR15: The system shall provide a health check command for Apple Notes connectivity
-- FR16: The system shall support quick add mode for minimal-interaction task capture
-- FR18: The system shall allow door feedback options (Blocked, Not now, Needs breakdown, Other comment)
-- FR19: The system shall capture and store blocker information when task marked blocked
-- FR20: The system shall use door selection and feedback patterns to inform future door selection (learning)
-- FR21: The system shall categorize tasks by type, effort level, and context for diverse door selection
+
+**Phase 3 - Enhanced Interaction & Learning (PARTIALLY COMPLETE):**
+- FR3: The system shall allow task capture with optional context (what and why) through CLI/TUI ✅
+- FR6: The system shall display user-defined values and goals persistently throughout sessions ✅
+- FR7: The system shall provide choose-your-own-adventure interactive navigation ✅
+- FR8: The system shall track daily task completion count with day-over-day comparison ✅
+- FR9: The system shall prompt user once per session for improvement suggestion ✅
+- FR10: The system shall embed enhanced "progress over perfection" messaging ✅
+- FR16: The system shall support quick add mode for minimal-interaction task capture ✅
+- FR18: The system shall allow door feedback options (Blocked, Not now, Needs breakdown, Other comment) ✅
+- FR19: The system shall capture and store blocker information when task marked blocked ✅
+- FR20: The system shall use door selection and feedback patterns to inform future door selection (learning) ⏳ Epic 4
+- FR21: The system shall categorize tasks by type, effort level, and context for diverse door selection ⏳ Epic 4
+
+**Phase 4 - Distribution & Packaging (COMPLETE):**
+- FR22: macOS binaries code-signed with Apple Developer certificate ✅ (Story 5.1)
+- FR23: Notarized with Apple's notarization service ✅ (Story 5.1)
+- FR24: Installable via Homebrew tap ✅ (Story 5.1)
+- FR25: DMG or pkg installer as alternative ✅ (Story 5.1)
+- FR26: Automated release process ✅ (Story 5.1)
+
+**Phase 5 - Data Layer & Enrichment:**
+- FR11: The system shall maintain a local enrichment layer for metadata and cross-references ⏳ Epic 6
+
+**Phase 6+ - Party Mode Recommendations (Accepted):**
+
+*Obsidian Integration (P0 - #2 Integration):*
+- FR27: Integrate with Obsidian vaults as task storage backend ⏳ Epic 8
+- FR28: Bidirectional sync with Obsidian vault files ⏳ Epic 8
+- FR29: Obsidian vault configuration via config.yaml ⏳ Epic 8
+- FR30: Obsidian daily notes integration ⏳ Epic 8
+
+*Plugin/Adapter SDK:*
+- FR31: Adapter registry with runtime discovery and loading ⏳ Epic 7
+- FR32: Config-driven provider selection via config.yaml ⏳ Epic 7
+- FR33: Adapter developer guide and interface specification ⏳ Epic 7
+
+*Psychology Research & Validation:*
+- FR34: Document evidence base for Three Doors choice architecture ⏳ Epic 15
+
+*LLM Task Decomposition & Agent Action Queue:*
+- FR35: LLM-powered task decomposition ⏳ Epic 14
+- FR36: Output to git repository for coding agents ⏳ Epic 14
+- FR37: Configurable LLM backends (local and cloud) ⏳ Epic 14
+
+*First-Run Onboarding Experience:*
+- FR38: First-run welcome flow with values/goals setup ⏳ Epic 10
+- FR39: Import from existing task sources during onboarding ⏳ Epic 10
+
+*Sync Observability & Offline-First:*
+- FR40: Offline-first operation with local change queue ⏳ Epic 11
+- FR41: Sync status indicator in TUI per provider ⏳ Epic 11
+- FR42: Conflict visualization for sync conflicts ⏳ Epic 11
+- FR43: Sync log for debugging ⏳ Epic 11
+
+*Calendar Awareness (Local-First, No OAuth):*
+- FR44: Read local calendar sources only ⏳ Epic 12
+- FR45: Time-contextual door selection ⏳ Epic 12
+
+*Multi-Source Task Aggregation:*
+- FR46: Unified cross-provider task pool ⏳ Epic 13
+- FR47: Duplicate detection across providers ⏳ Epic 13
+- FR48: Source attribution in TUI ⏳ Epic 13
+
+*Testing Strategy:*
+- FR49: Apple Notes integration E2E tests ⏳ Epic 9
+- FR50: Contract tests for adapter compliance ⏳ Epic 9
+- FR51: Functional E2E tests for user workflows ⏳ Epic 9
 
 ### Non-Functional Requirements
 
-**Technical Demo Phase:**
+**Technical Demo Phase (COMPLETE):**
 - TD-NFR1: Go 1.25.4+ with gofumpt formatting standards
 - TD-NFR2: Bubbletea/Charm Bracelet ecosystem for TUI
 - TD-NFR3: macOS primary target platform
@@ -60,7 +120,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 **Full MVP Phase:**
 - NFR1: Idiomatic Go patterns and gofumpt formatting
 - NFR2: Continue Bubbletea/Charm ecosystem
-- NFR3: macOS primary platform
+- NFR3: macOS primary platform with signed/notarized binaries
 - NFR4: Local or iCloud storage (via Apple Notes), no external telemetry
 - NFR5: Local application state and enrichment data (cross-computer sync deferred)
 - NFR6: <500ms latency for typical operations
@@ -70,6 +130,10 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - NFR10: Make build system
 - NFR11: Clear architectural separation (core, TUI, adapters, enrichment)
 - NFR12: Data integrity during external Apple Notes modification
+- NFR13: <100ms response time for adapter operations (read/write/sync)
+- NFR14: Offline-first operation; core functionality without network; sync queued and replayed
+- NFR15: No OAuth or cloud API credentials for calendar; local sources only
+- NFR16: CI coverage gates ensuring no regression below thresholds
 
 **Code Quality & Submission Standards (Cross-Cutting):**
 - NFR-CQ1: All code must pass gofumpt formatting before submission
@@ -80,1177 +144,626 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 ### Additional Requirements
 
-**From Architecture:**
+**From Architecture v2.0:**
 - Greenfield Go project (no starter template) - go mod init
-- Two-layer architecture: TUI layer (internal/tui) + Domain layer (internal/tasks)
+- Phase 1: Two-layer architecture: TUI layer (internal/tui) + Domain layer (internal/tasks)
+- Phase 2-3: Five-layer architecture: TUI, Core Domain, Adapter Layer, Sync Engine, Intelligence Layer
 - MVU pattern mandatory (Bubbletea enforced Elm Architecture)
 - Structured YAML data format for tasks with metadata (status, notes, timestamps)
 - Five-state task lifecycle: todo → blocked → in-progress → in-review → complete
 - Atomic writes for all file persistence (write-to-temp, fsync, rename)
 - UUID v4 for task identification
 - Constructor injection for dependency management
-- Repository/adapter pattern (TaskProvider interface) deferred to Epic 2
+- TaskProvider interface for adapter pattern (established in Epic 2)
+- Adapter Registry with config-driven runtime discovery (Epic 7)
+- Offline-first queue pattern with async replay (Epic 11)
+- Multi-source aggregation with cross-provider dedup (Epic 13)
+- Intelligence layer with opt-in feature gates (Epics 12, 14)
 - Ring buffer for recently-shown door tracking (default size: 10)
 - Fisher-Yates shuffle for random door selection
-- Apple Notes integration spike required before Epic 2 implementation
-- Unit tests for core domain logic (70%+ coverage target in MVP)
+- Apple Notes integration via AppleScript bridge (established in Epic 2)
+- Unit tests for core domain logic (70%+ coverage target)
 - Integration tests for backend adapters
-- CI/CD via GitHub Actions (MVP phase)
+- CI/CD via GitHub Actions
 
 **From UX Design:**
-- Three doors rendered horizontally with dynamic terminal width adjustment
-- No "Door X" labels - clean, uncluttered presentation
-- Door opening animation (optional) with expanded detail view
-- Context-aware Esc navigation (returns to previous context: doors or search)
-- Bottom-up search results display (reduces eye travel)
-- Multiple navigation schemes (arrows, WASD, HJKL vi-style)
-- Command palette via : prefix for power-user features
-- Terminal aesthetic with warmth - Lipgloss styling with green/yellow/red status colors
-- "Progress over perfection" visual language with asymmetry and celebration messaging
-- 80x24 minimum terminal, responsive to larger sizes
-- 256-color support minimum
+- Three doors rendered horizontally with dynamic width adjustment
+- No "Door X" labels (reduce visual clutter)
+- Context-aware Esc key behavior (return to previous screen maintaining state)
+- Bottom-up search results display
+- Multiple navigation schemes (arrows, WASD, HJKL)
+- Live substring matching for search
+- Command palette (: prefix) for power-user features
+- Source attribution badges for multi-provider tasks
+- Sync status indicator in footer area
+- Onboarding wizard with skip option at every step
 
 ### FR Coverage Map
 
-| FR | Epic | Description |
-|----|------|-------------|
-| TD1 | Epic 1 | CLI/TUI interface |
-| TD2 | Epic 1 | Read tasks from text file |
-| TD3 | Epic 1 | Three Doors display |
-| TD4 | Epic 1 | Door selection keys |
-| TD5 | Epic 1 | Refresh mechanism |
-| TD6 | Epic 1 | Dynamic width adjustment |
-| TD7 | Epic 1 | Task management keystrokes |
-| TD8 | Epic 1 | Progress over perfection messaging |
-| TD9 | Epic 1 | Completed tasks file with timestamp |
-| FR2 | Epic 2 | Apple Notes bidirectional sync |
-| FR3 | Epic 3 | Task capture with context |
-| FR4 | Epic 2 | Retrieve/display from Apple Notes |
-| FR5 | Epic 2 | Mark complete in Apple Notes |
-| FR6 | Epic 3 | Persistent values/goals display |
-| FR7 | Epic 3 | Choose-your-own-adventure navigation |
-| FR8 | Epic 3 | Daily completion tracking |
-| FR9 | Epic 3 | Session improvement prompt |
-| FR10 | Epic 3 | Enhanced messaging |
-| FR11 | Epic 5 | Local enrichment layer |
-| FR12 | Epic 2 | Bidirectional iPhone sync |
-| FR15 | Epic 2 | Health check command |
-| FR16 | Epic 3 | Quick add mode |
-| FR18 | Epic 3 | Door feedback options |
-| FR19 | Epic 3 | Blocker capture |
-| FR20 | Epic 4 | Learning from patterns |
-| FR21 | Epic 4 | Task categorization |
-| FR27 | Epic 8 | Obsidian vault integration |
-| FR28 | Epic 8 | Obsidian bidirectional sync |
-| FR29 | Epic 8 | Obsidian vault configuration |
-| FR30 | Epic 8 | Obsidian daily note integration |
-| FR31 | Epic 7 | Adapter registry |
-| FR32 | Epic 7 | Config-driven provider selection |
-| FR33 | Epic 7 | Adapter developer guide |
-| FR34 | Epic 15 | Psychology research documentation |
-| FR35 | Epic 14 | LLM task decomposition |
-| FR36 | Epic 14 | Git repo output for coding agents |
-| FR37 | Epic 14 | Configurable LLM backends |
-| FR38 | Epic 10 | First-run welcome flow |
-| FR39 | Epic 10 | Import from existing sources |
-| FR40 | Epic 11 | Offline-first with local queue |
-| FR41 | Epic 11 | Sync status indicator |
-| FR42 | Epic 11 | Conflict visualization |
-| FR43 | Epic 11 | Sync log |
-| FR44 | Epic 12 | Local calendar reading |
-| FR45 | Epic 12 | Time-contextual door selection |
-| FR46 | Epic 13 | Cross-provider task aggregation |
-| FR47 | Epic 13 | Duplicate detection |
-| FR48 | Epic 13 | Source attribution in TUI |
-| FR49 | Epic 9 | Apple Notes integration E2E tests |
-| FR50 | Epic 9 | Contract tests for adapters |
-| FR51 | Epic 9 | Functional E2E tests |
+| Requirement | Epic | Description |
+|------------|------|-------------|
+| TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
+| FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
+| FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
+| FR20, FR21 | Epic 4 | Learning & Intelligent Door Selection |
+| FR22-FR26 | Epic 5 ✅ | macOS Distribution & Packaging (COMPLETE) |
+| FR11 | Epic 6 | Data Layer & Enrichment |
+| FR31, FR32, FR33 | Epic 7 | Plugin/Adapter SDK & Registry |
+| FR27, FR28, FR29, FR30 | Epic 8 | Obsidian Integration |
+| FR49, FR50, FR51 | Epic 9 | Testing Strategy & Quality Gates |
+| FR38, FR39 | Epic 10 | First-Run Onboarding |
+| FR40, FR41, FR42, FR43 | Epic 11 | Sync Observability & Offline-First |
+| FR44, FR45 | Epic 12 | Calendar Awareness |
+| FR46, FR47, FR48 | Epic 13 | Multi-Source Aggregation |
+| FR35, FR36, FR37 | Epic 14 | LLM Task Decomposition |
+| FR34 | Epic 15 | Psychology Research & Validation |
 
 ## Epic List
 
-### Epic 1: Three Doors Technical Demo & Validation
-**Goal:** Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept reduces friction compared to traditional task lists. User can launch a TUI app, see three random tasks from a text file, select doors, manage task status, search tasks, track moods, and collect session metrics for concept validation.
-**FRs covered:** TD1, TD2, TD3, TD4, TD5, TD6, TD7, TD8, TD9
-**NFRs covered:** TD-NFR1, TD-NFR2, TD-NFR3, TD-NFR4, TD-NFR5, TD-NFR6, TD-NFR7
-**Dependencies:** None (greenfield)
-**Timeline:** Week 1 (4-8 hours)
+### Epic 1: Three Doors Technical Demo ✅ COMPLETE
+Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
+**FRs covered:** TD1-TD9
+**Status:** All 7 stories implemented and merged.
 
-### Epic 2: Foundation & Apple Notes Integration
-**Goal:** Replace/augment text file backend with Apple Notes integration, enabling bidirectional sync so tasks edited on iPhone appear in the terminal and vice versa. Includes architectural refactoring to adapter pattern.
+### Epic 2: Foundation & Apple Notes Integration ✅ COMPLETE
+Replace text file backend with Apple Notes integration via adapter pattern.
 **FRs covered:** FR2, FR4, FR5, FR12, FR15
-**NFRs covered:** NFR7, NFR8, NFR11, NFR12
-**Dependencies:** Epic 1 (validated concept)
-**Timeline:** 3-4 weeks at 2-4 hrs/week
-**Prerequisites:** Apple Notes integration spike, validation gate passed
+**Status:** All 6 stories implemented and merged.
 
-### Epic 3: Enhanced Task Capture & Interaction
-**Goal:** Enrich the task management experience with quick task capture, contextual capture (what and why), persistent values/goals display, door feedback mechanisms, daily completion tracking, and session improvement prompts.
+### Epic 3: Enhanced Interaction & Task Context ✅ COMPLETE
+Add task capture, values/goals, feedback mechanisms, and navigation improvements.
 **FRs covered:** FR3, FR6, FR7, FR8, FR9, FR10, FR16, FR18, FR19
-**NFRs covered:** NFR6
-**Dependencies:** Epic 2 (stable backend integration)
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Status:** All 7 stories implemented and merged.
+
+### Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging)
+Refactor core architecture, harden adapters, establish test infrastructure, and resolve tech debt from rapid Epic 1-3 implementation to prepare for Epic 4+ work.
+**FRs covered:** None (infrastructure/quality — enables FR20-FR51)
+**Prerequisites:** Epic 3 complete ✅
+**Blocks:** Epic 4 (partially), Epic 7, Epic 8, Epic 9, Epic 11
 
 ### Epic 4: Learning & Intelligent Door Selection
-**Goal:** Use historical session metrics to analyze user patterns and adapt door selection. The system learns from selection patterns, mood correlations, and avoidance behaviors to present smarter door choices adapted to current context.
+Use historical session metrics to analyze user patterns and adapt door selection.
 **FRs covered:** FR20, FR21
-**Dependencies:** Epic 3 (sufficient usage data)
-**Timeline:** 3-4 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 3 complete ✅, Epic 3.5 stories 3.5.5/3.5.6 complete, sufficient usage data
 
-### Epic 5: Data Layer & Enrichment (Optional)
-**Goal:** Add enrichment storage layer for cross-system metadata, richer task relationships, and persistent enrichment data spanning multiple task sources. Only implement if clear need emerges.
+### Epic 5: macOS Distribution & Packaging ✅ COMPLETE
+Code signing, notarization, Homebrew tap, and pkg installer.
+**FRs covered:** FR22-FR26
+**Status:** Story 5.1 consolidated and implemented.
+
+### Epic 6: Data Layer & Enrichment (Optional)
+SQLite enrichment database for metadata beyond what backends support.
 **FRs covered:** FR11
-**NFRs covered:** NFR5
-**Dependencies:** Epic 4 (proven need)
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 4 complete, proven need
 
 ### Epic 7: Plugin/Adapter SDK & Registry
-**Goal:** Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide.
+Formalize adapter pattern into plugin SDK with registry and developer guide.
 **FRs covered:** FR31, FR32, FR33
-**NFRs covered:** NFR11
-**Dependencies:** Epic 2 (adapter pattern established)
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 2 ✅
 
 ### Epic 8: Obsidian Integration (P0 - #2 Integration)
-**Goal:** Add Obsidian vault as second task storage backend. Local-first Markdown with bidirectional sync.
+Add Obsidian vault as second task storage backend.
 **FRs covered:** FR27, FR28, FR29, FR30
-**Dependencies:** Epic 7 (adapter SDK)
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 7
 
 ### Epic 9: Testing Strategy & Quality Gates
-**Goal:** Comprehensive testing infrastructure with integration, contract, performance, and E2E tests.
+Comprehensive testing infrastructure with integration, contract, E2E tests.
 **FRs covered:** FR49, FR50, FR51
-**NFRs covered:** NFR13, NFR16
-**Dependencies:** Epic 2, Epic 7
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 2 ✅, Epic 7
 
 ### Epic 10: First-Run Onboarding Experience
-**Goal:** Guided welcome flow for new users.
+Guided welcome flow for new users.
 **FRs covered:** FR38, FR39
-**Dependencies:** Epic 3
-**Timeline:** 1-2 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 3 ✅
 
 ### Epic 11: Sync Observability & Offline-First
-**Goal:** Robust offline-first operation with sync status visibility, conflict visualization, and debugging.
+Offline-first local change queue, sync status, conflict resolution.
 **FRs covered:** FR40, FR41, FR42, FR43
-**NFRs covered:** NFR14
-**Dependencies:** Epic 2
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 2 ✅
 
 ### Epic 12: Calendar Awareness (Local-First, No OAuth)
-**Goal:** Time-contextual door selection from local calendar sources only.
+Time-contextual door selection from local calendar sources.
 **FRs covered:** FR44, FR45
-**NFRs covered:** NFR15
-**Dependencies:** Epic 4
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 4
 
 ### Epic 13: Multi-Source Task Aggregation View
-**Goal:** Unified cross-provider task pool with dedup detection and source attribution.
+Unified cross-provider task pool with dedup and source attribution.
 **FRs covered:** FR46, FR47, FR48
-**Dependencies:** Epic 7, Epic 8+
-**Timeline:** 2-3 weeks at 2-4 hrs/week
+**Prerequisites:** Epic 7, Epic 8 or additional adapters
 
-### Epic 14: LLM Task Decomposition & Agent Action Queue (Future)
-**Goal:** LLM-powered task breakdown with git repo output for coding agent pickup.
+### Epic 14: LLM Task Decomposition & Agent Action Queue
+LLM-powered task breakdown for coding agent pickup.
 **FRs covered:** FR35, FR36, FR37
-**Dependencies:** Epic 3+
-**Timeline:** 3-4 weeks at 2-4 hrs/week (spike-driven)
+**Prerequisites:** Epic 3+ ✅
 
-### Epic 15: Psychology Research & Validation (Parallel Track)
-**Goal:** Evidence base for ThreeDoors design decisions.
+### Epic 15: Psychology Research & Validation
+Evidence base for ThreeDoors design decisions.
 **FRs covered:** FR34
-**Dependencies:** None (parallel research track)
-**Timeline:** Ongoing (2-4 hrs/week)
-
-### Epic 16+: Additional Integrations & Advanced Features (Future)
-**Goal:** Jira, Linear, Slack, cross-computer sync, voice interface, mobile apps.
-**FRs covered:** Future FRs (not yet specified)
-**Dependencies:** Epic 7+ (stable adapter SDK)
-**Timeline:** 12+ months out
+**Prerequisites:** None
 
 ---
 
-## Epic 1: Three Doors Technical Demo & Validation
+## Epic 1: Three Doors Technical Demo ✅ COMPLETE
 
-Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept reduces friction compared to traditional task lists.
+**Epic Goal:** Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept reduces friction compared to traditional task lists.
 
-### Story 1.1: Project Setup & Basic Bubbletea App
+**Status:** COMPLETE — All stories implemented and merged across 34 PRs.
+
+### Story 1.1: Project Setup & Basic Bubbletea App ✅
 
 As a developer,
 I want a working Go project with Bubbletea framework,
 So that I have a foundation for building the Three Doors TUI.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #2)
 
-**Given** the developer has Go 1.25.4+ installed
-**When** they run `go mod init github.com/arcaven/ThreeDoors`
-**Then** a Go module is initialized with proper module path
-**And** Bubbletea 1.2.4+ and Lipgloss 1.0.0+ dependencies are added via go get
-
-**Given** the project is built and run
-**When** the user launches the application
-**Then** a basic TUI renders "ThreeDoors - Technical Demo" header
-**And** the application responds to 'q' keypress to quit
-**And** the application responds to Ctrl+C to quit
-
-**Given** the project structure
-**When** a Makefile exists with `build`, `run`, and `clean` targets
-**Then** `make build` compiles to `bin/threedoors`
-**And** `make run` builds and runs the application
-**And** `make clean` removes build artifacts
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 1.2: Display Three Doors from Task File
+### Story 1.2: Display Three Doors from a Task File ✅
 
 As a developer,
-I want the application to read tasks from a text file and display three as "doors",
-So that I can see the core Three Doors interface.
+I want the application to read tasks from a text file and display three of them as "doors",
+So that I can see the core interface of the application.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #4)
 
-**Given** the application starts
-**When** `~/.threedoors/tasks.txt` exists with tasks (one per line)
-**Then** three randomly selected tasks are displayed horizontally across the terminal
-**And** doors dynamically adjust width based on terminal size
-**And** no "Door X" labels are shown
-
-**Given** the application starts
-**When** `~/.threedoors/tasks.txt` does not exist
-**Then** the file is created with 3-5 sample tasks
-**And** three of those sample tasks are displayed as doors
-
-**Given** three doors are displayed
-**When** no door has been selected or doors were just re-rolled
-**Then** no door is highlighted/selected (neutral state)
-
-**Given** three doors are displayed
-**When** the user presses 'a' or left arrow
-**Then** the left door is selected/highlighted
-
-**Given** three doors are displayed
-**When** the user presses 'w' or up arrow
-**Then** the center door is selected/highlighted
-
-**Given** three doors are displayed
-**When** the user presses 'd' or right arrow
-**Then** the right door is selected/highlighted
-
-**Given** three doors are displayed
-**When** the user presses 's' or down arrow
-**Then** a new set of three random tasks replaces the current doors
-**And** no door is selected after re-roll
-
-**Given** the application is running
-**When** the user presses 'q' or Ctrl+C
-**Then** the application exits cleanly
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 1.3: Door Selection & Task Status Management
+### Story 1.3: Door Selection & Task Status Management ✅
 
 As a user,
 I want to select a door and update the task's status,
 So that I can take action on tasks and track my progress.
 
-**Acceptance Criteria:**
+**Status:** Done (PRs #5, #7)
 
-**Given** a door is selected (highlighted)
-**When** the user presses Enter or the selection key again
-**Then** a door opening animation plays (optional)
-**And** the selected door shifts left and expands to fill the screen as a detail view
-**And** the detail view shows: full task text, task metadata/status, and status action menu
-
-**Given** the user is in the detail view
-**When** the user presses 'c'
-**Then** the task is marked as Complete
-**And** the task is removed from the available pool
-**And** the task is appended to `~/.threedoors/completed.txt` with timestamp
-**And** the session completion count increments
-**And** a "progress over perfection" celebration message is shown
-**And** the view returns to three doors with a new set
-
-**Given** the user is in the detail view
-**When** the user presses 'b'
-**Then** the task is marked as Blocked
-**And** the user is prompted for an optional blocker note
-**And** the task remains in the pool tagged with blocked status
-
-**Given** the user is in the detail view
-**When** the user presses 'i', 'e', 'f', 'p', or 'r'
-**Then** the corresponding status is applied (In Progress, Expand, Fork, Procrastinate, Rework)
-**And** the view returns to three doors with a new set
-
-**Given** the user is in the detail view
-**When** the user presses 'm'
-**Then** a mood capture dialog appears with options: Focused, Tired, Stressed, Energized, Distracted, Calm, Other
-**And** if "Other" is selected, a text input prompts for custom mood
-**And** the mood entry is timestamped and recorded
-
-**Given** the user is in the detail view
-**When** the user presses Esc
-**Then** the detail view closes and returns to the three doors view
-
-**Given** the user is in the three doors view (no door selected)
-**When** the user presses 'm'
-**Then** the mood capture dialog opens without requiring door selection
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 1.4: Quick Search & Command Palette
+### Story 1.3a: Quick Search & Command Palette ✅
 
 As a user,
-I want to search for specific tasks and execute commands via text input,
-So that I can efficiently find and act on tasks without relying solely on the three doors.
+I want to quickly search for specific tasks and execute commands via a text input interface,
+So that I can efficiently find and act on tasks without scrolling through the three doors.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #13)
 
-**Given** the user is in the three doors view
-**When** the user presses '/'
-**Then** a text input field appears at the bottom with placeholder "Search tasks... (or :command for commands)"
-
-**Given** the search input is active
-**When** the user types characters
-**Then** matching tasks display from bottom-up (live substring matching)
-**And** the list updates with each keystroke
-**And** if no matches, "No tasks match '<text>'" is shown
-**And** empty input shows no results
-
-**Given** search results are displayed
-**When** the user navigates with arrow keys, WASD, or HJKL (vi-style)
-**Then** the selected result is highlighted
-**And** pressing Enter opens the selected task in the detail view (same as Story 1.3)
-
-**Given** a task detail was opened from search
-**When** the user presses Esc from the detail view
-**Then** the search view returns with search text preserved and previous selection highlighted
-
-**Given** the search input is active (not in detail view)
-**When** the user presses Esc or Ctrl+C
-**Then** search mode closes and returns to three doors view
-
-**Given** the search input is empty
-**When** the user types ':' as the first character
-**Then** the input switches to command mode with visual indicator
-
-**Given** command mode is active
-**When** the user types `:add <task text>` and presses Enter
-**Then** a new task is added to tasks.txt
-
-**Given** command mode is active
-**When** the user types `:mood [mood]` and presses Enter
-**Then** a mood is logged (prompts for selection if no mood parameter given)
-
-**Given** command mode is active
-**When** the user types `:stats` and presses Enter
-**Then** session statistics are displayed (tasks completed, doors viewed, time in session)
-
-**Given** command mode is active
-**When** the user types `:help` and presses Enter
-**Then** available commands and key bindings are displayed
-
-**Given** command mode is active
-**When** the user types `:quit` or `:exit` and presses Enter
-**Then** the application exits cleanly
-
-**Given** command mode is active
-**When** the user types an invalid command and presses Enter
-**Then** "Unknown command: '<command>'. Type :help for available commands." is shown
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 1.5: Session Metrics Tracking
+### Story 1.5: Session Metrics Tracking ✅
 
 As a developer validating the Three Doors concept,
 I want objective session metrics collected automatically,
-So that I can make a data-informed validation decision.
+So that I can make a data-informed decision at the validation gate.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #16)
 
-**Given** the application starts
-**When** a new session begins
-**Then** a SessionTracker is initialized with UUID and current timestamp
-
-**Given** a session is active
-**When** a door is viewed, selected, refreshed, or a status change occurs
-**Then** the corresponding event is recorded silently (no UI impact)
-**And** door position selections are tracked (left=0, center=1, right=2)
-**And** task bypass tracking records tasks shown but not selected before refresh
-**And** mood entries are captured with timestamps
-
-**Given** the session tracker is recording
-**When** any recording operation occurs
-**Then** it adds <1ms overhead per event
-**And** no UI lag or stuttering is observable
-
-**Given** the application exits cleanly
-**When** the session is finalized
-**Then** session metrics are written as a JSON line to `~/.threedoors/sessions.jsonl`
-**And** each line is valid JSON parseable by `jq`
-**And** the file is append-only
-
-**Given** a file write failure occurs during metrics persistence
-**When** the write fails
-**Then** a warning is logged to stderr
-**And** the application does not crash
-**And** no error dialog is shown to the user
-
-**Given** analysis scripts exist
-**When** `scripts/analyze_sessions.sh` is run
-**Then** session summaries and averages are displayed
-
-**Given** analysis scripts exist
-**When** `scripts/validation_decision.sh` is run
-**Then** automated validation criteria are evaluated against collected data
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 1.6: Essential Polish
+### Story 1.6: Essential Polish ✅
 
 As a user,
 I want the app to feel polished enough to use daily,
 So that I enjoy the validation experience.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #18)
 
-**Given** the application is running
-**When** any screen is rendered
-**Then** Lipgloss styling is applied with distinct colors: doors have their own color, success messages are green, prompts are yellow/blue
+### Story 1.7: CI/CD Pipeline & Alpha Release ✅
 
-**Given** the application starts or a task is completed
-**When** the corresponding event occurs
-**Then** a "Progress over perfection" message is displayed (startup greeting or post-completion)
+As a developer,
+I want automated builds, tests, and releases,
+So that quality is maintained and releases are consistent.
 
-**Given** the user interacts with the application
-**When** any action is performed
-**Then** the response feels responsive and smooth with no noticeable lag
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Status:** Done (PR #8)
 
 ---
 
-## Epic 2: Foundation & Apple Notes Integration
+## Epic 2: Foundation & Apple Notes Integration ✅ COMPLETE
 
-Replace/augment text file backend with Apple Notes integration, enabling bidirectional sync so tasks edited on iPhone appear in the terminal and vice versa.
+**Epic Goal:** Replace text file backend with Apple Notes integration, enabling mobile task editing while maintaining Three Doors UX.
 
-### Story 2.1: Architecture Refactoring to Adapter Pattern
+**Status:** COMPLETE — All stories implemented and merged.
+
+### Story 2.1: Architecture Refactoring - Adapter Pattern ✅
 
 As a developer,
-I want the codebase refactored to use a TaskProvider interface,
-So that multiple backends (text file, Apple Notes) can be swapped without changing the core logic.
+I want the codebase refactored to use a TaskProvider adapter pattern,
+So that multiple backends can be plugged in.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #20)
 
-**Given** the existing codebase with direct file I/O
-**When** the refactoring is complete
-**Then** a `TaskProvider` interface exists with methods: `LoadTasks()`, `SaveTask()`, `DeleteTask()`, `MarkComplete()`
-**And** a `TextFileProvider` implements this interface (wrapping existing file I/O logic)
-**And** the MainModel and domain layer depend only on the `TaskProvider` interface, not concrete implementations
-**And** all existing functionality works identically through the new interface
-
-**Given** the adapter pattern is in place
-**When** unit tests are run
-**Then** core domain logic can be tested with a mock `TaskProvider`
-**And** `TextFileProvider` has integration tests covering read, write, and error scenarios
-**And** test coverage for core domain logic reaches 70%+
-
-**Given** the refactored architecture
-**When** the build is run
-**Then** CI/CD pipeline via GitHub Actions runs tests on every commit
-**And** `make test` target is added to the Makefile
-**And** `make lint` target runs golangci-lint
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 2.2: Apple Notes Integration Spike
+### Story 2.2: Apple Notes Integration Spike ✅
 
 As a developer,
 I want to evaluate Apple Notes integration approaches,
-So that I can choose the best method for bidirectional sync.
+So that I can choose the best technical path.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #22)
 
-**Given** the spike begins
-**When** evaluating integration options
-**Then** at least 3 approaches are tested: MCP server (mcp-apple-notes), direct SQLite read, AppleScript bridge
-**And** each approach is evaluated for: read capability, write capability, reliability, complexity
-
-**Given** the spike is complete
-**When** results are documented
-**Then** a spike report exists documenting: chosen approach, pros/cons, risks, estimated effort
-**And** a proof-of-concept demonstrates reading at least one note from Apple Notes
-**And** the chosen approach is validated for both read and write operations
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 2.3: Read Tasks from Apple Notes
+### Story 2.3: Read Tasks from Apple Notes ✅
 
 As a user,
-I want the Three Doors app to read tasks from my Apple Notes,
-So that I can manage my existing Apple Notes tasks from the terminal.
+I want my Apple Notes tasks displayed in Three Doors,
+So that I can use my existing task list.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #17)
 
-**Given** Apple Notes contains a designated task note
-**When** the application starts with Apple Notes provider configured
-**Then** tasks are retrieved from Apple Notes and displayed in the Three Doors interface
-**And** tasks appear within <2 seconds of startup
-
-**Given** Apple Notes is not accessible (app closed, permissions denied)
-**When** the application starts
-**Then** the system falls back gracefully to text file backend
-**And** a clear message informs the user about the fallback
-**And** core Three Doors functionality remains fully operational
-
-**Given** the Apple Notes provider is active
-**When** the user navigates the Three Doors interface
-**Then** the experience is identical to the text file backend (same keys, same views, same flows)
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Verify AppleScript injection safety: Ensure all note titles and task text passed to osascript are properly escaped
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 2.4: Write Task Updates to Apple Notes
+### Story 2.4: Write Task Updates to Apple Notes ✅
 
 As a user,
-I want task status changes in Three Doors to sync back to Apple Notes,
-So that my iPhone shows the latest task state.
+I want task status changes reflected back in Apple Notes,
+So that my tasks stay synchronized.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #21)
 
-**Given** a task from Apple Notes is displayed in Three Doors
-**When** the user marks the task as complete, blocked, in-progress, or any other status
-**Then** the status change is written back to Apple Notes within 5 seconds
-**And** the change is visible when viewing the note on iPhone
-
-**Given** a write operation to Apple Notes fails
-**When** the error occurs
-**Then** the change is cached locally for retry
-**And** a non-intrusive warning is shown to the user
-**And** the local state reflects the intended change
-
-**Given** the user completes a task in Three Doors
-**When** the completion is synced
-**Then** the task is marked as complete in Apple Notes (not deleted)
-**And** the task appears in the local completed.txt log with timestamp
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Verify AppleScript injection safety: Ensure all note titles and task text passed to osascript are properly escaped
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 2.5: Bidirectional Sync
+### Story 2.5: Bidirectional Sync Engine ✅
 
 As a user,
-I want tasks edited on my iPhone to appear updated in Three Doors,
-So that I can manage tasks from either device seamlessly.
+I want changes in Apple Notes reflected in ThreeDoors and vice versa,
+So that I can edit tasks from either place.
 
-**Acceptance Criteria:**
+**Status:** Done (PR #15)
 
-**Given** a task was modified in Apple Notes on iPhone
-**When** the user opens or refreshes Three Doors
-**Then** the modified task appears with the latest content
-**And** no duplicate tasks are created
-
-**Given** a new task was added in Apple Notes on iPhone
-**When** the user opens or refreshes Three Doors
-**Then** the new task appears in the available pool
-
-**Given** a task was deleted in Apple Notes on iPhone
-**When** the user opens or refreshes Three Doors
-**Then** the task is removed from the available pool
-**And** no error is displayed
-
-**Given** conflicting changes (edited in both Apple Notes and Three Doors)
-**When** sync occurs
-**Then** the most recent change wins (last-write-wins)
-**And** the user is informed if their local change was overridden
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 2.6: Health Check Command
+### Story 2.6: Health Check Command ✅
 
 As a user,
-I want a health check command to verify Apple Notes connectivity,
+I want to verify Apple Notes connectivity,
 So that I can diagnose sync issues.
 
-**Acceptance Criteria:**
-
-**Given** the application is running
-**When** the user types `:health` in the command palette
-**Then** the system checks: Apple Notes accessibility, database read/write, sync status, last successful sync timestamp
-**And** displays results with green (OK) / red (FAIL) indicators
-
-**Given** the health check detects issues
-**When** results are displayed
-**Then** actionable suggestions are shown (e.g., "Grant Full Disk Access in System Settings")
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Status:** Done (PR #19)
 
 ---
 
-## Epic 3: Enhanced Task Capture & Interaction
+## Epic 3: Enhanced Interaction & Task Context ✅ COMPLETE
 
-Enrich the task management experience with task capture, values/goals, door feedback, and progress tracking.
+**Epic Goal:** Add task capture, values/goals display, and feedback mechanisms to improve task management workflow.
 
-### Story 3.1: Quick Add Mode
+**Status:** COMPLETE — All stories implemented and merged.
+
+### Story 3.1: Quick Add Mode ✅
 
 As a user,
-I want to quickly add tasks with minimal interaction,
-So that I can capture ideas without breaking flow.
+I want to add tasks with minimal friction,
+So that capturing new tasks doesn't interrupt my flow.
+
+**Status:** Done (PR #23)
+
+### Story 3.2: Extended Task Capture with Context ✅
+
+As a user,
+I want to capture task context (what and why),
+So that I remember why tasks are important.
+
+**Status:** Done (PR #24)
+
+### Story 3.3: Values & Goals Setup and Display ✅
+
+As a user,
+I want to see my values and goals while working,
+So that I stay aligned with what matters.
+
+**Status:** Done (PR #25)
+
+### Story 3.4: Door Feedback Options ✅
+
+As a user,
+I want to provide feedback on why a door doesn't suit me,
+So that the system can learn my preferences.
+
+**Status:** Done (PR #27)
+
+### Story 3.5: Daily Completion Tracking & Comparison ✅
+
+As a user,
+I want to see my daily completion count compared to yesterday,
+So that I can see my progress trend.
+
+**Status:** Done (PR #28)
+
+### Story 3.6: Session Improvement Prompt ✅
+
+As a user,
+I want a gentle prompt for improvement at session end,
+So that I continuously refine my workflow.
+
+**Status:** Done (PR #29)
+
+### Story 3.7: Enhanced Navigation & Messaging ✅
+
+As a user,
+I want improved navigation and "progress over perfection" messaging,
+So that the app feels cohesive and encouraging.
+
+**Status:** Done (PR #31)
+
+---
+
+## Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging)
+
+**Epic Goal:** Refactor core architecture, harden adapters, establish test infrastructure, and resolve technical debt from rapid Epic 1-3 implementation. This bridging epic prepares the codebase for Epic 4+ work by establishing the architectural foundations specified in Architecture v2.0.
+
+**Prerequisites:** Epic 3 complete ✅
+**Blocks:** Epic 4 (stories 3.5.5, 3.5.6), Epic 7 (stories 3.5.1, 3.5.2, 3.5.3), Epic 9 (story 3.5.7), Epic 11 (story 3.5.4)
+**Origin:** Party mode bridging discussion (2026-03-02)
+
+### Story 3.5.1: Core Domain Extraction
+
+As a developer,
+I want `internal/tasks` split into `internal/core` (domain logic) and separate adapter packages,
+So that the architecture follows the five-layer design specified in Architecture v2.0 and enables the Plugin SDK (Epic 7).
 
 **Acceptance Criteria:**
 
-**Given** the user is in any view
-**When** the user types `:add <task text>` in the command palette
-**Then** a new task is created with the given text
-**And** the task is immediately available in the Three Doors pool
-**And** the task is persisted to the active backend
-**And** a brief confirmation is shown ("Task added")
+**Given** the current `internal/tasks/` package with ~2,100 LOC across 12 files
+**When** the refactoring is complete
+**Then** `internal/core/` contains: TaskPool, DoorSelector, StatusManager, SessionTracker (domain logic only)
+**And** `internal/adapters/textfile/` contains the YAML file adapter (extracted from FileManager)
+**And** `internal/adapters/applenotes/` contains the Apple Notes adapter
+**And** `internal/tui/` depends only on `internal/core/`, not on adapter implementations (dependency inversion)
+**And** all existing tests pass without modification (behavior-preserving refactor)
+**And** no user-facing behavior changes
 
-**Given** the user types `:add` without text
-**When** Enter is pressed
-**Then** an inline text input prompts for task text
-**And** pressing Enter again creates the task
-**And** pressing Esc cancels
+### Story 3.5.2: TaskProvider Interface Hardening
 
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 3.2: Extended Task Capture with Context
-
-As a user,
-I want to capture not just what a task is but why it matters,
-So that I can make better decisions about task priority and alignment with goals.
+As a developer building future integrations,
+I want the TaskProvider interface formalized with Watch(), HealthCheck(), and ChangeEvent patterns,
+So that the adapter SDK (Epic 7) has a stable, well-defined contract.
 
 **Acceptance Criteria:**
 
-**Given** the user wants to add a task with context
-**When** the user types `:add-ctx` or `:add --why` in the command palette
-**Then** a multi-step capture flow begins:
-**And** Step 1: "What's the task?" - single line text input
-**And** Step 2: "Why does this matter?" - optional context input (Enter to skip)
-**And** the task is created with both text and context stored
+**Given** the current TaskProvider interface from Epic 2
+**When** hardening is complete
+**Then** `TaskProvider` interface includes: Name(), Load(), Save(), Delete(), Watch(), HealthCheck() methods
+**And** `ChangeEvent` struct defined with Type (Created/Updated/Deleted), TaskID, Task, Source fields
+**And** contract test stubs created in `internal/adapters/contract_test.go` (placeholder for Epic 9)
+**And** existing text file and Apple Notes adapters updated to implement the hardened interface
+**And** interface documented with godoc comments
 
-**Given** a task has context/why information
-**When** the task appears in the detail view
-**Then** the "why" context is displayed below the task text
+### Story 3.5.3: Config.yaml Schema & Migration Spike
 
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 3.3: Values & Goals Setup and Display
-
-As a user,
-I want to define and see my values and goals during task sessions,
-So that I stay aligned with what matters most.
+As a developer,
+I want a spike on config.yaml schema design and migration path,
+So that Epic 7's config-driven provider selection has a validated foundation.
 
 **Acceptance Criteria:**
 
-**Given** the user has no values/goals configured
-**When** the user types `:goals` in the command palette
-**Then** a setup flow guides them through entering 1-5 values or goals
-**And** values are persisted to `~/.threedoors/config.yaml` (or equivalent)
+**Given** the current scattered configuration (hardcoded paths, text files)
+**When** the spike is complete
+**Then** `docs/spikes/config-schema.md` documents: proposed config.yaml schema, provider section design, migration path from current config
+**And** spike verifies zero-friction upgrade: existing users without config.yaml default to current behavior (text file provider)
+**And** sample config.yaml drafted with commented provider examples
+**And** spike identifies any breaking changes and mitigation strategies
 
-**Given** the user has values/goals configured
-**When** any screen is displayed
-**Then** values/goals appear as a subtle header or footer (not intrusive)
-**And** they remain visible across door selection, detail view, and search
+### Story 3.5.4: Apple Notes Adapter Hardening
 
-**Given** the user wants to edit values/goals
-**When** the user types `:goals edit` in the command palette
-**Then** the existing values are displayed for editing (add, remove, reorder)
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 3.4: Door Feedback Options
-
-As a user,
-I want to provide feedback on why a door isn't suitable,
-So that the system can learn my preferences over time.
+As a user relying on Apple Notes sync,
+I want the adapter to handle errors gracefully with timeouts and retries,
+So that sync is reliable before more adapters are added.
 
 **Acceptance Criteria:**
 
-**Given** a door is selected in the three doors view
-**When** the user presses 'n' (not now) or opens the feedback menu
-**Then** options are displayed: "Blocked", "Not now", "Needs breakdown", "Other comment"
-**And** the feedback is recorded with the task ID and timestamp
+**Given** the current Apple Notes adapter using os/exec for AppleScript
+**When** hardening is complete
+**Then** all AppleScript calls have configurable timeout (default: 10s)
+**And** transient failures retry with exponential backoff (max 3 retries)
+**And** errors are categorized: transient (retry), permanent (fail fast), configuration (user action needed)
+**And** error messages are user-friendly and actionable
+**And** adapter logs sync operations for debugging (respects NFR9 - no sensitive data)
 
-**Given** the user selects "Needs breakdown"
-**When** the feedback is submitted
-**Then** the task is flagged for future breakdown
-**And** the doors refresh with a new set
+### Story 3.5.5: Baseline Regression Test Suite
 
-**Given** the user selects "Other comment"
-**When** the feedback option is chosen
-**Then** a text input appears for freeform feedback
-**And** the comment is stored with the task
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 3.5: Daily Completion Tracking & Comparison
-
-As a user,
-I want to see how many tasks I completed today compared to yesterday,
-So that I can feel motivated by progress.
+As a developer preparing for Epic 4 (Learning),
+I want baseline tests for the current door selection and task management behavior,
+So that the learning engine (Epic 4) can be validated against known-good behavior.
 
 **Acceptance Criteria:**
 
-**Given** the user has been using the app across multiple days
-**When** any task is completed
-**Then** the session display shows: "Completed today: X (yesterday: Y)"
-**And** if today > yesterday, a positive message is shown
-**And** if today = 0, no comparison is shown (avoids discouragement)
+**Given** the current random door selection algorithm
+**When** baseline tests are created
+**Then** table-driven tests cover: random selection from pool, Fisher-Yates diversity, recently-shown ring buffer exclusion, empty/small pool edge cases
+**And** status management tests cover: all valid state transitions, invalid transition rejection, completion flow
+**And** task pool tests cover: load, filter by status, add, remove, update operations
+**And** tests serve as regression suite when Epic 4 modifies selection algorithm
+**And** all tests pass on current codebase
 
-**Given** the user types `:stats` in the command palette
-**When** daily stats are displayed
-**Then** the output includes: tasks completed today, tasks completed yesterday, doors viewed today, current streak (consecutive days with completions)
+### Story 3.5.6: Session Metrics Reader Library
 
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 3.6: Session Improvement Prompt
-
-As a user,
-I want to be prompted for one improvement idea per session,
-So that I continuously refine my task management approach.
+As a developer building Epic 4 (Learning),
+I want a reusable library for reading and parsing session metrics,
+So that Epic 4 stories can focus on learning logic rather than I/O.
 
 **Acceptance Criteria:**
 
-**Given** the user has been in a session for at least 5 minutes or completed 1+ tasks
-**When** the user exits the application (q or :quit)
-**Then** a prompt appears: "What's one thing you could improve about this list/task/goal right now?"
-**And** the user can type a response and press Enter to save
-**And** pressing Esc skips the prompt
+**Given** session metrics stored in `~/.threedoors/sessions.jsonl`
+**When** the reader library is created
+**Then** `internal/core/metrics/reader.go` provides: ReadAll(), ReadSince(time), ReadLast(n) methods
+**And** each method returns typed `SessionMetrics` structs (not raw JSON)
+**And** handles corrupted/malformed lines gracefully (skip with warning, don't fail)
+**And** unit tests cover: empty file, single session, multiple sessions, corrupted lines
+**And** library is dependency-free (no external packages beyond stdlib)
 
-**Given** the user provides an improvement suggestion
-**When** the response is saved
-**Then** it is appended to `~/.threedoors/improvements.txt` with timestamp and session ID
+### Story 3.5.7: Adapter Test Scaffolding & CI Coverage Floor
 
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 3.7: Enhanced Navigation & Messaging
-
-As a user,
-I want richer choose-your-own-adventure navigation and enhanced "progress over perfection" messaging,
-So that the app feels like a supportive partner rather than a demanding taskmaster.
+As a developer,
+I want test infrastructure scaffolding and CI coverage enforcement,
+So that Epic 9 (Testing Strategy) has a foundation and coverage doesn't erode.
 
 **Acceptance Criteria:**
 
-**Given** the user performs various actions (complete task, open door, refresh, add task)
-**When** the action completes
-**Then** contextual, encouraging messages are shown (varying, not always the same)
-**And** messages embody "progress over perfection" philosophy
-**And** messages celebrate any action as progress
+**Given** the current CI pipeline without coverage enforcement
+**When** scaffolding is complete
+**Then** test fixture directory `testdata/` created with sample data for adapter testing
+**And** mock/stub helpers created in `internal/testing/` for common test patterns
+**And** CI pipeline updated to measure coverage (`go test -coverprofile`) and fail if below threshold (set to current level)
+**And** coverage report posted as PR comment
+**And** `internal/adapters/contract_test.go` scaffolding ready for Epic 9 to fill
 
-**Given** the user is at a decision point (e.g., after completing a task)
-**When** options are presented
-**Then** 3-5 contextual next steps are shown (not just "return to doors")
-**And** options adapt based on state (e.g., "add another task", "review blocked tasks", "check stats", "take a break")
+### Story 3.5.8: Validation Gate Decision Documentation
 
-#### Pre-PR Submission Checklist
+As the product team,
+I want the Phase 1 validation results formally documented,
+So that the proceed-to-MVP decision is recorded and learnings inform Epic 4.
 
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Acceptance Criteria:**
+
+**Given** Phase 1 (Technical Demo) has been used daily
+**When** documentation is complete
+**Then** `docs/validation-gate-results.md` documents: validation period, usage patterns, friction reduction evidence from session metrics
+**And** UX lessons learned captured (what worked, what surprised, what to improve)
+**And** formal "proceed to MVP" decision recorded with rationale
+**And** recommendations for Epic 4 learning algorithm based on observed patterns
+**And** document references actual session metrics data as evidence
 
 ---
 
 ## Epic 4: Learning & Intelligent Door Selection
 
-Use historical session metrics to analyze patterns and adapt door selection to user context.
+**Epic Goal:** Use historical session metrics (captured in Epic 1 Story 1.5) to analyze user patterns and adapt door selection to improve task engagement and completion rates.
 
-### Story 4.1: Task Categorization
+**Prerequisites:** Epic 3 complete ✅, sufficient usage data collected
+**FRs covered:** FR20, FR21
+
+### Story 4.1: Task Categorization & Tagging
 
 As a user,
-I want tasks to be categorized by type, effort, and context,
-So that the door selection can present diverse options.
+I want my tasks automatically categorized by type, effort, and context,
+So that the system can present diverse door selections.
 
 **Acceptance Criteria:**
 
-**Given** a task exists in the system
-**When** the task is created or edited
-**Then** optional categorization fields are available: type (creative, administrative, technical, physical), effort (quick-win, medium, deep-work), context (home, work, anywhere)
+**Given** a task pool with uncategorized tasks
+**When** the categorization engine processes them
+**Then** each task receives type (creative, administrative, technical, physical), effort (quick-win, medium, deep-work), and context (home, work, errands) labels
+**And** categorization is heuristic-based (keyword matching, task text analysis) without requiring user input
+**And** users can override or correct auto-categorization via `:tag` command
+**And** categories are persisted in task metadata (YAML)
 
-**Given** tasks have categories
-**When** three doors are selected
-**Then** the algorithm prefers diversity: different types, different effort levels when possible
-**And** if insufficient variety exists, random selection is used as fallback
+### Story 4.2: Session Metrics Pattern Analysis
 
-**Given** categories are not set on a task
-**When** the task appears in doors
-**Then** it is treated as "uncategorized" and can appear in any door
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 4.2: Pattern Recognition & Avoidance Detection
-
-As a user,
-I want the system to recognize my selection patterns,
-So that I get insights into my work habits.
+As a developer,
+I want to analyze historical session metrics for user behavior patterns,
+So that the learning engine has data to work with.
 
 **Acceptance Criteria:**
 
-**Given** sufficient session data exists (10+ sessions)
-**When** pattern analysis runs
-**Then** the system identifies: tasks/types consistently selected vs bypassed, time-of-day preferences, avoidance patterns (tasks shown 5+ times but never selected)
+**Given** accumulated session metrics in sessions.jsonl
+**When** the pattern analyzer runs
+**Then** it identifies: door position preferences (left/center/right bias), task type selection vs bypass rates, time-of-day patterns, mood-task correlation coefficients, and avoidance patterns (tasks shown 3+ times without selection)
+**And** results are stored in a patterns cache file (patterns.json)
+**And** analysis runs on app startup (background, non-blocking)
+**And** minimum 5 sessions required before generating patterns (cold start guard)
 
-**Given** avoidance is detected for a task
-**When** the task appears in doors
-**Then** a subtle indicator shows it has been frequently bypassed (not judgmental)
-
-**Given** the user types `:insights` in the command palette
-**When** pattern data is available
-**Then** insights are displayed: "You tend to pick quick-wins in the morning", "Task X has been shown 8 times without selection", "Your most productive days are Tuesdays"
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 4.3: Mood Correlation Analysis
+### Story 4.3: Mood-Aware Adaptive Door Selection
 
 As a user,
-I want the system to correlate my mood with task selection,
-So that I understand how emotions affect my productivity.
+I want door selection to consider my current mood and historical patterns,
+So that I'm shown tasks that match my current capacity.
 
 **Acceptance Criteria:**
 
-**Given** mood data and task selection data from 10+ sessions
-**When** the user types `:insights mood` in the command palette
-**Then** correlations are displayed: "When stressed, you avoid complex tasks", "Your highest completion rate is when feeling focused", "You tend to log 'tired' on Fridays"
+**Given** a user has logged a mood entry (or has recent mood history)
+**When** doors are selected for display
+**Then** the selection algorithm weights tasks based on mood-task correlation data (e.g., "stressed" → prefer quick-wins over deep-work)
+**And** the algorithm still includes diversity (not all doors match mood preference)
+**And** if no mood data exists, falls back to random selection (current behavior)
+**And** selection weights are configurable in a learning config section
 
-**Given** the user logs a mood
-**When** doors are being selected
-**Then** the current mood is factored into door selection as a soft preference (not hard filter)
-**And** if mood is "tired", simpler/quicker tasks are slightly preferred
-**And** if mood is "focused", deeper work tasks are slightly preferred
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 4.4: Adaptive Door Selection Algorithm
+### Story 4.4: Avoidance Detection & User Insights
 
 As a user,
-I want door selection to adapt to my patterns over time,
-So that I'm presented with tasks I'm more likely to engage with.
+I want to be gently informed about my avoidance patterns,
+So that I can make conscious decisions about deferred tasks.
 
 **Acceptance Criteria:**
 
-**Given** historical data from pattern recognition and mood correlation
-**When** three doors are selected
-**Then** the algorithm balances: user's current mood preference, task diversity, avoidance pattern awareness, time-of-day patterns
-**And** at least one "stretch" task (something the user tends to avoid) is included when possible
+**Given** a task has been shown in doors 5+ times without selection
+**When** that task appears in doors again
+**Then** a subtle indicator appears (e.g., "You've seen this task 7 times")
+**And** the system does NOT nag or guilt — framing is informational
+**And** a `:insights` command shows a summary of patterns ("When stressed, you avoid technical tasks")
+**And** persistent avoidance (10+ bypasses) triggers a gentle prompt: "This task keeps appearing. Would you like to: [R]econsider, [B]reak down, [D]efer, [A]rchive?"
 
-**Given** the adaptive algorithm is active
-**When** the user refreshes doors
-**Then** the new set reflects different aspects of the algorithm's recommendations
-**And** no task appears in consecutive door sets (ring buffer still applies)
-
-**Given** the adaptive algorithm is active
-**When** persistent avoidance of certain task types is detected across 3+ sessions
-**Then** a gentle prompt suggests goal re-evaluation: "You've been skipping [category] tasks. Want to review if they still align with your goals?"
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 4.5: User Insights Dashboard
+### Story 4.5: Goal Re-evaluation Prompts
 
 As a user,
-I want a comprehensive insights view of my work patterns,
-So that I can make informed decisions about my productivity.
+I want gentle prompts to reconsider goals when persistent avoidance patterns emerge,
+So that my task list stays aligned with what I actually want to do.
 
 **Acceptance Criteria:**
 
-**Given** sufficient historical data
-**When** the user types `:dashboard` or `:insights all` in the command palette
-**Then** a summary view displays: completion trends (daily/weekly), mood-productivity correlations, door position preferences, most/least engaged task categories, streak information, "better than yesterday" multi-dimensional tracking
+**Given** a pattern of avoidance for tasks related to a specific goal/value
+**When** avoidance exceeds threshold (configurable, default: 3 related tasks avoided 5+ times each)
+**Then** at session start, a non-blocking prompt appears: "Some [goal] tasks have been deferred repeatedly. Would you like to review your [goal] priorities?"
+**And** user can dismiss with a single keypress
+**And** re-evaluation prompt shown at most once per week per goal
+**And** prompt links to `:goals` command for editing
 
-**Given** the dashboard is displayed
-**When** the user presses Esc
-**Then** the view returns to the previous context
+### Story 4.6: "Better Than Yesterday" Multi-Dimensional Tracking
 
-#### Pre-PR Submission Checklist
+As a user,
+I want to see progress across multiple dimensions,
+So that I celebrate improvement beyond just task count.
 
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Acceptance Criteria:**
+
+**Given** accumulated session history
+**When** a new session starts
+**Then** the greeting includes multi-dimensional comparison: tasks completed, doors opened, mood trend, avoidance reduction, and streaks
+**And** comparison is day-over-day and week-over-week
+**And** messaging is encouraging regardless of direction ("3 tasks today vs 5 yesterday — every door opened counts")
+**And** dimensions are displayed compactly (single line or expandable)
 
 ---
 
-## Epic 5: Data Layer & Enrichment (Optional)
+## Epic 5: macOS Distribution & Packaging ✅ COMPLETE
 
-Add enrichment storage layer for cross-system metadata and richer task relationships.
+**Epic Goal:** Provide a trusted, seamless installation experience on macOS.
 
-### Story 5.1: SQLite Enrichment Database Setup
+**Status:** COMPLETE — Story 5.1 consolidated signing, notarization, Homebrew, and pkg (PR #30).
+
+### Story 5.1: CI Code Signing, Notarization, Homebrew & pkg ✅
+
+As a macOS user,
+I want signed, notarized binaries installable via Homebrew or pkg,
+So that Gatekeeper allows execution without security warnings.
+
+**Status:** Done (PR #30)
+
+---
+
+## Epic 6: Data Layer & Enrichment (Optional)
+
+**Epic Goal:** Add enrichment storage layer for metadata that cannot live in source systems.
+
+**Prerequisites:** Epic 4 complete, proven need for enrichment beyond what backends support
+**FRs covered:** FR11
+
+### Story 6.1: SQLite Enrichment Database Setup
 
 As a developer,
-I want a SQLite database for storing enrichment metadata,
-So that cross-system task relationships and learning patterns can be persisted efficiently.
+I want a local SQLite database for enrichment metadata,
+So that cross-reference tracking and learning patterns have persistent storage.
 
 **Acceptance Criteria:**
 
-**Given** the enrichment layer is being set up
-**When** the database is initialized
+**Given** the application starts
+**When** enrichment storage is needed (learning patterns, cross-references)
 **Then** a SQLite database is created at `~/.threedoors/enrichment.db`
-**And** schema includes tables for: task_metadata (categories, enrichment tags), cross_references (links between tasks across systems), learning_patterns (algorithm weights, pattern data), feedback_history (door feedback, mood correlations)
+**And** schema includes tables for: task enrichment (categories, learning data), cross-references (task links across providers), and user preferences
+**And** database is created lazily (only when first enrichment write occurs)
+**And** migrations are version-tracked for schema evolution
 
-**Given** the database exists
-**When** the application starts
-**Then** the enrichment layer loads in parallel with the task provider
-**And** startup time increases by no more than 100ms
+### Story 6.2: Cross-Reference Tracking
 
-**Given** a database migration is needed
-**When** the schema version changes
-**Then** automatic migration runs on startup
-**And** existing data is preserved
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 5.2: Cross-Reference Tracking
-
-As a user,
-I want tasks from different sources to be linked,
-So that I can see relationships across systems.
+As a user with multiple task sources,
+I want tasks linked across providers,
+So that related items are connected regardless of source.
 
 **Acceptance Criteria:**
 
-**Given** tasks exist from multiple backends (text file + Apple Notes)
-**When** the user identifies two related tasks
-**Then** a cross-reference can be created between them via `:link <task1> <task2>`
-**And** linked tasks show a reference indicator in the detail view
-
-**Given** a task with cross-references is viewed
-**When** the detail view is displayed
-**Then** linked tasks are listed with their source system and status
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 5.3: Data Migration & Backup
-
-As a user,
-I want data migration tools and backup capability,
-So that I don't lose enrichment data during upgrades or system changes.
-
-**Acceptance Criteria:**
-
-**Given** enrichment data exists
-**When** the user types `:backup` in the command palette
-**Then** a timestamped backup is created at `~/.threedoors/backups/enrichment-<timestamp>.db`
-
-**Given** a backup exists
-**When** the user types `:restore <backup-file>`
-**Then** the enrichment database is replaced with the backup
-**And** a confirmation prompt prevents accidental restores
-
-**Given** a new version changes the schema
-**When** the application starts
-**Then** automatic migration preserves all existing data
-**And** a migration log records what changed
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a task exists in multiple providers (or is related to tasks in other providers)
+**When** the user links them via `:link` command or automatic detection
+**Then** cross-references are stored in enrichment.db
+**And** linked tasks show a "linked" indicator in task detail view
+**And** navigating to linked tasks is supported from detail view
 
 ---
 
 ## Epic 7: Plugin/Adapter SDK & Registry
 
-Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide. Unblocks all future integrations.
+**Epic Goal:** Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide.
+
+**Prerequisites:** Epic 2 ✅ (adapter pattern established)
+**FRs covered:** FR31, FR32, FR33
 
 ### Story 7.1: Adapter Registry & Runtime Discovery
 
@@ -1260,25 +773,13 @@ So that new integrations can be added without modifying core application code.
 
 **Acceptance Criteria:**
 
-**Given** the adapter registry is initialized
-**When** the application starts
+**Given** the application starts
+**When** the adapter registry initializes
 **Then** it discovers all registered TaskProvider implementations
-**And** loads them based on configuration
-
-**Given** an adapter is registered
-**When** it fails to initialize
-**Then** the system logs a warning and continues with other adapters
-**And** graceful degradation is maintained
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**And** adapters register via `registry.Register(name, factory)` pattern
+**And** failed adapter initialization logs warning and continues with other adapters
+**And** registry exposes `ListProviders()`, `GetProvider(name)`, and `ActiveProviders()` methods
+**And** existing text file and Apple Notes adapters are migrated to registry pattern
 
 ### Story 7.2: Config-Driven Provider Selection
 
@@ -1288,57 +789,36 @@ So that I can choose which task providers are active without code changes.
 
 **Acceptance Criteria:**
 
-**Given** a config.yaml exists with provider configuration
+**Given** a config.yaml with `providers:` section
 **When** the application starts
 **Then** only configured providers are loaded and activated
-**And** provider-specific settings are passed to each adapter
+**And** provider-specific settings (paths, credentials) passed to adapter factory
+**And** missing config.yaml falls back to text file provider (backward compatible)
+**And** sample config.yaml generated on first run with commented examples
 
-**Given** no config.yaml exists
-**When** the application starts
-**Then** it falls back to the default text file provider
-**And** a sample config.yaml is generated for reference
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
-
-### Story 7.3: Adapter Developer Guide
+### Story 7.3: Adapter Developer Guide & Contract Tests
 
 As an integration developer,
-I want a clear guide and interface specification for building adapters,
+I want a clear guide and contract test suite for building adapters,
 So that I can create new task provider integrations with confidence.
 
 **Acceptance Criteria:**
 
-**Given** the developer guide exists
-**When** a developer reads it
-**Then** it covers: TaskProvider interface spec, registration process, config schema, testing requirements, and example adapter implementation
-
-**Given** the contract test suite exists
-**When** a new adapter is developed
-**Then** it can validate compliance by running the contract test suite against its implementation
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a developer wants to build a new adapter
+**When** they follow the developer guide
+**Then** `docs/adapter-developer-guide.md` covers: TaskProvider interface spec, registration, config schema, testing
+**And** contract test suite in `internal/adapters/contract_test.go` validates any TaskProvider
+**And** tests cover: CRUD operations, error handling, concurrent access, interface compliance
+**And** contract test suite is reusable (adapters import and run against their implementation)
 
 ---
 
 ## Epic 8: Obsidian Integration (P0 - #2 Integration)
 
-Add Obsidian vault as second task storage backend after Apple Notes. Local-first Markdown integration with bidirectional sync.
+**Epic Goal:** Add Obsidian vault as second task storage backend. Local-first Markdown integration with bidirectional sync.
+
+**Prerequisites:** Epic 7 (adapter SDK)
+**FRs covered:** FR27, FR28, FR29, FR30
 
 ### Story 8.1: Obsidian Vault Reader/Writer Adapter
 
@@ -1348,589 +828,382 @@ So that I can use Three Doors with my existing Obsidian workflow.
 
 **Acceptance Criteria:**
 
-**Given** an Obsidian vault path is configured
-**When** the application starts
-**Then** it reads Markdown files from the configured vault folder
-**And** parses task items (checkbox syntax: `- [ ]`, `- [x]`) from the files
-
-**Given** a task is completed in ThreeDoors
-**When** the status change is persisted
-**Then** the corresponding Markdown file is updated with the new checkbox state
-**And** file writes use atomic operations to prevent corruption
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a configured Obsidian vault path
+**When** the adapter loads
+**Then** `ObsidianAdapter` implements `TaskProvider` interface
+**And** reads Markdown files from configured vault folder
+**And** parses task items using Obsidian checkbox syntax (`- [ ]`, `- [x]`, `- [/]`)
+**And** supports Obsidian task metadata (due dates, tags, priorities)
+**And** writes task status changes back using atomic file operations
+**And** passes adapter contract test suite
 
 ### Story 8.2: Obsidian Bidirectional Sync
 
 As an Obsidian user,
-I want changes made in Obsidian to be reflected in ThreeDoors and vice versa,
+I want changes made in Obsidian reflected in ThreeDoors and vice versa,
 So that my tasks stay in sync regardless of where I edit them.
 
 **Acceptance Criteria:**
 
-**Given** a vault file is modified externally (in Obsidian)
-**When** ThreeDoors refreshes or polls for changes
-**Then** the updated tasks are reflected in the Three Doors interface
-**And** no data is lost from concurrent edits
-
-**Given** ThreeDoors modifies a task
-**When** the change is written to the vault
-**Then** Obsidian reflects the change on its next file reload
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a configured Obsidian vault
+**When** files are modified externally
+**Then** file watcher detects changes and re-parses affected files
+**And** task pool updates without full reload
+**And** concurrent edit handling uses last-write-wins with conflict logging
+**And** sync latency under 2 seconds
 
 ### Story 8.3: Obsidian Vault Configuration
 
 As a user,
-I want to configure my Obsidian vault path, target folder, and file naming via config.yaml,
-So that ThreeDoors integrates with my specific vault structure.
+I want to configure my Obsidian vault path and structure via config.yaml,
+So that ThreeDoors integrates with my specific vault.
 
 **Acceptance Criteria:**
 
-**Given** config.yaml contains Obsidian provider settings
+**Given** config.yaml with `obsidian:` section
 **When** the application starts
-**Then** it uses the configured vault path, folder, and naming conventions
-**And** validates the vault path exists and is accessible
-
-**Given** an invalid vault path is configured
-**When** the application starts
-**Then** a clear error message indicates the vault path issue
-**And** the application falls back to other configured providers
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Then** vault path is validated (exists, readable, writable)
+**And** invalid vault path produces clear error and fallback to other providers
+**And** supports configurable task folder and file pattern (glob)
 
 ### Story 8.4: Obsidian Daily Note Integration
 
-As an Obsidian user who uses daily notes,
-I want ThreeDoors to read/write tasks from my daily note files,
-So that tasks captured in daily notes appear in Three Doors and vice versa.
+As an Obsidian daily notes user,
+I want ThreeDoors to read/write tasks from my daily notes,
+So that tasks captured in daily notes appear in Three Doors.
 
 **Acceptance Criteria:**
 
-**Given** daily note integration is enabled in config
-**When** the application loads tasks
-**Then** it also reads tasks from today's daily note file
-**And** uses the configured daily note path pattern (e.g., `YYYY-MM-DD.md`)
-
-**Given** a task is added via ThreeDoors quick add
-**When** daily note mode is active
-**Then** the task is appended to today's daily note under a configurable heading
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** daily notes enabled in config
+**When** the adapter loads
+**Then** reads tasks from today's daily note file
+**And** quick-add tasks can be appended under configurable heading
+**And** supports common date formats (`YYYY-MM-DD.md`, etc.)
+**And** missing daily note handled gracefully
 
 ---
 
 ## Epic 9: Testing Strategy & Quality Gates
 
-Establish comprehensive testing infrastructure with integration, contract, performance, and E2E tests.
+**Epic Goal:** Establish comprehensive testing infrastructure ensuring reliability as the adapter ecosystem grows.
+
+**Prerequisites:** Epic 2 ✅, Epic 7
+**FRs covered:** FR49, FR50, FR51
 
 ### Story 9.1: Apple Notes Integration E2E Tests
 
 As a developer,
-I want end-to-end tests for the Apple Notes integration workflow,
+I want end-to-end tests for Apple Notes integration,
 So that regressions in the sync pipeline are caught automatically.
 
 **Acceptance Criteria:**
 
-**Given** the test suite runs
-**When** Apple Notes integration tests execute
-**Then** they validate: note creation, task read, task update, bidirectional sync, and error handling
-**And** tests use mock/stub AppleScript responses for CI compatibility
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a test environment with mock AppleScript responses
+**When** E2E tests run
+**Then** tests validate: note creation, task read, task update, bidirectional sync, error handling
+**And** tests cover: connectivity failure, partial sync, concurrent modification
+**And** test fixtures in `testdata/applenotes/` for reproducible scenarios
 
 ### Story 9.2: Contract Tests for Adapter Compliance
 
 As an adapter developer,
-I want a contract test suite that validates any TaskProvider implementation,
-So that all adapters behave consistently regardless of backend.
+I want a reusable contract test suite,
+So that all adapters behave consistently.
 
 **Acceptance Criteria:**
 
-**Given** a TaskProvider implementation exists
-**When** the contract test suite runs against it
-**Then** it validates: CRUD operations, error handling, concurrent access safety, and interface compliance
-**And** the test suite is reusable across all adapter implementations
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a TaskProvider implementation
+**When** contract tests run
+**Then** tests validate: CRUD operations, error handling, concurrent access, interface compliance
+**And** each adapter runs the contract suite in its own test file
 
 ### Story 9.3: Performance Benchmarks
 
 As a developer,
-I want automated performance benchmarks validating the <100ms NFR,
-So that performance regressions are caught before they reach users.
+I want automated performance benchmarks,
+So that <100ms NFR is validated and regressions caught.
 
 **Acceptance Criteria:**
 
-**Given** the benchmark suite runs
-**When** adapter operations (read, write, sync) are benchmarked
-**Then** results are compared against the <100ms threshold (NFR13)
-**And** benchmark results are reported in CI output
-**And** regressions beyond threshold fail the CI pipeline
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** benchmark suite using Go's `testing.B`
+**When** benchmarks run
+**Then** adapter read, write, sync, and door selection are benchmarked
+**And** results compared against <100ms threshold (NFR13)
+**And** CI runs benchmarks on every PR
 
 ### Story 9.4: Functional E2E Tests
 
 As a developer,
-I want functional end-to-end tests covering full user workflows,
-So that the complete user experience is validated automatically.
+I want functional E2E tests covering full user workflows,
+So that the complete user experience is validated.
 
 **Acceptance Criteria:**
 
-**Given** the E2E test suite runs
-**When** full user workflows are exercised (launch → select door → manage task → exit)
-**Then** each workflow completes successfully
-**And** session metrics are correctly generated
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a test environment
+**When** E2E tests run
+**Then** tests exercise: launch → view doors → select door → manage task → exit
+**And** session metrics generation verified
+**And** search, command palette, mood tracking workflows covered
+**And** uses Bubbletea's `teatest` package for TUI testing
 
 ### Story 9.5: CI Coverage Gates
 
-As a team,
-I want CI coverage gates that prevent test coverage from regressing,
-So that code quality is maintained as the codebase grows.
+As the team,
+I want CI coverage gates,
+So that code quality doesn't regress.
 
 **Acceptance Criteria:**
 
-**Given** a PR is submitted
-**When** CI runs the test suite
-**Then** coverage is measured and compared against the established threshold
-**And** PRs that reduce coverage below the threshold are blocked
-**And** coverage reports are generated and accessible
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** CI pipeline
+**When** a PR is submitted
+**Then** coverage measurement runs (`go test -coverprofile`)
+**And** PRs reducing coverage below threshold are blocked
+**And** coverage report posted as PR comment
 
 ---
 
 ## Epic 10: First-Run Onboarding Experience
 
-Guided welcome flow for new users to set up values/goals, understand Three Doors, learn key bindings, and optionally import existing tasks.
+**Epic Goal:** Provide a guided welcome flow for new users.
+
+**Prerequisites:** Epic 3 ✅
+**FRs covered:** FR38, FR39
 
 ### Story 10.1: Welcome Flow & Three Doors Explanation
 
 As a new user,
-I want a guided welcome experience on first launch,
-So that I understand the Three Doors concept and feel confident using the tool.
+I want a guided welcome on first launch,
+So that I understand the Three Doors concept.
 
 **Acceptance Criteria:**
 
-**Given** the application launches for the first time (no `~/.threedoors/` directory exists)
-**When** the welcome flow starts
-**Then** it explains the Three Doors concept (choice architecture, why 3 options)
-**And** walks through key bindings with interactive examples
-**And** the user can skip the walkthrough at any time
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** first-run detected (no `~/.threedoors/` directory)
+**When** the application launches
+**Then** welcome screen with branding and concept explanation displays
+**And** interactive key bindings walkthrough lets user try keys
+**And** skip option available at every step
+**And** onboarding state persisted (`onboarding_complete: true` in config)
 
 ### Story 10.2: Values/Goals Setup & Task Import
 
 As a new user,
-I want to set up my values/goals and import existing tasks during onboarding,
-So that the tool is immediately useful with my real data.
+I want to set up values/goals and import tasks during onboarding,
+So that the tool is immediately useful.
 
 **Acceptance Criteria:**
 
-**Given** the welcome flow reaches the setup step
-**When** the user is prompted for values/goals
-**Then** they can enter values and goals that will be displayed during sessions (per FR6)
-
-**Given** the import step is reached
-**When** existing task sources are detected (text files, other tools)
-**Then** the user can select sources to import from
-**And** imported tasks populate the task pool
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** onboarding flow reaches setup step
+**When** user enters values/goals
+**Then** values persist to config.yaml
+**And** import detection for common task sources (text, Markdown)
+**And** import preview shows tasks before importing
+**And** step is skippable; manual import via `:import` command later
 
 ---
 
 ## Epic 11: Sync Observability & Offline-First
 
-Robust offline-first operation with local change queue, sync status visibility, conflict visualization, and sync debugging.
+**Epic Goal:** Ensure robust offline-first operation with sync visibility and conflict resolution.
+
+**Prerequisites:** Epic 2 ✅
+**FRs covered:** FR40, FR41, FR42, FR43
 
 ### Story 11.1: Offline-First Local Change Queue
 
 As a user working without connectivity,
-I want all changes queued locally and replayed when sync targets are available,
-So that I never lose work due to connectivity issues.
+I want all changes queued locally and replayed when available,
+So that I never lose work.
 
 **Acceptance Criteria:**
 
-**Given** a sync target is unavailable
-**When** the user makes changes (complete, add, update tasks)
-**Then** changes are queued in a local write-ahead log
-**And** core functionality remains fully operational
-
-**Given** a sync target becomes available
-**When** the queue is replayed
-**Then** all queued changes are applied in order
-**And** failures are retried with exponential backoff
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a provider is unavailable
+**When** the user makes changes
+**Then** changes are written to WAL (`~/.threedoors/sync-queue.jsonl`)
+**And** queue replays in order when connectivity restored
+**And** failed replays retry with exponential backoff
+**And** core functionality unaffected by sync state
 
 ### Story 11.2: Sync Status Indicator
 
 As a user,
-I want to see the sync status of each provider in the TUI,
-So that I know whether my changes are synchronized.
+I want to see sync status per provider in the TUI,
+So that I know my changes are synchronized.
 
 **Acceptance Criteria:**
 
-**Given** the TUI is displayed
-**When** sync providers are configured
-**Then** a status indicator shows per-provider sync state (synced, syncing, pending, error)
-**And** the indicator updates in real-time as sync operations complete
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** multiple providers configured
+**When** the TUI displays
+**Then** status bar shows per-provider state (✓ synced, ↻ syncing, ⏳ pending, ✗ error)
+**And** updates in real-time
+**And** minimal screen real estate
 
 ### Story 11.3: Conflict Visualization & Sync Log
 
 As a user encountering sync conflicts,
-I want to see what conflicted and review a sync log for debugging,
-So that I can resolve issues and trust the sync system.
+I want to see and resolve them,
+So that I trust the sync system.
 
 **Acceptance Criteria:**
 
 **Given** a sync conflict is detected
-**When** the conflict visualization is shown
-**Then** it displays both local and remote versions of the conflicting item
-**And** provides resolution options (keep local, keep remote, keep both)
-
-**Given** sync operations occur
-**When** the user types `:synclog` in the command palette
-**Then** a chronological sync log is displayed with timestamps, operations, and outcomes
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**When** the user views the conflict
+**Then** local vs remote versions shown side-by-side
+**And** resolution options: keep local, keep remote, keep both
+**And** `:synclog` command shows chronological operations
+**And** sync log rotated at 1MB
 
 ---
 
 ## Epic 12: Calendar Awareness (Local-First, No OAuth)
 
-Time-contextual door selection by reading local calendar sources. No OAuth, no cloud APIs.
+**Epic Goal:** Add time-contextual door selection from local calendar sources only.
+
+**Prerequisites:** Epic 4
+**FRs covered:** FR44, FR45
 
 ### Story 12.1: Local Calendar Source Reader
 
 As a user,
-I want ThreeDoors to read my local calendar to understand my available time,
-So that doors can suggest tasks appropriate for my current time context.
+I want ThreeDoors to read my local calendar,
+So that it understands my available time.
 
 **Acceptance Criteria:**
 
-**Given** calendar integration is enabled in config
-**When** the application loads
-**Then** it reads events from macOS Calendar.app via AppleScript
-**And/or** parses .ics files from configured paths
-**And/or** reads CalDAV cache from local filesystem
-**And** no OAuth or cloud API calls are made
-
-**Given** calendar reading fails
-**When** the application continues
-**Then** it falls back to non-time-contextual door selection
-**And** logs a warning about calendar unavailability
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** calendar sources configured in config.yaml
+**When** the calendar reader initializes
+**Then** macOS Calendar.app events read via AppleScript (no OAuth)
+**And** .ics file parser for configured paths
+**And** CalDAV cache reader from `~/Library/Calendars/`
+**And** graceful fallback when sources unavailable
 
 ### Story 12.2: Time-Contextual Door Selection
 
-As a user with calendar awareness enabled,
-I want doors to suggest tasks that fit my available time blocks,
-So that I'm not shown a 2-hour task when I have a meeting in 15 minutes.
+As a user with calendar awareness,
+I want doors to suggest time-appropriate tasks,
+So that I'm not shown deep-work when I have a meeting in 15 minutes.
 
 **Acceptance Criteria:**
 
-**Given** calendar data indicates a short time block (< 30 min)
-**When** doors are generated
-**Then** the algorithm prefers quick tasks over long ones
-
-**Given** calendar data indicates a large open block
-**When** doors are generated
-**Then** the algorithm includes tasks of any estimated duration
-
-**Given** no calendar data is available
-**When** doors are generated
-**Then** the standard selection algorithm is used (no degradation)
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** calendar events available
+**When** doors are selected
+**Then** selection considers next event time
+**And** short blocks prefer quick tasks
+**And** no calendar data = standard selection
+**And** time context shown in TUI ("Next event in 45 min")
 
 ---
 
 ## Epic 13: Multi-Source Task Aggregation View
 
-Unified cross-provider task pool with dedup detection and source attribution.
+**Epic Goal:** Unified cross-provider task pool with dedup and source attribution.
+
+**Prerequisites:** Epic 7, Epic 8 or additional adapters
+**FRs covered:** FR46, FR47, FR48
 
 ### Story 13.1: Cross-Provider Task Pool Aggregation
 
 As a user with multiple task sources,
-I want all tasks aggregated into a single pool for Three Doors selection,
-So that I see tasks from all my sources without switching between them.
+I want all tasks merged into a single pool,
+So that I see everything without switching sources.
 
 **Acceptance Criteria:**
 
-**Given** multiple providers are configured and active
-**When** the task pool is loaded
-**Then** tasks from all providers are merged into a single pool
-**And** the Three Doors selection draws from the unified pool
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** multiple providers configured
+**When** the task pool loads
+**Then** tasks collected from all active providers
+**And** unified pool used for door selection, search, all views
+**And** provider failures isolated (one failing doesn't block others)
+**And** task pool maintains provider origin metadata
 
 ### Story 13.2: Duplicate Detection & Source Attribution
 
-As a user with overlapping task sources,
-I want duplicates flagged and each task's source clearly shown,
-So that I don't work on the same task twice and know where each task lives.
+As a user with overlapping sources,
+I want duplicates flagged and sources shown,
+So that I don't work on the same task twice.
 
 **Acceptance Criteria:**
 
-**Given** tasks are aggregated from multiple providers
-**When** potential duplicates are detected (fuzzy text matching)
-**Then** they are flagged with a visual indicator
-**And** the user can merge or dismiss duplicate flags
-
-**Given** a task is displayed in any view (doors, search, detail)
-**When** multiple providers are active
-**Then** the task's source provider is shown as a badge or label
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** tasks from multiple providers
+**When** aggregation runs
+**Then** fuzzy text matching identifies potential duplicates
+**And** duplicates shown with indicator ("Possible duplicate")
+**And** user can merge or dismiss duplicate flags
+**And** source badges show in door view, search, and detail view
 
 ---
 
-## Epic 14: LLM Task Decomposition & Agent Action Queue (Future)
+## Epic 14: LLM Task Decomposition & Agent Action Queue
 
-LLM-powered task breakdown with git repo output for coding agent pickup. Spike-first approach.
+**Epic Goal:** Enable LLM-powered task decomposition for coding agent pickup.
+
+**Prerequisites:** Epic 3+ ✅
+**FRs covered:** FR35, FR36, FR37
 
 ### Story 14.1: LLM Task Decomposition Spike
 
 As a developer,
-I want to spike on LLM-powered task decomposition,
-So that we understand the feasibility, prompt engineering, and output quality before committing to full implementation.
+I want to spike on LLM task decomposition feasibility,
+So that we understand the approach before full implementation.
 
 **Acceptance Criteria:**
 
-**Given** a user selects a task for decomposition
-**When** the LLM spike is triggered
-**Then** it generates BMAD-style stories/specs from the task description
-**And** outputs follow a defined schema
-
-**Spike deliverables:**
-- Prompt engineering experiments with multiple LLM providers
-- Output schema definition for stories/specs
-- Git automation proof-of-concept (writing to repo structure)
-- Agent handoff protocol draft (how Claude Code / multiclaude picks up work)
-- Local vs cloud LLM comparison
-- Recommendation document for full implementation
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a spike investigation
+**When** completed
+**Then** `docs/spikes/llm-decomposition.md` covers prompt engineering, output schema, git automation
+**And** tests multiple providers (local: Ollama; cloud: Claude API)
+**And** agent handoff protocol drafted
+**And** recommendation: build vs wait, local vs cloud, effort estimate
 
 ### Story 14.2: Agent Action Queue Integration
 
 As a developer using ThreeDoors with coding agents,
-I want decomposed tasks output to a git repo structure that coding agents can pick up,
-So that task decomposition flows directly into automated implementation.
+I want decomposed tasks output to git repos,
+So that task decomposition flows into automated implementation.
 
 **Acceptance Criteria:**
 
-**Given** the LLM generates stories/specs from a task
-**When** the output is committed to the repo
-**Then** it follows the BMAD story file structure
-**And** multiclaude / Claude Code can discover and pick up the stories
-**And** the task in ThreeDoors is updated with a link to the generated work
-
-#### Pre-PR Submission Checklist
-
-- [ ] Rebase onto latest main: `git fetch upstream main && git rebase upstream/main`
-- [ ] Run gofumpt: `gofumpt -l .` — verify no output
-- [ ] Run golangci-lint: `golangci-lint run ./...` — verify 0 issues
-- [ ] Run all tests: `go test ./... -count=1` — verify 0 failures
-- [ ] Check for dead code: `go vet ./...`
-- [ ] Verify no out-of-scope files: Review `git diff --stat`
-- [ ] Single clean commit preferred: Squash fix-ups before pushing
+**Given** a user initiates task decomposition
+**When** the LLM processes the task
+**Then** output follows BMAD story file structure
+**And** stories written to configurable repo path
+**And** git operations: branch creation, commit, optional PR creation
+**And** configurable LLM backend via config.yaml
 
 ---
 
-## Epic 15: Psychology Research & Validation (Parallel Track)
+## Epic 15: Psychology Research & Validation
 
-Evidence base for ThreeDoors design decisions through literature review and validation studies.
+**Epic Goal:** Build evidence base for ThreeDoors design decisions.
+
+**Prerequisites:** None (can run in parallel)
+**FRs covered:** FR34
 
 ### Story 15.1: Choice Architecture Literature Review
 
 As the product team,
-I want a literature review documenting the evidence for the Three Doors choice architecture,
+I want a literature review on the Three Doors choice architecture,
 So that design decisions are grounded in behavioral science.
 
 **Acceptance Criteria:**
 
-**Given** the literature review is complete
-**When** it is documented in `docs/research/choice-architecture.md`
-**Then** it covers: why 3 options (choice overload research), paradox of choice, decision fatigue, and comparable systems
-**And** includes citations and practical implications for ThreeDoors design
+**Given** research task
+**When** review completed
+**Then** `docs/research/choice-architecture.md` covers choice overload, paradox of choice, decision fatigue
+**And** specific evidence for why 3 options
+**And** comparable systems analysis
+**And** practical recommendations
 
 ### Story 15.2: Mood-Task Correlation & Procrastination Research
 
 As the product team,
-I want research on mood-task correlation models and procrastination interventions,
-So that Epic 4's learning algorithm is informed by evidence.
+I want research on mood-task correlation and procrastination interventions,
+So that Epic 4's learning algorithm is evidence-informed.
 
 **Acceptance Criteria:**
 
-**Given** the research is complete
-**When** it is documented in `docs/research/mood-correlation.md` and `docs/research/procrastination.md`
-**Then** it covers: mood-productivity correlations, procrastination intervention mechanisms, "progress over perfection" as motivational framework
-**And** provides actionable recommendations for Epic 4 implementation
-
----
-
-## Epic 16+: Additional Integrations & Advanced Features (Future)
-
-*Stories to be defined when Phase 4 planning begins. Potential integrations include Jira, Linear, Slack, cross-computer sync, voice interface, and mobile apps. Each integration will follow the adapter SDK established in Epic 7.*
+**Given** research task
+**When** review completed
+**Then** `docs/research/mood-correlation.md` and `docs/research/procrastination.md` produced
+**And** evidence assessment for "progress over perfection"
+**And** actionable recommendations for Epic 4
+**And** bibliography with accessible references
