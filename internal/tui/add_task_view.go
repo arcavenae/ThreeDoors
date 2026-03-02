@@ -80,14 +80,28 @@ func (av *AddTaskView) Update(msg tea.Msg) tea.Cmd {
 					av.textInput.CharLimit = 500
 					return nil
 				}
-				newTask := tasks.NewTask(text)
+				cleanText, tt, ef, loc := tasks.ParseInlineTags(text)
+				if cleanText == "" {
+					cleanText = text
+				}
+				newTask := tasks.NewTask(cleanText)
+				newTask.Type = tt
+				newTask.Effort = ef
+				newTask.Location = loc
 				return func() tea.Msg {
 					return TaskAddedMsg{Task: newTask}
 				}
 			}
 
 			// step == stepContext
-			newTask := tasks.NewTaskWithContext(av.capturedText, text)
+			cleanText, tt, ef, loc := tasks.ParseInlineTags(av.capturedText)
+			if cleanText == "" {
+				cleanText = av.capturedText
+			}
+			newTask := tasks.NewTaskWithContext(cleanText, text)
+			newTask.Type = tt
+			newTask.Effort = ef
+			newTask.Location = loc
 			return func() tea.Msg {
 				return TaskAddedMsg{Task: newTask}
 			}

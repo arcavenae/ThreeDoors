@@ -16,15 +16,18 @@ type TaskNote struct {
 
 // Task represents a single task with full lifecycle metadata.
 type Task struct {
-	ID          string     `yaml:"id" json:"id"`
-	Text        string     `yaml:"text" json:"text"`
-	Context     string     `yaml:"context,omitempty" json:"context,omitempty"`
-	Status      TaskStatus `yaml:"status" json:"status"`
-	Notes       []TaskNote `yaml:"notes,omitempty" json:"notes,omitempty"`
-	Blocker     string     `yaml:"blocker,omitempty" json:"blocker,omitempty"`
-	CreatedAt   time.Time  `yaml:"created_at" json:"created_at"`
-	UpdatedAt   time.Time  `yaml:"updated_at" json:"updated_at"`
-	CompletedAt *time.Time `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
+	ID          string       `yaml:"id" json:"id"`
+	Text        string       `yaml:"text" json:"text"`
+	Context     string       `yaml:"context,omitempty" json:"context,omitempty"`
+	Status      TaskStatus   `yaml:"status" json:"status"`
+	Type        TaskType     `yaml:"type,omitempty" json:"type,omitempty"`
+	Effort      TaskEffort   `yaml:"effort,omitempty" json:"effort,omitempty"`
+	Location    TaskLocation `yaml:"location,omitempty" json:"location,omitempty"`
+	Notes       []TaskNote   `yaml:"notes,omitempty" json:"notes,omitempty"`
+	Blocker     string       `yaml:"blocker,omitempty" json:"blocker,omitempty"`
+	CreatedAt   time.Time    `yaml:"created_at" json:"created_at"`
+	UpdatedAt   time.Time    `yaml:"updated_at" json:"updated_at"`
+	CompletedAt *time.Time   `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
 }
 
 // NewTask creates a new task with a UUID and default "todo" status.
@@ -106,6 +109,15 @@ func (t *Task) Validate() error {
 	}
 	if t.CompletedAt != nil && t.Status != StatusComplete {
 		return fmt.Errorf("completedAt should only be set when status is complete")
+	}
+	if err := ValidateTaskType(t.Type); err != nil {
+		return err
+	}
+	if err := ValidateTaskEffort(t.Effort); err != nil {
+		return err
+	}
+	if err := ValidateTaskLocation(t.Location); err != nil {
+		return err
 	}
 	return nil
 }

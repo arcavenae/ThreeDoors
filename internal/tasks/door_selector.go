@@ -1,9 +1,40 @@
 package tasks
 
-import "math/rand/v2"
+import (
+	"math/rand/v2"
+	"time"
+)
 
-// SelectDoors picks up to count random tasks from the pool for door display.
+// DiversityScore scores a set of tasks for category diversity.
+// +1 per unique Type value + +1 per unique Effort value + +1 per unique Location value.
+// Uncategorized ("") counts as its own distinct value. Max score = 3 * len(tasks).
+// Returns 0 for nil or empty input.
+func DiversityScore(tasks []*Task) int {
+	if len(tasks) == 0 {
+		return 0
+	}
+	types := make(map[TaskType]bool)
+	efforts := make(map[TaskEffort]bool)
+	locations := make(map[TaskLocation]bool)
+
+	for _, t := range tasks {
+		types[t.Type] = true
+		efforts[t.Effort] = true
+		locations[t.Location] = true
+	}
+
+	return len(types) + len(efforts) + len(locations)
+}
+
+// SelectDoors picks up to count tasks from the pool, preferring diversity.
 func SelectDoors(pool *TaskPool, count int) []*Task {
+	rng := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
+	return selectDoorsWithRand(pool, count, rng)
+}
+
+// selectDoorsWithRand picks up to count tasks from the pool using the provided RNG.
+// It generates N=10 random candidate sets and picks the one with the highest diversity score.
+func selectDoorsWithRand(pool *TaskPool, count int, rng *rand.Rand) []*Task {
 	available := pool.GetAvailableForDoors()
 	if len(available) == 0 {
 		return nil
@@ -15,14 +46,35 @@ func SelectDoors(pool *TaskPool, count int) []*Task {
 		return available
 	}
 
-	// Fisher-Yates shuffle and take first `count`
-	rand.Shuffle(len(available), func(i, j int) {
-		available[i], available[j] = available[j], available[i]
-	})
+	const numCandidates = 10
 
-	selected := available[:count]
-	for _, t := range selected {
+	bestScore := -1
+	var bestSet []*Task
+
+	for i := range numCandidates {
+		// Generate a random candidate set via Fisher-Yates partial shuffle
+		perm := make([]*Task, len(available))
+		copy(perm, available)
+		for j := range count {
+			k := j + rng.IntN(len(perm)-j)
+			perm[j], perm[k] = perm[k], perm[j]
+		}
+		candidate := perm[:count]
+		score := DiversityScore(candidate)
+
+		if score > bestScore {
+			bestScore = score
+			bestSet = make([]*Task, count)
+			copy(bestSet, candidate)
+		} else if score == bestScore && rng.IntN(i+1) == 0 {
+			// Random tiebreak: replace with probability 1/(i+1)
+			bestSet = make([]*Task, count)
+			copy(bestSet, candidate)
+		}
+	}
+
+	for _, t := range bestSet {
 		pool.MarkRecentlyShown(t.ID)
 	}
-	return selected
+	return bestSet
 }
