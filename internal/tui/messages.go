@@ -64,6 +64,17 @@ type AddTaskWithContextPromptMsg struct {
 	PrefilledText string
 }
 
+// ValuesSavedMsg is sent when values/goals have been saved.
+type ValuesSavedMsg struct {
+	Config *tasks.ValuesConfig
+}
+
+// ShowValuesSetupMsg is sent to open the values setup flow.
+type ShowValuesSetupMsg struct{}
+
+// ShowValuesEditMsg is sent to open the values edit flow.
+type ShowValuesEditMsg struct{}
+
 // ReturnToSearchMsg is sent to restore search view from detail view.
 type ReturnToSearchMsg struct {
 	Query         string
