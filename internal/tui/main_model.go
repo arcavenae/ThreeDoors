@@ -3,12 +3,9 @@ package tui
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 
 	"github.com/arcaven/ThreeDoors/internal/tasks"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 const (
@@ -17,209 +14,200 @@ const (
 	doorCount     = 3
 )
 
-// Model is the root Bubbletea model for the application.
-type Model struct {
-	quitting    bool
-	tasks       []tasks.Task
-	doors       []tasks.Task
-	selectedIdx int
-	width       int
-	height      int
-	err         error
-	taskLoader  tasks.TaskLoader
+// ViewMode tracks which view is currently active.
+type ViewMode int
+
+const (
+	ViewDoors ViewMode = iota
+	ViewDetail
+	ViewMood
+)
+
+// MainModel is the root Bubbletea model that orchestrates view transitions.
+type MainModel struct {
+	viewMode   ViewMode
+	doorsView  *DoorsView
+	detailView *DetailView
+	moodView   *MoodView
+	pool       *tasks.TaskPool
+	tracker    *tasks.SessionTracker
+	flash      string
+	width      int
+	height     int
 }
 
-// tasksLoadedMsg is sent when tasks are successfully loaded from file.
-type tasksLoadedMsg struct {
-	tasks []tasks.Task
-}
-
-// tasksLoadErrorMsg is sent when task loading fails.
-type tasksLoadErrorMsg struct {
-	err error
-}
-
-// NewModel creates a Model with default FileManager (~/.threedoors).
-func NewModel() Model {
-	homeDir, _ := os.UserHomeDir()
-	baseDir := filepath.Join(homeDir, ".threedoors")
-	return Model{
-		selectedIdx: -1,
-		width:       defaultWidth,
-		height:      defaultHeight,
-		taskLoader:  tasks.NewFileManager(baseDir),
+// NewMainModel creates the root application model.
+func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *MainModel {
+	return &MainModel{
+		viewMode:  ViewDoors,
+		doorsView: NewDoorsView(pool, tracker),
+		pool:      pool,
+		tracker:   tracker,
 	}
 }
 
-// NewModelWithTasks creates a Model pre-loaded with tasks (for testing).
-func NewModelWithTasks(taskList []tasks.Task) Model {
-	m := Model{
-		selectedIdx: -1,
-		width:       defaultWidth,
-		height:      defaultHeight,
-		tasks:       taskList,
-	}
-	m.doors = tasks.SelectRandomDoors(m.tasks, doorCount, nil)
-	return m
+// Init implements tea.Model.
+func (m *MainModel) Init() tea.Cmd {
+	return nil
 }
 
-// Init returns a command to load tasks from the file system.
-func (m Model) Init() tea.Cmd {
-	if m.taskLoader == nil {
-		return nil
-	}
-	loader := m.taskLoader
-	return func() tea.Msg {
-		loadedTasks, err := loader.LoadTasks()
-		if err != nil {
-			return tasksLoadErrorMsg{err: err}
-		}
-		return tasksLoadedMsg{tasks: loadedTasks}
-	}
-}
-
-// Update handles all messages including key presses, window resizing, and task loading.
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+// Update implements tea.Model.
+func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tasksLoadedMsg:
-		m.tasks = msg.tasks
-		m.doors = tasks.SelectRandomDoors(m.tasks, doorCount, nil)
-		m.selectedIdx = -1
-		return m, nil
-
-	case tasksLoadErrorMsg:
-		m.err = msg.err
-		return m, nil
-
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.doorsView.SetWidth(msg.Width)
+		if m.detailView != nil {
+			m.detailView.SetWidth(msg.Width)
+		}
+		if m.moodView != nil {
+			m.moodView.SetWidth(msg.Width)
+		}
 		return m, nil
 
+	case ClearFlashMsg:
+		m.flash = ""
+		return m, nil
+
+	case ReturnToDoorsMsg:
+		m.viewMode = ViewDoors
+		m.detailView = nil
+		m.moodView = nil
+		m.doorsView.RefreshDoors()
+		return m, nil
+
+	case TaskCompletedMsg:
+		m.doorsView.IncrementCompleted()
+		if err := tasks.AppendCompleted(msg.Task); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to log completed task: %v\n", err)
+		}
+		m.pool.RemoveTask(msg.Task.ID)
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.flash = "Progress over perfection. Just pick one and start."
+		m.viewMode = ViewDoors
+		m.detailView = nil
+		m.doorsView.RefreshDoors()
+		return m, ClearFlashCmd()
+
+	case TaskUpdatedMsg:
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.viewMode = ViewDoors
+		m.detailView = nil
+		m.doorsView.RefreshDoors()
+		return m, nil
+
+	case MoodCapturedMsg:
+		if m.tracker != nil {
+			m.tracker.RecordMood(msg.Mood, msg.CustomText)
+		}
+		m.viewMode = ViewDoors
+		m.moodView = nil
+		m.flash = fmt.Sprintf("Mood logged: %s", msg.Mood)
+		return m, ClearFlashCmd()
+
+	case ShowMoodMsg:
+		m.moodView = NewMoodView()
+		m.moodView.SetWidth(m.width)
+		m.viewMode = ViewMood
+		return m, nil
+
+	case FlashMsg:
+		m.flash = msg.Text
+		return m, ClearFlashCmd()
+	}
+
+	// Delegate to current view
+	switch m.viewMode {
+	case ViewDoors:
+		return m.updateDoors(msg)
+	case ViewDetail:
+		return m.updateDetail(msg)
+	case ViewMood:
+		return m.updateMood(msg)
+	}
+
+	return m, nil
+}
+
+func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		return m.handleKeyPress(msg)
-	}
-
-	return m, nil
-}
-
-func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.Type {
-	case tea.KeyCtrlC:
-		m.quitting = true
-		return m, tea.Quit
-
-	case tea.KeyLeft:
-		m.selectedIdx = 0
-		return m, nil
-
-	case tea.KeyUp:
-		m.selectedIdx = 1
-		return m, nil
-
-	case tea.KeyRight:
-		m.selectedIdx = 2
-		return m, nil
-
-	case tea.KeyDown:
-		m.rerollDoors()
-		return m, nil
-
-	case tea.KeyRunes:
-		return m.handleRuneKey(string(msg.Runes))
-	}
-
-	return m, nil
-}
-
-func (m Model) handleRuneKey(key string) (tea.Model, tea.Cmd) {
-	switch key {
-	case "q":
-		m.quitting = true
-		return m, tea.Quit
-	case "a":
-		m.selectedIdx = 0
-	case "w":
-		m.selectedIdx = 1
-	case "d":
-		m.selectedIdx = 2
-	case "s":
-		m.rerollDoors()
-	case "c", "b", "i", "e", "f", "p":
-		// Future task management keys — no-op for Story 1.2
-	}
-	return m, nil
-}
-
-func (m *Model) rerollDoors() {
-	m.doors = tasks.SelectRandomDoors(m.tasks, doorCount, m.doors)
-	m.selectedIdx = -1
-}
-
-// View renders the three doors display.
-func (m Model) View() string {
-	if m.err != nil {
-		return fmt.Sprintf("Error loading tasks: %s\n\nPress q to quit\n", m.err)
-	}
-
-	if len(m.tasks) == 0 && m.taskLoader != nil {
-		// Still loading or no tasks
-		return "Loading tasks...\n"
-	}
-
-	if len(m.tasks) == 0 {
-		return "No tasks found. Add tasks to ~/.threedoors/tasks.txt\n\nPress q to quit\n"
-	}
-
-	if len(m.doors) == 0 {
-		return "No tasks found. Add tasks to ~/.threedoors/tasks.txt\n\nPress q to quit\n"
-	}
-
-	return m.renderDoors()
-}
-
-func (m Model) renderDoors() string {
-	doorWidth := m.width / len(m.doors)
-	if doorWidth < 10 {
-		doorWidth = 10
-	}
-	// Account for border (2 chars) and padding (2 chars each side)
-	contentWidth := doorWidth - 6
-	if contentWidth < 4 {
-		contentWidth = 4
-	}
-
-	unselectedStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		Padding(1, 2).
-		Width(doorWidth)
-
-	selectedStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("212")).
-		Bold(true).
-		Padding(1, 2).
-		Width(doorWidth)
-
-	var renderedDoors []string
-	for i, door := range m.doors {
-		text := door.Text
-		if len(text) > contentWidth {
-			text = text[:contentWidth-3] + "..."
+		switch msg.String() {
+		case "q", "ctrl+c":
+			return m, tea.Quit
+		case "a", "left":
+			m.doorsView.selectedDoorIndex = 0
+		case "w", "up":
+			m.doorsView.selectedDoorIndex = 1
+		case "d", "right":
+			m.doorsView.selectedDoorIndex = 2
+		case "s", "down":
+			if m.tracker != nil {
+				m.tracker.RecordRefresh(m.doorsView.GetCurrentDoorTexts())
+			}
+			m.doorsView.RefreshDoors()
+		case "enter":
+			if m.doorsView.selectedDoorIndex >= 0 && m.doorsView.selectedDoorIndex < len(m.doorsView.currentDoors) {
+				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
+				if m.tracker != nil {
+					m.tracker.RecordDoorSelection(m.doorsView.selectedDoorIndex, task.Text)
+				}
+				m.detailView = NewDetailView(task, m.tracker)
+				m.detailView.SetWidth(m.width)
+				m.viewMode = ViewDetail
+			}
+		case "m", "M":
+			return m, func() tea.Msg { return ShowMoodMsg{} }
 		}
+	}
+	return m, nil
+}
 
-		style := unselectedStyle
-		if i == m.selectedIdx {
-			style = selectedStyle
+func (m *MainModel) updateDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.detailView == nil {
+		return m, nil
+	}
+	cmd := m.detailView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateMood(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.moodView == nil {
+		return m, nil
+	}
+	cmd := m.moodView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) saveTasks() error {
+	allTasks := m.pool.GetAllTasks()
+	return tasks.SaveTasks(allTasks)
+}
+
+// View implements tea.Model.
+func (m *MainModel) View() string {
+	var view string
+	switch m.viewMode {
+	case ViewDetail:
+		if m.detailView != nil {
+			view = m.detailView.View()
 		}
-		renderedDoors = append(renderedDoors, style.Render(text))
+	case ViewMood:
+		if m.moodView != nil {
+			view = m.moodView.View()
+		}
+	default:
+		view = m.doorsView.View()
 	}
 
-	header := lipgloss.NewStyle().Bold(true).Render("ThreeDoors - Technical Demo")
-	doorsRow := lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...)
+	if m.flash != "" {
+		view += "\n" + flashStyle.Render(m.flash)
+	}
 
-	hint := "\n[a/←] left  [w/↑] center  [d/→] right  [s/↓] re-roll  [q] quit"
-
-	return header + "\n\n" + doorsRow + hint + "\n"
+	return view
 }

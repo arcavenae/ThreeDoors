@@ -3,153 +3,192 @@ package tasks
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
-func TestLoadTasks_CreatesDefaultFileWhenMissing(t *testing.T) {
-	tmpDir := t.TempDir()
-	fm := NewFileManager(tmpDir)
+func TestLoadTasks_NoFileExists(t *testing.T) {
+	tempDir := t.TempDir()
+	SetHomeDir(tempDir)
+	defer SetHomeDir("")
 
-	taskList, err := fm.LoadTasks()
+	tasks, err := LoadTasks()
 	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
+		t.Fatalf("LoadTasks() failed: %v", err)
 	}
 
-	if len(taskList) != len(defaultTasks) {
-		t.Errorf("LoadTasks() returned %d tasks, want %d", len(taskList), len(defaultTasks))
+	if len(tasks) != len(defaultTaskTexts) {
+		t.Errorf("Expected %d default tasks, got %d", len(defaultTaskTexts), len(tasks))
 	}
 
-	// Verify file was created
-	tasksPath := filepath.Join(tmpDir, "tasks.txt")
-	if _, err := os.Stat(tasksPath); os.IsNotExist(err) {
-		t.Error("tasks.txt was not created")
+	for i, task := range tasks {
+		if task.Text != defaultTaskTexts[i] {
+			t.Errorf("Expected task %d text to be %q, got %q", i, defaultTaskTexts[i], task.Text)
+		}
+		if task.Status != StatusTodo {
+			t.Errorf("Expected default status %q, got %q", StatusTodo, task.Status)
+		}
+		if task.ID == "" {
+			t.Errorf("Expected task %d to have a UUID", i)
+		}
+	}
+
+	// Verify YAML file was created
+	configPath := filepath.Join(tempDir, configDir)
+	yamlPath := filepath.Join(configPath, tasksYAMLFile)
+	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
+		t.Errorf("tasks.yaml was not created at %s", yamlPath)
 	}
 }
 
-func TestLoadTasks_ReadsExistingFile(t *testing.T) {
-	tmpDir := t.TempDir()
-	tasksPath := filepath.Join(tmpDir, "tasks.txt")
+func TestLoadTasks_YAMLFileExists(t *testing.T) {
+	tempDir := t.TempDir()
+	SetHomeDir(tempDir)
+	defer SetHomeDir("")
 
-	content := "Task one\nTask two\nTask three\n"
-	if err := os.WriteFile(tasksPath, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
+	configPath := filepath.Join(tempDir, configDir)
+	os.MkdirAll(configPath, 0o755)
 
-	fm := NewFileManager(tmpDir)
-	taskList, err := fm.LoadTasks()
+	// Write a YAML tasks file
+	task1 := NewTask("Task A")
+	task2 := NewTask("Task B")
+	tf := TasksFile{Tasks: []*Task{task1, task2}}
+	data, _ := yaml.Marshal(&tf)
+	os.WriteFile(filepath.Join(configPath, tasksYAMLFile), data, 0o644)
+
+	tasks, err := LoadTasks()
 	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
+		t.Fatalf("LoadTasks() failed: %v", err)
+	}
+	if len(tasks) != 2 {
+		t.Fatalf("Expected 2 tasks, got %d", len(tasks))
+	}
+	if tasks[0].Text != "Task A" {
+		t.Errorf("Expected first task text %q, got %q", "Task A", tasks[0].Text)
+	}
+}
+
+func TestLoadTasks_MigratesFromText(t *testing.T) {
+	tempDir := t.TempDir()
+	SetHomeDir(tempDir)
+	defer SetHomeDir("")
+
+	configPath := filepath.Join(tempDir, configDir)
+	os.MkdirAll(configPath, 0o755)
+
+	// Write old-style text file
+	txtContent := "Task One\nTask Two\nTask Three\n"
+	txtPath := filepath.Join(configPath, tasksTextFile)
+	os.WriteFile(txtPath, []byte(txtContent), 0o644)
+
+	tasks, err := LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() failed: %v", err)
+	}
+	if len(tasks) != 3 {
+		t.Fatalf("Expected 3 tasks, got %d", len(tasks))
 	}
 
-	if len(taskList) != 3 {
-		t.Fatalf("LoadTasks() returned %d tasks, want 3", len(taskList))
+	// Verify YAML file exists
+	yamlPath := filepath.Join(configPath, tasksYAMLFile)
+	if _, err := os.Stat(yamlPath); os.IsNotExist(err) {
+		t.Error("tasks.yaml was not created after migration")
 	}
 
-	expected := []string{"Task one", "Task two", "Task three"}
-	for i, want := range expected {
-		if taskList[i].Text != want {
-			t.Errorf("task[%d].Text = %q, want %q", i, taskList[i].Text, want)
+	// Verify txt was renamed to .bak
+	if _, err := os.Stat(txtPath + ".bak"); os.IsNotExist(err) {
+		t.Error("tasks.txt was not renamed to .bak after migration")
+	}
+}
+
+func TestSaveTasks_Roundtrip(t *testing.T) {
+	tempDir := t.TempDir()
+	SetHomeDir(tempDir)
+	defer SetHomeDir("")
+
+	original := []*Task{
+		NewTask("Alpha task"),
+		NewTask("Beta task"),
+	}
+	original[1].UpdateStatus(StatusInProgress)
+	original[0].AddNote("Test note")
+
+	if err := SaveTasks(original); err != nil {
+		t.Fatalf("SaveTasks() failed: %v", err)
+	}
+
+	loaded, err := LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() failed: %v", err)
+	}
+
+	if len(loaded) != len(original) {
+		t.Fatalf("Expected %d tasks, got %d", len(original), len(loaded))
+	}
+
+	for i := range original {
+		if loaded[i].ID != original[i].ID {
+			t.Errorf("Task %d ID mismatch: %q vs %q", i, original[i].ID, loaded[i].ID)
+		}
+		if loaded[i].Text != original[i].Text {
+			t.Errorf("Task %d Text mismatch: %q vs %q", i, original[i].Text, loaded[i].Text)
+		}
+		if loaded[i].Status != original[i].Status {
+			t.Errorf("Task %d Status mismatch: %q vs %q", i, original[i].Status, loaded[i].Status)
 		}
 	}
 }
 
-func TestLoadTasks_SkipsBlankLines(t *testing.T) {
-	tmpDir := t.TempDir()
-	tasksPath := filepath.Join(tmpDir, "tasks.txt")
+func TestAppendCompleted(t *testing.T) {
+	tempDir := t.TempDir()
+	SetHomeDir(tempDir)
+	defer SetHomeDir("")
 
-	content := "Task one\n\n  \nTask two\n"
-	if err := os.WriteFile(tasksPath, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
+	task := NewTask("Completed task")
+	task.UpdateStatus(StatusComplete)
+
+	if err := AppendCompleted(task); err != nil {
+		t.Fatalf("AppendCompleted() failed: %v", err)
 	}
 
-	fm := NewFileManager(tmpDir)
-	taskList, err := fm.LoadTasks()
+	configPath := filepath.Join(tempDir, configDir)
+	completedPath := filepath.Join(configPath, completedFile)
+	content, err := os.ReadFile(completedPath)
 	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
+		t.Fatalf("Failed to read completed file: %v", err)
 	}
 
-	if len(taskList) != 2 {
-		t.Errorf("LoadTasks() returned %d tasks, want 2", len(taskList))
+	line := string(content)
+	if !strings.Contains(line, task.ID) {
+		t.Errorf("Completed file should contain task ID %q, got: %s", task.ID, line)
+	}
+	if !strings.Contains(line, task.Text) {
+		t.Errorf("Completed file should contain task text %q, got: %s", task.Text, line)
+	}
+	if !strings.HasPrefix(line, "[") {
+		t.Errorf("Completed file line should start with timestamp, got: %s", line)
 	}
 }
 
-func TestLoadTasks_SkipsCommentLines(t *testing.T) {
-	tmpDir := t.TempDir()
-	tasksPath := filepath.Join(tmpDir, "tasks.txt")
+func TestLoadTasks_EmptyYAML(t *testing.T) {
+	tempDir := t.TempDir()
+	SetHomeDir(tempDir)
+	defer SetHomeDir("")
 
-	content := "# This is a comment\nTask one\n# Another comment\nTask two\n"
-	if err := os.WriteFile(tasksPath, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
+	configPath := filepath.Join(tempDir, configDir)
+	os.MkdirAll(configPath, 0o755)
 
-	fm := NewFileManager(tmpDir)
-	taskList, err := fm.LoadTasks()
+	tf := TasksFile{Tasks: []*Task{}}
+	data, _ := yaml.Marshal(&tf)
+	os.WriteFile(filepath.Join(configPath, tasksYAMLFile), data, 0o644)
+
+	tasks, err := LoadTasks()
 	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
+		t.Fatalf("LoadTasks() failed: %v", err)
 	}
-
-	if len(taskList) != 2 {
-		t.Errorf("LoadTasks() returned %d tasks, want 2", len(taskList))
-	}
-}
-
-func TestLoadTasks_TrimsWhitespace(t *testing.T) {
-	tmpDir := t.TempDir()
-	tasksPath := filepath.Join(tmpDir, "tasks.txt")
-
-	content := "  Task with spaces  \n\tTask with tabs\t\n"
-	if err := os.WriteFile(tasksPath, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	fm := NewFileManager(tmpDir)
-	taskList, err := fm.LoadTasks()
-	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
-	}
-
-	if len(taskList) != 2 {
-		t.Fatalf("LoadTasks() returned %d tasks, want 2", len(taskList))
-	}
-
-	if taskList[0].Text != "Task with spaces" {
-		t.Errorf("task[0].Text = %q, want %q", taskList[0].Text, "Task with spaces")
-	}
-	if taskList[1].Text != "Task with tabs" {
-		t.Errorf("task[1].Text = %q, want %q", taskList[1].Text, "Task with tabs")
-	}
-}
-
-func TestLoadTasks_EmptyFile(t *testing.T) {
-	tmpDir := t.TempDir()
-	tasksPath := filepath.Join(tmpDir, "tasks.txt")
-
-	if err := os.WriteFile(tasksPath, []byte(""), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	fm := NewFileManager(tmpDir)
-	taskList, err := fm.LoadTasks()
-	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
-	}
-
-	if len(taskList) != 0 {
-		t.Errorf("LoadTasks() returned %d tasks, want 0", len(taskList))
-	}
-}
-
-func TestLoadTasks_CreatesDirectoryWhenMissing(t *testing.T) {
-	tmpDir := t.TempDir()
-	nestedDir := filepath.Join(tmpDir, "subdir", "threedoors")
-	fm := NewFileManager(nestedDir)
-
-	_, err := fm.LoadTasks()
-	if err != nil {
-		t.Fatalf("LoadTasks() error = %v", err)
-	}
-
-	if _, err := os.Stat(nestedDir); os.IsNotExist(err) {
-		t.Error("directory was not created")
+	if len(tasks) != 0 {
+		t.Errorf("Expected 0 tasks from empty YAML, got %d", len(tasks))
 	}
 }
