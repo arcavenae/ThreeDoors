@@ -5,12 +5,21 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/arcaven/ThreeDoors/internal/dist"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	"github.com/arcaven/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// version is set at build time via -ldflags "-X main.version=<semver>"
+var version = "dev"
+
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--version" {
+		fmt.Println(dist.FormatVersion(version))
+		os.Exit(0)
+	}
+
 	configDir, configErr := tasks.GetConfigDirPath()
 	var cfg *tasks.ProviderConfig
 	if configErr != nil {

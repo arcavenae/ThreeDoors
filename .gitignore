@@ -71,7 +71,7 @@ coverage/
 
 # Build directories
 build/
-dist/
+/dist/
 bin/
 
 # Temporary files
