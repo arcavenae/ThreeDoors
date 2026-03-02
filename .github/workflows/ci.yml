@@ -47,8 +47,8 @@ jobs:
       - name: Validate build
         run: go build -o /dev/null ./cmd/threedoors
 
-  alpha-release:
-    name: Alpha Release
+  build-binaries:
+    name: Build Binaries
     needs: quality-gate
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -59,39 +59,233 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
+      - name: Generate version
+        id: version
+        run: |
+          VERSION="0.1.0-alpha.$(date -u +%Y%m%d).${GITHUB_SHA::7}"
+          TAG="alpha-$(date -u +%Y%m%d)-${GITHUB_SHA::7}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
       - name: Build binaries
         run: |
-          GOOS=darwin GOARCH=arm64 go build -o threedoors-darwin-arm64 ./cmd/threedoors
-          GOOS=darwin GOARCH=amd64 go build -o threedoors-darwin-amd64 ./cmd/threedoors
-          GOOS=linux GOARCH=amd64 go build -o threedoors-linux-amd64 ./cmd/threedoors
+          LDFLAGS="-X main.version=${{ steps.version.outputs.version }}"
+          GOOS=darwin GOARCH=arm64 go build -ldflags "$LDFLAGS" -o threedoors-darwin-arm64 ./cmd/threedoors
+          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-darwin-amd64 ./cmd/threedoors
+          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-linux-amd64 ./cmd/threedoors
 
-      - name: Upload artifacts
+      - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: threedoors-binaries-${{ github.sha }}
+          name: binaries
           path: threedoors-*
           retention-days: 14
 
-      - name: Generate release tag
-        id: tag
-        run: echo "tag=alpha-$(date -u +%Y%m%d)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+
+  sign-and-notarize:
+    name: Sign & Notarize
+    needs: build-binaries
+    if: github.event_name == 'push' && vars.SIGNING_ENABLED == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+
+      - name: Import certificates
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_INSTALLER_CERTIFICATE_P12: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_P12 }}
+          APPLE_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_PASSWORD }}
+        run: |
+          # Create temporary keychain
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+
+          # Import application certificate
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > cert.p12
+          security import cert.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          rm cert.p12
+
+          # Import installer certificate (for pkg signing)
+          echo "$APPLE_INSTALLER_CERTIFICATE_P12" | base64 --decode > installer-cert.p12
+          security import installer-cert.p12 -k build.keychain -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" -T /usr/bin/productsign
+          rm installer-cert.p12
+
+          # Allow codesign to access keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+
+      - name: Sign darwin binaries
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        run: |
+          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp threedoors-darwin-arm64
+          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp threedoors-darwin-amd64
+
+      - name: Verify signatures
+        run: |
+          codesign --verify --deep --strict threedoors-darwin-arm64
+          codesign --verify --deep --strict threedoors-darwin-amd64
+
+      - name: Notarize binaries
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for BINARY in threedoors-darwin-arm64 threedoors-darwin-amd64; do
+            echo "Notarizing $BINARY..."
+            zip "${BINARY}.zip" "$BINARY"
+            xcrun notarytool submit "${BINARY}.zip" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_ID_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait --timeout 900
+            rm "${BINARY}.zip"
+          done
+
+      - name: Verify Gatekeeper assessment
+        run: |
+          spctl --assess --type execute threedoors-darwin-arm64
+          spctl --assess --type execute threedoors-darwin-amd64
+
+      - name: Build pkg installers
+        env:
+          APPLE_INSTALLER_IDENTITY: ${{ secrets.APPLE_INSTALLER_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          VERSION="${{ needs.build-binaries.outputs.version }}"
+          chmod +x scripts/create-pkg.sh
+
+          # Build arm64 pkg
+          ./scripts/create-pkg.sh threedoors-darwin-arm64 "$VERSION" "$APPLE_INSTALLER_IDENTITY" threedoors-arm64.pkg
+
+          # Build amd64 pkg
+          ./scripts/create-pkg.sh threedoors-darwin-amd64 "$VERSION" "$APPLE_INSTALLER_IDENTITY" threedoors-amd64.pkg
+
+          # Notarize and staple pkgs
+          for PKG in threedoors-arm64.pkg threedoors-amd64.pkg; do
+            echo "Notarizing $PKG..."
+            xcrun notarytool submit "$PKG" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_ID_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait --timeout 900
+            xcrun stapler staple "$PKG"
+          done
+
+      - name: Upload signed binaries and pkgs
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-binaries
+          path: |
+            threedoors-darwin-arm64
+            threedoors-darwin-amd64
+            threedoors-arm64.pkg
+            threedoors-amd64.pkg
+          retention-days: 14
+
+      - name: Cleanup keychain
+        if: always()
+        run: security delete-keychain build.keychain || true
+
+  release:
+    name: Create Release
+    needs: [build-binaries, sign-and-notarize]
+    if: github.event_name == 'push' && !cancelled() && needs.build-binaries.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      # Try signed binaries first, fall back to unsigned
+      - name: Download signed binaries
+        if: needs.sign-and-notarize.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-binaries
+
+      - name: Download unsigned binaries (fallback)
+        if: needs.sign-and-notarize.result != 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+
+      - name: Download linux binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          pattern: threedoors-linux-*
+
+      - name: Prepare release files
+        run: |
+          # Ensure linux binary is present (may have been overwritten by signed artifact download)
+          ls -la threedoors-* || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: Alpha ${{ steps.tag.outputs.tag }}
+          tag_name: ${{ needs.build-binaries.outputs.tag }}
+          name: Alpha ${{ needs.build-binaries.outputs.tag }}
           body: |
             Automated alpha release from merge to main.
 
+            **Version:** ${{ needs.build-binaries.outputs.version }}
             **Commit:** ${{ github.sha }}
+            **Signed:** ${{ needs.sign-and-notarize.result == 'success' && 'Yes (Apple Developer ID)' || 'No (unsigned)' }}
 
             **Binaries:**
             - `threedoors-darwin-arm64` — macOS Apple Silicon
             - `threedoors-darwin-amd64` — macOS Intel
             - `threedoors-linux-amd64` — Linux x86_64
+            ${{ needs.sign-and-notarize.result == 'success' && '- `threedoors-arm64.pkg` — macOS Installer (Apple Silicon)\n- `threedoors-amd64.pkg` — macOS Installer (Intel)' || '' }}
           prerelease: true
           files: |
-            threedoors-darwin-arm64
-            threedoors-darwin-amd64
-            threedoors-linux-amd64
+            threedoors-*
+
+  update-homebrew:
+    name: Update Homebrew Tap
+    needs: [build-binaries, release]
+    if: github.event_name == 'push' && needs.release.result == 'success' && vars.SIGNING_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download signed binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-binaries
+
+      - name: Update Homebrew formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${{ needs.build-binaries.outputs.version }}"
+          TAG="${{ needs.build-binaries.outputs.tag }}"
+
+          SHA256_ARM64=$(shasum -a 256 threedoors-darwin-arm64 | cut -d' ' -f1)
+          SHA256_AMD64=$(shasum -a 256 threedoors-darwin-amd64 | cut -d' ' -f1)
+
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/arcaven/homebrew-tap.git" homebrew-tap-repo
+          cd homebrew-tap-repo
+
+          mkdir -p Formula
+          cp ../Formula/threedoors.rb Formula/threedoors.rb
+
+          sed -i "s/VERSION_PLACEHOLDER/$VERSION/g" Formula/threedoors.rb
+          sed -i "s/TAG_PLACEHOLDER/$TAG/g" Formula/threedoors.rb
+          sed -i "s/SHA256_ARM64_PLACEHOLDER/$SHA256_ARM64/g" Formula/threedoors.rb
+          sed -i "s/SHA256_AMD64_PLACEHOLDER/$SHA256_AMD64/g" Formula/threedoors.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/threedoors.rb
+          git commit -m "Update threedoors to $VERSION"
+          git push
