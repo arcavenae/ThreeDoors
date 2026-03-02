@@ -37,8 +37,7 @@ config.json
 # Go workspace file
 go.work
 
-# Go module cache
-go.sum
+# Go module cache (go.sum should be committed for reproducible builds)
 
 # IDE and editor files
 .vscode/settings.json
