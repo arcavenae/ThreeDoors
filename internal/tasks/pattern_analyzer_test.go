@@ -36,14 +36,14 @@ func writeSessionsFile(t *testing.T, dir string, sessions []SessionMetrics) stri
 	if err != nil {
 		t.Fatalf("failed to create sessions file: %v", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	for _, s := range sessions {
 		data, err := json.Marshal(s)
 		if err != nil {
 			t.Fatalf("failed to marshal session: %v", err)
 		}
-		f.Write(data)
-		f.Write([]byte("\n"))
+		_, _ = f.Write(data)
+		_, _ = f.Write([]byte("\n"))
 	}
 	return path
 }
@@ -90,7 +90,7 @@ func TestReadSessions_ValidFile(t *testing.T) {
 func TestReadSessions_EmptyFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "sessions.jsonl")
-	os.WriteFile(path, []byte(""), 0o644)
+	_ = os.WriteFile(path, []byte(""), 0o644)
 
 	analyzer := NewPatternAnalyzer()
 	got, err := analyzer.ReadSessions(path)
@@ -120,7 +120,7 @@ func TestReadSessions_MalformedLines(t *testing.T) {
 this is not json
 {"session_id":"valid-2","start_time":"2025-11-11T09:00:00Z","end_time":"2025-11-11T09:15:00Z","duration_seconds":900,"tasks_completed":2}
 `
-	os.WriteFile(path, []byte(content), 0o644)
+	_ = os.WriteFile(path, []byte(content), 0o644)
 
 	analyzer := NewPatternAnalyzer()
 	got, err := analyzer.ReadSessions(path)
@@ -513,7 +513,7 @@ func TestLoadPatterns_MissingFile(t *testing.T) {
 func TestLoadPatterns_CorruptFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "patterns.json")
-	os.WriteFile(path, []byte("not valid json{{{"), 0o644)
+	_ = os.WriteFile(path, []byte("not valid json{{{"), 0o644)
 
 	analyzer := NewPatternAnalyzer()
 	report, err := analyzer.LoadPatterns(path)
