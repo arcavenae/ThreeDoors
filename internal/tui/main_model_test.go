@@ -313,9 +313,20 @@ func TestFlashMessage_ShowsAfterCompletion(t *testing.T) {
 		m.Update(msg)
 	}
 
-	view := m.View()
-	if !strings.Contains(view, "Progress over perfection") {
-		t.Errorf("View should contain 'Progress over perfection' flash message, got: %s", view)
+	// Flash should be one of the celebration messages from the pool
+	if m.flash == "" {
+		t.Fatal("flash should be set after task completion")
+	}
+
+	found := false
+	for _, celebration := range celebrationMessages {
+		if m.flash == celebration {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("flash message %q is not in the celebrationMessages pool", m.flash)
 	}
 }
 

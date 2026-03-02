@@ -143,3 +143,87 @@ func TestDoorsView_View_ShowsStatusIndicator(t *testing.T) {
 		t.Error("View should show [todo] status indicator for doors")
 	}
 }
+
+// --- Story 1.6: Essential Polish - Greeting Tests ---
+
+func TestDoorsView_GreetingDisplayed(t *testing.T) {
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	view := dv.View()
+
+	// View must contain at least one greeting from the pool
+	found := false
+	for _, greeting := range greetingMessages {
+		if strings.Contains(view, greeting) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("View should contain a greeting message from the greetingMessages pool")
+	}
+}
+
+func TestDoorsView_GreetingIsFromPool(t *testing.T) {
+	dv := newTestDoorsView("t1", "t2", "t3")
+
+	greeting := dv.Greeting()
+	if greeting == "" {
+		t.Fatal("DoorsView.Greeting() should return a non-empty string")
+	}
+
+	found := false
+	for _, msg := range greetingMessages {
+		if greeting == msg {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Greeting %q is not in the greetingMessages pool", greeting)
+	}
+}
+
+func TestDoorsView_GreetingSetOnce(t *testing.T) {
+	dv := newTestDoorsView("t1", "t2", "t3")
+	first := dv.Greeting()
+	// Greeting should not change on re-render
+	dv.SetWidth(80)
+	_ = dv.View()
+	second := dv.Greeting()
+	if first != second {
+		t.Errorf("Greeting should not change between renders: first=%q, second=%q", first, second)
+	}
+}
+
+func TestDoorsView_GreetingNotChangedByRefresh(t *testing.T) {
+	dv := newTestDoorsView("t1", "t2", "t3", "t4", "t5")
+	original := dv.Greeting()
+	dv.RefreshDoors()
+	after := dv.Greeting()
+	if original != after {
+		t.Errorf("Greeting should persist across door refreshes: before=%q, after=%q", original, after)
+	}
+}
+
+// --- Story 1.6: Essential Polish - Narrow Terminal Fallback ---
+
+func TestDoorsView_NarrowTerminal_StillRenders(t *testing.T) {
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(40)
+	view := dv.View()
+	if !strings.Contains(view, "ThreeDoors") {
+		t.Error("Narrow terminal should still render the header")
+	}
+	// Should still show task content
+	found := false
+	for _, door := range dv.currentDoors {
+		if strings.Contains(view, door.Text) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("Narrow terminal should still render door content")
+	}
+}

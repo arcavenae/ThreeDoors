@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 
 	"github.com/arcaven/ThreeDoors/internal/tasks"
@@ -133,7 +134,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 		}
-		m.flash = "Progress over perfection. Just pick one and start."
+		m.flash = celebrationMessages[rand.IntN(len(celebrationMessages))]
 		m.viewMode = ViewDoors
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
