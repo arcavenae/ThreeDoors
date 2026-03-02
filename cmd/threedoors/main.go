@@ -11,11 +11,18 @@ import (
 )
 
 func main() {
-	configDir, _ := tasks.GetConfigDirPath()
-	cfg, err := tasks.LoadProviderConfig(filepath.Join(configDir, "config.yaml"))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: config load failed: %v, using defaults\n", err)
-		cfg = &tasks.ProviderConfig{Provider: "textfile"}
+	configDir, configErr := tasks.GetConfigDirPath()
+	var cfg *tasks.ProviderConfig
+	if configErr != nil {
+		fmt.Fprintf(os.Stderr, "Warning: config dir not found: %v, using defaults\n", configErr)
+		cfg = &tasks.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
+	} else {
+		var loadErr error
+		cfg, loadErr = tasks.LoadProviderConfig(filepath.Join(configDir, "config.yaml"))
+		if loadErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: config load failed: %v, using defaults\n", loadErr)
+			cfg = &tasks.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
+		}
 	}
 
 	provider := tasks.NewProviderFromConfig(cfg)
@@ -40,8 +47,7 @@ func main() {
 	}
 
 	// Persist session metrics on exit
-	configDir, err = tasks.GetConfigDirPath()
-	if err == nil {
+	if configErr == nil {
 		writer := tasks.NewMetricsWriter(configDir)
 		if writeErr := writer.AppendSession(tracker.Finalize()); writeErr != nil {
 			fmt.Fprintf(os.Stderr, "Warning: failed to save session metrics: %v\n", writeErr)

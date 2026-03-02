@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -197,7 +198,7 @@ func TestAppleNotesProvider_LoadTasks_NoteNotFound(t *testing.T) {
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for note not found, got nil")
 	}
-	if !containsSubstring(err.Error(), "not found") {
+	if !strings.Contains(err.Error(), "not found") {
 		t.Errorf("error should contain 'not found', got: %v", err)
 	}
 }
@@ -210,7 +211,7 @@ func TestAppleNotesProvider_LoadTasks_PermissionDenied(t *testing.T) {
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for permission denied, got nil")
 	}
-	if !containsSubstring(err.Error(), "permission denied") {
+	if !strings.Contains(err.Error(), "permission denied") {
 		t.Errorf("error should contain 'permission denied', got: %v", err)
 	}
 }
@@ -222,7 +223,7 @@ func TestAppleNotesProvider_LoadTasks_Timeout(t *testing.T) {
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for timeout, got nil")
 	}
-	if !containsSubstring(err.Error(), "timed out") {
+	if !strings.Contains(err.Error(), "timed out") {
 		t.Errorf("error should contain 'timed out', got: %v", err)
 	}
 }
@@ -267,19 +268,4 @@ func TestAppleNotesProvider_DeleteTask_ReturnsErrReadOnly(t *testing.T) {
 	if !errors.Is(err, ErrReadOnly) {
 		t.Errorf("DeleteTask() error = %v, want ErrReadOnly", err)
 	}
-}
-
-// --- Helper ---
-
-func containsSubstring(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsSubstringImpl(s, substr))
-}
-
-func containsSubstringImpl(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

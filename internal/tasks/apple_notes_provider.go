@@ -52,7 +52,9 @@ func (p *AppleNotesProvider) LoadTasks() ([]*Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, p.noteTitle)
+	escapedTitle := strings.ReplaceAll(p.noteTitle, `\`, `\\`)
+	escapedTitle = strings.ReplaceAll(escapedTitle, `"`, `\"`)
+	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, escapedTitle)
 	output, err := p.executor(ctx, script)
 	if err != nil {
 		return nil, p.wrapError(err)
@@ -111,6 +113,7 @@ func (p *AppleNotesProvider) parseNoteBody(body string) []*Task {
 	lines := strings.Split(body, "\n")
 	var tasks []*Task
 	lineIndex := 0
+	now := time.Now().UTC()
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
@@ -121,7 +124,6 @@ func (p *AppleNotesProvider) parseNoteBody(body string) []*Task {
 
 		text, status := parseCheckboxLine(trimmed)
 		id := uuid.NewSHA1(uuid.NameSpaceURL, []byte(p.noteTitle+":"+strconv.Itoa(lineIndex))).String()
-		now := time.Now().UTC()
 
 		tasks = append(tasks, &Task{
 			ID:        id,
