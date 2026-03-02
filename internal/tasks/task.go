@@ -41,13 +41,16 @@ func NewTask(text string) *Task {
 
 // UpdateStatus changes the task's status after validating the transition.
 func (t *Task) UpdateStatus(newStatus TaskStatus) error {
+	if t.Status == newStatus {
+		return nil // no-op for same status
+	}
 	if !IsValidTransition(t.Status, newStatus) {
 		return fmt.Errorf("invalid transition from %q to %q", t.Status, newStatus)
 	}
+	now := time.Now().UTC()
 	t.Status = newStatus
-	t.UpdatedAt = time.Now().UTC()
+	t.UpdatedAt = now
 	if newStatus == StatusComplete {
-		now := time.Now().UTC()
 		t.CompletedAt = &now
 	}
 	if newStatus != StatusBlocked {
@@ -87,11 +90,14 @@ func (t *Task) Validate() error {
 	if err := ValidateStatus(string(t.Status)); err != nil {
 		return err
 	}
-	if t.Status == StatusBlocked && t.Blocker == "" {
-		// Blocker is optional per design decision
-	}
 	if t.CreatedAt.IsZero() {
 		return fmt.Errorf("createdAt is required")
+	}
+	if !t.UpdatedAt.IsZero() && t.UpdatedAt.Before(t.CreatedAt) {
+		return fmt.Errorf("updatedAt must be >= createdAt")
+	}
+	if t.CompletedAt != nil && t.Status != StatusComplete {
+		return fmt.Errorf("completedAt should only be set when status is complete")
 	}
 	return nil
 }

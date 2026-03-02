@@ -12,24 +12,26 @@ func TestIsValidTransition(t *testing.T) {
 		{StatusTodo, StatusInProgress, true},
 		{StatusTodo, StatusBlocked, true},
 		{StatusTodo, StatusComplete, true},
-		{StatusTodo, StatusTodo, true},
 
 		// Valid transitions from blocked
 		{StatusBlocked, StatusTodo, true},
 		{StatusBlocked, StatusInProgress, true},
 		{StatusBlocked, StatusComplete, true},
-		{StatusBlocked, StatusBlocked, true},
 
 		// Valid transitions from in-progress
 		{StatusInProgress, StatusBlocked, true},
 		{StatusInProgress, StatusInReview, true},
 		{StatusInProgress, StatusComplete, true},
-		{StatusInProgress, StatusInProgress, true},
 
 		// Valid transitions from in-review
 		{StatusInReview, StatusInProgress, true},
 		{StatusInReview, StatusComplete, true},
-		{StatusInReview, StatusInReview, true},
+
+		// Self-transitions (handled as no-op in UpdateStatus, not in transition map)
+		{StatusTodo, StatusTodo, false},
+		{StatusBlocked, StatusBlocked, false},
+		{StatusInProgress, StatusInProgress, false},
+		{StatusInReview, StatusInReview, false},
 
 		// Invalid transitions
 		{StatusTodo, StatusInReview, false},
