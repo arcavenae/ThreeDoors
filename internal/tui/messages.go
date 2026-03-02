@@ -47,6 +47,11 @@ type TaskAddedMsg struct {
 	Task *tasks.Task
 }
 
+// HealthCheckMsg is sent when a health check completes.
+type HealthCheckMsg struct {
+	Result tasks.HealthCheckResult
+}
+
 // SearchClosedMsg is sent when the user exits search mode.
 type SearchClosedMsg struct{}
 

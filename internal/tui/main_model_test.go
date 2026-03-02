@@ -52,7 +52,7 @@ func makeModel(texts ...string) *MainModel {
 func makeModelWithProvider(provider tasks.TaskProvider, texts ...string) *MainModel {
 	pool := makePool(texts...)
 	tracker := tasks.NewSessionTracker()
-	return NewMainModel(pool, tracker, provider)
+	return NewMainModel(pool, tracker, provider, nil)
 }
 
 func keyMsg(s string) tea.Msg {
@@ -301,7 +301,7 @@ func TestDoorsView_RendersHelpText(t *testing.T) {
 func TestDoorsView_AllTasksDone_ShowsMessage(t *testing.T) {
 	pool := tasks.NewTaskPool()
 	tracker := tasks.NewSessionTracker()
-	m := NewMainModel(pool, tracker, tasks.NewTextFileProvider())
+	m := NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil)
 	view := m.View()
 	if !strings.Contains(view, "All tasks done") {
 		t.Errorf("View should show 'All tasks done' when pool is empty, got: %s", view)

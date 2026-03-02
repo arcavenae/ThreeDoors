@@ -105,6 +105,22 @@ var (
 		"That's progress! Every task matters.",
 		"Well done! The best task is a done task.",
 	}
+
+	// Health check styles
+	healthOKStyle = lipgloss.NewStyle().
+			Foreground(colorComplete).
+			Bold(true)
+
+	healthFailStyle = lipgloss.NewStyle().
+			Foreground(colorBlocked).
+			Bold(true)
+
+	healthWarnStyle = lipgloss.NewStyle().
+			Foreground(colorInProgress).
+			Bold(true)
+
+	healthSuggestionStyle = lipgloss.NewStyle().
+				Foreground(colorInProgress)
 )
 
 // StatusColor returns the lipgloss color for a given status string.

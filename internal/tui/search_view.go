@@ -17,12 +17,13 @@ type SearchView struct {
 	selectedIndex int
 	pool          *tasks.TaskPool
 	tracker       *tasks.SessionTracker
+	healthChecker *tasks.HealthChecker
 	width         int
 	isCommandMode bool
 }
 
 // NewSearchView creates a new SearchView.
-func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *SearchView {
+func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *tasks.HealthChecker) *SearchView {
 	ti := textinput.New()
 	ti.Placeholder = "Search tasks... (or :command for commands)"
 	ti.Focus()
@@ -34,6 +35,7 @@ func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *SearchV
 		selectedIndex: -1,
 		pool:          pool,
 		tracker:       tracker,
+		healthChecker: hc,
 	}
 }
 
@@ -117,9 +119,12 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "stats":
 		return sv.showStats()
 
+	case "health":
+		return sv.runHealthCheck()
+
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :mood [mood], :stats, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :mood [mood], :stats, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
 		}
 
 	case "quit", "exit":
@@ -132,6 +137,18 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		return func() tea.Msg {
 			return FlashMsg{Text: fmt.Sprintf("Unknown command: '%s'. Type :help for available commands.", cmd)}
 		}
+	}
+}
+
+func (sv *SearchView) runHealthCheck() tea.Cmd {
+	if sv.healthChecker == nil {
+		return func() tea.Msg {
+			return FlashMsg{Text: "Health check not available"}
+		}
+	}
+	return func() tea.Msg {
+		result := sv.healthChecker.RunAll()
+		return HealthCheckMsg{Result: result}
 	}
 }
 

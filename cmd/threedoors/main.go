@@ -38,7 +38,8 @@ func main() {
 	}
 
 	tracker := tasks.NewSessionTracker()
-	model := tui.NewMainModel(pool, tracker, provider)
+	hc := tasks.NewHealthChecker(provider)
+	model := tui.NewMainModel(pool, tracker, provider, hc)
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {

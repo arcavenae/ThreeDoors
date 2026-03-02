@@ -17,6 +17,7 @@ const (
 	ViewDetail
 	ViewMood
 	ViewSearch
+	ViewHealth
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -27,9 +28,11 @@ type MainModel struct {
 	detailView          *DetailView
 	moodView            *MoodView
 	searchView          *SearchView
+	healthView          *HealthView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
+	healthChecker       *tasks.HealthChecker
 	flash               string
 	width               int
 	height              int
@@ -38,13 +41,14 @@ type MainModel struct {
 }
 
 // NewMainModel creates the root application model.
-func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider) *MainModel {
+func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker) *MainModel {
 	return &MainModel{
-		viewMode:  ViewDoors,
-		doorsView: NewDoorsView(pool, tracker),
-		pool:      pool,
-		tracker:   tracker,
-		provider:  provider,
+		viewMode:      ViewDoors,
+		doorsView:     NewDoorsView(pool, tracker),
+		pool:          pool,
+		tracker:       tracker,
+		provider:      provider,
+		healthChecker: hc,
 	}
 }
 
@@ -69,6 +73,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.searchView != nil {
 			m.searchView.SetWidth(msg.Width)
 		}
+		if m.healthView != nil {
+			m.healthView.SetWidth(msg.Width)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -78,7 +85,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ReturnToDoorsMsg:
 		// If we came from search, return to search instead
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
 			m.searchView.SetWidth(m.width)
 			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
 			m.viewMode = ViewSearch
@@ -89,11 +96,19 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewDoors
 		m.detailView = nil
 		m.moodView = nil
+		m.healthView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
 
+	case HealthCheckMsg:
+		m.healthView = NewHealthView(msg.Result)
+		m.healthView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewHealth
+		return m, nil
+
 	case ReturnToSearchMsg:
-		m.searchView = NewSearchView(m.pool, m.tracker)
+		m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
 		m.searchView.SetWidth(m.width)
 		m.searchView.RestoreState(msg.Query, msg.SelectedIndex)
 		m.viewMode = ViewSearch
@@ -180,6 +195,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateMood(msg)
 	case ViewSearch:
 		return m.updateSearch(msg)
+	case ViewHealth:
+		return m.updateHealth(msg)
 	}
 
 	return m, nil
@@ -215,7 +232,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "/":
-			m.searchView = NewSearchView(m.pool, m.tracker)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
@@ -238,6 +255,14 @@ func (m *MainModel) updateMood(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.moodView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateHealth(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.healthView == nil {
+		return m, nil
+	}
+	cmd := m.healthView.Update(msg)
 	return m, cmd
 }
 
@@ -269,6 +294,10 @@ func (m *MainModel) View() string {
 	case ViewSearch:
 		if m.searchView != nil {
 			view = m.searchView.View()
+		}
+	case ViewHealth:
+		if m.healthView != nil {
+			view = m.healthView.View()
 		}
 	default:
 		view = m.doorsView.View()
