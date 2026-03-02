@@ -70,7 +70,7 @@ else
 fi
 
 # Mood distribution
-MOOD_DATA=$(jq -s '[.[].mood_entries_detail[] | .mood] | group_by(.) | map({mood: .[0], count: length}) | sort_by(-.count)' "$SESSIONS_FILE" 2>/dev/null || echo "[]")
+MOOD_DATA=$(jq -s '[.[].mood_entries_detail // [] | .[] | .mood] | group_by(.) | map({mood: .[0], count: length}) | sort_by(-.count)' "$SESSIONS_FILE" 2>/dev/null || echo "[]")
 if [[ "$MOOD_DATA" != "[]" ]]; then
     MOOD_LINE=$(echo "$MOOD_DATA" | jq -r 'map(.mood + "=" + (.count | tostring)) | join(" ")')
     echo "Mood distribution: $MOOD_LINE"

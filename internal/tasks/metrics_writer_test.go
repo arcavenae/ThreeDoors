@@ -170,6 +170,46 @@ func TestMetricsWriter_AppendSession_PreservesAllFields(t *testing.T) {
 	}
 }
 
+func TestMetricsWriter_AppendSession_NilSlicesOmitted(t *testing.T) {
+	tmpDir := t.TempDir()
+	writer := NewMetricsWriter(tmpDir)
+
+	// Create metrics with nil slices (omitempty will omit these fields)
+	metrics := &SessionMetrics{
+		SessionID:           "nil-slices-test",
+		DurationSeconds:     60,
+		TasksCompleted:      1,
+		TimeToFirstDoorSecs: -1,
+		DoorSelections:      nil, // omitempty: field omitted from JSON
+		TaskBypasses:        nil,
+		MoodEntries:         nil,
+	}
+
+	if err := writer.AppendSession(metrics); err != nil {
+		t.Fatalf("AppendSession() error = %v", err)
+	}
+
+	path := filepath.Join(tmpDir, "sessions.jsonl")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+
+	// Verify it's valid JSON even with omitted fields
+	var parsed SessionMetrics
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		t.Fatalf("JSON unmarshal error = %v", err)
+	}
+
+	if parsed.SessionID != "nil-slices-test" {
+		t.Errorf("SessionID = %q, want %q", parsed.SessionID, "nil-slices-test")
+	}
+	// Nil slices deserialize as nil, not empty slices
+	if parsed.DoorSelections != nil && len(parsed.DoorSelections) != 0 {
+		t.Errorf("Expected nil/empty DoorSelections, got %d", len(parsed.DoorSelections))
+	}
+}
+
 // Integration test: SessionTracker -> MetricsWriter full pipeline
 func TestIntegration_SessionTrackerToMetricsWriter(t *testing.T) {
 	// Create tracker and simulate a session
@@ -239,16 +279,11 @@ func TestIntegration_SessionTrackerToMetricsWriter(t *testing.T) {
 	if parsed.MoodEntryCount != 1 {
 		t.Errorf("MoodEntryCount = %d, want 1", parsed.MoodEntryCount)
 	}
-	if parsed.DurationSeconds <= 0 {
-		if parsed.DurationSeconds < 0 {
-			t.Error("Expected non-negative duration")
-		}
+	if parsed.DurationSeconds < 0 {
+		t.Errorf("Expected non-negative duration, got %f", parsed.DurationSeconds)
 	}
 	if parsed.TimeToFirstDoorSecs < 0 {
-		// Should have been set by RecordDoorSelection
-		if parsed.TimeToFirstDoorSecs == -1 {
-			t.Error("Expected time-to-first-door to be set after door selection")
-		}
+		t.Errorf("Expected time-to-first-door >= 0 after door selection, got %f", parsed.TimeToFirstDoorSecs)
 	}
 
 	// Verify nested data

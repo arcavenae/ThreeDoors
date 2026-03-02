@@ -34,9 +34,12 @@ analyze:
 test-scripts:
 	@chmod +x scripts/*.sh
 	@echo "Testing analyze_sessions.sh..."
-	@./scripts/analyze_sessions.sh scripts/testdata/sessions.jsonl > /dev/null && echo "  PASS" || echo "  FAIL"
+	@./scripts/analyze_sessions.sh scripts/testdata/sessions.jsonl > /dev/null
+	@echo "  PASS"
 	@echo "Testing daily_completions.sh..."
-	@./scripts/daily_completions.sh scripts/testdata/completed.txt > /dev/null && echo "  PASS" || echo "  FAIL"
+	@./scripts/daily_completions.sh scripts/testdata/completed.txt > /dev/null
+	@echo "  PASS"
 	@echo "Testing validation_decision.sh..."
-	@./scripts/validation_decision.sh scripts/testdata/sessions.jsonl > /dev/null && echo "  PASS" || echo "  FAIL"
+	@./scripts/validation_decision.sh scripts/testdata/sessions.jsonl > /dev/null
+	@echo "  PASS"
 	@echo "All script tests passed."
