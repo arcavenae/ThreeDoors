@@ -172,6 +172,10 @@ var (
 	valuesFooterSeparator = "  ·  "
 
 	valuesSelectedPrefix = "▸ "
+
+	// Badge style for category tags on door cards
+	badgeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("243"))
 )
 
 // StatusColor returns the lipgloss color for a given status string.

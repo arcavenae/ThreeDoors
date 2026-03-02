@@ -80,3 +80,12 @@ func poolFromTasks(tasks ...*Task) *TaskPool {
 	}
 	return pool
 }
+
+// newCategorizedTestTask creates a Task with categorization fields for testing.
+func newCategorizedTestTask(id, text string, status TaskStatus, taskType TaskType, effort TaskEffort, loc TaskLocation) *Task {
+	t := newTestTask(id, text, status, baseTime)
+	t.Type = taskType
+	t.Effort = effort
+	t.Location = loc
+	return t
+}

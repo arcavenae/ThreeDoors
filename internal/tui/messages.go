@@ -112,6 +112,17 @@ type NextStepSelectedMsg struct {
 // NextStepDismissedMsg is sent when the user dismisses the next-steps view.
 type NextStepDismissedMsg struct{}
 
+// TagUpdatedMsg is sent when the :tag command finishes editing a task's categories.
+type TagUpdatedMsg struct {
+	Task *tasks.Task
+}
+
+// TagCancelledMsg is sent when the user cancels the :tag editor.
+type TagCancelledMsg struct{}
+
+// ShowTagViewMsg is sent when :tag is selected from command palette.
+type ShowTagViewMsg struct{}
+
 // ReturnToSearchMsg is sent to restore search view from detail view.
 type ReturnToSearchMsg struct {
 	Query         string

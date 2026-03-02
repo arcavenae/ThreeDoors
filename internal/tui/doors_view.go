@@ -9,6 +9,40 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// typeIcon returns the emoji icon for a task type.
+func typeIcon(t tasks.TaskType) string {
+	switch t {
+	case tasks.TypeCreative:
+		return "🎨"
+	case tasks.TypeAdministrative:
+		return "📋"
+	case tasks.TypeTechnical:
+		return "🔧"
+	case tasks.TypePhysical:
+		return "💪"
+	default:
+		return ""
+	}
+}
+
+// categoryBadge builds a compact badge string for a task's categories.
+func categoryBadge(task *tasks.Task) string {
+	var parts []string
+	if icon := typeIcon(task.Type); icon != "" {
+		parts = append(parts, icon)
+	}
+	if task.Effort != "" {
+		parts = append(parts, string(task.Effort))
+	}
+	if task.Location != "" {
+		parts = append(parts, string(task.Location))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return strings.Join(parts, " ")
+}
+
 // DoorsView renders the three doors interface.
 type DoorsView struct {
 	pool              *tasks.TaskPool
@@ -121,6 +155,13 @@ func (dv *DoorsView) View() string {
 	var renderedDoors []string
 	for i, task := range dv.currentDoors {
 		content := task.Text
+
+		// Category badges
+		badge := categoryBadge(task)
+		if badge != "" {
+			content = content + "\n" + badgeStyle.Render(badge)
+		}
+
 		statusIndicator := lipgloss.NewStyle().
 			Foreground(StatusColor(string(task.Status))).
 			Render(fmt.Sprintf("[%s]", task.Status))
