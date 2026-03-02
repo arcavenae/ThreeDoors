@@ -13,8 +13,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// ErrReadOnly indicates the provider does not support write operations.
-var ErrReadOnly = errors.New("apple notes provider is read-only")
+// ErrReadOnly is a sentinel error for providers that do not support write operations.
+// Used by FallbackProvider to detect read-only backends and delegate writes to fallback.
+var ErrReadOnly = errors.New("provider is read-only")
 
 // CommandExecutor abstracts osascript execution for testability.
 type CommandExecutor func(ctx context.Context, script string) (string, error)
@@ -57,19 +58,17 @@ func (p *AppleNotesProvider) LoadTasks() ([]*Task, error) {
 	return p.parseNoteBody(raw), nil
 }
 
+// escapedNoteTitle returns the note title escaped for AppleScript string embedding.
+func (p *AppleNotesProvider) escapedNoteTitle() string {
+	t := strings.ReplaceAll(p.noteTitle, `\`, `\\`)
+	return strings.ReplaceAll(t, `"`, `\"`)
+}
+
 // readRawNoteBody reads the plaintext note body via osascript without parsing.
 func (p *AppleNotesProvider) readRawNoteBody() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-
-	escapedTitle := strings.ReplaceAll(p.noteTitle, `\`, `\\`)
-	escapedTitle = strings.ReplaceAll(escapedTitle, `"`, `\"`)
-	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, escapedTitle)
-	output, err := p.executor(ctx, script)
-	if err != nil {
-		return "", p.wrapError(err)
-	}
-	return output, nil
+	return p.readRawNoteBodyWithCtx(ctx)
 }
 
 // SaveTask writes a single task update back to Apple Notes via read-modify-write.
@@ -97,6 +96,7 @@ func (p *AppleNotesProvider) SaveTask(task *Task) error {
 		if id == task.ID {
 			lines[i] = p.taskToNoteLine(task)
 			found = true
+			break
 		}
 		lineIndex++
 	}
@@ -190,9 +190,7 @@ func (p *AppleNotesProvider) DeleteTask(taskID string) error {
 
 // readRawNoteBodyWithCtx reads the raw note body using an existing context.
 func (p *AppleNotesProvider) readRawNoteBodyWithCtx(ctx context.Context) (string, error) {
-	escapedTitle := strings.ReplaceAll(p.noteTitle, `\`, `\\`)
-	escapedTitle = strings.ReplaceAll(escapedTitle, `"`, `\"`)
-	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, escapedTitle)
+	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, p.escapedNoteTitle())
 	output, err := p.executor(ctx, script)
 	if err != nil {
 		return "", p.wrapError(err)
@@ -200,14 +198,17 @@ func (p *AppleNotesProvider) readRawNoteBodyWithCtx(ctx context.Context) (string
 	return output, nil
 }
 
+// escapeForAppleScript escapes a string for embedding inside AppleScript double-quoted strings.
+func escapeForAppleScript(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	return strings.ReplaceAll(s, `"`, `\"`)
+}
+
 // writeNoteBodyWithCtx writes plaintext back to Apple Notes as HTML using an existing context.
 func (p *AppleNotesProvider) writeNoteBodyWithCtx(ctx context.Context, body string) error {
 	htmlBody := p.plaintextToHTML(body)
-	escapedTitle := strings.ReplaceAll(p.noteTitle, `\`, `\\`)
-	escapedTitle = strings.ReplaceAll(escapedTitle, `"`, `\"`)
-	escapedHTML := strings.ReplaceAll(htmlBody, `\`, `\\`)
-	escapedHTML = strings.ReplaceAll(escapedHTML, `"`, `\"`)
-	script := fmt.Sprintf(`tell application "Notes" to set body of note "%s" to "%s"`, escapedTitle, escapedHTML)
+	escapedHTML := escapeForAppleScript(htmlBody)
+	script := fmt.Sprintf(`tell application "Notes" to set body of note "%s" to "%s"`, p.escapedNoteTitle(), escapedHTML)
 	_, err := p.executor(ctx, script)
 	if err != nil {
 		return p.wrapError(err)
@@ -247,7 +248,7 @@ func (p *AppleNotesProvider) wrapError(err error) error {
 	msg := err.Error()
 
 	if errors.Is(err, context.DeadlineExceeded) {
-		return fmt.Errorf("apple notes: osascript timed out after 2s: %w", err)
+		return fmt.Errorf("apple notes: osascript timed out: %w", err)
 	}
 	if strings.Contains(msg, "Can't get note") || strings.Contains(msg, "can't get note") {
 		return fmt.Errorf("apple notes: note %q not found: %w", p.noteTitle, err)
