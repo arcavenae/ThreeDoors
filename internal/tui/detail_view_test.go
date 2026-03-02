@@ -183,7 +183,7 @@ func TestDetailView_FKey_FlashesNotImplemented(t *testing.T) {
 
 func TestDetailView_AllStatusKeys(t *testing.T) {
 	tests := []struct {
-		key         string
+		key           string
 		expectMsgType string
 	}{
 		{"c", "TaskCompletedMsg"},
