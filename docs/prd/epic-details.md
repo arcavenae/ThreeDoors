@@ -308,15 +308,138 @@
 
 ---
 
-## Epic 2-5: Post-Validation Epics (Placeholder)
+## Epic 2: Foundation & Apple Notes Integration ✅ COMPLETE
 
-**Note:** These epics are placeholders for post-validation planning. Detailed stories will be created only if Epic 1 successfully validates the Three Doors concept.
+**Status:** All 6 stories implemented and merged. See `docs/sprint-status-report.md` for details.
+- Story 2.1: Architecture Refactoring - Adapter Pattern (PR #20)
+- Story 2.2: Apple Notes Integration Spike (PR #22)
+- Story 2.3: Read Tasks from Apple Notes (PR #17)
+- Story 2.4: Write Task Updates to Apple Notes (PR #21)
+- Story 2.5: Bidirectional Sync Engine (PR #15)
+- Story 2.6: Health Check Command (PR #19)
 
-**Epic 2: Foundation & Apple Notes Integration**
-*Stories to be defined after Epic 1 validation and Apple Notes integration spike*
+## Epic 3: Enhanced Interaction & Task Context ✅ COMPLETE
 
-**Epic 3: Enhanced Interaction & Task Context**
-*Stories to be defined based on learnings from Epic 2 usage patterns*
+**Status:** All 7 stories implemented and merged. See `docs/sprint-status-report.md` for details.
+- Story 3.1: Quick Add Mode (PR #23)
+- Story 3.2: Extended Task Capture with Context (PR #24)
+- Story 3.3: Values & Goals Setup and Display (PR #25)
+- Story 3.4: Door Feedback Options (PR #27)
+- Story 3.5: Daily Completion Tracking & Comparison (PR #28)
+- Story 3.6: Session Improvement Prompt (PR #29)
+- Story 3.7: Enhanced Navigation & Messaging (PR #31)
+
+---
+
+## Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging) 🆕
+
+**Epic Goal:** Refactor core architecture, harden adapters, establish test infrastructure, and resolve technical debt from rapid Epic 1-3 implementation. Prepares the codebase for Epic 4+ by establishing Architecture v2.0 foundations.
+
+**Origin:** Party mode bridging discussion (2026-03-02)
+**Prerequisites:** Epic 3 complete ✅
+**Blocks:** Epic 4 (partially), Epic 7, Epic 8, Epic 9, Epic 11
+
+### Story 3.5.1: Core Domain Extraction
+
+**As a** developer,
+**I want** `internal/tasks` split into `internal/core` and separate adapter packages,
+**So that** the architecture follows the five-layer design and enables the Plugin SDK (Epic 7).
+
+**Acceptance Criteria:**
+1. `internal/core/` contains: TaskPool, DoorSelector, StatusManager, SessionTracker
+2. `internal/adapters/textfile/` contains the YAML file adapter
+3. `internal/adapters/applenotes/` contains the Apple Notes adapter
+4. `internal/tui/` depends only on `internal/core/` (dependency inversion)
+5. All existing tests pass (behavior-preserving refactor)
+6. No user-facing behavior changes
+
+### Story 3.5.2: TaskProvider Interface Hardening
+
+**As a** developer building future integrations,
+**I want** the TaskProvider interface formalized with Watch(), HealthCheck(), ChangeEvent,
+**So that** the adapter SDK (Epic 7) has a stable contract.
+
+**Acceptance Criteria:**
+1. `TaskProvider` interface includes: Name(), Load(), Save(), Delete(), Watch(), HealthCheck()
+2. `ChangeEvent` struct defined with Type, TaskID, Task, Source fields
+3. Contract test stubs created in `internal/adapters/contract_test.go`
+4. Existing adapters updated to implement hardened interface
+5. Interface documented with godoc comments
+
+### Story 3.5.3: Config.yaml Schema & Migration Spike
+
+**As a** developer,
+**I want** a spike on config.yaml schema and migration path,
+**So that** Epic 7's config-driven provider selection has a validated foundation.
+
+**Acceptance Criteria:**
+1. `docs/spikes/config-schema.md` documents proposed schema, migration path
+2. Zero-friction upgrade verified (no config.yaml defaults to current behavior)
+3. Sample config.yaml drafted with commented provider examples
+4. Breaking changes identified with mitigation strategies
+
+### Story 3.5.4: Apple Notes Adapter Hardening
+
+**As a** user relying on Apple Notes sync,
+**I want** the adapter to handle errors gracefully with timeouts and retries,
+**So that** sync is reliable before more adapters land.
+
+**Acceptance Criteria:**
+1. All AppleScript calls have configurable timeout (default: 10s)
+2. Transient failures retry with exponential backoff (max 3 retries)
+3. Errors categorized: transient, permanent, configuration
+4. Error messages are user-friendly and actionable
+5. No sensitive data in adapter logs (NFR9)
+
+### Story 3.5.5: Baseline Regression Test Suite
+
+**As a** developer preparing for Epic 4,
+**I want** baseline tests for current door selection and task management,
+**So that** the learning engine can be validated against known-good behavior.
+
+**Acceptance Criteria:**
+1. Table-driven tests for random selection, Fisher-Yates, ring buffer, edge cases
+2. Status management tests for all state transitions
+3. Task pool tests for load, filter, add, remove, update
+4. Tests pass on current codebase
+
+### Story 3.5.6: Session Metrics Reader Library
+
+**As a** developer building Epic 4,
+**I want** a reusable library for reading session metrics,
+**So that** Epic 4 stories can focus on learning logic.
+
+**Acceptance Criteria:**
+1. `internal/core/metrics/reader.go` with ReadAll(), ReadSince(), ReadLast() methods
+2. Returns typed SessionMetrics structs
+3. Handles corrupted lines gracefully
+4. Unit tests cover empty, single, multiple sessions, corrupted data
+
+### Story 3.5.7: Adapter Test Scaffolding & CI Coverage Floor
+
+**As a** developer,
+**I want** test infrastructure and CI coverage enforcement,
+**So that** Epic 9 has a foundation and coverage doesn't erode.
+
+**Acceptance Criteria:**
+1. `testdata/` directory with sample adapter test data
+2. `internal/testing/` with mock/stub helpers
+3. CI measures coverage and fails below threshold
+4. Coverage report posted as PR comment
+
+### Story 3.5.8: Validation Gate Decision Documentation
+
+**As the** product team,
+**I want** Phase 1 validation results documented,
+**So that** the proceed-to-MVP decision is recorded.
+
+**Acceptance Criteria:**
+1. `docs/validation-gate-results.md` with validation period, usage patterns, evidence
+2. UX lessons learned captured
+3. Formal proceed-to-MVP decision with rationale
+4. Recommendations for Epic 4 based on observed patterns
+
+---
 
 **Epic 4: Learning & Intelligent Door Selection**
 
