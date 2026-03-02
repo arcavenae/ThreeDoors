@@ -23,7 +23,7 @@
 | **YAML Parser** | gopkg.in/yaml.v3 | 3.0.1 | Structured data parsing | Human-readable task storage with metadata (status, notes, timestamps) |
 | **UUID Generator** | github.com/google/uuid | 1.6.0 | Unique task IDs | UUID v4 generation for task identity |
 | **Formatting** | gofumpt | 0.7.0 | Code formatting | Enforces consistent style |
-| **Linting** | golangci-lint | 1.61.0 | Static analysis | Catches bugs early |
+| **Linting** | golangci-lint | 2.10.1 | Static analysis | Catches bugs early |
 | **Build System** | Make | System default (macOS) | Build automation | `build`, `run`, `clean`, `lint`, `fmt` targets |
 | **Dependency Mgmt** | Go Modules | 1.25.4 | Package management | `go.mod` versioning |
 | **Testing** | Go testing package | 1.25.4 (stdlib) | Unit testing | Built-in; no external framework |
