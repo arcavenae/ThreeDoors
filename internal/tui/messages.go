@@ -37,6 +37,25 @@ type FlashMsg struct {
 // ClearFlashMsg clears the flash message.
 type ClearFlashMsg struct{}
 
+// SearchResultSelectedMsg is sent when a user selects a task from search results.
+type SearchResultSelectedMsg struct {
+	Task *tasks.Task
+}
+
+// TaskAddedMsg is sent when the :add command creates a new task.
+type TaskAddedMsg struct {
+	Task *tasks.Task
+}
+
+// SearchClosedMsg is sent when the user exits search mode.
+type SearchClosedMsg struct{}
+
+// ReturnToSearchMsg is sent to restore search view from detail view.
+type ReturnToSearchMsg struct {
+	Query         string
+	SelectedIndex int
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {
