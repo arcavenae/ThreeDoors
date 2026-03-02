@@ -205,8 +205,8 @@ func TestMetricsWriter_AppendSession_NilSlicesOmitted(t *testing.T) {
 		t.Errorf("SessionID = %q, want %q", parsed.SessionID, "nil-slices-test")
 	}
 	// Nil slices deserialize as nil, not empty slices
-	if parsed.DoorSelections != nil && len(parsed.DoorSelections) != 0 {
-		t.Errorf("Expected nil/empty DoorSelections, got %d", len(parsed.DoorSelections))
+	if len(parsed.DoorSelections) != 0 {
+		t.Errorf("Expected empty DoorSelections, got %d", len(parsed.DoorSelections))
 	}
 }
 
