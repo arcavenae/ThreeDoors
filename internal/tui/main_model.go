@@ -45,6 +45,7 @@ type MainModel struct {
 	provider            tasks.TaskProvider
 	healthChecker       *tasks.HealthChecker
 	completionCounter   *tasks.CompletionCounter
+	patternReport       *tasks.PatternReport
 	valuesConfig        *tasks.ValuesConfig
 	flash               string
 	width               int
@@ -74,14 +75,25 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		}
 	}
 
+	// Load cached pattern report (non-blocking — analysis runs in main.go goroutine)
+	var patternReport *tasks.PatternReport
+	if configPath, err := tasks.GetConfigDirPath(); err == nil {
+		analyzer := tasks.NewPatternAnalyzer()
+		patternReport, _ = analyzer.LoadPatterns(filepath.Join(configPath, "patterns.json"))
+	}
+
+	doorsView := NewDoorsView(pool, tracker)
+	doorsView.SetAvoidanceData(patternReport)
+
 	return &MainModel{
 		viewMode:          ViewDoors,
-		doorsView:         NewDoorsView(pool, tracker),
+		doorsView:         doorsView,
 		pool:              pool,
 		tracker:           tracker,
 		provider:          provider,
 		healthChecker:     hc,
 		completionCounter: cc,
+		patternReport:     patternReport,
 		valuesConfig:      valuesConfig,
 	}
 }
@@ -134,7 +146,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ReturnToDoorsMsg:
 		// If we came from search, return to search instead
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 			m.searchView.SetWidth(m.width)
 			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
 			m.viewMode = ViewSearch
@@ -159,7 +171,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case ReturnToSearchMsg:
-		m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+		m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 		m.searchView.SetWidth(m.width)
 		m.searchView.RestoreState(msg.Query, msg.SelectedIndex)
 		m.viewMode = ViewSearch
@@ -213,7 +225,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.addTaskView = nil
 		// Return to previous view if it was search, otherwise show next steps
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
@@ -366,12 +378,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "mood":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "search":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 		case "stats":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 			m.searchView.SetWidth(m.width)
 			m.searchView.textInput.SetValue(":stats")
 			m.searchView.checkCommandMode()
@@ -468,13 +480,13 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "/":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 			return m, nil
 		case ":":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 			m.searchView.SetWidth(m.width)
 			m.searchView.textInput.SetValue(":")
 			m.searchView.checkCommandMode()

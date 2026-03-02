@@ -53,6 +53,7 @@ type DoorsView struct {
 	tracker           *tasks.SessionTracker
 	greeting          string
 	footerMessage     string
+	avoidanceMap      map[string]int // task text → bypass count
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -63,9 +64,21 @@ func NewDoorsView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *DoorsVie
 		tracker:           tracker,
 		greeting:          pickGreeting(-1),
 		footerMessage:     pickFooterMessage(-1),
+		avoidanceMap:      make(map[string]int),
 	}
 	dv.RefreshDoors()
 	return dv
+}
+
+// SetAvoidanceData populates the avoidance map from a pattern report.
+func (dv *DoorsView) SetAvoidanceData(report *tasks.PatternReport) {
+	dv.avoidanceMap = make(map[string]int)
+	if report == nil {
+		return
+	}
+	for _, entry := range report.AvoidanceList {
+		dv.avoidanceMap[entry.TaskText] = entry.TimesBypassed
+	}
 }
 
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
@@ -160,6 +173,12 @@ func (dv *DoorsView) View() string {
 		badge := categoryBadge(task)
 		if badge != "" {
 			content = content + "\n" + badgeStyle.Render(badge)
+		}
+
+		// Avoidance indicator
+		if count, ok := dv.avoidanceMap[task.Text]; ok && count >= 5 {
+			avoidStyle := lipgloss.NewStyle().Faint(true)
+			content = content + "\n" + avoidStyle.Render(fmt.Sprintf("Seen %d times", count))
 		}
 
 		statusIndicator := lipgloss.NewStyle().

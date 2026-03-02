@@ -48,6 +48,30 @@ func main() {
 
 	tracker := tasks.NewSessionTracker()
 	hc := tasks.NewHealthChecker(provider)
+
+	// Run pattern analysis in background (non-blocking)
+	if configErr == nil {
+		go func() {
+			analyzer := tasks.NewPatternAnalyzer()
+			sessionsPath := filepath.Join(configDir, "sessions.jsonl")
+			patternsPath := filepath.Join(configDir, "patterns.json")
+
+			cached, _ := analyzer.LoadPatterns(patternsPath)
+			sessions, err := analyzer.ReadSessions(sessionsPath)
+			if err != nil {
+				return
+			}
+			if !analyzer.NeedsReanalysis(cached, sessions) {
+				return
+			}
+			report, err := analyzer.Analyze(sessions)
+			if err != nil || report == nil {
+				return
+			}
+			_ = analyzer.SavePatterns(report, patternsPath)
+		}()
+	}
+
 	model := tui.NewMainModel(pool, tracker, provider, hc)
 
 	p := tea.NewProgram(model)

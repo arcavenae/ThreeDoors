@@ -19,12 +19,13 @@ type SearchView struct {
 	tracker           *tasks.SessionTracker
 	healthChecker     *tasks.HealthChecker
 	completionCounter *tasks.CompletionCounter
+	patternReport     *tasks.PatternReport
 	width             int
 	isCommandMode     bool
 }
 
 // NewSearchView creates a new SearchView.
-func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *tasks.HealthChecker, cc *tasks.CompletionCounter) *SearchView {
+func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *tasks.HealthChecker, cc *tasks.CompletionCounter, pr *tasks.PatternReport) *SearchView {
 	ti := textinput.New()
 	ti.Placeholder = "Search tasks... (or :command for commands)"
 	ti.Focus()
@@ -38,6 +39,7 @@ func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *task
 		tracker:           tracker,
 		healthChecker:     hc,
 		completionCounter: cc,
+		patternReport:     pr,
 	}
 }
 
@@ -159,9 +161,16 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "tag":
 		return func() tea.Msg { return ShowTagViewMsg{} }
 
+	case "insights":
+		report := sv.patternReport
+		text := tasks.FormatInsights(report)
+		return func() tea.Msg {
+			return FlashMsg{Text: text}
+		}
+
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :insights, :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
 		}
 
 	case "quit", "exit":
