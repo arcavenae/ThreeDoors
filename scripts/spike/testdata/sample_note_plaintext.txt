@@ -1,0 +1,6 @@
+- [ ] Buy groceries for the week
+- [ ] Review pull request #42
+- [x] Set up development environment
+- [ ] Write architecture decision record
+- [ ] Schedule team sync meeting
+- [x] Update project README

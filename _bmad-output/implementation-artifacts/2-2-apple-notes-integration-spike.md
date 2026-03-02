@@ -1,0 +1,350 @@
+# Story 2.2: Apple Notes Integration Spike
+
+Status: ready-for-dev
+
+## Story
+
+As a developer,
+I want to evaluate Apple Notes integration approaches,
+so that I can choose the best method for bidirectional sync and document the decision formally.
+
+## Acceptance Criteria
+
+1. **Three approaches evaluated:**
+   - Given the spike begins
+   - When evaluating integration options
+   - Then at least 3 approaches are tested: MCP server (mcp-apple-notes), direct SQLite read, AppleScript bridge (osascript)
+   - And each approach is evaluated for: read capability, write capability, reliability, complexity, macOS permissions model
+
+2. **Each approach has a working proof-of-concept:**
+   - Given an approach is being evaluated
+   - When the PoC code is executed
+   - Then at minimum one note can be read from Apple Notes
+   - And the PoC script is self-contained and runnable from `scripts/spike/`
+   - And each PoC documents exact permissions/setup required
+
+3. **Spike report exists with formal recommendation:**
+   - Given the spike is complete
+   - When results are documented
+   - Then a spike report exists at `docs/spike-reports/2.2-apple-notes-integration.md`
+   - And it documents: chosen approach, pros/cons matrix, risks, estimated effort for Stories 2.3–2.6
+   - And the chosen approach is validated for both read AND write operations
+
+4. **Write capability assessment for each approach:**
+   - Given each approach is evaluated
+   - When write capability is tested
+   - Then the report documents whether the approach supports: creating notes, modifying note content, marking tasks complete, appending text
+   - And any limitations or workarounds are documented
+
+5. **Proof-of-concept reads at least one note:**
+   - Given Apple Notes has a test note named "ThreeDoors Tasks"
+   - When the chosen approach PoC runs
+   - Then at least one task is parsed from the note
+   - And the output is human-readable on stdout
+
+## Prerequisites (Manual Setup Required)
+
+Before running any spike PoC scripts, the developer must:
+
+1. **Create test note in Apple Notes:** Open Apple Notes app manually, create a note titled "ThreeDoors Tasks" with the following content:
+   ```
+   - [ ] Buy groceries for the week
+   - [ ] Review pull request #42
+   - [x] Set up development environment
+   - [ ] Write architecture decision record
+   - [ ] Schedule team sync meeting
+   - [x] Update project README
+   ```
+2. **Grant Automation permission:** When first running osascript, approve the macOS Automation consent dialog for Terminal/iTerm2 to control Notes.app
+3. **macOS required:** All spike scripts require macOS (Sonoma 14+ recommended). Linux/Windows developers cannot run these PoCs.
+4. **Alternatively:** Run `scripts/spike/setup_test_note.sh` which uses osascript to create the test note programmatically (requires Automation permission)
+
+## Definition of Done
+
+- All 3 approaches evaluated (or explicitly marked N/A with documented rationale if non-viable)
+- Each viable approach has a working PoC script in `scripts/spike/` with documented expected output
+- Spike report at `docs/spike-reports/2.2-apple-notes-integration.md` with completed comparison matrix
+- Error taxonomy documented per approach (timeout, permission denied, not found, etc.)
+- CI/CD compatibility documented (which tests run on Linux GitHub Actions vs macOS-only)
+- Performance benchmarks: 10 sequential operations, p50/p95/max latency reported
+- Recommendation explicitly addresses both read AND write paths (hybrid allowed)
+- All PoC scripts exit 0 on success, non-zero on failure with stderr message
+- `gofumpt` applied to all Go PoC files
+- No changes to existing `internal/` application code
+
+## Context: What Already Exists
+
+**CRITICAL:** Story 2.3 has already been merged (PR #17) implementing an AppleScript-based `AppleNotesProvider`. The spike must formalize the evaluation that retroactively validates (or challenges) this choice.
+
+### Existing Code (from Story 2.3):
+- `internal/tasks/provider.go` — `TaskProvider` interface: `LoadTasks()`, `SaveTask()`, `SaveTasks()`, `DeleteTask()`
+- `internal/tasks/apple_notes_provider.go` — Read-only AppleScript provider using `osascript -e 'tell application "Notes" to get plaintext text of note "..."'`
+- `internal/tasks/text_file_provider.go` — Text file backend (original)
+- `internal/tasks/fallback_provider.go` — Wraps primary (Apple Notes) with fallback to secondary (text file)
+- `internal/tasks/provider_factory.go` — Creates providers based on config
+- `internal/tasks/provider_config.go` — Config parsing for provider selection
+- `internal/tasks/sync_engine.go` — Bidirectional sync engine (from Story 2.5)
+- `internal/tasks/sync_state.go` — Sync state tracking
+
+### Current AppleNotesProvider Limitations:
+- **Read-only** — `SaveTask()`, `SaveTasks()`, `DeleteTask()` all return `ErrReadOnly`
+- Uses `osascript` → plaintext text extraction
+- 2-second timeout on osascript calls
+- Deterministic UUIDs via SHA1(noteTitle + lineIndex)
+- Parses checkbox syntax: `- [ ]` (todo), `- [x]` (complete)
+
+## Tasks / Subtasks
+
+- [ ] Task 1: Set up spike directory and test infrastructure (AC: 2)
+  - [ ] 1.1: Create `scripts/spike/` directory
+  - [ ] 1.2: Create `scripts/spike/setup_test_note.sh` that programmatically creates the "ThreeDoors Tasks" test note via osascript (see Prerequisites section for manual alternative)
+  - [ ] 1.3: Create `scripts/spike/README.md` documenting spike purpose and how to run each PoC
+
+- [ ] Task 2: Evaluate AppleScript/osascript approach (AC: 1, 2, 4)
+  - [ ] 2.1: Create `scripts/spike/poc_applescript_read.sh` — read note via `plaintext text`
+  - [ ] 2.2: Create `scripts/spike/poc_applescript_write.sh` — attempt write via `set body of note` and `set plaintext text of note`
+  - [ ] 2.3: Test osascript write capabilities:
+    - Can we modify note body? (`set body of note "..." to "..."`)
+    - Can we append text? (get body, concatenate, set body)
+    - Can we toggle checkboxes? (read plaintext, modify, set back)
+    - What happens with rich text / formatting when writing plaintext back?
+  - [ ] 2.4: Document permissions behavior:
+    - First-run automation consent dialog
+    - System Settings > Privacy & Security > Automation
+    - Behavior when Notes.app is closed vs running
+    - What macOS versions are supported
+  - [ ] 2.5: Measure latency — benchmark protocol: 10 sequential reads, 10 sequential writes (if supported), report p50/p95/max. Test with Notes.app open AND closed.
+  - [ ] 2.6: Create Go PoC `scripts/spike/poc_applescript.go` wrapping osascript (standalone main package with own `go.mod`, NOT part of main module)
+  - [ ] 2.7: Document error taxonomy: enumerate all error types (timeout, permission denied, note not found, Notes.app not running, etc.) with exact error messages
+  - [ ] 2.8: Test concurrency: what happens if two osascript calls execute simultaneously? Document thread safety implications for the TUI (door refresh during write)
+
+- [ ] Task 3: Evaluate direct SQLite approach (AC: 1, 2, 4)
+  - [ ] 3.1: Locate Apple Notes SQLite database:
+    - Path: `~/Library/Group Containers/group.com.apple.notes/NoteStore.sqlite`
+    - Check if Full Disk Access is required
+  - [ ] 3.2: Create `scripts/spike/poc_sqlite_read.sh` — query notes via sqlite3:
+    ```sql
+    SELECT ZICCLOUDSYNCINGOBJECT.ZTITLE1, ZICCLOUDSYNCINGOBJECT.ZPLAINTEXT
+    FROM ZICCLOUDSYNCINGOBJECT
+    WHERE ZICCLOUDSYNCINGOBJECT.ZTITLE1 = 'ThreeDoors Tasks'
+    ```
+  - [ ] 3.3: Document SQLite schema observations:
+    - Table names (ZICCLOUDSYNCINGOBJECT, etc.)
+    - Column mappings (ZTITLE1, ZPLAINTEXT, ZBODY, etc.)
+    - How checklist items are stored (ZDATA protobuf? HTML?)
+  - [ ] 3.4: Test write feasibility:
+    - Can we safely UPDATE rows?
+    - Does CloudKit sync detect external SQLite writes?
+    - Risk of database corruption or sync conflicts
+    - Test with iCloud sync active vs airplane mode (critical risk assessment)
+  - [ ] 3.5: Create Go PoC `scripts/spike/poc_sqlite.go` using `modernc.org/sqlite` (pure Go, no CGo) — standalone main with own `go.mod`
+  - [ ] 3.6: Document:
+    - Full Disk Access requirement (SIP/TCC implications)
+    - Database lock behavior
+    - Schema stability across macOS versions (fragile? undocumented?)
+  - [ ] 3.7: Document error taxonomy: enumerate errors (database locked, permission denied, table not found, schema mismatch, etc.)
+  - [ ] 3.8: Measure latency — same benchmark protocol as AppleScript (10 reads, p50/p95/max)
+
+- [ ] Task 4: Evaluate MCP server approach (mcp-apple-notes) (AC: 1, 2, 4)
+  - [ ] 4.1: Research mcp-apple-notes server:
+    - GitHub repo: search for "mcp-apple-notes" or "apple-notes-mcp"
+    - Installation method (npm, homebrew, binary)
+    - Protocol: JSON-RPC over stdio? HTTP?
+    - **If no viable MCP server exists:** Document the search results (repos found, stars, last commit date, maintenance status) and mark this approach as "Non-Viable" in the comparison matrix. Skip Tasks 4.2–4.4.
+  - [ ] 4.2: Install and test mcp-apple-notes locally (if available and viable)
+  - [ ] 4.3: Create `scripts/spike/poc_mcp.sh` — invoke MCP server and list notes
+  - [ ] 4.4: Test read and write capabilities through MCP protocol
+  - [ ] 4.5: Evaluate:
+    - External dependency maintenance risk (last commit date, open issues, bus factor)
+    - Protocol complexity (MCP JSON-RPC vs direct osascript)
+    - Performance overhead (server startup, protocol parsing)
+    - Whether it supports the operations we need (read, write, list, search)
+  - [ ] 4.6: Document findings in `scripts/spike/mcp_evaluation.md`
+
+- [ ] Task 5: Create comparison matrix and spike report (AC: 3)
+  - [ ] 5.1: Create `docs/spike-reports/2.2-apple-notes-integration.md` with:
+    - Executive summary
+    - Comparison matrix:
+      | Criterion | AppleScript | SQLite | MCP Server |
+      |-----------|-------------|--------|------------|
+      | Read capability | ? | ? | ? |
+      | Write capability | ? | ? | ? |
+      | Reliability | ? | ? | ? |
+      | Complexity | ? | ? | ? |
+      | Permissions | ? | ? | ? |
+      | macOS version support | ? | ? | ? |
+      | External dependencies | ? | ? | ? |
+      | Latency | ? | ? | ? |
+      | Sync safety | ? | ? | ? |
+      | Testability (mockability) | ? | ? | ? |
+      | CI/CD compatibility (Linux) | ? | ? | ? |
+      | Concurrency safety | ? | ? | ? |
+    - Recommendation with rationale (hybrid approaches allowed — e.g., AppleScript for reads, different mechanism for writes)
+    - Risks and mitigations
+    - Effort estimate for Stories 2.3–2.6 using chosen approach
+  - [ ] 5.2: Update spike report with actual PoC results (not speculation)
+  - [ ] 5.3: Include Go code samples showing how chosen approach integrates with existing `TaskProvider` interface
+  - [ ] 5.4: Include error taxonomy section mapping approach-specific errors to fallback behavior
+  - [ ] 5.5: Include CI/CD section: which tests require macOS runners (`//go:build darwin`) vs which are portable to Linux GitHub Actions
+  - [ ] 5.6: Evaluate hybrid combinations explicitly (e.g., AppleScript read + osascript write vs AppleScript read + SQLite read for verification)
+
+- [ ] Task 6: Validate recommendation against existing code (AC: 3, 5)
+  - [ ] 6.1: If recommendation matches existing AppleScript approach (Story 2.3):
+    - Document what's needed for write support
+    - Identify gaps in current `AppleNotesProvider` implementation
+    - Propose concrete changes for Story 2.4 (Write Task Updates)
+  - [ ] 6.2: If recommendation is different from AppleScript:
+    - Document migration path from current AppleScript implementation
+    - Estimate rework effort
+    - Flag to team for decision
+
+## Testing Requirements
+
+### Test File Locations
+- Go PoC unit tests: alongside PoC files in `scripts/spike/` (e.g., `poc_applescript_test.go`)
+- Shell PoC smoke tests: `scripts/spike/tests/smoke_test.sh`
+- Spike report validation: `scripts/spike/tests/validate_report.sh`
+- Test fixtures: `scripts/spike/testdata/` (sample note content, expected outputs)
+
+### Test Fixture Data
+Create the following test fixtures in `scripts/spike/testdata/`:
+- `sample_note_plaintext.txt` — Expected plaintext output from osascript read
+- `sample_note_html.txt` — Expected HTML body output (for `body` property fallback)
+- `sample_note_checkbox.txt` — Mixed checkbox format note content
+- `expected_parsed_tasks.json` — Expected parsed task output for validation
+
+### Acceptance Criteria Test Mapping
+| AC | Test | Type | CI Compatible |
+|----|------|------|---------------|
+| AC1 | Validate comparison matrix has all 3 approaches | Report validation | Yes (Linux) |
+| AC2 | Each PoC script exits 0 with mock data | Smoke test | Partial (mock) |
+| AC3 | Spike report contains all required sections | Report validation | Yes (Linux) |
+| AC4 | Write capability documented for each approach | Report validation | Yes (Linux) |
+| AC5 | PoC output contains parsed task lines | Integration test | macOS only |
+
+### Mock Strategy for CI
+- **Portable tests (Linux GitHub Actions):** Report validation, fixture parsing, Go unit tests with mocked osascript/SQLite
+- **macOS-only tests (`//go:build darwin`):** Integration tests that actually call osascript or access SQLite
+- Existing `CommandExecutor` pattern from `apple_notes_provider.go` provides the mock interface for Go tests
+
+### Coverage Targets
+- Go PoC files: 80%+ test coverage
+- All shell scripts: smoke test (executable, shebang, format validation)
+
+### Spike Report Completeness Validation
+The report at `docs/spike-reports/2.2-apple-notes-integration.md` must contain these sections (validated by `scripts/spike/tests/validate_report.sh`):
+- [ ] Executive Summary
+- [ ] Comparison Matrix (all rows filled, no `?` remaining)
+- [ ] Recommendation with Rationale
+- [ ] Error Taxonomy per Approach
+- [ ] CI/CD Compatibility
+- [ ] Performance Benchmarks (JSON data in `scripts/spike/benchmarks/`)
+- [ ] Risks and Mitigations
+
+### Benchmark Output Format
+Performance benchmarks must produce machine-readable JSON in `scripts/spike/benchmarks/`:
+```json
+{
+  "approach": "applescript",
+  "operation": "read",
+  "iterations": 10,
+  "p50_ms": 150,
+  "p95_ms": 280,
+  "max_ms": 450,
+  "notes_app_state": "open"
+}
+```
+
+### Make Target
+Add to Makefile or create `scripts/spike/Makefile`:
+```makefile
+spike-test:
+	@echo "Running spike smoke tests..."
+	bash scripts/spike/tests/smoke_test.sh
+	@echo "Running spike Go unit tests..."
+	cd scripts/spike && go test -v -cover ./...
+	@echo "Validating spike report..."
+	bash scripts/spike/tests/validate_report.sh
+```
+
+## Dev Notes
+
+### Architecture Constraints
+- **Go 1.25.4+** with **gofumpt** formatting
+- **TaskProvider interface** must be respected (all backends implement same interface)
+- **Constructor injection** for dependency management
+- **No CGo** if possible (prefer pure Go libraries like `modernc.org/sqlite` over `mattn/go-sqlite3`)
+- **macOS-only code** must use `//go:build darwin` build tags
+- **Latency budget:** <500ms for provider operations (NFR6)
+- **Graceful degradation:** Must work when Apple Notes unavailable (NFR7)
+
+### Key Technical Context
+- Apple Notes stores data in CoreData/CloudKit-backed SQLite at `~/Library/Group Containers/group.com.apple.notes/NoteStore.sqlite`
+- osascript calls require Automation permission (System Settings > Privacy & Security > Automation)
+- Direct SQLite access requires Full Disk Access (more invasive permission)
+- MCP (Model Context Protocol) servers communicate via JSON-RPC over stdio
+- The note body in Apple Notes may be rich text (HTML) — `plaintext text` property strips formatting
+
+### Expected Findings (Hypotheses to Validate)
+1. **AppleScript (osascript):** Best balance of simplicity and capability. Read is proven (Story 2.3). Write via `set body of note` may work but could strip formatting. Most reliable for permissions (just Automation consent, not Full Disk Access).
+2. **SQLite:** Most powerful (direct DB access) but most fragile (undocumented schema, requires Full Disk Access, risk of CloudKit sync corruption). Probably NOT recommended for writes.
+3. **MCP Server:** Newest approach. May abstract away complexity but adds external dependency. Evaluate if it exists and is mature enough.
+
+### PoC Script Conventions
+- All PoC scripts must exit 0 on success, non-zero on failure
+- Errors must go to stderr, results to stdout
+- Expected output format for read PoCs:
+  ```
+  [OK] Read N tasks from "ThreeDoors Tasks"
+  1. [TODO] Buy groceries for the week
+  2. [TODO] Review pull request #42
+  3. [DONE] Set up development environment
+  ...
+  ```
+- Expected output format for write PoCs:
+  ```
+  [OK] Modified note "ThreeDoors Tasks" — toggled task 3 from TODO to DONE
+  ```
+  or
+  ```
+  [FAIL] Write not supported: <reason>
+  ```
+- Go PoCs must have their own `go.mod` (e.g., `scripts/spike/go.mod`) — NOT part of main project module
+
+### Project Structure Notes
+- Spike scripts go in `scripts/spike/` (new directory)
+- Spike report goes in `docs/spike-reports/` (new directory)
+- No changes to existing `internal/` code — this is evaluation only
+- Go PoCs are standalone `main` packages, not part of the application
+
+### References
+- [Source: docs/prd/epics-and-stories.md#Story-2.2] — Original story definition
+- [Source: docs/architecture/external-apis.md] — Future Apple Notes integration note
+- [Source: docs/architecture/tech-stack.md] — Go 1.25.4, modernc.org/sqlite preferred
+- [Source: internal/tasks/provider.go] — TaskProvider interface definition
+- [Source: internal/tasks/apple_notes_provider.go] — Existing AppleScript implementation (Story 2.3)
+- [Source: internal/tasks/fallback_provider.go] — Fallback provider pattern
+- [Source: internal/tasks/provider_factory.go] — Provider creation factory
+
+## Dev Agent Record
+
+### Agent Model Used
+
+{{agent_model_name_version}}
+
+### Debug Log References
+
+### Completion Notes List
+
+### Change Log
+- 2026-03-02: Story created by SM agent (zealous-platypus worker)
+- 2026-03-02: Party Mode #2 — 10 TEA recommendations accepted:
+  Added Testing Requirements section with test file locations, fixture data, AC test mapping,
+  mock strategy for CI, coverage targets, report completeness validation, benchmark JSON format,
+  make spike-test target
+- 2026-03-02: Party Mode #1 — 12 recommendations accepted (Dev, Architect, TEA agents):
+  Added Prerequisites section, Definition of Done, error taxonomy tasks, CI/CD compatibility assessment,
+  performance benchmarking protocol, hybrid approach evaluation, concurrency testing, PoC conventions,
+  MCP non-existence handling, Go PoC module strategy clarification
+
+### File List
