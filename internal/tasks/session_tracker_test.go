@@ -243,3 +243,33 @@ func TestSessionTracker_RecordRefresh_NilSlice(t *testing.T) {
 		t.Errorf("Expected 0 bypass records for nil slice, got %d", len(st.metrics.TaskBypasses))
 	}
 }
+
+// --- LatestMood Tests ---
+
+func TestSessionTracker_LatestMood_NoMoods(t *testing.T) {
+	st := NewSessionTracker()
+	mood := st.LatestMood()
+	if mood != "" {
+		t.Errorf("Expected empty string for no moods, got %q", mood)
+	}
+}
+
+func TestSessionTracker_LatestMood_OneMood(t *testing.T) {
+	st := NewSessionTracker()
+	st.RecordMood("focused", "")
+	mood := st.LatestMood()
+	if mood != "focused" {
+		t.Errorf("Expected 'focused', got %q", mood)
+	}
+}
+
+func TestSessionTracker_LatestMood_MultipleMoods(t *testing.T) {
+	st := NewSessionTracker()
+	st.RecordMood("focused", "")
+	st.RecordMood("tired", "")
+	st.RecordMood("stressed", "")
+	mood := st.LatestMood()
+	if mood != "stressed" {
+		t.Errorf("Expected 'stressed' (last mood), got %q", mood)
+	}
+}
