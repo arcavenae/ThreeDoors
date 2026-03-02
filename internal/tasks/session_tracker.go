@@ -159,6 +159,14 @@ func (st *SessionTracker) GetSessionID() string {
 	return st.metrics.SessionID
 }
 
+// LatestMood returns the most recently recorded mood string, or empty if none.
+func (st *SessionTracker) LatestMood() string {
+	if len(st.metrics.MoodEntries) == 0 {
+		return ""
+	}
+	return st.metrics.MoodEntries[len(st.metrics.MoodEntries)-1].Mood
+}
+
 // Finalize calculates session duration and returns metrics for persistence.
 func (st *SessionTracker) Finalize() *SessionMetrics {
 	st.metrics.EndTime = time.Now().UTC()

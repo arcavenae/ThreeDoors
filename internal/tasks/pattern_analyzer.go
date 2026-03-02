@@ -65,12 +65,44 @@ type AvoidanceEntry struct {
 	NeverSelected bool   `json:"never_selected"`
 }
 
+// TaskCategoryInfo holds categorization for a task, keyed by task text.
+type TaskCategoryInfo struct {
+	Type   TaskType
+	Effort TaskEffort
+}
+
 // PatternAnalyzer analyzes session metrics for user behavior patterns.
-type PatternAnalyzer struct{}
+type PatternAnalyzer struct {
+	taskCategories map[string]TaskCategoryInfo
+}
 
 // NewPatternAnalyzer creates a new PatternAnalyzer.
 func NewPatternAnalyzer() *PatternAnalyzer {
 	return &PatternAnalyzer{}
+}
+
+// SetTaskCategories sets the task categorization lookup table.
+// This allows the analyzer to populate PreferredType and PreferredEffort
+// in MoodCorrelation results by mapping task text to categories.
+func (pa *PatternAnalyzer) SetTaskCategories(categories map[string]TaskCategoryInfo) {
+	pa.taskCategories = categories
+}
+
+// BuildTaskCategoryMap creates a lookup table from a TaskPool.
+// Includes ALL tasks, even those with zero-value Type/Effort.
+// Returns empty map (not nil) for nil pool or pool with no tasks.
+func BuildTaskCategoryMap(pool *TaskPool) map[string]TaskCategoryInfo {
+	m := make(map[string]TaskCategoryInfo)
+	if pool == nil {
+		return m
+	}
+	for _, t := range pool.GetAllTasks() {
+		m[t.Text] = TaskCategoryInfo{
+			Type:   t.Type,
+			Effort: t.Effort,
+		}
+	}
+	return m
 }
 
 // ReadSessions reads session metrics from a JSON Lines file.
@@ -298,11 +330,48 @@ func (pa *PatternAnalyzer) analyzeMoodCorrelations(sessions []SessionMetrics) []
 		if acc.count < 3 {
 			continue
 		}
+
+		// Determine preferred type and effort from category map
+		preferredType := ""
+		preferredEffort := ""
+		if len(pa.taskCategories) > 0 {
+			typeCounts := map[TaskType]int{}
+			effortCounts := map[TaskEffort]int{}
+			for _, text := range acc.taskTexts {
+				info, ok := pa.taskCategories[text]
+				if !ok {
+					continue // Task not in category map (deleted/completed) — skip
+				}
+				if info.Type != "" {
+					typeCounts[info.Type]++
+				}
+				if info.Effort != "" {
+					effortCounts[info.Effort]++
+				}
+			}
+			// Find most frequent type
+			maxTypeCount := 0
+			for t, c := range typeCounts {
+				if c > maxTypeCount {
+					maxTypeCount = c
+					preferredType = string(t)
+				}
+			}
+			// Find most frequent effort
+			maxEffortCount := 0
+			for e, c := range effortCounts {
+				if c > maxEffortCount {
+					maxEffortCount = c
+					preferredEffort = string(e)
+				}
+			}
+		}
+
 		correlations = append(correlations, MoodCorrelation{
 			Mood:              mood,
 			SessionCount:      acc.count,
-			PreferredType:     "", // Would need task pool lookup for type
-			PreferredEffort:   "", // Would need task pool lookup for effort
+			PreferredType:     preferredType,
+			PreferredEffort:   preferredEffort,
 			AvgTasksCompleted: math.Round(float64(acc.totalComp)/float64(acc.count)*10) / 10,
 		})
 	}
