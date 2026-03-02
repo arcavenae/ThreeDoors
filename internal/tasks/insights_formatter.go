@@ -121,10 +121,10 @@ func FormatMoodInsights(report *PatternReport) string {
 	fmt.Fprintf(&b, "Mood Correlation Analysis (%d sessions with mood data)\n\n", totalMoodSessions)
 
 	// Table header
-	b.WriteString(fmt.Sprintf("%-12s | %-8s | %-16s | %-16s | %s\n",
-		"Mood", "Sessions", "Preferred Type", "Preferred Effort", "Avg Completed"))
-	b.WriteString(fmt.Sprintf("%-12s-+-%-8s-+-%-16s-+-%-16s-+-%s\n",
-		"------------", "--------", "----------------", "----------------", "-------------"))
+	fmt.Fprintf(&b, "%-12s | %-8s | %-16s | %-16s | %s\n",
+		"Mood", "Sessions", "Preferred Type", "Preferred Effort", "Avg Completed")
+	fmt.Fprintf(&b, "%-12s-+-%-8s-+-%-16s-+-%-16s-+-%s\n",
+		"------------", "--------", "----------------", "----------------", "-------------")
 
 	// Find most productive mood
 	var mostProductiveMood string

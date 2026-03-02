@@ -334,7 +334,7 @@ func (pa *PatternAnalyzer) analyzeMoodCorrelations(sessions []SessionMetrics) []
 		// Determine preferred type and effort from category map
 		preferredType := ""
 		preferredEffort := ""
-		if pa.taskCategories != nil && len(pa.taskCategories) > 0 {
+		if len(pa.taskCategories) > 0 {
 			typeCounts := map[TaskType]int{}
 			effortCounts := map[TaskEffort]int{}
 			for _, text := range acc.taskTexts {
