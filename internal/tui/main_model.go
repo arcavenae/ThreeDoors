@@ -28,6 +28,7 @@ type MainModel struct {
 	searchView          *SearchView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
+	provider            tasks.TaskProvider
 	flash               string
 	width               int
 	height              int
@@ -36,12 +37,13 @@ type MainModel struct {
 }
 
 // NewMainModel creates the root application model.
-func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *MainModel {
+func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider) *MainModel {
 	return &MainModel{
 		viewMode:  ViewDoors,
 		doorsView: NewDoorsView(pool, tracker),
 		pool:      pool,
 		tracker:   tracker,
+		provider:  provider,
 	}
 }
 
@@ -249,7 +251,7 @@ func (m *MainModel) updateSearch(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
-	return tasks.SaveTasks(allTasks)
+	return m.provider.SaveTasks(allTasks)
 }
 
 // View implements tea.Model.

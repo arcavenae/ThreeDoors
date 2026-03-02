@@ -21,7 +21,7 @@ func makePool(texts ...string) *tasks.TaskPool {
 func makeModel(texts ...string) *MainModel {
 	pool := makePool(texts...)
 	tracker := tasks.NewSessionTracker()
-	return NewMainModel(pool, tracker)
+	return NewMainModel(pool, tracker, tasks.NewTextFileProvider())
 }
 
 func keyMsg(s string) tea.Msg {
@@ -270,7 +270,7 @@ func TestDoorsView_RendersHelpText(t *testing.T) {
 func TestDoorsView_AllTasksDone_ShowsMessage(t *testing.T) {
 	pool := tasks.NewTaskPool()
 	tracker := tasks.NewSessionTracker()
-	m := NewMainModel(pool, tracker)
+	m := NewMainModel(pool, tracker, tasks.NewTextFileProvider())
 	view := m.View()
 	if !strings.Contains(view, "All tasks done") {
 		t.Errorf("View should show 'All tasks done' when pool is empty, got: %s", view)
