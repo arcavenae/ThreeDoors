@@ -128,14 +128,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, ClearFlashCmd()
 
 	case TaskCompletedMsg:
-		m.doorsView.IncrementCompleted()
-		if err := tasks.AppendCompleted(msg.Task); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to log completed task: %v\n", err)
+		if err := m.provider.MarkComplete(msg.Task.ID); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to mark complete: %v\n", err)
+			m.flash = "Error completing task"
+			return m, ClearFlashCmd()
 		}
 		m.pool.RemoveTask(msg.Task.ID)
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
-		}
+		m.doorsView.IncrementCompleted()
 		m.flash = celebrationMessages[rand.IntN(len(celebrationMessages))]
 		m.viewMode = ViewDoors
 		m.detailView = nil

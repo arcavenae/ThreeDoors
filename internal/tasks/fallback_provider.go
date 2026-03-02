@@ -82,6 +82,19 @@ func (fp *FallbackProvider) DeleteTask(taskID string) error {
 	return err
 }
 
+// MarkComplete delegates to the active provider. If primary returns ErrReadOnly, delegates to fallback.
+func (fp *FallbackProvider) MarkComplete(taskID string) error {
+	if fp.usedFallback {
+		return fp.fallback.MarkComplete(taskID)
+	}
+
+	err := fp.primary.MarkComplete(taskID)
+	if errors.Is(err, ErrReadOnly) {
+		return fp.fallback.MarkComplete(taskID)
+	}
+	return err
+}
+
 // IsFallback returns true if the fallback provider is currently active.
 func (fp *FallbackProvider) IsFallback() bool {
 	return fp.usedFallback

@@ -8,4 +8,5 @@ type TaskProvider interface {
 	SaveTask(task *Task) error
 	SaveTasks(tasks []*Task) error
 	DeleteTask(taskID string) error
+	MarkComplete(taskID string) error
 }

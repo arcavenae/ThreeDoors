@@ -78,6 +78,11 @@ func (p *AppleNotesProvider) DeleteTask(_ string) error {
 	return ErrReadOnly
 }
 
+// MarkComplete is not supported — Apple Notes is read-only in this story.
+func (p *AppleNotesProvider) MarkComplete(_ string) error {
+	return ErrReadOnly
+}
+
 // wrapError maps osascript errors to meaningful wrapped errors.
 func (p *AppleNotesProvider) wrapError(err error) error {
 	msg := err.Error()

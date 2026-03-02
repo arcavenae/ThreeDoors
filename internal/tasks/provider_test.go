@@ -8,13 +8,15 @@ import (
 
 // MockProvider implements TaskProvider for testing.
 type MockProvider struct {
-	Tasks      []*Task
-	SavedTasks []*Task
-	DeletedIDs []string
-	LoadErr    error
-	SaveErr    error
-	DeleteErr  error
-	LoadDelay  time.Duration
+	Tasks        []*Task
+	SavedTasks   []*Task
+	DeletedIDs   []string
+	CompletedIDs []string
+	LoadErr      error
+	SaveErr      error
+	DeleteErr    error
+	CompleteErr  error
+	LoadDelay    time.Duration
 }
 
 func (m *MockProvider) LoadTasks() ([]*Task, error) {
@@ -48,6 +50,14 @@ func (m *MockProvider) DeleteTask(taskID string) error {
 		return m.DeleteErr
 	}
 	m.DeletedIDs = append(m.DeletedIDs, taskID)
+	return nil
+}
+
+func (m *MockProvider) MarkComplete(taskID string) error {
+	if m.CompleteErr != nil {
+		return m.CompleteErr
+	}
+	m.CompletedIDs = append(m.CompletedIDs, taskID)
 	return nil
 }
 
@@ -152,4 +162,101 @@ func TestMockProvider_DeleteTask(t *testing.T) {
 			t.Error("DeleteTask() expected error, got nil")
 		}
 	})
+}
+
+func TestMockProvider_MarkComplete(t *testing.T) {
+	t.Run("records completed ID", func(t *testing.T) {
+		provider := &MockProvider{}
+		err := provider.MarkComplete("aaa")
+		if err != nil {
+			t.Fatalf("MarkComplete() unexpected error: %v", err)
+		}
+		if len(provider.CompletedIDs) != 1 {
+			t.Errorf("CompletedIDs has %d items, want 1", len(provider.CompletedIDs))
+		}
+		if provider.CompletedIDs[0] != "aaa" {
+			t.Errorf("CompletedIDs[0] = %q, want %q", provider.CompletedIDs[0], "aaa")
+		}
+	})
+
+	t.Run("returns error when configured", func(t *testing.T) {
+		provider := &MockProvider{CompleteErr: fmt.Errorf("disk full")}
+		err := provider.MarkComplete("aaa")
+		if err == nil {
+			t.Error("MarkComplete() expected error, got nil")
+		}
+	})
+}
+
+func TestTextFileProvider_MarkComplete_Success(t *testing.T) {
+	tmpDir := t.TempDir()
+	SetHomeDir(tmpDir)
+	defer SetHomeDir("")
+
+	// Create a task and save it
+	task := NewTask("Complete me")
+	if err := SaveTasks([]*Task{task}); err != nil {
+		t.Fatalf("SaveTasks failed: %v", err)
+	}
+
+	provider := NewTextFileProvider()
+	err := provider.MarkComplete(task.ID)
+	if err != nil {
+		t.Fatalf("MarkComplete() unexpected error: %v", err)
+	}
+
+	// Verify task removed from active tasks
+	remaining, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() after complete: %v", err)
+	}
+	for _, r := range remaining {
+		if r.ID == task.ID {
+			t.Error("completed task should not be in active tasks")
+		}
+	}
+}
+
+func TestTextFileProvider_MarkComplete_NotFound(t *testing.T) {
+	tmpDir := t.TempDir()
+	SetHomeDir(tmpDir)
+	defer SetHomeDir("")
+
+	task := NewTask("Only task")
+	if err := SaveTasks([]*Task{task}); err != nil {
+		t.Fatalf("SaveTasks failed: %v", err)
+	}
+
+	provider := NewTextFileProvider()
+	err := provider.MarkComplete("nonexistent-id")
+	if err == nil {
+		t.Fatal("MarkComplete() expected error for nonexistent ID")
+	}
+}
+
+func TestTextFileProvider_MarkComplete_InvalidTransition(t *testing.T) {
+	tmpDir := t.TempDir()
+	SetHomeDir(tmpDir)
+	defer SetHomeDir("")
+
+	// Complete status cannot transition to complete again
+	completedAt := baseTime
+	task := &Task{
+		ID:          "completed-task",
+		Text:        "Already done",
+		Status:      StatusComplete,
+		Notes:       []TaskNote{},
+		CreatedAt:   baseTime,
+		UpdatedAt:   baseTime,
+		CompletedAt: &completedAt,
+	}
+	if err := SaveTasks([]*Task{task}); err != nil {
+		t.Fatalf("SaveTasks failed: %v", err)
+	}
+
+	provider := NewTextFileProvider()
+	err := provider.MarkComplete(task.ID)
+	if err == nil {
+		t.Fatal("MarkComplete() expected error for invalid transition from complete")
+	}
 }

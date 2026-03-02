@@ -1,5 +1,10 @@
 package tasks
 
+import (
+	"fmt"
+	"time"
+)
+
 // TextFileProvider wraps the existing file_manager.go functions
 // to implement the TaskProvider interface.
 type TextFileProvider struct{}
@@ -52,4 +57,47 @@ func (p *TextFileProvider) DeleteTask(taskID string) error {
 		}
 	}
 	return SaveTasks(filtered)
+}
+
+// MarkComplete marks a task as complete, removes it from active tasks, and logs to completed.txt.
+func (p *TextFileProvider) MarkComplete(taskID string) error {
+	allTasks, err := LoadTasks()
+	if err != nil {
+		return fmt.Errorf("mark complete: load tasks: %w", err)
+	}
+
+	var target *Task
+	for _, t := range allTasks {
+		if t.ID == taskID {
+			target = t
+			break
+		}
+	}
+	if target == nil {
+		return fmt.Errorf("mark complete: task %s not found", taskID)
+	}
+
+	if !IsValidTransition(target.Status, StatusComplete) {
+		return fmt.Errorf("mark complete: invalid transition from %s to complete", target.Status)
+	}
+
+	target.Status = StatusComplete
+	now := time.Now().UTC()
+	target.CompletedAt = &now
+
+	filtered := make([]*Task, 0, len(allTasks))
+	for _, t := range allTasks {
+		if t.ID != taskID {
+			filtered = append(filtered, t)
+		}
+	}
+	if err := SaveTasks(filtered); err != nil {
+		return fmt.Errorf("mark complete: save tasks: %w", err)
+	}
+
+	if err := AppendCompleted(target); err != nil {
+		return fmt.Errorf("mark complete: append completed: %w", err)
+	}
+
+	return nil
 }

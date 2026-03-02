@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -9,6 +10,32 @@ import (
 )
 
 // --- helpers ---
+
+// testProvider is a no-op TaskProvider for TUI testing.
+type testProvider struct {
+	completedIDs []string
+	completeErr  error
+	savedTasks   []*tasks.Task
+	saveErr      error
+}
+
+func (p *testProvider) LoadTasks() ([]*tasks.Task, error) { return nil, nil }
+func (p *testProvider) SaveTask(t *tasks.Task) error      { return p.saveErr }
+
+func (p *testProvider) SaveTasks(ts []*tasks.Task) error {
+	p.savedTasks = append(p.savedTasks, ts...)
+	return p.saveErr
+}
+
+func (p *testProvider) DeleteTask(_ string) error { return nil }
+
+func (p *testProvider) MarkComplete(id string) error {
+	if p.completeErr != nil {
+		return p.completeErr
+	}
+	p.completedIDs = append(p.completedIDs, id)
+	return nil
+}
 
 func makePool(texts ...string) *tasks.TaskPool {
 	pool := tasks.NewTaskPool()
@@ -19,9 +46,13 @@ func makePool(texts ...string) *tasks.TaskPool {
 }
 
 func makeModel(texts ...string) *MainModel {
+	return makeModelWithProvider(&testProvider{}, texts...)
+}
+
+func makeModelWithProvider(provider tasks.TaskProvider, texts ...string) *MainModel {
 	pool := makePool(texts...)
 	tracker := tasks.NewSessionTracker()
-	return NewMainModel(pool, tracker, tasks.NewTextFileProvider())
+	return NewMainModel(pool, tracker, provider)
 }
 
 func keyMsg(s string) tea.Msg {
@@ -488,5 +519,84 @@ func TestSessionTracker_RefreshRecorded(t *testing.T) {
 	metrics := m.tracker.Finalize()
 	if metrics.RefreshesUsed != 1 {
 		t.Errorf("expected 1 refresh, got %d", metrics.RefreshesUsed)
+	}
+}
+
+// --- MarkComplete Provider Integration ---
+
+func TestTaskCompleted_CallsProviderMarkComplete(t *testing.T) {
+	provider := &testProvider{}
+	m := makeModelWithProvider(provider, "task1", "task2", "task3", "task4", "task5")
+
+	// Enter detail and complete
+	m.Update(keyMsg("w"))
+	m.Update(keyMsg("enter"))
+	if m.detailView == nil {
+		t.Fatal("should be in detail view")
+	}
+	taskID := m.detailView.task.ID
+
+	_, cmd := m.Update(keyMsg("c"))
+	if cmd != nil {
+		msg := cmd()
+		m.Update(msg)
+	}
+
+	if len(provider.completedIDs) != 1 {
+		t.Fatalf("expected 1 MarkComplete call, got %d", len(provider.completedIDs))
+	}
+	if provider.completedIDs[0] != taskID {
+		t.Errorf("MarkComplete called with %q, want %q", provider.completedIDs[0], taskID)
+	}
+}
+
+func TestTaskCompleted_PoolRemovedOnSuccess(t *testing.T) {
+	provider := &testProvider{}
+	m := makeModelWithProvider(provider, "task1", "task2", "task3", "task4", "task5")
+
+	// Enter detail and complete
+	m.Update(keyMsg("w"))
+	m.Update(keyMsg("enter"))
+	taskID := m.detailView.task.ID
+	initialCount := len(m.pool.GetAllTasks())
+
+	_, cmd := m.Update(keyMsg("c"))
+	if cmd != nil {
+		msg := cmd()
+		m.Update(msg)
+	}
+
+	finalCount := len(m.pool.GetAllTasks())
+	if finalCount != initialCount-1 {
+		t.Errorf("pool should have %d tasks, got %d", initialCount-1, finalCount)
+	}
+	for _, task := range m.pool.GetAllTasks() {
+		if task.ID == taskID {
+			t.Error("completed task should not be in pool")
+		}
+	}
+}
+
+func TestTaskCompleted_PoolRemainsOnProviderFailure(t *testing.T) {
+	provider := &testProvider{completeErr: fmt.Errorf("disk full")}
+	m := makeModelWithProvider(provider, "task1", "task2", "task3", "task4", "task5")
+
+	initialCount := len(m.pool.GetAllTasks())
+
+	// Enter detail and attempt complete
+	m.Update(keyMsg("w"))
+	m.Update(keyMsg("enter"))
+	_, cmd := m.Update(keyMsg("c"))
+	if cmd != nil {
+		msg := cmd()
+		m.Update(msg)
+	}
+
+	finalCount := len(m.pool.GetAllTasks())
+	if finalCount != initialCount {
+		t.Errorf("pool should still have %d tasks on failure, got %d", initialCount, finalCount)
+	}
+	if m.flash != "Error completing task" {
+		t.Errorf("flash should show error, got %q", m.flash)
 	}
 }
