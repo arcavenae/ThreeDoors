@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -109,5 +110,53 @@ func TestPercentileEmpty(t *testing.T) {
 	got := percentile([]float64{}, 0.5)
 	if got != 0 {
 		t.Errorf("percentile(empty, 0.5) = %v, want 0", got)
+	}
+}
+
+func TestSanitizeForAppleScript(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"simple", "simple"},
+		{`has "quotes"`, `has \"quotes\"`},
+		{`has \backslash`, `has \\backslash`},
+		{`both "and" \`, `both \"and\" \\`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := sanitizeForAppleScript(tt.input)
+			if got != tt.want {
+				t.Errorf("sanitizeForAppleScript(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseCheckboxAsteriskCapitalX(t *testing.T) {
+	text, status := parseCheckbox("* [X] Capital X star")
+	if text != "Capital X star" || status != "complete" {
+		t.Errorf("parseCheckbox(* [X]) = (%q, %q), want (\"Capital X star\", \"complete\")", text, status)
+	}
+}
+
+func TestParseTasksEdgeCases(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		wantCount int
+	}{
+		{"checkbox prefix only", "- [ ] ", 1},
+		{"unicode content", "- [ ] Buy groceries \U0001F6D2", 1},
+		{"brackets in text", "- [ ] Task with [brackets] inside", 1},
+		{"very long line", "- [ ] " + strings.Repeat("a", 1000), 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tasks := parseTasks(tt.input)
+			if len(tasks) != tt.wantCount {
+				t.Errorf("parseTasks(%q) = %d tasks, want %d", tt.input[:min(len(tt.input), 50)], len(tasks), tt.wantCount)
+			}
+		})
 	}
 }

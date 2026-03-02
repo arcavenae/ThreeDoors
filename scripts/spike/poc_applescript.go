@@ -37,11 +37,20 @@ func runOsascript(ctx context.Context, script string) (string, error) {
 	return strings.TrimSpace(string(out)), err
 }
 
+// sanitizeForAppleScript escapes double quotes and backslashes in a string
+// to prevent AppleScript injection when interpolating into osascript commands.
+func sanitizeForAppleScript(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `"`, `\"`)
+	return s
+}
+
 func readNote(noteTitle string) ([]Task, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, noteTitle)
+	escaped := sanitizeForAppleScript(noteTitle)
+	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, escaped)
 	output, err := runOsascript(ctx, script)
 	if err != nil {
 		return nil, fmt.Errorf("osascript read failed: %w", err)
@@ -90,6 +99,10 @@ func parseCheckbox(line string) (string, string) {
 }
 
 func benchmarkRead(noteTitle string, iterations int) (*BenchmarkResult, error) {
+	if iterations <= 0 {
+		return nil, fmt.Errorf("iterations must be > 0, got %d", iterations)
+	}
+
 	var durations []float64
 
 	for i := 0; i < iterations; i++ {
@@ -165,7 +178,11 @@ func main() {
 	fmt.Printf("max: %.2f ms\n", result.MaxMs)
 
 	// Write benchmark JSON
-	benchJSON, _ := json.MarshalIndent(result, "", "  ")
+	benchJSON, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[WARN] Failed to marshal benchmark JSON: %v\n", err)
+		return
+	}
 	fmt.Printf("\nBenchmark JSON:\n%s\n", string(benchJSON))
 
 	// Save to benchmarks dir

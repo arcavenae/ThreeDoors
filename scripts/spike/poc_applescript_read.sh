@@ -5,13 +5,19 @@
 set -euo pipefail
 
 NOTE_TITLE="ThreeDoors Tasks"
+# SECURITY NOTE: NOTE_TITLE is hardcoded. If ever sourced from user input,
+# it MUST be sanitized to prevent AppleScript injection (escape " and \).
 
 echo "=== AppleScript Read PoC ==="
 echo "Reading note: $NOTE_TITLE"
 echo "---"
 
 # Approach 1: plaintext text (preferred)
-PLAINTEXT=$(osascript -e "tell application \"Notes\" to get plaintext text of note \"$NOTE_TITLE\"" 2>&1) || {
+# Using heredoc to avoid shell interpolation issues with osascript
+PLAINTEXT=$(osascript <<APPLESCRIPT 2>&1
+tell application "Notes" to get plaintext text of note "$NOTE_TITLE"
+APPLESCRIPT
+) || {
     echo "[FAIL] osascript read failed: $PLAINTEXT" >&2
     exit 1
 }
