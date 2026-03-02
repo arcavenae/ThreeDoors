@@ -124,7 +124,7 @@ func (dv *DoorsView) View() string {
 	}
 
 	s.WriteString("\n\n")
-	s.WriteString(helpStyle.Render("a/left, w/up, d/right to select | s/down to re-roll | Enter to open | / search | M mood | q quit"))
+	s.WriteString(helpStyle.Render("a/left, w/up, d/right to select | s/down to re-roll | Enter to open | N feedback | / search | M mood | q quit"))
 	s.WriteString("\n")
 	s.WriteString(greetingStyle.Render("Progress over perfection. Just pick one and start."))
 

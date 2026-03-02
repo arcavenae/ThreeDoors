@@ -197,6 +197,40 @@ func TestSessionTracker_RecordRefresh_EmptySlice(t *testing.T) {
 	}
 }
 
+func TestSessionTracker_RecordDoorFeedback(t *testing.T) {
+	st := NewSessionTracker()
+	st.RecordDoorFeedback("task-123", "blocked", "")
+	st.RecordDoorFeedback("task-456", "other", "too vague")
+
+	if st.metrics.DoorFeedbackCount != 2 {
+		t.Errorf("Expected 2 door feedback entries, got %d", st.metrics.DoorFeedbackCount)
+	}
+	if len(st.metrics.DoorFeedback) != 2 {
+		t.Fatalf("Expected 2 door feedback records, got %d", len(st.metrics.DoorFeedback))
+	}
+	if st.metrics.DoorFeedback[0].TaskID != "task-123" {
+		t.Errorf("Expected task ID 'task-123', got %q", st.metrics.DoorFeedback[0].TaskID)
+	}
+	if st.metrics.DoorFeedback[0].FeedbackType != "blocked" {
+		t.Errorf("Expected feedback type 'blocked', got %q", st.metrics.DoorFeedback[0].FeedbackType)
+	}
+	if st.metrics.DoorFeedback[1].Comment != "too vague" {
+		t.Errorf("Expected comment 'too vague', got %q", st.metrics.DoorFeedback[1].Comment)
+	}
+	if st.metrics.DoorFeedback[1].FeedbackType != "other" {
+		t.Errorf("Expected feedback type 'other', got %q", st.metrics.DoorFeedback[1].FeedbackType)
+	}
+}
+
+func TestSessionTracker_RecordDoorFeedback_Timestamp(t *testing.T) {
+	st := NewSessionTracker()
+	st.RecordDoorFeedback("task-789", "not-now", "")
+
+	if st.metrics.DoorFeedback[0].Timestamp.IsZero() {
+		t.Error("Expected non-zero timestamp on door feedback entry")
+	}
+}
+
 func TestSessionTracker_RecordRefresh_NilSlice(t *testing.T) {
 	st := NewSessionTracker()
 

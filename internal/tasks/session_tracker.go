@@ -6,6 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// DoorFeedbackEntry captures feedback on why a door/task was declined.
+type DoorFeedbackEntry struct {
+	Timestamp    time.Time `json:"timestamp"`
+	TaskID       string    `json:"task_id"`
+	FeedbackType string    `json:"feedback_type"` // blocked, not-now, needs-breakdown, other
+	Comment      string    `json:"comment,omitempty"`
+}
+
 // MoodEntry captures a timestamped mood record.
 type MoodEntry struct {
 	Timestamp  time.Time `json:"timestamp"`
@@ -37,6 +45,8 @@ type SessionMetrics struct {
 	DoorSelections      []DoorSelectionRecord `json:"door_selections,omitempty"`
 	TaskBypasses        [][]string            `json:"task_bypasses,omitempty"`
 	MoodEntries         []MoodEntry           `json:"mood_entries_detail,omitempty"`
+	DoorFeedback        []DoorFeedbackEntry   `json:"door_feedback,omitempty"`
+	DoorFeedbackCount   int                   `json:"door_feedback_count"`
 }
 
 // SessionTracker provides in-memory tracking of user behavior during an app session.
@@ -112,6 +122,17 @@ func (st *SessionTracker) RecordMood(mood string, customText string) {
 		CustomText: customText,
 	})
 	st.metrics.MoodEntryCount++
+}
+
+// RecordDoorFeedback records feedback on a task shown in a door.
+func (st *SessionTracker) RecordDoorFeedback(taskID, feedbackType, comment string) {
+	st.metrics.DoorFeedback = append(st.metrics.DoorFeedback, DoorFeedbackEntry{
+		Timestamp:    time.Now().UTC(),
+		TaskID:       taskID,
+		FeedbackType: feedbackType,
+		Comment:      comment,
+	})
+	st.metrics.DoorFeedbackCount++
 }
 
 // Finalize calculates session duration and returns metrics for persistence.

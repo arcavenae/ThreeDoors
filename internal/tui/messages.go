@@ -75,6 +75,18 @@ type ShowValuesSetupMsg struct{}
 // ShowValuesEditMsg is sent to open the values edit flow.
 type ShowValuesEditMsg struct{}
 
+// ShowFeedbackMsg is sent to open the door feedback dialog.
+type ShowFeedbackMsg struct {
+	Task *tasks.Task
+}
+
+// DoorFeedbackMsg is sent when door feedback has been submitted.
+type DoorFeedbackMsg struct {
+	Task         *tasks.Task
+	FeedbackType string
+	Comment      string
+}
+
 // ReturnToSearchMsg is sent to restore search view from detail view.
 type ReturnToSearchMsg struct {
 	Query         string

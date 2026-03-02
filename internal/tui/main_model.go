@@ -20,6 +20,7 @@ const (
 	ViewHealth
 	ViewAddTask
 	ViewValuesGoals
+	ViewFeedback
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -33,6 +34,7 @@ type MainModel struct {
 	healthView          *HealthView
 	addTaskView         *AddTaskView
 	valuesView          *ValuesView
+	feedbackView        *FeedbackView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
@@ -98,6 +100,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.valuesView != nil {
 			m.valuesView.SetWidth(msg.Width)
+		}
+		if m.feedbackView != nil {
+			m.feedbackView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -235,6 +240,29 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewMood
 		return m, nil
 
+	case ShowFeedbackMsg:
+		m.feedbackView = NewFeedbackView(msg.Task)
+		m.feedbackView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewFeedback
+		return m, nil
+
+	case DoorFeedbackMsg:
+		if m.tracker != nil {
+			m.tracker.RecordDoorFeedback(msg.Task.ID, msg.FeedbackType, msg.Comment)
+		}
+		if msg.FeedbackType == "needs-breakdown" {
+			msg.Task.AddNote("Flagged: needs breakdown")
+			if err := m.saveTasks(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+			}
+		}
+		m.feedbackView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		m.flash = "Feedback recorded"
+		return m, ClearFlashCmd()
+
 	case ShowValuesSetupMsg:
 		m.valuesView = NewValuesSetupView(m.valuesConfig)
 		m.valuesView.SetWidth(m.width)
@@ -283,6 +311,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateAddTask(msg)
 	case ViewValuesGoals:
 		return m.updateValues(msg)
+	case ViewFeedback:
+		return m.updateFeedback(msg)
 	}
 
 	return m, nil
@@ -314,6 +344,11 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.detailView = NewDetailView(task, m.tracker)
 				m.detailView.SetWidth(m.width)
 				m.viewMode = ViewDetail
+			}
+		case "n", "N":
+			if m.doorsView.selectedDoorIndex >= 0 && m.doorsView.selectedDoorIndex < len(m.doorsView.currentDoors) {
+				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
+				return m, func() tea.Msg { return ShowFeedbackMsg{Task: task} }
 			}
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
@@ -376,6 +411,14 @@ func (m *MainModel) updateAddTask(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateFeedback(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.feedbackView == nil {
+		return m, nil
+	}
+	cmd := m.feedbackView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.valuesView == nil {
 		return m, nil
@@ -420,6 +463,10 @@ func (m *MainModel) View() string {
 	case ViewValuesGoals:
 		if m.valuesView != nil {
 			view = m.valuesView.View()
+		}
+	case ViewFeedback:
+		if m.feedbackView != nil {
+			view = m.feedbackView.View()
 		}
 	default:
 		view = m.doorsView.View()
