@@ -12,18 +12,19 @@ import (
 
 // SearchView handles search and command palette functionality.
 type SearchView struct {
-	textInput     textinput.Model
-	results       []*tasks.Task
-	selectedIndex int
-	pool          *tasks.TaskPool
-	tracker       *tasks.SessionTracker
-	healthChecker *tasks.HealthChecker
-	width         int
-	isCommandMode bool
+	textInput         textinput.Model
+	results           []*tasks.Task
+	selectedIndex     int
+	pool              *tasks.TaskPool
+	tracker           *tasks.SessionTracker
+	healthChecker     *tasks.HealthChecker
+	completionCounter *tasks.CompletionCounter
+	width             int
+	isCommandMode     bool
 }
 
 // NewSearchView creates a new SearchView.
-func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *tasks.HealthChecker) *SearchView {
+func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *tasks.HealthChecker, cc *tasks.CompletionCounter) *SearchView {
 	ti := textinput.New()
 	ti.Placeholder = "Search tasks... (or :command for commands)"
 	ti.Focus()
@@ -31,11 +32,12 @@ func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *task
 	ti.Width = 40
 
 	return &SearchView{
-		textInput:     ti,
-		selectedIndex: -1,
-		pool:          pool,
-		tracker:       tracker,
-		healthChecker: hc,
+		textInput:         ti,
+		selectedIndex:     -1,
+		pool:              pool,
+		tracker:           tracker,
+		healthChecker:     hc,
+		completionCounter: cc,
 	}
 }
 
@@ -191,8 +193,18 @@ func (sv *SearchView) showStats() tea.Cmd {
 		}
 	}
 	metrics := sv.tracker.Finalize()
-	text := fmt.Sprintf("Session Stats | Completed: %d | Doors viewed: %d | Refreshes: %d",
-		metrics.TasksCompleted, metrics.DetailViews, metrics.RefreshesUsed)
+
+	todayCount := 0
+	yesterdayCount := 0
+	streak := 0
+	if sv.completionCounter != nil {
+		todayCount = sv.completionCounter.GetTodayCount()
+		yesterdayCount = sv.completionCounter.GetYesterdayCount()
+		streak = sv.completionCounter.GetStreak()
+	}
+
+	text := fmt.Sprintf("Stats | Today: %d | Yesterday: %d | Doors: %d | Streak: %d days",
+		todayCount, yesterdayCount, metrics.DetailViews, streak)
 	return func() tea.Msg {
 		return FlashMsg{Text: text}
 	}

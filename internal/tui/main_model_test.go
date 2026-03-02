@@ -351,13 +351,13 @@ func TestFlashMessage_ShowsAfterCompletion(t *testing.T) {
 
 	found := false
 	for _, celebration := range celebrationMessages {
-		if m.flash == celebration {
+		if strings.HasPrefix(m.flash, celebration) {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Errorf("flash message %q is not in the celebrationMessages pool", m.flash)
+		t.Errorf("flash message %q does not start with any celebrationMessages", m.flash)
 	}
 }
 

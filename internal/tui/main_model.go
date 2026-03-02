@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"os"
+	"path/filepath"
 
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
@@ -39,6 +40,7 @@ type MainModel struct {
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
 	healthChecker       *tasks.HealthChecker
+	completionCounter   *tasks.CompletionCounter
 	valuesConfig        *tasks.ValuesConfig
 	flash               string
 	width               int
@@ -60,14 +62,23 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		valuesConfig = &tasks.ValuesConfig{}
 	}
 
+	// Initialize completion counter for daily tracking
+	cc := tasks.NewCompletionCounter()
+	if configPath, err := tasks.GetConfigDirPath(); err == nil {
+		if loadErr := cc.LoadFromFile(filepath.Join(configPath, "completed.txt")); loadErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to load completion history: %v\n", loadErr)
+		}
+	}
+
 	return &MainModel{
-		viewMode:      ViewDoors,
-		doorsView:     NewDoorsView(pool, tracker),
-		pool:          pool,
-		tracker:       tracker,
-		provider:      provider,
-		healthChecker: hc,
-		valuesConfig:  valuesConfig,
+		viewMode:          ViewDoors,
+		doorsView:         NewDoorsView(pool, tracker),
+		pool:              pool,
+		tracker:           tracker,
+		provider:          provider,
+		healthChecker:     hc,
+		completionCounter: cc,
+		valuesConfig:      valuesConfig,
 	}
 }
 
@@ -113,7 +124,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ReturnToDoorsMsg:
 		// If we came from search, return to search instead
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
 			m.searchView.SetWidth(m.width)
 			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
 			m.viewMode = ViewSearch
@@ -138,7 +149,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case ReturnToSearchMsg:
-		m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+		m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
 		m.searchView.SetWidth(m.width)
 		m.searchView.RestoreState(msg.Query, msg.SelectedIndex)
 		m.viewMode = ViewSearch
@@ -192,7 +203,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.addTaskView = nil
 		// Return to previous view if it was search, otherwise doors
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
@@ -210,7 +221,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.pool.RemoveTask(msg.Task.ID)
 		m.doorsView.IncrementCompleted()
-		m.flash = celebrationMessages[rand.IntN(len(celebrationMessages))]
+		m.completionCounter.IncrementToday()
+		celebration := celebrationMessages[rand.IntN(len(celebrationMessages))]
+		if dailyMsg := m.completionCounter.FormatCompletionMessage(); dailyMsg != "" {
+			celebration += " | " + dailyMsg
+		}
+		m.flash = celebration
 		m.viewMode = ViewDoors
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
@@ -353,13 +369,13 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "/":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 			return m, nil
 		case ":":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker)
+			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter)
 			m.searchView.SetWidth(m.width)
 			m.searchView.textInput.SetValue(":")
 			m.searchView.checkCommandMode()
