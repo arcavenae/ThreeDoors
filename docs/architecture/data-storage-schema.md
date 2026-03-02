@@ -69,3 +69,139 @@ tasks:
 ```
 
 ---
+
+## Post-MVP Storage (Phase 2–3)
+
+### config.yaml Schema
+
+**Location:** `~/.threedoors/config.yaml`
+
+**Format:** YAML configuration file
+
+**Schema:**
+```yaml
+# Provider configuration
+providers:
+  - name: string           # Unique provider name, required
+    type: string           # Provider type: textfile|applenotes|obsidian, required
+    enabled: bool          # Whether active, required
+    settings:              # Provider-specific settings, varies by type
+      # textfile settings:
+      path: string         # Path to tasks.yaml
+
+      # obsidian settings:
+      vault_path: string   # Path to Obsidian vault
+      tasks_folder: string # Folder within vault for tasks
+      daily_notes: bool    # Enable daily note integration
+      daily_notes_folder: string # Daily notes folder name
+
+      # applenotes settings:
+      folder: string       # Apple Notes folder name
+
+# Onboarding state
+onboarding:
+  complete: bool           # Whether onboarding has been completed
+  values: [string]         # User-defined values
+  goals: [string]          # User-defined goals
+
+# Calendar configuration
+calendar:
+  enabled: bool            # Whether calendar awareness is active
+  sources:                 # Calendar sources (local-only, no OAuth)
+    - type: string         # applescript|ics|caldav_cache
+      path: string         # File path (for ics/caldav_cache types)
+
+# LLM configuration
+llm:
+  enabled: bool            # Whether LLM decomposition is available
+  backend: string          # local|cloud
+  local:
+    endpoint: string       # Ollama/llama.cpp endpoint (e.g., http://localhost:11434)
+    model: string          # Model name (e.g., llama3.2)
+  cloud:
+    provider: string       # anthropic|openai
+    model: string          # Model ID (e.g., claude-sonnet-4-20250514)
+    # API key stored in OS keychain, NOT in config file
+  output:
+    repo_path: string      # Git repo path for story output
+    format: string         # bmad-story|quick-spec
+
+# Sync configuration
+sync:
+  conflict_strategy: string # last-write-wins|manual
+  log_max_size_mb: int     # Max sync log size before rotation (default: 10)
+```
+
+### enrichment.db Schema (SQLite)
+
+**Location:** `~/.threedoors/enrichment.db`
+
+**Format:** SQLite database for metadata that cannot live in source systems
+
+**Tables:**
+
+```sql
+-- Cross-provider enrichment metadata
+CREATE TABLE enrichment (
+    task_id TEXT PRIMARY KEY,
+    provider TEXT NOT NULL,
+    categories TEXT,          -- JSON array of category strings
+    learning_data TEXT,       -- JSON object of pattern data
+    cross_refs TEXT,          -- JSON array of related task IDs
+    created_at TEXT NOT NULL, -- RFC3339
+    updated_at TEXT NOT NULL  -- RFC3339
+);
+
+-- Duplicate detection decisions
+CREATE TABLE dup_decisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id_a TEXT NOT NULL,
+    task_id_b TEXT NOT NULL,
+    decision TEXT NOT NULL,   -- 'duplicate' | 'distinct'
+    decided_at TEXT NOT NULL, -- RFC3339
+    UNIQUE(task_id_a, task_id_b)
+);
+
+-- Sync state per provider
+CREATE TABLE sync_state (
+    provider TEXT PRIMARY KEY,
+    last_sync_at TEXT,        -- RFC3339
+    status TEXT NOT NULL,     -- 'connected' | 'syncing' | 'offline' | 'error'
+    pending_changes INTEGER DEFAULT 0,
+    last_error TEXT
+);
+```
+
+### sync-state/ Directory
+
+**Location:** `~/.threedoors/sync-state/`
+
+**Files:**
+
+- `queue.jsonl` — Offline change queue (append-only, entries removed after replay)
+  ```jsonl
+  {"id":"uuid","timestamp":"2026-03-02T10:00:00Z","provider":"obsidian","type":"updated","task_id":"abc123","task":{...}}
+  ```
+
+- `sync.log` — Human-readable sync debug log (rotating, max 10MB)
+  ```
+  [2026-03-02 10:00:00] [obsidian] Sync started
+  [2026-03-02 10:00:01] [obsidian] 3 tasks loaded, 1 change detected
+  [2026-03-02 10:00:01] [obsidian] Sync complete (1.2s)
+  ```
+
+### Updated User Data Directory Structure
+
+```
+~/.threedoors/
+├── config.yaml              # User configuration (providers, calendar, LLM, sync)
+├── tasks.yaml               # Text file adapter task storage (Phase 1+)
+├── completed.txt            # Completed task log (Phase 1+)
+├── metrics.jsonl            # Session metrics (Phase 1+)
+├── enrichment.db            # SQLite enrichment database (Phase 2+)
+└── sync-state/              # Sync engine state (Phase 3+)
+    ├── queue.jsonl           # Offline change queue
+    └── sync.log              # Sync debug log
+```
+
+---

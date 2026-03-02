@@ -33,6 +33,31 @@
 | **CI/CD** | GitHub Actions | N/A | Continuous integration & alpha release | Public runners, native Go support, quality gates |
 | **Version Control** | Git | 2.40+ | Source control | github.com/arcaven/ThreeDoors.git |
 
+## Post-MVP Technology Additions (Phase 2–3)
+
+| Category | Technology | Version | Purpose | Rationale | Phase |
+|----------|------------|---------|---------|-----------|-------|
+| **Enrichment DB** | SQLite (via modernc.org/sqlite) | Latest | Local enrichment storage | Pure Go, no CGO, cross-references and metadata | 2 (Epic 6) |
+| **Filesystem Watch** | fsnotify | 1.7+ | Detect external file changes | Obsidian vault watching, adapter change detection | 3 (Epic 8) |
+| **Config Format** | YAML (config.yaml) | N/A | User configuration | Provider selection, vault paths, LLM config | 2+ |
+| **AppleScript Bridge** | os/exec (stdlib) | N/A | Apple Notes integration | Invoke AppleScript for Notes read/write | 2 (Epic 2) |
+| **Apple Notes DB** | database/sql (stdlib) | N/A | Direct SQLite read from NoteStore | Optional read-only path for Apple Notes | 2 (Epic 2) |
+| **Markdown Parser** | goldmark or yuin/goldmark | 1.7+ | Parse Obsidian Markdown | Extract tasks from checkbox syntax | 3 (Epic 8) |
+| **HTTP Client** | net/http (stdlib) | N/A | LLM API calls | Anthropic/OpenAI API, local Ollama | 4 (Epic 14) |
+| **Calendar (AppleScript)** | os/exec (stdlib) | N/A | macOS Calendar.app reader | Local-first, no OAuth | 3 (Epic 12) |
+| **Calendar (.ics)** | emersion/go-ical | Latest | Parse .ics calendar files | Standard iCalendar format support | 3 (Epic 12) |
+| **Git Operations** | go-git or os/exec | Latest | LLM output to git repos | Write story specs for coding agents | 4 (Epic 14) |
+| **Text Similarity** | agnivade/levenshtein | Latest | Duplicate detection | Cross-provider task dedup heuristics | 3 (Epic 13) |
+| **Contract Testing** | Go testing (stdlib) | N/A | Adapter compliance validation | Verify TaskProvider implementations | 3 (Epic 9) |
+
+**Technology Selection Principles (Post-MVP):**
+
+1. **Pure Go preferred:** Avoid CGO dependencies for easy cross-compilation (hence `modernc.org/sqlite` over `mattn/go-sqlite3`)
+2. **Stdlib first:** Use standard library for HTTP, exec, SQL before adding external deps
+3. **Local-first:** No cloud service dependencies at runtime; LLM backends are opt-in
+4. **No OAuth:** Calendar integration uses only local sources (AppleScript, .ics files, CalDAV cache)
+5. **Minimal new deps:** Each addition must justify itself; resist framework creep
+
 ## Makefile Targets
 
 ```makefile

@@ -157,7 +157,7 @@ The task UUID is generated **immediately** in the `NewTask()` constructor using 
 - `selectedIndex`: `int` - Which door selected (-1 if none)
 - `selectedTask`: `*Task` - Pointer to selected task (nil if none)
 
-## Data Model Diagram
+## Data Model Diagram (Tech Demo)
 
 ```mermaid
 erDiagram
@@ -208,6 +208,197 @@ erDiagram
     TASK_POOL ||--o{ TASK : "contains"
     DOOR_SELECTION ||--o{ TASK : "selects"
     TASK ||--o| COMPLETED_LOG : "archives to"
+```
+
+---
+
+## Post-MVP Data Models (Phase 2–3)
+
+### ProviderConfig
+
+**Purpose:** Defines a configured task provider in `config.yaml`.
+
+**Key Attributes:**
+- `name`: `string` — Provider identifier (e.g., "textfile", "applenotes", "obsidian")
+- `type`: `string` — Provider type (maps to adapter implementation)
+- `enabled`: `bool` — Whether this provider is active
+- `settings`: `map[string]any` — Provider-specific configuration
+
+**Example (config.yaml):**
+```yaml
+providers:
+  - name: textfile
+    type: textfile
+    enabled: true
+    settings:
+      path: ~/.threedoors/tasks.yaml
+
+  - name: obsidian
+    type: obsidian
+    enabled: true
+    settings:
+      vault_path: ~/Documents/ObsidianVault
+      tasks_folder: Tasks
+      daily_notes: true
+      daily_notes_folder: Daily
+
+  - name: applenotes
+    type: applenotes
+    enabled: false
+    settings:
+      folder: ThreeDoors Tasks
+```
+
+### Task (Extended)
+
+**Post-MVP additions to the Task model:**
+
+- `source`: `string` — Provider name that owns this task (e.g., "obsidian", "applenotes")
+- `sourceID`: `string` — Provider-specific identifier (e.g., Obsidian file path, Apple Notes record ID)
+- `duplicateOf`: `*string` — If flagged as duplicate, points to canonical task ID
+- `tags`: `[]string` — User or provider-assigned tags (for categorization)
+- `estimatedDuration`: `*time.Duration` — Estimated time to complete (for calendar-aware selection)
+
+### ChangeEvent
+
+**Purpose:** Represents a change detected from a provider or queued locally.
+
+**Key Attributes:**
+- `id`: `string` — Unique event ID (UUID)
+- `timestamp`: `time.Time` — When the change occurred
+- `provider`: `string` — Source provider name
+- `type`: `ChangeType` — Created, Updated, Deleted
+- `taskID`: `string` — Affected task ID
+- `task`: `*Task` — Full task data (nil for Deleted)
+- `replayed`: `bool` — Whether this event has been synced
+
+### SyncState
+
+**Purpose:** Tracks per-provider sync status.
+
+**Key Attributes:**
+- `provider`: `string` — Provider name
+- `lastSyncAt`: `time.Time` — Last successful sync timestamp
+- `status`: `SyncStatus` — Connected, Syncing, Offline, Error
+- `pendingChanges`: `int` — Number of queued changes awaiting replay
+- `lastError`: `string` — Last error message (empty if healthy)
+
+### CalendarEvent
+
+**Purpose:** Represents a calendar event read from local sources.
+
+**Key Attributes:**
+- `title`: `string` — Event title
+- `start`: `time.Time` — Start time
+- `end`: `time.Time` — End time
+- `allDay`: `bool` — Whether it's an all-day event
+
+### TimeBlock
+
+**Purpose:** Represents a free time block between calendar events.
+
+**Key Attributes:**
+- `start`: `time.Time` — Block start
+- `end`: `time.Time` — Block end
+- `duration`: `time.Duration` — Available time
+
+### StorySpec (LLM Output)
+
+**Purpose:** Represents an LLM-generated story/spec from task decomposition.
+
+**Key Attributes:**
+- `title`: `string` — Story title
+- `description`: `string` — Story description with acceptance criteria
+- `parentTaskID`: `string` — Task that was decomposed
+- `filePath`: `string` — Output file path in git repo
+- `format`: `string` — Output format (e.g., "bmad-story", "quick-spec")
+
+### EnrichmentRecord
+
+**Purpose:** Metadata stored in SQLite enrichment DB that cannot live in source systems.
+
+**Key Attributes:**
+- `taskID`: `string` — FK to task
+- `provider`: `string` — Source provider
+- `categories`: `[]string` — Categorization tags
+- `learningPatterns`: `map[string]any` — Door selection history, mood correlations
+- `dupDecisions`: `[]DupDecision` — Duplicate resolution history
+- `crossRefs`: `[]string` — Related task IDs across providers
+
+### Post-MVP Data Model Diagram
+
+```mermaid
+erDiagram
+    CONFIG_YAML {
+        array providers
+        object onboarding
+        object llm
+        object calendar
+    }
+
+    PROVIDER_CONFIG {
+        string name PK
+        string type
+        bool enabled
+        map settings
+    }
+
+    TASK_EXTENDED {
+        string id PK
+        string text
+        TaskStatus status
+        string source
+        string sourceID
+        string duplicateOf
+        array tags
+        duration estimatedDuration
+    }
+
+    CHANGE_EVENT {
+        string id PK
+        datetime timestamp
+        string provider
+        ChangeType type
+        string taskID
+        bool replayed
+    }
+
+    SYNC_STATE {
+        string provider PK
+        datetime lastSyncAt
+        SyncStatus status
+        int pendingChanges
+        string lastError
+    }
+
+    CALENDAR_EVENT {
+        string title
+        datetime start
+        datetime end
+        bool allDay
+    }
+
+    ENRICHMENT_RECORD {
+        string taskID PK
+        string provider
+        array categories
+        map learningPatterns
+        array crossRefs
+    }
+
+    STORY_SPEC {
+        string title
+        string description
+        string parentTaskID
+        string filePath
+    }
+
+    CONFIG_YAML ||--o{ PROVIDER_CONFIG : "defines"
+    PROVIDER_CONFIG ||--o{ TASK_EXTENDED : "provides"
+    TASK_EXTENDED ||--o{ CHANGE_EVENT : "generates"
+    PROVIDER_CONFIG ||--|| SYNC_STATE : "has"
+    TASK_EXTENDED ||--o| ENRICHMENT_RECORD : "enriched by"
+    TASK_EXTENDED ||--o{ STORY_SPEC : "decomposed into"
 ```
 
 ---

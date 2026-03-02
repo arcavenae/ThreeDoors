@@ -67,3 +67,127 @@ User Data Directory (created at runtime):
 6. **Clear separation:** TUI layer imports tasks, never vice versa
 
 ---
+
+## Post-MVP Source Tree (Phase 2–3)
+
+As the architecture evolves, the source tree expands to accommodate adapters, sync engine, intelligence layer, and multi-source aggregation.
+
+```
+ThreeDoors/
+├── cmd/
+│   └── threedoors/
+│       └── main.go                    # Application entry point
+│
+├── internal/                          # Private application code
+│   ├── tui/                          # TUI Layer - Bubbletea components
+│   │   ├── main_model.go            # Root model, view routing
+│   │   ├── doors_view.go            # Three Doors display + source badges
+│   │   ├── task_detail_view.go      # Task detail and options
+│   │   ├── status_menu.go           # Status update menu
+│   │   ├── notes_input.go           # Notes text input
+│   │   ├── blocker_input.go         # Blocker input
+│   │   ├── onboarding_view.go       # First-run onboarding wizard (Epic 10)
+│   │   ├── sync_status_bar.go       # Per-provider sync status (Epic 11)
+│   │   ├── conflict_view.go         # Sync conflict visualization (Epic 11)
+│   │   ├── source_badge.go          # Provider attribution badges (Epic 13)
+│   │   ├── decompose_view.go        # LLM decomposition results (Epic 14)
+│   │   ├── styles.go                # Lipgloss style definitions
+│   │   └── messages.go              # Bubbletea message types
+│   │
+│   ├── core/                         # Core Domain (Phase 2+)
+│   │   ├── task.go                  # Extended Task model (source, tags, duration)
+│   │   ├── task_status.go           # TaskStatus enum, constants
+│   │   ├── task_pool.go             # Unified TaskPool (multi-source)
+│   │   ├── door_selector.go         # Intelligent door selection (learning + calendar)
+│   │   ├── status_manager.go        # Status transition validator
+│   │   ├── enrichment_store.go      # SQLite enrichment DB (Epic 6)
+│   │   └── config.go                # Configuration model, config.yaml loader
+│   │
+│   ├── tasks/                        # Domain Layer (Phase 1 - Tech Demo)
+│   │   ├── task.go                  # Task model (Tech Demo)
+│   │   ├── task_status.go           # TaskStatus enum
+│   │   ├── task_pool.go             # TaskPool collection manager
+│   │   ├── door_selection.go        # DoorSelection model
+│   │   ├── door_selector.go         # Door selection logic
+│   │   ├── status_manager.go        # Status transition validator
+│   │   ├── file_manager.go          # YAML I/O, atomic writes
+│   │   └── config.go                # Configuration model
+│   │
+│   ├── adapters/                     # Adapter Layer (Phase 2+)
+│   │   ├── registry.go              # AdapterRegistry - provider discovery/loading
+│   │   ├── provider.go              # TaskProvider interface definition
+│   │   ├── textfile/                # Text file adapter
+│   │   │   └── adapter.go          # TextFileAdapter (evolved from FileManager)
+│   │   ├── applenotes/              # Apple Notes adapter (Epic 2)
+│   │   │   ├── adapter.go          # AppleNotesAdapter
+│   │   │   └── applescript.go      # AppleScript bridge helpers
+│   │   └── obsidian/                # Obsidian vault adapter (Epic 8)
+│   │       ├── adapter.go          # ObsidianAdapter
+│   │       ├── markdown.go         # Markdown task parser
+│   │       └── daily_notes.go      # Daily note integration
+│   │
+│   ├── sync/                         # Sync Engine (Phase 3, Epic 11)
+│   │   ├── engine.go                # SyncEngine orchestrator
+│   │   ├── queue.go                 # OfflineQueue (JSONL)
+│   │   ├── conflict.go             # ConflictResolver
+│   │   └── log.go                   # SyncLog (rotating)
+│   │
+│   ├── intelligence/                 # Intelligence Layer (Phase 3-4)
+│   │   ├── calendar/                # Calendar awareness (Epic 12)
+│   │   │   ├── reader.go           # CalendarReader interface
+│   │   │   ├── applescript.go      # macOS Calendar.app reader
+│   │   │   ├── ics.go              # .ics file parser
+│   │   │   └── caldav.go           # CalDAV cache reader
+│   │   ├── llm/                     # LLM decomposition (Epic 14)
+│   │   │   ├── decomposer.go       # LLMTaskDecomposer
+│   │   │   ├── backend.go          # LLMBackend interface
+│   │   │   ├── local.go            # Ollama/llama.cpp client
+│   │   │   ├── cloud.go            # Anthropic/OpenAI client
+│   │   │   └── git_output.go       # Git repo story writer
+│   │   └── learning/                # Learning engine (Epic 4, enhanced Epic 12)
+│   │       ├── engine.go            # Pattern analysis
+│   │       └── patterns.go          # User pattern models
+│   │
+│   └── aggregator/                   # Multi-Source Aggregation (Phase 3, Epic 13)
+│       ├── aggregator.go            # MultiSourceAggregator
+│       └── dedup.go                 # DuplicateDetector
+│
+├── docs/                             # Documentation
+│   ├── prd/                         # Product Requirements Document (sharded)
+│   ├── architecture/                # Architecture documentation (sharded)
+│   └── stories/                     # Story breakdowns
+│
+├── .bmad-core/                       # BMAD methodology artifacts
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # CI/CD pipeline (quality gates + alpha release)
+│
+├── bin/                              # Build output (gitignored)
+├── go.mod                            # Go module definition
+├── go.sum                            # Dependency checksums
+├── Makefile                          # Build automation
+├── .gitignore                        # Git ignore rules
+└── README.md                         # Quick start guide
+
+User Data Directory (created at runtime):
+~/.threedoors/
+├── config.yaml                       # User configuration (Phase 2+)
+├── tasks.yaml                        # Active tasks with metadata
+├── completed.txt                     # Completed task log
+├── metrics.jsonl                     # Session metrics (Phase 1+)
+├── enrichment.db                     # SQLite enrichment (Phase 2+)
+└── sync-state/                       # Sync engine state (Phase 3+)
+    ├── queue.jsonl                   # Offline change queue
+    └── sync.log                      # Sync debug log
+```
+
+**Post-MVP Organization Principles:**
+
+1. **`internal/core/`** replaces `internal/tasks/` as the primary domain package (tasks/ kept for Phase 1 compatibility)
+2. **`internal/adapters/`** each adapter in its own sub-package for isolation
+3. **`internal/sync/`** self-contained sync engine, no TUI dependencies
+4. **`internal/intelligence/`** optional features, no core dependencies
+5. **`internal/aggregator/`** bridges adapters and core via unified pool
+6. **Dependency direction:** TUI → Core → Adapters (never reverse)
+
+---

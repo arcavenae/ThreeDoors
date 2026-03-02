@@ -69,4 +69,33 @@ cp threedoors.old /usr/local/bin/threedoors
 - Forward migrations add fields with defaults
 - Never break existing tasks.yaml format
 
+## Post-MVP Deployment Considerations (Phase 2–3)
+
+**Additional Installation Method (Epic 5):**
+
+```bash
+# Homebrew tap (code-signed + notarized)
+brew install arcaven/tap/threedoors
+
+# DMG/pkg installer (alternative)
+# Download from GitHub Releases
+```
+
+**Code Signing & Notarization (Epic 5):**
+- Apple Developer certificate for binary signing
+- Apple notarization service for Gatekeeper approval
+- Automated in CI pipeline (GitHub Actions)
+- Cross-compiled for darwin/arm64, darwin/amd64, linux/amd64
+
+**Runtime Dependencies (Post-MVP):**
+- No new external service dependencies at runtime
+- SQLite (embedded via modernc.org/sqlite) — no separate server
+- LLM backends are opt-in and user-configured
+- All calendar integration is local-only (no cloud APIs)
+
+**Data Migration Path:**
+- Phase 1 → Phase 2: `tasks.yaml` format preserved; new `config.yaml` created on first run with defaults
+- Phase 2 → Phase 3: `enrichment.db` and `sync-state/` created on demand
+- All migrations are additive (new files/tables), never destructive
+
 ---
