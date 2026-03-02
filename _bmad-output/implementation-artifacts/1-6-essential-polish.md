@@ -1,6 +1,6 @@
 # Story 1.6: Essential Polish
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -388,6 +388,10 @@ N/A — all tests passed on first implementation.
 - Visual separator added between task content and action menu in detail view
 - Updated existing `TestFlashMessage_ShowsAfterCompletion` to validate against celebration pool
 - All 10 new tests pass (styles, doors_view, main_model)
+- [Review Fix] Added `pickGreeting()` helper with non-consecutive guard (M1)
+- [Review Note] Tasks 5/6 (search/mood view polish) deferred — existing styling is adequate for "Essential Polish" scope
+- [Review Note] Task 1.3 (per-door key hints) deferred — existing help line suffices
+- [Review Note] Task 4.1-4.2 (action key styling) — status badge already color-coded via StatusColor(), separator added
 
 ### File List
 

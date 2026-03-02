@@ -26,10 +26,22 @@ func NewDoorsView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *DoorsVie
 		pool:              pool,
 		selectedDoorIndex: -1,
 		tracker:           tracker,
-		greeting:          greetingMessages[rand.IntN(len(greetingMessages))],
+		greeting:          pickGreeting(-1),
 	}
 	dv.RefreshDoors()
 	return dv
+}
+
+// pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
+func pickGreeting(lastIdx int) string {
+	if len(greetingMessages) <= 1 {
+		return greetingMessages[0]
+	}
+	idx := rand.IntN(len(greetingMessages))
+	for idx == lastIdx {
+		idx = rand.IntN(len(greetingMessages))
+	}
+	return greetingMessages[idx]
 }
 
 // Greeting returns the current startup greeting message.
