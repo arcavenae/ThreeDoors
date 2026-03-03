@@ -359,9 +359,11 @@ func (ov *OnboardingView) viewKeybindings() string {
 func (ov *OnboardingView) viewValues() string {
 	var s strings.Builder
 
-	fmt.Fprintf(&s, "%s\n\n", headerStyle.Render("Values & Goals"))
-	fmt.Fprintf(&s, "What matters most to you? These will appear\n")
-	fmt.Fprintf(&s, "as a reminder during your task sessions.\n\n")
+	fmt.Fprintf(&s, "%s\n\n", headerStyle.Render("Values & Goals (not tasks)"))
+	fmt.Fprintf(&s, "What are your motivational anchors? (e.g. \"family\",\n")
+	fmt.Fprintf(&s, "\"health\", \"financial freedom\") These appear as a\n")
+	fmt.Fprintf(&s, "small footer reminder — they are NOT your tasks.\n\n")
+	fmt.Fprintf(&s, "%s\n\n", helpStyle.Render("Tasks are added later with ':add' or by editing tasks.yaml"))
 
 	if len(ov.values) > 0 {
 		fmt.Fprintf(&s, "%s\n", valuesHeaderStyle.Render("Your values:"))

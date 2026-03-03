@@ -50,6 +50,7 @@ type DoorsView struct {
 	selectedDoorIndex int
 	completedCount    int
 	width             int
+	height            int
 	tracker           *core.SessionTracker
 	greeting          string
 	footerMessage     string
@@ -181,6 +182,11 @@ func (dv *DoorsView) SetWidth(w int) {
 	dv.width = w
 }
 
+// SetHeight sets the terminal height for rendering.
+func (dv *DoorsView) SetHeight(h int) {
+	dv.height = h
+}
+
 // View renders the doors view.
 func (dv *DoorsView) View() string {
 	s := strings.Builder{}
@@ -217,6 +223,14 @@ func (dv *DoorsView) View() string {
 		}
 	}
 
+	doorHeight := 10
+	if dv.height > 0 {
+		doorHeight = int(float64(dv.height) * 0.6)
+		if doorHeight < 10 {
+			doorHeight = 10
+		}
+	}
+
 	var renderedDoors []string
 	for i, task := range dv.currentDoors {
 		content := task.Text
@@ -249,11 +263,11 @@ func (dv *DoorsView) View() string {
 
 		var style lipgloss.Style
 		if i == dv.selectedDoorIndex {
-			style = selectedDoorStyle.Width(doorWidth)
+			style = selectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 		} else if usePerDoorColors && i < len(doorColors) {
-			style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth)
+			style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 		} else {
-			style = doorStyle.Width(doorWidth)
+			style = doorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 		}
 		renderedDoors = append(renderedDoors, style.Render(content))
 	}

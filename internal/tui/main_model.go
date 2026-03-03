@@ -170,6 +170,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.doorsView.SetWidth(msg.Width)
+		m.doorsView.SetHeight(msg.Height)
 		if m.detailView != nil {
 			m.detailView.SetWidth(msg.Width)
 		}
