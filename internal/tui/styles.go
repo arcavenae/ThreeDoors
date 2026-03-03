@@ -176,6 +176,39 @@ var (
 	// Badge style for category tags on door cards
 	badgeStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("243"))
+
+	// Conflict view styles
+	conflictHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("196"))
+
+	conflictLocalStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("86")).
+				Padding(1, 2)
+
+	conflictRemoteStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("212")).
+				Padding(1, 2)
+
+	conflictDiffStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("214")).
+				Bold(true)
+
+	// Sync log styles
+	syncLogHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("39"))
+
+	syncLogEntryStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("252"))
+
+	syncLogTimestampStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("243"))
+
+	syncLogErrorStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("196"))
 )
 
 // StatusColor returns the lipgloss color for a given status string.

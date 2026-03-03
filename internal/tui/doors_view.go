@@ -59,6 +59,7 @@ type DoorsView struct {
 	completionCounter *tasks.CompletionCounter
 	syncTracker       *tasks.SyncStatusTracker
 	timeContext       *tasks.TimeContext
+	pendingConflicts  int
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -108,6 +109,11 @@ func (dv *DoorsView) SetTimeContext(tc *tasks.TimeContext) {
 // TimeContext returns the current time context (for testing).
 func (dv *DoorsView) TimeContext() *tasks.TimeContext {
 	return dv.timeContext
+}
+
+// SetPendingConflicts sets the number of unresolved sync conflicts.
+func (dv *DoorsView) SetPendingConflicts(count int) {
+	dv.pendingConflicts = count
 }
 
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
@@ -251,6 +257,12 @@ func (dv *DoorsView) View() string {
 
 	if dv.completedCount > 0 {
 		fmt.Fprintf(&s, "\n\nCompleted this session: %d", dv.completedCount)
+	}
+
+	// Conflict notification
+	if dv.pendingConflicts > 0 {
+		s.WriteString("\n\n")
+		s.WriteString(conflictHeaderStyle.Render(fmt.Sprintf("⚠ %d sync conflict(s) detected — press C to resolve", dv.pendingConflicts)))
 	}
 
 	// Sync status bar

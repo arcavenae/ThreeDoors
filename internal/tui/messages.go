@@ -170,6 +170,21 @@ type DecomposeResultMsg struct {
 	Err    error
 }
 
+// SyncConflictMsg is sent when sync detects conflicts requiring user resolution.
+type SyncConflictMsg struct {
+	ConflictSet *tasks.ConflictSet
+}
+
+// ConflictResolvedMsg is sent when a user resolves a conflict.
+type ConflictResolvedMsg struct {
+	ConflictSet *tasks.ConflictSet
+}
+
+// ShowSyncLogMsg is sent to open the sync log view.
+type ShowSyncLogMsg struct {
+	Entries []tasks.SyncLogEntry
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

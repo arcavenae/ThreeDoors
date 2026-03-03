@@ -31,6 +31,8 @@ const (
 	ViewAvoidancePrompt
 	ViewInsights
 	ViewOnboarding
+	ViewConflict
+	ViewSyncLog
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -50,6 +52,8 @@ type MainModel struct {
 	avoidancePromptView *AvoidancePromptView
 	insightsView        *InsightsView
 	onboardingView      *OnboardingView
+	conflictView        *ConflictView
+	syncLogView         *SyncLogView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
@@ -62,6 +66,7 @@ type MainModel struct {
 	syncTracker         *tasks.SyncStatusTracker
 	agentService        *intelligence.AgentService
 	decomposing         bool
+	syncLog             *tasks.SyncLog
 	flash               string
 	width               int
 	height              int
@@ -102,7 +107,12 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		}
 	}
 
-	// Initialize sync status tracker
+	// Initialize sync log and status tracker
+	var syncLog *tasks.SyncLog
+	if configPath, err := tasks.GetConfigDirPath(); err == nil {
+		syncLog = tasks.NewSyncLog(configPath)
+	}
+
 	syncTracker := tasks.NewSyncStatusTracker()
 	syncTracker.Register("Local")
 	// Check if provider is WAL-wrapped and show pending count
@@ -131,6 +141,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		enrichDB:          edb,
 		valuesConfig:      valuesConfig,
 		syncTracker:       syncTracker,
+		syncLog:           syncLog,
 		promptedTasks:     make(map[string]bool),
 	}
 
@@ -195,6 +206,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.onboardingView != nil {
 			m.onboardingView.SetWidth(msg.Width)
 		}
+		if m.conflictView != nil {
+			m.conflictView.SetWidth(msg.Width)
+		}
+		if m.syncLogView != nil {
+			m.syncLogView.SetWidth(msg.Width)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -204,7 +221,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ReturnToDoorsMsg:
 		// If we came from search, return to search instead
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
 			m.viewMode = ViewSearch
@@ -242,7 +259,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case ReturnToSearchMsg:
-		m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+		m.searchView = m.newSearchView()
 		m.searchView.SetWidth(m.width)
 		m.searchView.RestoreState(msg.Query, msg.SelectedIndex)
 		m.viewMode = ViewSearch
@@ -295,7 +312,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.addTaskView = nil
 		// Return to previous view if it was search, otherwise show next steps
 		if m.previousView == ViewSearch {
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
@@ -448,12 +465,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "mood":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "search":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 		case "stats":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.searchView.textInput.SetValue(":stats")
 			m.searchView.checkCommandMode()
@@ -581,6 +598,40 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.flash = fmt.Sprintf("Decomposed into %d stories", len(msg.Result.Stories))
 		return m, ClearFlashCmd()
 
+	case SyncConflictMsg:
+		cv := NewConflictView(msg.ConflictSet, m.syncLog)
+		cv.SetWidth(m.width)
+		m.conflictView = cv
+		m.previousView = m.viewMode
+		m.viewMode = ViewConflict
+		return m, nil
+
+	case ConflictResolvedMsg:
+		// Apply resolutions to the pool
+		resolutions := msg.ConflictSet.Resolutions()
+		for _, r := range resolutions {
+			if r.Winner == "both" {
+				// "Keep both" — keep local as-is, no update needed
+				continue
+			}
+			m.pool.UpdateTask(r.WinningTask)
+		}
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save after conflict resolution: %v\n", err)
+		}
+		m.conflictView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		m.flash = fmt.Sprintf("%d conflict(s) resolved", len(resolutions))
+		return m, ClearFlashCmd()
+
+	case ShowSyncLogMsg:
+		sv := NewSyncLogView(msg.Entries)
+		sv.SetWidth(m.width)
+		m.syncLogView = sv
+		m.previousView = m.viewMode
+		m.viewMode = ViewSyncLog
+		return m, nil
 	case SyncStatusUpdateMsg:
 		if m.syncTracker != nil {
 			switch msg.Phase {
@@ -625,6 +676,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateAvoidancePrompt(msg)
 	case ViewOnboarding:
 		return m.updateOnboarding(msg)
+	case ViewConflict:
+		return m.updateConflict(msg)
+	case ViewSyncLog:
+		return m.updateSyncLog(msg)
 	}
 
 	return m, nil
@@ -679,13 +734,13 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "/":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 			return m, nil
 		case ":":
-			m.searchView = NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.searchView.textInput.SetValue(":")
 			m.searchView.checkCommandMode()
@@ -777,6 +832,22 @@ func (m *MainModel) updateOnboarding(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateConflict(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.conflictView == nil {
+		return m, nil
+	}
+	cmd := m.conflictView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.syncLogView == nil {
+		return m, nil
+	}
+	cmd := m.syncLogView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.valuesView == nil {
 		return m, nil
@@ -802,6 +873,12 @@ func (m *MainModel) newDetailView(task *tasks.Task) *DetailView {
 	dv.SetWidth(m.width)
 	dv.SetAgentService(m.agentService)
 	return dv
+}
+
+func (m *MainModel) newSearchView() *SearchView {
+	sv := NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
+	sv.SetSyncLog(m.syncLog)
+	return sv
 }
 
 func (m *MainModel) saveTasks() error {
@@ -887,6 +964,14 @@ func (m *MainModel) View() string {
 	case ViewOnboarding:
 		if m.onboardingView != nil {
 			view = m.onboardingView.View()
+		}
+	case ViewConflict:
+		if m.conflictView != nil {
+			view = m.conflictView.View()
+		}
+	case ViewSyncLog:
+		if m.syncLogView != nil {
+			view = m.syncLogView.View()
 		}
 	default:
 		view = m.doorsView.View()
