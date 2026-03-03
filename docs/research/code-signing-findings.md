@@ -60,9 +60,9 @@ The CI workflow references these secrets:
 | `APPLE_INSTALLER_CERTIFICATE_PASSWORD` | Password for the installer .p12 | Set during export |
 | `APPLE_SIGNING_IDENTITY` | Certificate CN, e.g. `Developer ID Application: Your Name (TEAMID)` | `security find-identity -v -p codesigning` |
 | `APPLE_INSTALLER_IDENTITY` | Installer cert CN, e.g. `Developer ID Installer: Your Name (TEAMID)` | `security find-identity -v` |
-| `APPLE_ID` | Apple ID email used for notarization | Your Apple Developer account email |
-| `APPLE_ID_PASSWORD` | App-specific password for notarization | Generate at appleid.apple.com → App-Specific Passwords |
-| `APPLE_TEAM_ID` | 10-character Apple Developer Team ID | Apple Developer portal → Membership |
+| `APPLE_NOTARIZATION_APPLE_ID` | Apple ID email used for notarization | Your Apple Developer account email |
+| `APPLE_NOTARIZATION_PASSWORD` | App-specific password for notarization | Generate at appleid.apple.com → App-Specific Passwords |
+| `APPLE_NOTARIZATION_TEAM_ID` | 10-character Apple Developer Team ID | Apple Developer portal → Membership |
 | `HOMEBREW_TAP_TOKEN` | GitHub PAT with repo scope for `arcaven/homebrew-tap` | GitHub Settings → Personal Access Tokens |
 
 ### 3. Apple Developer Program Enrollment
@@ -143,9 +143,9 @@ Create a local certificate authority and self-signed code signing cert:
    - `APPLE_INSTALLER_CERTIFICATE_PASSWORD`
    - `APPLE_SIGNING_IDENTITY`
    - `APPLE_INSTALLER_IDENTITY`
-   - `APPLE_ID`
-   - `APPLE_ID_PASSWORD`
-   - `APPLE_TEAM_ID`
+   - `APPLE_NOTARIZATION_APPLE_ID`
+   - `APPLE_NOTARIZATION_PASSWORD`
+   - `APPLE_NOTARIZATION_TEAM_ID`
 
 5. **Set GitHub Actions variable** (Settings → Secrets and variables → Actions → Variables):
    - `SIGNING_ENABLED` = `true`
