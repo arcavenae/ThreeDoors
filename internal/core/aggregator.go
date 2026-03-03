@@ -133,6 +133,30 @@ func (a *MultiSourceAggregator) MarkComplete(taskID string) error {
 	return provider.MarkComplete(taskID)
 }
 
+// Name returns a composite name listing all aggregated providers.
+func (a *MultiSourceAggregator) Name() string {
+	return "multi-source"
+}
+
+// Watch returns nil because the aggregator does not merge watch channels.
+// Callers should watch individual providers via GetProviderForTask.
+func (a *MultiSourceAggregator) Watch() <-chan ChangeEvent {
+	return nil
+}
+
+// HealthCheck collects health results from all aggregated providers.
+func (a *MultiSourceAggregator) HealthCheck() HealthCheckResult {
+	result := HealthCheckResult{}
+	for name, provider := range a.providers {
+		sub := provider.HealthCheck()
+		for _, item := range sub.Items {
+			item.Name = name + ": " + item.Name
+			result.Items = append(result.Items, item)
+		}
+	}
+	return result
+}
+
 // GetProviderForTask returns the TaskProvider instance that owns the given task.
 func (a *MultiSourceAggregator) GetProviderForTask(taskID string) (TaskProvider, error) {
 	providerName := a.getTaskOrigin(taskID)

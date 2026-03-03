@@ -476,6 +476,39 @@ func (a *ObsidianAdapter) DeleteTask(targetID string) error {
 	return nil
 }
 
+// Name returns the provider identifier.
+func (a *ObsidianAdapter) Name() string {
+	return "obsidian"
+}
+
+// Watch returns nil because external change detection is handled by ObsidianWatcher separately.
+func (a *ObsidianAdapter) Watch() <-chan core.ChangeEvent {
+	return nil
+}
+
+// HealthCheck reports the operational status of the Obsidian adapter.
+func (a *ObsidianAdapter) HealthCheck() core.HealthCheckResult {
+	result := core.HealthCheckResult{}
+
+	if err := ValidateVaultPath(a.vaultPath); err != nil {
+		result.Items = append(result.Items, core.HealthCheckItem{
+			Name:       "Vault Path",
+			Status:     core.HealthFail,
+			Message:    fmt.Sprintf("Vault path invalid: %v", err),
+			Suggestion: "Check vault_path in config.yaml",
+		})
+		return result
+	}
+
+	result.Items = append(result.Items, core.HealthCheckItem{
+		Name:    "Vault Path",
+		Status:  core.HealthOK,
+		Message: fmt.Sprintf("Vault accessible at %s", a.vaultPath),
+	})
+
+	return result
+}
+
 // MarkComplete marks a task as complete in its source file.
 func (a *ObsidianAdapter) MarkComplete(id string) error {
 	a.mu.Lock()

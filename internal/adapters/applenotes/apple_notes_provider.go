@@ -244,6 +244,40 @@ func (p *AppleNotesProvider) plaintextToHTML(body string) string {
 	return strings.Join(htmlLines, "\n")
 }
 
+// Name returns the provider identifier.
+func (p *AppleNotesProvider) Name() string {
+	return "applenotes"
+}
+
+// Watch returns nil because Apple Notes does not support external change detection.
+func (p *AppleNotesProvider) Watch() <-chan core.ChangeEvent {
+	return nil
+}
+
+// HealthCheck reports the operational status of the Apple Notes provider.
+func (p *AppleNotesProvider) HealthCheck() core.HealthCheckResult {
+	result := core.HealthCheckResult{}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := p.executor(ctx, `tell application "Notes" to get name of first note`)
+	if err != nil {
+		result.Items = append(result.Items, core.HealthCheckItem{
+			Name:       "Apple Notes Access",
+			Status:     core.HealthFail,
+			Message:    fmt.Sprintf("Cannot access Apple Notes: %v", err),
+			Suggestion: "Ensure Notes.app is running and accessible",
+		})
+	} else {
+		result.Items = append(result.Items, core.HealthCheckItem{
+			Name:    "Apple Notes Access",
+			Status:  core.HealthOK,
+			Message: "Apple Notes accessible",
+		})
+	}
+	return result
+}
+
 // MarkComplete is not supported — Apple Notes is read-only in this story.
 func (p *AppleNotesProvider) MarkComplete(_ string) error {
 	return ErrReadOnly

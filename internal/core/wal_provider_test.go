@@ -65,6 +65,12 @@ func (m *mockProvider) MarkComplete(taskID string) error {
 	return m.completeErr
 }
 
+func (m *mockProvider) Name() string              { return "mock" }
+func (m *mockProvider) Watch() <-chan ChangeEvent { return nil }
+func (m *mockProvider) HealthCheck() HealthCheckResult {
+	return HealthCheckResult{}
+}
+
 func newTestWALProvider(t *testing.T) (*WALProvider, *mockProvider, string) {
 	t.Helper()
 	dir := t.TempDir()
