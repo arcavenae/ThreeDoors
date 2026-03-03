@@ -56,6 +56,7 @@ type MainModel struct {
 	patternAnalyzer     *tasks.PatternAnalyzer
 	enrichDB            *enrichment.DB
 	valuesConfig        *tasks.ValuesConfig
+	syncTracker         *tasks.SyncStatusTracker
 	flash               string
 	width               int
 	height              int
@@ -96,9 +97,21 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		}
 	}
 
+	// Initialize sync status tracker
+	syncTracker := tasks.NewSyncStatusTracker()
+	syncTracker.Register("Local")
+	// Check if provider is WAL-wrapped and show pending count
+	if walP, ok := provider.(*tasks.WALProvider); ok {
+		syncTracker.Register("WAL")
+		if pending := walP.PendingCount(); pending > 0 {
+			syncTracker.SetPending("WAL", pending)
+		}
+	}
+
 	doorsView := NewDoorsView(pool, tracker)
 	doorsView.SetAvoidanceData(patternReport)
 	doorsView.SetInsightsData(pa, cc)
+	doorsView.SetSyncTracker(syncTracker)
 
 	m := &MainModel{
 		viewMode:          ViewDoors,
@@ -112,6 +125,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		patternAnalyzer:   pa,
 		enrichDB:          edb,
 		valuesConfig:      valuesConfig,
+		syncTracker:       syncTracker,
 		promptedTasks:     make(map[string]bool),
 	}
 
@@ -542,6 +556,21 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case FlashMsg:
 		m.flash = msg.Text
 		return m, ClearFlashCmd()
+
+	case SyncStatusUpdateMsg:
+		if m.syncTracker != nil {
+			switch msg.Phase {
+			case tasks.SyncPhaseSynced:
+				m.syncTracker.SetSynced(msg.ProviderName)
+			case tasks.SyncPhaseSyncing:
+				m.syncTracker.SetSyncing(msg.ProviderName)
+			case tasks.SyncPhasePending:
+				m.syncTracker.SetPending(msg.ProviderName, msg.PendingCount)
+			case tasks.SyncPhaseError:
+				m.syncTracker.SetError(msg.ProviderName, msg.ErrorMsg)
+			}
+		}
+		return m, nil
 	}
 
 	// Delegate to current view

@@ -57,6 +57,7 @@ type DoorsView struct {
 	avoidanceShown    map[string]int // task text → shown count (TimesShown)
 	patternAnalyzer   *tasks.PatternAnalyzer
 	completionCounter *tasks.CompletionCounter
+	syncTracker       *tasks.SyncStatusTracker
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -91,6 +92,11 @@ func (dv *DoorsView) SetAvoidanceData(report *tasks.PatternReport) {
 func (dv *DoorsView) SetInsightsData(pa *tasks.PatternAnalyzer, cc *tasks.CompletionCounter) {
 	dv.patternAnalyzer = pa
 	dv.completionCounter = cc
+}
+
+// SetSyncTracker sets the sync status tracker for displaying provider sync state.
+func (dv *DoorsView) SetSyncTracker(tracker *tasks.SyncStatusTracker) {
+	dv.syncTracker = tracker
 }
 
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
@@ -225,6 +231,12 @@ func (dv *DoorsView) View() string {
 
 	if dv.completedCount > 0 {
 		fmt.Fprintf(&s, "\n\nCompleted this session: %d", dv.completedCount)
+	}
+
+	// Sync status bar
+	if syncBar := RenderSyncStatusBar(dv.syncTracker); syncBar != "" {
+		s.WriteString("\n\n")
+		s.WriteString(syncBar)
 	}
 
 	s.WriteString("\n\n")
