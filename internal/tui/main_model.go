@@ -507,6 +507,25 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case OnboardingCompletedMsg:
 		m.onboardingView = nil
 		m.viewMode = ViewDoors
+		// Save values if provided
+		if len(msg.Values) > 0 {
+			m.valuesConfig = &tasks.ValuesConfig{Values: msg.Values}
+			if path, err := tasks.GetValuesConfigPath(); err == nil {
+				if saveErr := tasks.SaveValuesConfig(path, m.valuesConfig); saveErr != nil {
+					fmt.Fprintf(os.Stderr, "warning: failed to save values config: %v\n", saveErr)
+				}
+			}
+		}
+		// Import tasks if provided
+		if len(msg.ImportedTasks) > 0 {
+			for _, t := range msg.ImportedTasks {
+				m.pool.AddTask(t)
+			}
+			if err := m.saveTasks(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to save imported tasks: %v\n", err)
+			}
+			m.flash = fmt.Sprintf("%d tasks imported!", len(msg.ImportedTasks))
+		}
 		m.doorsView.RefreshDoors()
 		// Persist onboarding state
 		if configDir, err := tasks.GetConfigDirPath(); err == nil {
@@ -514,7 +533,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				fmt.Fprintf(os.Stderr, "warning: failed to save onboarding state: %v\n", markErr)
 			}
 		}
-		return m, nil
+		var cmd tea.Cmd
+		if m.flash != "" {
+			cmd = ClearFlashCmd()
+		}
+		return m, cmd
 
 	case FlashMsg:
 		m.flash = msg.Text
