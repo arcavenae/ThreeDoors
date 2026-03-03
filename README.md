@@ -1,4 +1,4 @@
-# ThreeDoors
+# ThreeDoors 🚪🚪🚪
 
 [![Go Version](https://img.shields.io/badge/Go-1.25.4+-00ADD8?style=flat&logo=go)](https://golang.org/doc/devel/release.html)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -25,61 +25,61 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 ## Features
 
 ### Core Task Management
-- **Three Doors Display** — View three randomly selected tasks, avoiding recently shown ones
-- **Refresh Mechanism** — Re-roll doors when nothing appeals
-- **Task Status Workflow** — Complete, block, defer, expand, fork, or flag tasks for rework
-- **Quick Add** — Add tasks inline with `:add` or press `a`; supports context capture with `:add --why`
-- **Inline Tagging** — Tag tasks as you add them: `Design homepage #creative #deep-work @work`
-- **Task Categorization** — Classify by type (creative, technical, administrative, physical), effort (quick-win, medium, deep-work), and location (home, work, errands, anywhere)
-- **Cross-Reference Linking** — Link related tasks together; browse and navigate links from detail view
+- 🚪 **Three Doors Display** — View three randomly selected tasks, avoiding recently shown ones
+- 🔄 **Refresh Mechanism** — Re-roll doors when nothing appeals
+- ✅ **Task Status Workflow** — Complete, block, defer, expand, fork, or flag tasks for rework
+- ➕ **Quick Add** — Add tasks inline with `:add` or press `a`; supports context capture with `:add --why`
+- 🏷️ **Inline Tagging** — Tag tasks as you add them: `Design homepage #creative #deep-work @work`
+- 📂 **Task Categorization** — Classify by type (creative, technical, administrative, physical), effort (quick-win, medium, deep-work), and location (home, work, errands, anywhere)
+- 🔗 **Cross-Reference Linking** — Link related tasks together; browse and navigate links from detail view
 
 ### Search & Commands
-- **Quick Search** — Press `/` for live task search with fuzzy filtering
-- **Command Palette** — Press `:` for vi-style commands (`:add`, `:mood`, `:stats`, `:health`, `:dashboard`, `:goals`, `:help`)
+- 🔍 **Quick Search** — Press `/` for live task search with fuzzy filtering
+- ⌨️ **Command Palette** — Press `:` for vi-style commands (`:add`, `:mood`, `:stats`, `:health`, `:dashboard`, `:goals`, `:help`)
 
 ### Analytics & Insights
-- **Session Metrics** — Automatic tracking of door selections, bypasses, and timing data
-- **Daily Completion Tracking** — Track completions per day with streak counting
-- **Insights Dashboard** — View trends, streaks, mood correlations, and avoidance patterns (`:dashboard`)
-- **Mood Correlation Analysis** — Discover how your emotional state affects task selection
-- **Avoidance Detection** — Tasks bypassed 10+ times trigger an intervention prompt offering breakdown, deferral, or archival
-- **Pattern Analysis** — Identifies door position bias, task type preferences, and procrastination patterns
+- 📊 **Session Metrics** — Automatic tracking of door selections, bypasses, and timing data
+- 📈 **Daily Completion Tracking** — Track completions per day with streak counting
+- 📋 **Insights Dashboard** — View trends, streaks, mood correlations, and avoidance patterns (`:dashboard`)
+- 😊 **Mood Correlation Analysis** — Discover how your emotional state affects task selection
+- 🚨 **Avoidance Detection** — Tasks bypassed 10+ times trigger an intervention prompt offering breakdown, deferral, or archival
+- 🧠 **Pattern Analysis** — Identifies door position bias, task type preferences, and procrastination patterns
 
 ### Apple Notes Integration
-- **Bidirectional Sync** — Read and write tasks from Apple Notes
-- **Provider Architecture** — Switch between text file and Apple Notes backends via `config.yaml`
-- **Health Check** — Run `:health` to verify provider connectivity, file access, and disk space
+- 🍎 **Bidirectional Sync** — Read and write tasks from Apple Notes
+- 🔌 **Provider Architecture** — Switch between text file and Apple Notes backends via `config.yaml`
+- 🩺 **Health Check** — Run `:health` to verify provider connectivity, file access, and disk space
 
 ### Sync & Offline-First
-- **Write-Ahead Log (WAL)** — Crash-safe task persistence with atomic writes
-- **Offline Queue** — Local change queue with replay when connectivity returns
-- **Sync Status Indicator** — Visual sync state per provider in the TUI
+- 💾 **Write-Ahead Log (WAL)** — Crash-safe task persistence with atomic writes
+- 📡 **Offline Queue** — Local change queue with replay when connectivity returns
+- 🔄 **Sync Status Indicator** — Visual sync state per provider in the TUI
 
 ### Calendar Awareness
-- **Local Calendar Reader** — Reads from macOS Calendar.app (AppleScript), `.ics` files, and CalDAV caches
-- **Free Block Detection** — Computes available time blocks between calendar events
+- 📅 **Local Calendar Reader** — Reads from macOS Calendar.app (AppleScript), `.ics` files, and CalDAV caches
+- ⏰ **Free Block Detection** — Computes available time blocks between calendar events
 
 ### Enrichment Database
-- **SQLite Storage** — Pure-Go SQLite (no CGO) for task metadata, cross-references, learning patterns, and feedback history
-- **Cross-Reference Graph** — Track relationships between tasks across providers
+- 🗃️ **SQLite Storage** — Pure-Go SQLite (no CGO) for task metadata, cross-references, learning patterns, and feedback history
+- 🕸️ **Cross-Reference Graph** — Track relationships between tasks across providers
 
 ### LLM Task Decomposition (Spike)
-- **Task Breakdown** — Decompose complex tasks into stories using Claude or local Ollama
-- **Git Integration** — Write generated story specs directly to git repos
+- 🤖 **Task Breakdown** — Decompose complex tasks into stories using Claude or local Ollama
+- 📝 **Git Integration** — Write generated story specs directly to git repos
 
 ### User Experience
-- **First-Run Onboarding** — Guided welcome flow with keybinding tutorial, values/goals setup, and optional task import
-- **Values & Goals Display** — Persistent footer showing your values as you work
-- **Mood Logging** — Capture emotional state anytime with presets or custom text
-- **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
-- **Session Improvement Prompt** — On quit, optionally share improvement suggestions
-- **Contextual Next Steps** — After completing or adding a task, see relevant next actions
+- 👋 **First-Run Onboarding** — Guided welcome flow with keybinding tutorial, values/goals setup, and optional task import
+- 🎯 **Values & Goals Display** — Persistent footer showing your values as you work
+- 😊 **Mood Logging** — Capture emotional state anytime with presets or custom text
+- 💬 **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
+- 💡 **Session Improvement Prompt** — On quit, optionally share improvement suggestions
+- ➡️ **Contextual Next Steps** — After completing or adding a task, see relevant next actions
 
 ### Distribution
-- **Homebrew** — Install via `brew install arcaven/tap/threedoors`
-- **Signed & Notarized** — macOS binaries are code-signed and Apple-notarized
-- **Cross-Platform Binaries** — Pre-built for macOS (ARM & Intel) and Linux (x86_64)
-- **GitHub Releases** — Automatic releases on every merge to main
+- 🍺 **Homebrew** — Install via `brew install arcaven/tap/threedoors`
+- 🔏 **Signed & Notarized** — macOS binaries are code-signed and Apple-notarized
+- 💻 **Cross-Platform Binaries** — Pre-built for macOS (ARM & Intel) and Linux (x86_64)
+- 🚀 **GitHub Releases** — Automatic releases on every merge to main
 
 ## Key Bindings
 
@@ -327,4 +327,4 @@ Built with the [Charm](https://charm.sh/) ecosystem:
 
 ---
 
-**"Progress over perfection. Three doors. One choice. Move forward."**
+**"Progress over perfection. Three doors. One choice. Move forward."** 🚪✨
