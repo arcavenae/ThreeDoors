@@ -1,0 +1,46 @@
+# .dockerignore — Minimize Docker build context for faster builds
+# Only go.mod and go.sum are needed in the image (for go mod download).
+# Source code is mounted at runtime via docker-compose volume.
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Build artifacts
+bin/
+test-results/
+
+# Documentation (not needed for tests)
+docs/
+README.md
+LICENSE
+
+# BMAD tooling
+_bmad/
+_bmad-output/
+
+# Scripts and CI (not needed in container)
+scripts/
+.github/
+Formula/
+
+# Environment files
+.env*
+*.env
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude/Windsurf config
+.claude/
+.windsurf/
+CLAUDE.md

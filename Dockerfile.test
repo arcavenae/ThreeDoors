@@ -1,0 +1,35 @@
+# Dockerfile.test — Docker test environment for reproducible E2E testing
+# Story 18.4: Builds a test runner image with Go toolchain and linting tools.
+# Source code is mounted at runtime via docker-compose, not copied into the image.
+
+FROM golang:1.24-bookworm
+
+# Pin tool versions to match CI (.github/workflows/ci.yml)
+ARG GOFUMPT_VERSION=v0.7.0
+ARG GOLANGCI_LINT_VERSION=v2.1.6
+
+# Install gofumpt and golangci-lint
+RUN go install mvdan.cc/gofumpt@${GOFUMPT_VERSION} && \
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+
+# Set up working directory
+WORKDIR /app
+
+# Cache Go module dependencies
+# Copy only module files first to leverage Docker layer caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Create non-root user for test execution
+RUN groupadd --gid 1001 testuser && \
+    useradd --uid 1001 --gid 1001 --create-home testuser && \
+    mkdir -p /app/test-results && \
+    chown -R testuser:testuser /app
+
+USER testuser
+
+# Default environment for test execution
+ENV CGO_ENABLED=0
+
+# Default command runs the full test suite with coverage
+CMD ["go", "test", "./...", "-v", "-count=1", "-timeout", "5m", "-coverprofile=test-results/coverage.out"]

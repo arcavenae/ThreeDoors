@@ -1,0 +1,20 @@
+# docker-compose.test.yml — Docker test environment for reproducible E2E testing
+# Story 18.4: Defines the test service with source mount and results output.
+# Usage: make test-docker (or: docker compose -f docker-compose.test.yml run --rm test)
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      # Mount source code read-only — no rebuild needed for code changes
+      - .:/app:ro
+      # Mount test-results read-write for coverage output
+      - ./test-results:/app/test-results:rw
+    environment:
+      - CGO_ENABLED=0
+      - GOFLAGS=-count=1
+      # Ensure Go uses the cached modules from the image, not the mounted source
+      - GOPATH=/go
+    working_dir: /app
