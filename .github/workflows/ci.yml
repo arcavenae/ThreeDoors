@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   quality-gate:
@@ -43,6 +44,49 @@ jobs:
 
       - name: Display coverage summary
         run: go tool cover -func=coverage.out
+
+      - name: Enforce coverage floor
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep '^total:' | awk '{print $NF}' | tr -d '%')
+          THRESHOLD=75
+          echo "Total coverage: ${COVERAGE}%  (threshold: ${THRESHOLD}%)"
+          if [ "$(echo "$COVERAGE < $THRESHOLD" | bc -l)" -eq 1 ]; then
+            echo "::error::Coverage ${COVERAGE}% is below the ${THRESHOLD}% threshold"
+            exit 1
+          fi
+
+      - name: Post coverage comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            const summary = execSync('go tool cover -func=coverage.out').toString();
+            const totalLine = summary.split('\n').find(l => l.startsWith('total:'));
+            const coverage = totalLine ? totalLine.match(/[\d.]+%/)?.[0] : 'unknown';
+            const body = `## Coverage Report\n\n**Total coverage: ${coverage}**\n\n<details>\n<summary>Package breakdown</summary>\n\n\`\`\`\n${summary}\`\`\`\n</details>`;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.startsWith('## Coverage Report'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
 
       - name: Validate build
         run: go build -o /dev/null ./cmd/threedoors
