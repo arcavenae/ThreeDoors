@@ -492,6 +492,8 @@ So that the architecture follows the five-layer design specified in Architecture
 **And** all existing tests pass without modification (behavior-preserving refactor)
 **And** no user-facing behavior changes
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 3.5.2: TaskProvider Interface Hardening
 
 As a developer building future integrations,
@@ -508,6 +510,8 @@ So that the adapter SDK (Epic 7) has a stable, well-defined contract.
 **And** existing text file and Apple Notes adapters updated to implement the hardened interface
 **And** interface documented with godoc comments
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 3.5.3: Config.yaml Schema & Migration Spike
 
 As a developer,
@@ -522,6 +526,8 @@ So that Epic 7's config-driven provider selection has a validated foundation.
 **And** spike verifies zero-friction upgrade: existing users without config.yaml default to current behavior (text file provider)
 **And** sample config.yaml drafted with commented provider examples
 **And** spike identifies any breaking changes and mitigation strategies
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 3.5.4: Apple Notes Adapter Hardening
 
@@ -539,6 +545,8 @@ So that sync is reliable before more adapters are added.
 **And** error messages are user-friendly and actionable
 **And** adapter logs sync operations for debugging (respects NFR9 - no sensitive data)
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 3.5.5: Baseline Regression Test Suite
 
 As a developer preparing for Epic 4 (Learning),
@@ -554,6 +562,9 @@ So that the learning engine (Epic 4) can be validated against known-good behavio
 **And** task pool tests cover: load, filter by status, add, remove, update operations
 **And** tests serve as regression suite when Epic 4 modifies selection algorithm
 **And** all tests pass on current codebase
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 3.5.6: Session Metrics Reader Library
 
@@ -570,6 +581,10 @@ So that Epic 4 stories can focus on learning logic rather than I/O.
 **And** handles corrupted/malformed lines gracefully (skip with warning, don't fail)
 **And** unit tests cover: empty file, single session, multiple sessions, corrupted lines
 **And** library is dependency-free (no external packages beyond stdlib)
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+**And** test assertions verify actual outcomes, not just absence of errors
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 3.5.7: Adapter Test Scaffolding & CI Coverage Floor
 
@@ -586,6 +601,10 @@ So that Epic 9 (Testing Strategy) has a foundation and coverage doesn't erode.
 **And** CI pipeline updated to measure coverage (`go test -coverprofile`) and fail if below threshold (set to current level)
 **And** coverage report posted as PR comment
 **And** `internal/adapters/contract_test.go` scaffolding ready for Epic 9 to fill
+**And** CI runs `golangci-lint run ./...` with zero issues required (errcheck, staticcheck included)
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 3.5.8: Validation Gate Decision Documentation
 
@@ -602,6 +621,8 @@ So that the proceed-to-MVP decision is recorded and learnings inform Epic 4.
 **And** formal "proceed to MVP" decision recorded with rationale
 **And** recommendations for Epic 4 learning algorithm based on observed patterns
 **And** document references actual session metrics data as evidence
+
+**Quality Gate (AC-Q5):** All changed files directly related to this story's ACs | scope-checked ✓ | See Appendix for full BDD criteria.
 
 ---
 
@@ -627,6 +648,9 @@ So that the system can present diverse door selections.
 **And** users can override or correct auto-categorization via `:tag` command
 **And** categories are persisted in task metadata (YAML)
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q8 (Determinism):** Categorization output must be deterministic for the same input; sorted collections where ordering matters.
+
 ### Story 4.2: Session Metrics Pattern Analysis
 
 As a developer,
@@ -641,6 +665,8 @@ So that the learning engine has data to work with.
 **And** results are stored in a patterns cache file (patterns.json)
 **And** analysis runs on app startup (background, non-blocking)
 **And** minimum 5 sessions required before generating patterns (cold start guard)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 4.3: Mood-Aware Adaptive Door Selection
 
@@ -657,6 +683,9 @@ So that I'm shown tasks that match my current capacity.
 **And** if no mood data exists, falls back to random selection (current behavior)
 **And** selection weights are configurable in a learning config section
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q8 (Determinism):** Adaptive selection must use seeded randomness or documented non-determinism; anti-repeat guards required; time.Now() called once per selection operation.
+
 ### Story 4.4: Avoidance Detection & User Insights
 
 As a user,
@@ -671,6 +700,9 @@ So that I can make conscious decisions about deferred tasks.
 **And** the system does NOT nag or guilt — framing is informational
 **And** a `:insights` command shows a summary of patterns ("When stressed, you avoid technical tasks")
 **And** persistent avoidance (10+ bypasses) triggers a gentle prompt: "This task keeps appearing. Would you like to: [R]econsider, [B]reak down, [D]efer, [A]rchive?"
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q8 (Determinism):** Avoidance counts must be deterministic; bypass tracking sorted by count; time.Now() called once per session.
 
 ### Story 4.5: Goal Re-evaluation Prompts
 
@@ -687,6 +719,8 @@ So that my task list stays aligned with what I actually want to do.
 **And** re-evaluation prompt shown at most once per week per goal
 **And** prompt links to `:goals` command for editing
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 4.6: "Better Than Yesterday" Multi-Dimensional Tracking
 
 As a user,
@@ -701,6 +735,9 @@ So that I celebrate improvement beyond just task count.
 **And** comparison is day-over-day and week-over-week
 **And** messaging is encouraging regardless of direction ("3 tasks today vs 5 yesterday — every door opened counts")
 **And** dimensions are displayed compactly (single line or expandable)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q8 (Determinism):** Multi-dimensional comparisons must use consistent time base; time.Now() called once per session start; streak calculations deterministic.
 
 ---
 
@@ -742,6 +779,10 @@ So that cross-reference tracking and learning patterns have persistent storage.
 **And** database is created lazily (only when first enrichment write occurs)
 **And** migrations are version-tracked for schema evolution
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q7 (Error Handling):** All database operations must check error returns including db.Close(); use fmt.Errorf("context: %w", err) wrapping; no silently discarded errors.
+**Atomic Writes:** Database writes must use transactions; file-based operations use write-to-tmp, sync, rename pattern.
+
 ### Story 6.2: Cross-Reference Tracking
 
 As a user with multiple task sources,
@@ -755,6 +796,9 @@ So that related items are connected regardless of source.
 **Then** cross-references are stored in enrichment.db
 **And** linked tasks show a "linked" indicator in task detail view
 **And** navigating to linked tasks is supported from detail view
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q7 (Error Handling):** All database operations must check error returns; cross-reference writes use transactions.
 
 ---
 
@@ -781,6 +825,8 @@ So that new integrations can be added without modifying core application code.
 **And** registry exposes `ListProviders()`, `GetProvider(name)`, and `ActiveProviders()` methods
 **And** existing text file and Apple Notes adapters are migrated to registry pattern
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 7.2: Config-Driven Provider Selection
 
 As a user with multiple task sources,
@@ -796,6 +842,8 @@ So that I can choose which task providers are active without code changes.
 **And** missing config.yaml falls back to text file provider (backward compatible)
 **And** sample config.yaml generated on first run with commented examples
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 7.3: Adapter Developer Guide & Contract Tests
 
 As an integration developer,
@@ -810,6 +858,9 @@ So that I can create new task provider integrations with confidence.
 **And** contract test suite in `internal/adapters/contract_test.go` validates any TaskProvider
 **And** tests cover: CRUD operations, error handling, concurrent access, interface compliance
 **And** contract test suite is reusable (adapters import and run against their implementation)
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ---
 
@@ -837,6 +888,10 @@ So that I can use Three Doors with my existing Obsidian workflow.
 **And** writes task status changes back using atomic file operations
 **And** passes adapter contract test suite
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q6 (Input Sanitization):** File paths and task content from Obsidian vault must be sanitized; test cases with special characters in filenames and task text.
+**Atomic Writes:** File write operations must use write-to-tmp, sync, rename pattern per coding-standards.md.
+
 ### Story 8.2: Obsidian Bidirectional Sync
 
 As an Obsidian user,
@@ -852,6 +907,8 @@ So that my tasks stay in sync regardless of where I edit them.
 **And** concurrent edit handling uses last-write-wins with conflict logging
 **And** sync latency under 2 seconds
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 8.3: Obsidian Vault Configuration
 
 As a user,
@@ -865,6 +922,8 @@ So that ThreeDoors integrates with my specific vault.
 **Then** vault path is validated (exists, readable, writable)
 **And** invalid vault path produces clear error and fallback to other providers
 **And** supports configurable task folder and file pattern (glob)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 8.4: Obsidian Daily Note Integration
 
@@ -880,6 +939,9 @@ So that tasks captured in daily notes appear in Three Doors.
 **And** quick-add tasks can be appended under configurable heading
 **And** supports common date formats (`YYYY-MM-DD.md`, etc.)
 **And** missing daily note handled gracefully
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q6 (Input Sanitization):** Daily note file paths and heading content must be sanitized; test cases with special characters in date formats and heading names.
 
 ---
 
@@ -903,6 +965,9 @@ So that regressions in the sync pipeline are caught automatically.
 **Then** tests validate: note creation, task read, task update, bidirectional sync, error handling
 **And** tests cover: connectivity failure, partial sync, concurrent modification
 **And** test fixtures in `testdata/applenotes/` for reproducible scenarios
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 9.2: Contract Tests for Adapter Compliance
 
@@ -916,6 +981,9 @@ So that all adapters behave consistently.
 **When** contract tests run
 **Then** tests validate: CRUD operations, error handling, concurrent access, interface compliance
 **And** each adapter runs the contract suite in its own test file
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 9.3: Performance Benchmarks
 
@@ -931,6 +999,8 @@ So that <100ms NFR is validated and regressions caught.
 **And** results compared against <100ms threshold (NFR13)
 **And** CI runs benchmarks on every PR
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 9.4: Functional E2E Tests
 
 As a developer,
@@ -945,6 +1015,9 @@ So that the complete user experience is validated.
 **And** session metrics generation verified
 **And** search, command palette, mood tracking workflows covered
 **And** uses Bubbletea's `teatest` package for TUI testing
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 9.5: CI Coverage Gates
 
@@ -959,6 +1032,9 @@ So that code quality doesn't regress.
 **Then** coverage measurement runs (`go test -coverprofile`)
 **And** PRs reducing coverage below threshold are blocked
 **And** coverage report posted as PR comment
+**And** CI runs full pre-PR verification checklist (gofumpt, golangci-lint with errcheck/staticcheck, go test, scope check) per coding-standards.md
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ---
 
@@ -984,6 +1060,8 @@ So that I understand the Three Doors concept.
 **And** skip option available at every step
 **And** onboarding state persisted (`onboarding_complete: true` in config)
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 10.2: Values/Goals Setup & Task Import
 
 As a new user,
@@ -998,6 +1076,8 @@ So that the tool is immediately useful.
 **And** import detection for common task sources (text, Markdown)
 **And** import preview shows tasks before importing
 **And** step is skippable; manual import via `:import` command later
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ---
 
@@ -1023,6 +1103,10 @@ So that I never lose work.
 **And** failed replays retry with exponential backoff
 **And** core functionality unaffected by sync state
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q7 (Error Handling):** WAL file operations must check all error returns including f.Close(); replay failures must be logged with context via %w wrapping.
+**Atomic Writes:** WAL writes must use write-to-tmp, sync, rename pattern per coding-standards.md.
+
 ### Story 11.2: Sync Status Indicator
 
 As a user,
@@ -1036,6 +1120,8 @@ So that I know my changes are synchronized.
 **Then** status bar shows per-provider state (✓ synced, ↻ syncing, ⏳ pending, ✗ error)
 **And** updates in real-time
 **And** minimal screen real estate
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
 ### Story 11.3: Conflict Visualization & Sync Log
 
@@ -1051,6 +1137,9 @@ So that I trust the sync system.
 **And** resolution options: keep local, keep remote, keep both
 **And** `:synclog` command shows chronological operations
 **And** sync log rotated at 1MB
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q7 (Error Handling):** Sync log file operations must check all error returns; conflict resolution must propagate errors with context.
 
 ---
 
@@ -1076,6 +1165,9 @@ So that it understands my available time.
 **And** CalDAV cache reader from `~/Library/Calendars/`
 **And** graceful fallback when sources unavailable
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q6 (Input Sanitization):** AppleScript calls for Calendar.app must escape all user/event data; test cases with special characters in event titles and calendar names.
+
 ### Story 12.2: Time-Contextual Door Selection
 
 As a user with calendar awareness,
@@ -1090,6 +1182,9 @@ So that I'm not shown deep-work when I have a meeting in 15 minutes.
 **And** short blocks prefer quick tasks
 **And** no calendar data = standard selection
 **And** time context shown in TUI ("Next event in 45 min")
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q8 (Determinism):** Time-contextual selection must call time.Now() once per selection operation; task ordering deterministic for same time window.
 
 ---
 
@@ -1115,6 +1210,8 @@ So that I see everything without switching sources.
 **And** provider failures isolated (one failing doesn't block others)
 **And** task pool maintains provider origin metadata
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 13.2: Duplicate Detection & Source Attribution
 
 As a user with overlapping sources,
@@ -1129,6 +1226,9 @@ So that I don't work on the same task twice.
 **And** duplicates shown with indicator ("Possible duplicate")
 **And** user can merge or dismiss duplicate flags
 **And** source badges show in door view, search, and detail view
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q8 (Determinism):** Duplicate detection ordering must be deterministic; fuzzy match results sorted by score.
 
 ---
 
@@ -1154,6 +1254,8 @@ So that we understand the approach before full implementation.
 **And** agent handoff protocol drafted
 **And** recommendation: build vs wait, local vs cloud, effort estimate
 
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
 ### Story 14.2: Agent Action Queue Integration
 
 As a developer using ThreeDoors with coding agents,
@@ -1168,6 +1270,9 @@ So that task decomposition flows into automated implementation.
 **And** stories written to configurable repo path
 **And** git operations: branch creation, commit, optional PR creation
 **And** configurable LLM backend via config.yaml
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+**AC-Q6 (Input Sanitization):** Git operations (branch names, commit messages) must sanitize user-provided task content; shell command construction must escape all interpolated values; test cases with special characters.
 
 ---
 
@@ -1193,6 +1298,8 @@ So that design decisions are grounded in behavioral science.
 **And** comparable systems analysis
 **And** practical recommendations
 
+**Quality Gate (AC-Q5):** All changed files directly related to this story's ACs | scope-checked ✓ | See Appendix for full BDD criteria.
+
 ### Story 15.2: Mood-Task Correlation & Procrastination Research
 
 As the product team,
@@ -1207,6 +1314,8 @@ So that Epic 4's learning algorithm is evidence-informed.
 **And** evidence assessment for "progress over perfection"
 **And** actionable recommendations for Epic 4
 **And** bibliography with accessible references
+
+**Quality Gate (AC-Q5):** All changed files directly related to this story's ACs | scope-checked ✓ | See Appendix for full BDD criteria.
 
 ---
 
@@ -1232,7 +1341,7 @@ Analysis of 49 PRs found 18 PRs (37%) required post-submission changes. The rema
 
 ### Mandatory Quality ACs for All Future Stories
 
-Every story in Epics 4–15 MUST include the following acceptance criteria in addition to feature-specific ACs. These are NON-NEGOTIABLE and derived from empirical PR failure data.
+Every story in Epics 3.5–15 MUST include the following acceptance criteria in addition to feature-specific ACs. These are NON-NEGOTIABLE and derived from empirical PR failure data. Each story references these gates via a compact **Quality Gate** line; this appendix provides the authoritative BDD definitions.
 
 #### AC-Q1: Formatting Gate (PRs #9, #23, #24, #42)
 
