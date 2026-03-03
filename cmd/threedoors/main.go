@@ -36,7 +36,13 @@ func main() {
 		}
 	}
 
-	provider := tasks.NewProviderFromConfig(cfg)
+	var provider tasks.TaskProvider
+	baseProvider := tasks.NewProviderFromConfig(cfg)
+	if configErr == nil {
+		provider = tasks.NewWALProvider(baseProvider, configDir)
+	} else {
+		provider = baseProvider
+	}
 	loadedTasks, err := provider.LoadTasks()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load tasks: %v\n", err)
