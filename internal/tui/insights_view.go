@@ -114,7 +114,7 @@ func (iv *InsightsView) renderCompletionTrends(s *strings.Builder) {
 	}
 	s.WriteString("\n  ")
 	for _, c := range counts {
-		s.WriteString(fmt.Sprintf("%-5d", c))
+		fmt.Fprintf(s, "%-5d", c)
 	}
 	s.WriteString("\n\n")
 
@@ -130,14 +130,14 @@ func (iv *InsightsView) renderCompletionTrends(s *strings.Builder) {
 		arrow = "→"
 	}
 	pct := math.Abs(wk.PercentChange)
-	s.WriteString(fmt.Sprintf("  This week: %d  |  Last week: %d  |  %s %.0f%%\n\n", wk.ThisWeekTotal, wk.LastWeekTotal, arrow, pct))
+	fmt.Fprintf(s, "  This week: %d  |  Last week: %d  |  %s %.0f%%\n\n", wk.ThisWeekTotal, wk.LastWeekTotal, arrow, pct)
 }
 
 func (iv *InsightsView) renderStreaks(s *strings.Builder) {
 	s.WriteString("  STREAKS\n")
 	streak := iv.counter.GetStreak()
 	if streak > 0 {
-		s.WriteString(fmt.Sprintf("  Current streak: %d days\n\n", streak))
+		fmt.Fprintf(s, "  Current streak: %d days\n\n", streak)
 	} else {
 		s.WriteString("  No active streak — complete a task to start one!\n\n")
 	}
