@@ -26,11 +26,19 @@ func RegisterBuiltinAdapters(reg *Registry) {
 		vaultPath := ""
 		tasksFolder := ""
 		filePattern := ""
+		dailyNotesEnabled := ""
+		dailyNotesFolder := ""
+		dailyNotesHeading := ""
+		dailyNotesFormat := ""
 		for _, p := range config.Providers {
 			if p.Name == "obsidian" {
 				vaultPath = p.GetSetting("vault_path", "")
 				tasksFolder = p.GetSetting("tasks_folder", "")
 				filePattern = p.GetSetting("file_pattern", "")
+				dailyNotesEnabled = p.GetSetting("daily_notes", "")
+				dailyNotesFolder = p.GetSetting("daily_notes_folder", "")
+				dailyNotesHeading = p.GetSetting("daily_notes_heading", "")
+				dailyNotesFormat = p.GetSetting("daily_notes_format", "")
 				break
 			}
 		}
@@ -38,13 +46,24 @@ func RegisterBuiltinAdapters(reg *Registry) {
 			return nil, fmt.Errorf("obsidian adapter requires vault_path setting")
 		}
 
-		if err := ValidateVaultPath(vaultPath); err != nil {
-			primary := NewObsidianAdapter(vaultPath, tasksFolder, filePattern)
-			fallback := NewTextFileProvider()
-			fmt.Fprintf(os.Stderr, "Warning: %v. Falling back to text file provider.\n", err)
-			return NewFallbackProvider(primary, fallback), nil
+		adapter := NewObsidianAdapter(vaultPath, tasksFolder, filePattern)
+
+		// Configure daily notes if enabled
+		if dailyNotesEnabled == "true" {
+			adapter.SetDailyNotes(&DailyNotesConfig{
+				Enabled:    true,
+				Folder:     dailyNotesFolder,
+				Heading:    dailyNotesHeading,
+				DateFormat: dailyNotesFormat,
+			})
 		}
 
-		return NewObsidianAdapter(vaultPath, tasksFolder, filePattern), nil
+		if err := ValidateVaultPath(vaultPath); err != nil {
+			fallback := NewTextFileProvider()
+			fmt.Fprintf(os.Stderr, "Warning: %v. Falling back to text file provider.\n", err)
+			return NewFallbackProvider(adapter, fallback), nil
+		}
+
+		return adapter, nil
 	})
 }

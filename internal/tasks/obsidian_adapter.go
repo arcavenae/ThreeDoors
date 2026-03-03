@@ -19,6 +19,7 @@ type ObsidianAdapter struct {
 	vaultPath   string
 	tasksFolder string
 	filePattern string
+	dailyNotes  *DailyNotesConfig
 	mu          sync.Mutex
 }
 
@@ -66,6 +67,11 @@ func ValidateVaultPath(vaultPath string) error {
 	_ = os.Remove(tmpFile)
 
 	return nil
+}
+
+// SetDailyNotes configures daily note integration for the adapter.
+func (a *ObsidianAdapter) SetDailyNotes(config *DailyNotesConfig) {
+	a.dailyNotes = config
 }
 
 // taskDir returns the absolute path to the directory containing task files.
@@ -198,6 +204,24 @@ func (a *ObsidianAdapter) loadTasksLocked() ([]*Task, error) {
 		tasks = append(tasks, fileTasks...)
 	}
 
+	// Include tasks from today's daily note when enabled
+	if a.dailyNotes != nil && a.dailyNotes.Enabled {
+		dailyTasks, err := a.loadDailyNoteTasks(now)
+		if err != nil {
+			return nil, fmt.Errorf("obsidian daily notes: %w", err)
+		}
+		// Deduplicate: skip daily note tasks whose IDs already appear in vault tasks
+		seen := make(map[string]bool, len(tasks))
+		for _, t := range tasks {
+			seen[t.ID] = true
+		}
+		for _, dt := range dailyTasks {
+			if !seen[dt.ID] {
+				tasks = append(tasks, dt)
+			}
+		}
+	}
+
 	return tasks, nil
 }
 
@@ -295,7 +319,11 @@ func (a *ObsidianAdapter) SaveTask(task *Task) error {
 		}
 	}
 
-	// Task not found — append to first file, or create tasks.md
+	// Task not found — route to daily note if enabled, otherwise to tasks folder
+	if a.dailyNotes != nil && a.dailyNotes.Enabled {
+		return a.appendTaskToDailyNote(task, time.Now().UTC())
+	}
+
 	targetFile := filepath.Join(dir, "tasks.md")
 	if len(files) > 0 {
 		targetFile = files[0]
