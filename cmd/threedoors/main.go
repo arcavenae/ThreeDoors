@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/arcaven/ThreeDoors/internal/dist"
+	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	"github.com/arcaven/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
@@ -49,8 +51,23 @@ func main() {
 	tracker := tasks.NewSessionTracker()
 	hc := tasks.NewHealthChecker(provider)
 
-	// Run pattern analysis in background (non-blocking)
+	// Load enrichment database and run pattern analysis in parallel (non-blocking)
+	var enrichDB *enrichment.DB
+	var enrichWg sync.WaitGroup
+
 	if configErr == nil {
+		enrichWg.Add(1)
+		go func() {
+			defer enrichWg.Done()
+			dbPath := filepath.Join(configDir, "enrichment.db")
+			edb, err := enrichment.Open(dbPath)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Warning: enrichment db failed to open: %v\n", err)
+				return
+			}
+			enrichDB = edb
+		}()
+
 		go func() {
 			analyzer := tasks.NewPatternAnalyzer()
 			sessionsPath := filepath.Join(configDir, "sessions.jsonl")
@@ -72,12 +89,22 @@ func main() {
 		}()
 	}
 
+	// Wait for enrichment DB to be ready before creating the model
+	enrichWg.Wait()
+
 	model := tui.NewMainModel(pool, tracker, provider, hc)
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Close enrichment database
+	if enrichDB != nil {
+		if closeErr := enrichDB.Close(); closeErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to close enrichment db: %v\n", closeErr)
+		}
 	}
 
 	// Persist session metrics on exit
