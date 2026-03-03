@@ -58,6 +58,7 @@ type DoorsView struct {
 	patternAnalyzer   *tasks.PatternAnalyzer
 	completionCounter *tasks.CompletionCounter
 	syncTracker       *tasks.SyncStatusTracker
+	timeContext       *tasks.TimeContext
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -99,6 +100,16 @@ func (dv *DoorsView) SetSyncTracker(tracker *tasks.SyncStatusTracker) {
 	dv.syncTracker = tracker
 }
 
+// SetTimeContext sets the calendar time context for time-aware door selection and display.
+func (dv *DoorsView) SetTimeContext(tc *tasks.TimeContext) {
+	dv.timeContext = tc
+}
+
+// TimeContext returns the current time context (for testing).
+func (dv *DoorsView) TimeContext() *tasks.TimeContext {
+	return dv.timeContext
+}
+
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
 func pickGreeting(lastIdx int) string {
 	if len(greetingMessages) <= 1 {
@@ -135,8 +146,13 @@ func (dv *DoorsView) RotateFooterMessage() {
 }
 
 // RefreshDoors selects new random doors from the pool.
+// Uses time-contextual selection when calendar data is available.
 func (dv *DoorsView) RefreshDoors() {
-	dv.currentDoors = tasks.SelectDoors(dv.pool, 3)
+	if dv.timeContext != nil && dv.timeContext.HasCalendar {
+		dv.currentDoors = tasks.SelectDoorsWithTimeContext(dv.pool, 3, dv.timeContext)
+	} else {
+		dv.currentDoors = tasks.SelectDoors(dv.pool, 3)
+	}
 	dv.selectedDoorIndex = -1
 }
 
@@ -172,6 +188,10 @@ func (dv *DoorsView) View() string {
 			s.WriteString(greetingStyle.Render(multiGreeting))
 			s.WriteString("\n")
 		}
+	}
+	if timeStr := tasks.FormatTimeContext(dv.timeContext); timeStr != "" {
+		s.WriteString(badgeStyle.Render(timeStr))
+		s.WriteString("\n")
 	}
 	s.WriteString("\n")
 
