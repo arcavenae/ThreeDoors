@@ -124,6 +124,122 @@ Some notes here.
 	}
 }
 
+func TestLoadDailyNoteTasks_HeadingScopedReading(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+	content := `# 2026-03-15
+
+## Meetings
+
+- [ ] Meeting task outside heading <!-- td:mt-1 -->
+
+## Tasks
+
+- [ ] Under heading task <!-- td:ht-1 -->
+- [x] Another heading task <!-- td:ht-2 -->
+
+## Notes
+
+- [ ] Stray checkbox in notes <!-- td:nt-1 -->
+`
+	if err := os.WriteFile(filepath.Join(dir, "2026-03-15.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+		Heading: "## Tasks",
+	})
+
+	tasks, err := adapter.loadDailyNoteTasks(date)
+	if err != nil {
+		t.Fatalf("loadDailyNoteTasks() error: %v", err)
+	}
+	if len(tasks) != 2 {
+		t.Fatalf("got %d tasks, want 2 (only under ## Tasks)", len(tasks))
+	}
+	if tasks[0].ID != "ht-1" {
+		t.Errorf("task 0 ID = %q, want %q", tasks[0].ID, "ht-1")
+	}
+	if tasks[1].ID != "ht-2" {
+		t.Errorf("task 1 ID = %q, want %q", tasks[1].ID, "ht-2")
+	}
+}
+
+func TestLoadDailyNoteTasks_NoHeadingReturnsEmpty(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+	content := `# 2026-03-15
+
+- [ ] Task with no heading section <!-- td:nh-1 -->
+`
+	if err := os.WriteFile(filepath.Join(dir, "2026-03-15.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+		Heading: "## Tasks",
+	})
+
+	tasks, err := adapter.loadDailyNoteTasks(date)
+	if err != nil {
+		t.Fatalf("loadDailyNoteTasks() error: %v", err)
+	}
+	if len(tasks) != 0 {
+		t.Errorf("got %d tasks, want 0 when heading not present", len(tasks))
+	}
+}
+
+func TestLoadDailyNoteTasks_SubheadingIncluded(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+	// ### subheading (level 3) under ## Tasks (level 2) should be included
+	content := `## Tasks
+
+- [ ] Top level task <!-- td:tl-1 -->
+
+### Subtasks
+
+- [ ] Subtask under heading <!-- td:st-1 -->
+
+## Notes
+
+- [ ] Not included <!-- td:ni-1 -->
+`
+	if err := os.WriteFile(filepath.Join(dir, "2026-03-15.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+		Heading: "## Tasks",
+	})
+
+	tasks, err := adapter.loadDailyNoteTasks(date)
+	if err != nil {
+		t.Fatalf("loadDailyNoteTasks() error: %v", err)
+	}
+	if len(tasks) != 2 {
+		t.Fatalf("got %d tasks, want 2 (includes subheading tasks)", len(tasks))
+	}
+	if tasks[0].ID != "tl-1" {
+		t.Errorf("task 0 ID = %q, want %q", tasks[0].ID, "tl-1")
+	}
+	if tasks[1].ID != "st-1" {
+		t.Errorf("task 1 ID = %q, want %q", tasks[1].ID, "st-1")
+	}
+}
+
 func TestLoadDailyNoteTasks_WithFolder(t *testing.T) {
 	t.Parallel()
 
@@ -134,7 +250,7 @@ func TestLoadDailyNoteTasks_WithFolder(t *testing.T) {
 	}
 
 	date := time.Date(2026, 1, 5, 0, 0, 0, 0, time.UTC)
-	content := "- [ ] Daily task <!-- td:df-1 -->\n"
+	content := "## Tasks\n\n- [ ] Daily task <!-- td:df-1 -->\n"
 	if err := os.WriteFile(filepath.Join(dailyDir, "2026-01-05.md"), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -315,10 +431,10 @@ func TestLoadTasks_IncludesDailyNotes(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Create today's daily note
+	// Create today's daily note with heading
 	today := time.Now().UTC()
 	dailyFilename := today.Format("2006-01-02.md")
-	dailyContent := "- [ ] Daily task <!-- td:dt-1 -->\n"
+	dailyContent := "## Tasks\n\n- [ ] Daily task <!-- td:dt-1 -->\n"
 	if err := os.WriteFile(filepath.Join(dir, dailyFilename), []byte(dailyContent), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -358,7 +474,7 @@ func TestLoadTasks_DeduplicatesDailyNotes(t *testing.T) {
 	// Same task ID in both vault and daily note (daily note is in vault dir)
 	today := time.Now().UTC()
 	dailyFilename := today.Format("2006-01-02.md")
-	content := "- [ ] Duplicate task <!-- td:dup-1 -->\n"
+	content := "## Tasks\n\n- [ ] Duplicate task <!-- td:dup-1 -->\n"
 	if err := os.WriteFile(filepath.Join(dir, dailyFilename), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -575,5 +691,333 @@ func TestAppendTaskToDailyNote_DefaultHeading(t *testing.T) {
 
 	if !strings.Contains(string(data), defaultDailyNotesHeading) {
 		t.Errorf("should use default heading %q", defaultDailyNotesHeading)
+	}
+}
+
+// Story 8.4: Common date format auto-detection tests
+
+func TestResolveDailyNotePath_AutoDetectsFormat(t *testing.T) {
+	t.Parallel()
+
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name           string
+		configFormat   string
+		actualFilename string
+	}{
+		{"US format detected", "2006-01-02.md", "03-15-2026.md"},
+		{"dot separator detected", "2006-01-02.md", "2026.03.15.md"},
+		{"underscore detected", "2006-01-02.md", "2026_03_15.md"},
+		{"compact detected", "2006-01-02.md", "20260315.md"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			dir := t.TempDir()
+
+			// Create file with non-configured format
+			content := "## Tasks\n\n- [ ] Auto-detected task <!-- td:ad-1 -->\n"
+			if err := os.WriteFile(filepath.Join(dir, tt.actualFilename), []byte(content), 0o644); err != nil {
+				t.Fatal(err)
+			}
+
+			adapter := NewObsidianAdapter(dir, "", "")
+			adapter.SetDailyNotes(&DailyNotesConfig{
+				Enabled:    true,
+				DateFormat: tt.configFormat,
+			})
+
+			path, err := adapter.resolveDailyNotePath(date)
+			if err != nil {
+				t.Fatalf("resolveDailyNotePath() error: %v", err)
+			}
+
+			if filepath.Base(path) != tt.actualFilename {
+				t.Errorf("resolved to %q, want filename %q", filepath.Base(path), tt.actualFilename)
+			}
+		})
+	}
+}
+
+func TestResolveDailyNotePath_PrefersConfiguredFormat(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+
+	// Create files in both configured and auto-detected formats
+	content := "## Tasks\n\n- [ ] Task <!-- td:t-1 -->\n"
+	if err := os.WriteFile(filepath.Join(dir, "03-15-2026.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "2026-03-15.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled:    true,
+		DateFormat: "2006-01-02.md",
+	})
+
+	path, err := adapter.resolveDailyNotePath(date)
+	if err != nil {
+		t.Fatalf("resolveDailyNotePath() error: %v", err)
+	}
+
+	if filepath.Base(path) != "2026-03-15.md" {
+		t.Errorf("should prefer configured format, got %q", filepath.Base(path))
+	}
+}
+
+func TestResolveDailyNotePath_WithFolder(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+
+	// Create daily note in folder with non-default format
+	dailyDir := filepath.Join(dir, "Daily")
+	if err := os.MkdirAll(dailyDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	content := "## Tasks\n\n- [ ] Task <!-- td:t-1 -->\n"
+	if err := os.WriteFile(filepath.Join(dailyDir, "03-15-2026.md"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled:    true,
+		Folder:     "Daily",
+		DateFormat: "2006-01-02.md",
+	})
+
+	path, err := adapter.resolveDailyNotePath(date)
+	if err != nil {
+		t.Fatalf("resolveDailyNotePath() error: %v", err)
+	}
+
+	if filepath.Base(path) != "03-15-2026.md" {
+		t.Errorf("should auto-detect format in folder, got %q", filepath.Base(path))
+	}
+}
+
+func TestResolveDailyNotePath_NoFileReturnsConfiguredPath(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	date := time.Date(2026, 3, 15, 0, 0, 0, 0, time.UTC)
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled:    true,
+		DateFormat: "2006-01-02.md",
+	})
+
+	path, err := adapter.resolveDailyNotePath(date)
+	if err != nil {
+		t.Fatalf("resolveDailyNotePath() error: %v", err)
+	}
+
+	if filepath.Base(path) != "2026-03-15.md" {
+		t.Errorf("should return configured format path, got %q", filepath.Base(path))
+	}
+}
+
+// Story 8.4: ValidateDateFormat tests
+
+func TestValidateDateFormat(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		format  string
+		wantErr bool
+	}{
+		{"standard ISO", "2006-01-02.md", false},
+		{"US format", "01-02-2006.md", false},
+		{"dot separator", "2006.01.02.md", false},
+		{"underscore", "2006_01_02.md", false},
+		{"compact", "20060102.md", false},
+		{"subdirectory", "2006/01/02.md", false},
+		{"long month", "Jan 2, 2006.md", false},
+		{"empty string", "", true},
+		{"no .md extension", "2006-01-02", true},
+		{"no .md extension txt", "2006-01-02.txt", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			err := ValidateDateFormat(tt.format)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateDateFormat(%q) error = %v, wantErr %v", tt.format, err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// Story 8.4: QuickAddToDailyNote tests
+
+func TestQuickAddToDailyNote(t *testing.T) {
+	dir := t.TempDir()
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+		Heading: "## Tasks",
+	})
+
+	task, err := adapter.QuickAddToDailyNote("Buy groceries")
+	if err != nil {
+		t.Fatalf("QuickAddToDailyNote() error: %v", err)
+	}
+
+	if task == nil {
+		t.Fatal("expected non-nil task")
+	}
+	if task.Text != "Buy groceries" {
+		t.Errorf("task text = %q, want %q", task.Text, "Buy groceries")
+	}
+	if task.ID == "" {
+		t.Error("task should have an ID")
+	}
+
+	// Verify it was written to today's daily note
+	today := time.Now().UTC()
+	dailyFilename := today.Format("2006-01-02.md")
+	data, err := os.ReadFile(filepath.Join(dir, dailyFilename))
+	if err != nil {
+		t.Fatalf("daily note should exist: %v", err)
+	}
+	if !strings.Contains(string(data), "Buy groceries") {
+		t.Error("daily note should contain task")
+	}
+	if !strings.Contains(string(data), "## Tasks") {
+		t.Error("daily note should contain heading")
+	}
+}
+
+func TestQuickAddToDailyNote_DisabledReturnsError(t *testing.T) {
+	t.Parallel()
+	adapter := NewObsidianAdapter(t.TempDir(), "", "")
+	_, err := adapter.QuickAddToDailyNote("some task")
+	if err == nil {
+		t.Error("expected error when daily notes not enabled")
+	}
+}
+
+func TestQuickAddToDailyNote_EmptyTextReturnsError(t *testing.T) {
+	adapter := NewObsidianAdapter(t.TempDir(), "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+	})
+
+	_, err := adapter.QuickAddToDailyNote("")
+	if err == nil {
+		t.Error("expected error for empty text")
+	}
+	_, err = adapter.QuickAddToDailyNote("   ")
+	if err == nil {
+		t.Error("expected error for whitespace-only text")
+	}
+}
+
+func TestQuickAddToDailyNote_RoundTrip(t *testing.T) {
+	dir := t.TempDir()
+
+	adapter := NewObsidianAdapter(dir, "", "")
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+		Heading: "## Tasks",
+	})
+
+	// Quick-add three tasks
+	task1, err := adapter.QuickAddToDailyNote("First task")
+	if err != nil {
+		t.Fatalf("QuickAddToDailyNote() error: %v", err)
+	}
+	task2, err := adapter.QuickAddToDailyNote("Second task")
+	if err != nil {
+		t.Fatalf("QuickAddToDailyNote() error: %v", err)
+	}
+
+	// Load them back
+	tasks, err := adapter.loadDailyNoteTasks(time.Now().UTC())
+	if err != nil {
+		t.Fatalf("loadDailyNoteTasks() error: %v", err)
+	}
+	if len(tasks) != 2 {
+		t.Fatalf("got %d tasks, want 2", len(tasks))
+	}
+
+	if tasks[0].ID != task1.ID {
+		t.Errorf("task 0 ID = %q, want %q", tasks[0].ID, task1.ID)
+	}
+	if tasks[1].ID != task2.ID {
+		t.Errorf("task 1 ID = %q, want %q", tasks[1].ID, task2.ID)
+	}
+}
+
+// Story 8.4: headingMarkdownLevel tests
+
+func TestHeadingMarkdownLevel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		line  string
+		level int
+	}{
+		{"h1", "# Title", 1},
+		{"h2", "## Subtitle", 2},
+		{"h3", "### Sub-subtitle", 3},
+		{"h4", "#### Level 4", 4},
+		{"h5", "##### Level 5", 5},
+		{"h6", "###### Level 6", 6},
+		{"not heading no space", "#NoSpace", 0},
+		{"not heading empty", "", 0},
+		{"not heading text", "Just text", 0},
+		{"too many hashes", "####### Seven", 0},
+		{"hash only", "#", 0},
+		{"with leading whitespace", "  ## Tasks", 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := headingMarkdownLevel(tt.line)
+			if got != tt.level {
+				t.Errorf("headingMarkdownLevel(%q) = %d, want %d", tt.line, got, tt.level)
+			}
+		})
+	}
+}
+
+// AC-Q6: Additional input sanitization for daily note paths and headings
+
+func TestDailyNotes_PathTraversalInDateFormat(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	adapter := NewObsidianAdapter(dir, "", "")
+
+	// Attempt to use a date format that would produce path traversal
+	adapter.SetDailyNotes(&DailyNotesConfig{
+		Enabled: true,
+	})
+
+	// sanitizeDailyNotePath catches path traversal attempts
+	_, err := sanitizeDailyNotePath("../../../etc/passwd")
+	if err == nil {
+		t.Error("expected error for path traversal in daily note path")
+	}
+
+	_, err = sanitizeDailyNotePath("valid/2026-03-15.md")
+	if err != nil {
+		t.Errorf("should allow valid subdirectory path: %v", err)
 	}
 }
