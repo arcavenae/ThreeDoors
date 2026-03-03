@@ -745,7 +745,7 @@ func TestObsidianAdapter_InputSanitization(t *testing.T) {
 				t.Fatalf("setup: %v", err)
 			}
 
-			adapter := NewObsidianAdapter(dir, "")
+			adapter := NewObsidianAdapter(dir, "", "")
 			loaded, err := adapter.LoadTasks()
 			if err != nil {
 				t.Fatalf("LoadTasks() error: %v", err)
