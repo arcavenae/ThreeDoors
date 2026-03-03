@@ -87,28 +87,43 @@ sign: (_require-var "APPLE_SIGNING_IDENTITY" env("APPLE_SIGNING_IDENTITY", ""))
 verify:
     codesign --verify --verbose=2 bin/threedoors
 
-# Submit binary to Apple notarytool and wait for result
-notarize: (_require-var "APPLE_NOTARIZATION_APPLE_ID" env("APPLE_NOTARIZATION_APPLE_ID", "")) (_require-var "APPLE_NOTARIZATION_PASSWORD" env("APPLE_NOTARIZATION_PASSWORD", "")) (_require-var "APPLE_NOTARIZATION_TEAM_ID" env("APPLE_NOTARIZATION_TEAM_ID", ""))
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "Zipping binary for notarization..."
-    zip -j bin/threedoors.zip bin/threedoors
-    echo "Submitting to Apple notarytool..."
-    xcrun notarytool submit bin/threedoors.zip \
-        --apple-id "${APPLE_NOTARIZATION_APPLE_ID}" \
-        --password "${APPLE_NOTARIZATION_PASSWORD}" \
-        --team-id "${APPLE_NOTARIZATION_TEAM_ID}" \
-        --wait --timeout 14400
-    rm -f bin/threedoors.zip
-    echo "Notarization complete."
+# Create .app bundle from signed binary
+app:
+    @chmod +x scripts/create-app.sh
+    ./scripts/create-app.sh bin/threedoors "{{VERSION}}" bin
+
+# Codesign the .app bundle
+sign-app: (_require-var "APPLE_SIGNING_IDENTITY" env("APPLE_SIGNING_IDENTITY", ""))
+    codesign --force --deep --options runtime --sign "${APPLE_SIGNING_IDENTITY}" --timestamp bin/ThreeDoors.app
+
+# Create .dmg disk image from .app bundle
+dmg:
+    @chmod +x scripts/create-dmg.sh
+    ./scripts/create-dmg.sh bin/ThreeDoors.app "{{VERSION}}" bin/ThreeDoors.dmg
 
 # Create a signed pkg installer
 pkg: (_require-var "APPLE_INSTALLER_IDENTITY" env("APPLE_INSTALLER_IDENTITY", ""))
     @chmod +x scripts/create-pkg.sh
     ./scripts/create-pkg.sh bin/threedoors "{{VERSION}}" "${APPLE_INSTALLER_IDENTITY}" bin/threedoors.pkg
 
-# Full local release: build → sign → verify → notarize → pkg
-release-local: build sign verify notarize pkg
+# Notarize an artifact (pkg, dmg, or zip)
+notarize artifact: (_require-var "APPLE_NOTARIZATION_APPLE_ID" env("APPLE_NOTARIZATION_APPLE_ID", "")) (_require-var "APPLE_NOTARIZATION_PASSWORD" env("APPLE_NOTARIZATION_PASSWORD", "")) (_require-var "APPLE_NOTARIZATION_TEAM_ID" env("APPLE_NOTARIZATION_TEAM_ID", ""))
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Submitting {{artifact}} to Apple notarytool..."
+    xcrun notarytool submit "{{artifact}}" \
+        --apple-id "${APPLE_NOTARIZATION_APPLE_ID}" \
+        --password "${APPLE_NOTARIZATION_PASSWORD}" \
+        --team-id "${APPLE_NOTARIZATION_TEAM_ID}" \
+        --wait --timeout 14400
+    echo "Stapling notarization ticket..."
+    xcrun stapler staple "{{artifact}}"
+    echo "Notarization complete for {{artifact}}."
+
+# Full local release: build all formats, sign, notarize
+release-local: build sign verify app sign-app dmg pkg
+    just notarize bin/threedoors.pkg
+    just notarize bin/ThreeDoors.dmg
     @echo "Local release complete."
 
 # ─── Diagnostics ─────────────────────────────────────────────────

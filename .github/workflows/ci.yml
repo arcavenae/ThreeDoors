@@ -185,56 +185,59 @@ jobs:
           codesign --verify --deep --strict threedoors-darwin-arm64
           codesign --verify --deep --strict threedoors-darwin-amd64
 
-      - name: Notarize binaries
-        env:
-          APPLE_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_NOTARIZATION_APPLE_ID }}
-          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
-          APPLE_NOTARIZATION_TEAM_ID: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
+      - name: Build app bundles
         run: |
-          for BINARY in threedoors-darwin-arm64 threedoors-darwin-amd64; do
-            echo "Notarizing $BINARY..."
-            zip "${BINARY}.zip" "$BINARY"
-            xcrun notarytool submit "${BINARY}.zip" \
-              --apple-id "$APPLE_NOTARIZATION_APPLE_ID" \
-              --password "$APPLE_NOTARIZATION_PASSWORD" \
-              --team-id "$APPLE_NOTARIZATION_TEAM_ID" \
-              --wait --timeout 14400
-            rm "${BINARY}.zip"
-          done
+          VERSION="${{ needs.build-binaries.outputs.version }}"
+          chmod +x scripts/create-app.sh
 
-      - name: Verify Gatekeeper assessment
+          ./scripts/create-app.sh threedoors-darwin-arm64 "$VERSION" .
+          mv ThreeDoors.app ThreeDoors-arm64.app
+
+          ./scripts/create-app.sh threedoors-darwin-amd64 "$VERSION" .
+          mv ThreeDoors.app ThreeDoors-amd64.app
+
+      - name: Sign app bundles
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
-          spctl --assess --type execute threedoors-darwin-arm64
-          spctl --assess --type execute threedoors-darwin-amd64
+          codesign --force --deep --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp ThreeDoors-arm64.app
+          codesign --force --deep --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp ThreeDoors-amd64.app
+
+      - name: Build dmg images
+        run: |
+          VERSION="${{ needs.build-binaries.outputs.version }}"
+          chmod +x scripts/create-dmg.sh
+
+          ./scripts/create-dmg.sh ThreeDoors-arm64.app "$VERSION" threedoors-arm64.dmg
+          ./scripts/create-dmg.sh ThreeDoors-amd64.app "$VERSION" threedoors-amd64.dmg
 
       - name: Build pkg installers
         env:
           APPLE_INSTALLER_IDENTITY: ${{ secrets.APPLE_INSTALLER_IDENTITY }}
-          APPLE_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_NOTARIZATION_APPLE_ID }}
-          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
-          APPLE_NOTARIZATION_TEAM_ID: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
         run: |
           VERSION="${{ needs.build-binaries.outputs.version }}"
           chmod +x scripts/create-pkg.sh
 
-          # Build arm64 pkg
           ./scripts/create-pkg.sh threedoors-darwin-arm64 "$VERSION" "$APPLE_INSTALLER_IDENTITY" threedoors-arm64.pkg
-
-          # Build amd64 pkg
           ./scripts/create-pkg.sh threedoors-darwin-amd64 "$VERSION" "$APPLE_INSTALLER_IDENTITY" threedoors-amd64.pkg
 
-          # Notarize and staple pkgs
-          for PKG in threedoors-arm64.pkg threedoors-amd64.pkg; do
-            echo "Notarizing $PKG..."
-            xcrun notarytool submit "$PKG" \
+      - name: Notarize and staple all artifacts
+        env:
+          APPLE_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_NOTARIZATION_APPLE_ID }}
+          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
+          APPLE_NOTARIZATION_TEAM_ID: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
+        run: |
+          for ARTIFACT in threedoors-arm64.pkg threedoors-amd64.pkg threedoors-arm64.dmg threedoors-amd64.dmg; do
+            echo "Notarizing $ARTIFACT..."
+            xcrun notarytool submit "$ARTIFACT" \
               --apple-id "$APPLE_NOTARIZATION_APPLE_ID" \
               --password "$APPLE_NOTARIZATION_PASSWORD" \
               --team-id "$APPLE_NOTARIZATION_TEAM_ID" \
               --wait --timeout 14400
-            xcrun stapler staple "$PKG"
+            xcrun stapler staple "$ARTIFACT"
           done
 
-      - name: Upload signed binaries and pkgs
+      - name: Upload signed binaries and installers
         uses: actions/upload-artifact@v4
         with:
           name: signed-binaries
@@ -243,6 +246,8 @@ jobs:
             threedoors-darwin-amd64
             threedoors-arm64.pkg
             threedoors-amd64.pkg
+            threedoors-arm64.dmg
+            threedoors-amd64.dmg
           retention-days: 14
 
       - name: Cleanup keychain
@@ -280,7 +285,7 @@ jobs:
         run: cp unsigned-binaries/threedoors-linux-amd64 . && rm -rf unsigned-binaries
 
       - name: List release files
-        run: ls -la threedoors-* *.pkg 2>/dev/null || true
+        run: ls -la threedoors-* *.pkg *.dmg 2>/dev/null || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -298,7 +303,7 @@ jobs:
             - `threedoors-darwin-arm64` — macOS Apple Silicon
             - `threedoors-darwin-amd64` — macOS Intel
             - `threedoors-linux-amd64` — Linux x86_64
-            ${{ needs.sign-and-notarize.result == 'success' && '- `threedoors-arm64.pkg` — macOS Installer (Apple Silicon)\n- `threedoors-amd64.pkg` — macOS Installer (Intel)' || '' }}
+            ${{ needs.sign-and-notarize.result == 'success' && '- `threedoors-arm64.pkg` — macOS Installer (Apple Silicon)\n- `threedoors-amd64.pkg` — macOS Installer (Intel)\n- `threedoors-arm64.dmg` — macOS Disk Image (Apple Silicon)\n- `threedoors-amd64.dmg` — macOS Disk Image (Intel)' || '' }}
           prerelease: true
           files: |
             threedoors-*
