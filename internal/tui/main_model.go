@@ -26,6 +26,7 @@ const (
 	ViewNextSteps
 	ViewAvoidancePrompt
 	ViewInsights
+	ViewOnboarding
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -44,6 +45,7 @@ type MainModel struct {
 	nextStepsView       *NextStepsView
 	avoidancePromptView *AvoidancePromptView
 	insightsView        *InsightsView
+	onboardingView      *OnboardingView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
@@ -61,7 +63,8 @@ type MainModel struct {
 }
 
 // NewMainModel creates the root application model.
-func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker) *MainModel {
+// If isFirstRun is true, the onboarding wizard is shown before the doors view.
+func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker, isFirstRun bool) *MainModel {
 	// Load values config
 	var valuesConfig *tasks.ValuesConfig
 	if path, err := tasks.GetValuesConfigPath(); err == nil {
@@ -95,7 +98,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 	doorsView.SetAvoidanceData(patternReport)
 	doorsView.SetInsightsData(pa, cc)
 
-	return &MainModel{
+	m := &MainModel{
 		viewMode:          ViewDoors,
 		doorsView:         doorsView,
 		pool:              pool,
@@ -108,6 +111,13 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		valuesConfig:      valuesConfig,
 		promptedTasks:     make(map[string]bool),
 	}
+
+	if isFirstRun {
+		m.onboardingView = NewOnboardingView()
+		m.viewMode = ViewOnboarding
+	}
+
+	return m
 }
 
 // Init implements tea.Model.
@@ -154,6 +164,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.avoidancePromptView != nil {
 			m.avoidancePromptView.SetWidth(msg.Width)
+		}
+		if m.onboardingView != nil {
+			m.onboardingView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -482,6 +495,18 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case OnboardingCompletedMsg:
+		m.onboardingView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		// Persist onboarding state
+		if configDir, err := tasks.GetConfigDirPath(); err == nil {
+			if markErr := tasks.MarkOnboardingComplete(configDir); markErr != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to save onboarding state: %v\n", markErr)
+			}
+		}
+		return m, nil
+
 	case FlashMsg:
 		m.flash = msg.Text
 		return m, ClearFlashCmd()
@@ -513,6 +538,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateNextSteps(msg)
 	case ViewAvoidancePrompt:
 		return m.updateAvoidancePrompt(msg)
+	case ViewOnboarding:
+		return m.updateOnboarding(msg)
 	}
 
 	return m, nil
@@ -658,6 +685,14 @@ func (m *MainModel) updateAvoidancePrompt(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateOnboarding(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.onboardingView == nil {
+		return m, nil
+	}
+	cmd := m.onboardingView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.valuesView == nil {
 		return m, nil
@@ -735,6 +770,10 @@ func (m *MainModel) View() string {
 	case ViewAvoidancePrompt:
 		if m.avoidancePromptView != nil {
 			view = m.avoidancePromptView.View()
+		}
+	case ViewOnboarding:
+		if m.onboardingView != nil {
+			view = m.onboardingView.View()
 		}
 	default:
 		view = m.doorsView.View()

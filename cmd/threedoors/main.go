@@ -92,7 +92,8 @@ func main() {
 	// Wait for enrichment DB to be ready before creating the model
 	enrichWg.Wait()
 
-	model := tui.NewMainModel(pool, tracker, provider, hc)
+	isFirstRun := configErr == nil && tasks.IsFirstRun(configDir)
+	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun)
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
