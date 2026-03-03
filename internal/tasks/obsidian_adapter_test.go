@@ -550,3 +550,74 @@ func TestTaskToObsidianLine(t *testing.T) {
 		})
 	}
 }
+
+// AC-Q6: Input sanitization tests for special characters in filenames and task text.
+func TestObsidianAdapter_InputSanitization(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		filename string
+		content  string
+	}{
+		{
+			name:     "special chars in filename",
+			filename: "tasks (copy).md",
+			content:  "- [ ] Normal task <!-- td:san-1 -->\n",
+		},
+		{
+			name:     "unicode in filename",
+			filename: "задачи.md",
+			content:  "- [ ] Unicode filename task <!-- td:san-2 -->\n",
+		},
+		{
+			name:     "quotes and HTML in task text",
+			filename: "test.md",
+			content:  "- [ ] Task with 'quotes' & \"double\" <html> <!-- td:san-3 -->\n",
+		},
+		{
+			name:     "emoji in task text",
+			filename: "test.md",
+			content:  "- [ ] 🚀 Launch the rocket 🎯 <!-- td:san-4 -->\n",
+		},
+		{
+			name:     "newline-like content in task",
+			filename: "test.md",
+			content:  "- [ ] Task with \\n escape chars <!-- td:san-5 -->\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			dir := t.TempDir()
+			if err := os.WriteFile(filepath.Join(dir, tt.filename), []byte(tt.content), 0o644); err != nil {
+				t.Fatalf("setup: %v", err)
+			}
+
+			adapter := NewObsidianAdapter(dir, "")
+			loaded, err := adapter.LoadTasks()
+			if err != nil {
+				t.Fatalf("LoadTasks() error: %v", err)
+			}
+			if len(loaded) == 0 {
+				t.Fatal("expected at least one task")
+			}
+
+			// Verify round-trip: save and reload
+			if err := adapter.SaveTask(loaded[0]); err != nil {
+				t.Fatalf("SaveTask() round-trip error: %v", err)
+			}
+			reloaded, err := adapter.LoadTasks()
+			if err != nil {
+				t.Fatalf("LoadTasks() after save error: %v", err)
+			}
+			if len(reloaded) == 0 {
+				t.Fatal("no tasks after round-trip")
+			}
+			if reloaded[0].ID != loaded[0].ID {
+				t.Errorf("ID changed after round-trip: got %q, want %q", reloaded[0].ID, loaded[0].ID)
+			}
+		})
+	}
+}
