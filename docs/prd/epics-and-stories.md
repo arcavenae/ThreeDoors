@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-3 are COMPLETE (22 stories, 34 merged PRs). Epic 5 is partially complete. Epics 4, 6-15, 18 are not yet started.
+**Implementation Status:** Epics 0-3 are COMPLETE (40 stories, 73 merged PRs). Epics 4-8, 10-12, 14-15, 18 have implemented stories but stale status markers. See gap analysis report for details.
 
 ## Requirements Inventory
 
@@ -187,6 +187,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
+| (cross-cutting) | Epic 0 ✅ | Infrastructure & Process Backfill (COMPLETE) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -204,6 +205,11 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR34 | Epic 15 | Psychology Research & Validation |
 
 ## Epic List
+
+### Epic 0: Infrastructure & Process (Backfill) ✅ COMPLETE
+Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs.
+**FRs covered:** None (cross-cutting infrastructure)
+**Status:** All 19 stories complete (retroactive). See `docs/analysis/pr-story-gap-analysis.md`.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -285,6 +291,270 @@ LLM-powered task breakdown for coding agent pickup.
 Evidence base for ThreeDoors design decisions.
 **FRs covered:** FR34
 **Prerequisites:** None
+
+---
+
+## Epic 0: Infrastructure & Process (Backfill) ✅ COMPLETE
+
+**Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story.
+
+**Status:** COMPLETE — All work already shipped. Stories created retroactively for traceability.
+
+**Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
+
+### Story 0.1: BMAD Framework Setup ✅
+
+As a developer,
+I want the BMAD method framework installed and configured,
+So that the project has structured agent workflows for planning and implementation.
+
+**Status:** Done (PR #1)
+
+**Acceptance Criteria:**
+- **AC1:** BMAD slash commands, agent definitions, and task templates are installed
+- **AC2:** Project documentation framework is initialized
+- **AC3:** All BMAD agents are functional and invocable
+
+### Story 0.2: Epics & Stories Breakdown ✅
+
+As a product manager,
+I want the PRD decomposed into epics and implementable stories,
+So that development work is planned and trackable.
+
+**Status:** Done (PR #6)
+
+**Acceptance Criteria:**
+- **AC1:** All functional requirements mapped to epics
+- **AC2:** Each epic has stories with acceptance criteria
+- **AC3:** Story dependencies documented
+
+### Story 0.3: README Documentation ✅
+
+As a user,
+I want installation instructions, usage docs, and keybinding reference in the README,
+So that I can install and use ThreeDoors without additional help.
+
+**Status:** Done (PRs #11, #69, #71)
+
+**Acceptance Criteria:**
+- **AC1:** Installation options documented (binary, Homebrew, source)
+- **AC2:** Usage instructions with keybinding reference
+- **AC3:** Data directory and configuration documented
+- **AC4:** Existing formatting (emojis, structure) preserved during updates
+
+### Story 0.4: GitHub Release Automation ✅
+
+As a developer,
+I want automated GitHub Releases with compiled binaries on merge to main,
+So that users can download releases without manual packaging.
+
+**Status:** Done (PR #12)
+
+**Acceptance Criteria:**
+- **AC1:** CI creates prerelease GitHub Release on merge to main
+- **AC2:** Binaries compiled for target platforms
+- **AC3:** Release tagged with version from binary
+
+### Story 0.5: CI Test Coverage Reporting ✅
+
+As a developer,
+I want test coverage reported in CI,
+So that I can track coverage trends and enforce minimums.
+
+**Status:** Done (PR #9)
+
+**Acceptance Criteria:**
+- **AC1:** CI runs tests with `-coverprofile`
+- **AC2:** Coverage summary displayed in CI output
+- **AC3:** No CI failures from coverage reporting itself
+
+### Story 0.6: PRD Validation & Expansion ✅
+
+As a product owner,
+I want the PRD validated against BMAD standards and expanded with party mode recommendations,
+So that the requirements are comprehensive and well-structured.
+
+**Status:** Done (PRs #26, #34, #36)
+
+**Acceptance Criteria:**
+- **AC1:** PRD passes BMAD 13-step validation
+- **AC2:** Executive summary, user journeys, and product scope sections present
+- **AC3:** Party mode recommendations integrated (FR27–FR51, NFR13–NFR16)
+- **AC4:** Epic 5 (macOS distribution) requirements added (FR22–FR26)
+
+### Story 0.7: Architecture v2.0 Documentation ✅
+
+As a developer,
+I want architecture documentation updated to reflect the expanded PRD,
+So that implementation decisions are aligned with requirements.
+
+**Status:** Done (PR #38)
+
+**Acceptance Criteria:**
+- **AC1:** 5-layer architecture documented (TUI, Core, Adapter, Sync, Intelligence)
+- **AC2:** All 9 party mode recommendations reflected in architecture
+- **AC3:** Component diagrams and data flow updated
+
+### Story 0.8: Epic Regeneration & Bridging Stories ✅
+
+As a product manager,
+I want epics regenerated from PRD v2.0 with bridging stories for technical debt,
+So that the story backlog reflects current requirements.
+
+**Status:** Done (PR #39)
+
+**Acceptance Criteria:**
+- **AC1:** All epics regenerated from PRD v2.0
+- **AC2:** Epic 3.5 (Platform Readiness) added with 8 bridging stories
+- **AC3:** Epic 4 detailed with 6 stories
+- **AC4:** Total story count updated
+
+### Story 0.9: PR Quality Standards & Checklists ✅
+
+As a developer,
+I want standardized pre-PR submission checklists and quality NFRs,
+So that fix-up PRs are prevented before submission.
+
+**Status:** Done (PRs #32, #33, #51)
+
+**Acceptance Criteria:**
+- **AC1:** Pre-PR checklist added to all story files
+- **AC2:** NFR-CQ1 through NFR-CQ5 defined in PRD
+- **AC3:** Quality ACs (AC-Q1–AC-Q8) documented
+- **AC4:** Coding standards updated with pre-PR checklist
+
+### Story 0.10: Sprint Status Auditing ✅
+
+As a scrum master,
+I want sprint status audited against actual merged PRs,
+So that story statuses are accurate and trustworthy.
+
+**Status:** Done (PR #37)
+
+**Acceptance Criteria:**
+- **AC1:** All epics audited against merged PRs
+- **AC2:** Stale story metadata corrected
+- **AC3:** Stories without dedicated .story.md files identified
+- **AC4:** Sprint status report generated
+
+### Story 0.11: AI Tooling Research ✅
+
+As a developer,
+I want AI tooling patterns researched and documented,
+So that agent workflows are optimized for this project.
+
+**Status:** Done (PR #35)
+
+**Acceptance Criteria:**
+- **AC1:** CLAUDE.md, SOUL.md, and custom skills proposed
+- **AC2:** DRY analysis across documentation completed
+- **AC3:** Quality root cause analysis across PRs performed
+
+### Story 0.12: CLAUDE.md & Quality Gate Integration ✅
+
+As a developer,
+I want a project-level CLAUDE.md with Go quality rules and quality gates in all stories,
+So that AI agents consistently produce idiomatic, high-quality Go code.
+
+**Status:** Done (PRs #50, #52)
+
+**Acceptance Criteria:**
+- **AC1:** CLAUDE.md with 10 idiomatic Go rules, error handling, testing standards
+- **AC2:** Quality gates (AC-Q1–AC-Q8) added to all 41 unimplemented stories
+- **AC3:** Common AI mistake patterns documented
+
+### Story 0.13: Implementation Workflow Tooling ✅
+
+As a developer,
+I want a reusable /implement-story workflow command,
+So that story implementation follows a consistent 8-phase process.
+
+**Status:** Done (PR #48)
+
+**Acceptance Criteria:**
+- **AC1:** Custom slash command created at .claude/commands/implement-story.md
+- **AC2:** 8-phase workflow codified (SM → party mode → TEA → DEV → simplify → review → PR)
+- **AC3:** Command is invocable and produces consistent output
+
+### Story 0.14: Code Signing Research ✅
+
+As a developer,
+I want the state of macOS code signing investigated and documented,
+So that unsigned build issues are understood and resolvable.
+
+**Status:** Done (PR #46)
+
+**Acceptance Criteria:**
+- **AC1:** CI signing infrastructure state documented
+- **AC2:** Missing configuration identified (SIGNING_ENABLED variable)
+- **AC3:** Steps to enable signing documented
+
+### Story 0.15: Mobile App Research & Planning ✅
+
+As a product owner,
+I want iPhone mobile app feasibility researched and planned,
+So that mobile expansion is informed by technical analysis.
+
+**Status:** Done (PR #47)
+
+**Acceptance Criteria:**
+- **AC1:** Framework choice evaluated (SwiftUI recommended)
+- **AC2:** Go backend sharing strategy documented
+- **AC3:** Epic 16 with 7 stories added to PRD
+
+### Story 0.16: CI/Distribution Fix-ups ✅
+
+As a developer,
+I want CI secret names aligned and notarization timeouts configured correctly,
+So that the release pipeline works reliably.
+
+**Status:** Done (PRs #10, #61, #67, #76)
+
+**Acceptance Criteria:**
+- **AC1:** CI workflow secret names match repository secret names
+- **AC2:** Notarization timeout set to ≥60 minutes (Apple recommendation)
+- **AC3:** All code passes gofumpt before merge
+- **AC4:** Remaining manual signing setup steps documented
+
+### Story 0.17: Story 1.3 Test Backfill ✅
+
+As a developer,
+I want comprehensive TUI tests for Story 1.3,
+So that the door selection and status management features have adequate test coverage.
+
+**Status:** Done (PR #7)
+
+**Acceptance Criteria:**
+- **AC1:** ≥76 TUI tests covering door selection, status transitions, detail view
+- **AC2:** ≥90% TUI test coverage achieved
+- **AC3:** Tests pass in CI
+
+### Story 0.18: Story 8.1 Quality Gate Test Backfill ✅
+
+As a developer,
+I want AC-Q6 input sanitization tests for the Obsidian adapter,
+So that the quality gate requirement is verified.
+
+**Status:** Done (PR #74)
+
+**Acceptance Criteria:**
+- **AC1:** Special characters in filenames tested
+- **AC2:** HTML/quotes in task text tested
+- **AC3:** Emoji content tested
+- **AC4:** Escape characters tested
+
+### Story 0.19: Headless TUI Testing Epic Planning ✅
+
+As a product owner,
+I want Epic 18 (Docker E2E & Headless TUI Testing) planned with stories and requirements,
+So that TUI testing infrastructure has a clear implementation path.
+
+**Status:** Done (PR #60)
+
+**Acceptance Criteria:**
+- **AC1:** Epic 18 added to PRD with 5 stories (18.1–18.5)
+- **AC2:** FR52–FR54 added to functional requirements
+- **AC3:** Distinction from Epic 9 testing scope documented
 
 ---
 
