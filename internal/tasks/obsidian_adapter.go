@@ -18,16 +18,54 @@ import (
 type ObsidianAdapter struct {
 	vaultPath   string
 	tasksFolder string
+	filePattern string
 	mu          sync.Mutex
 }
 
 // NewObsidianAdapter creates a new ObsidianAdapter for the given vault path.
 // The tasksFolder is relative to vaultPath; empty string means the vault root.
-func NewObsidianAdapter(vaultPath, tasksFolder string) *ObsidianAdapter {
+// The filePattern is a glob pattern for matching task files; empty string defaults to "*.md".
+func NewObsidianAdapter(vaultPath, tasksFolder, filePattern string) *ObsidianAdapter {
+	if filePattern == "" {
+		filePattern = "*.md"
+	}
 	return &ObsidianAdapter{
 		vaultPath:   vaultPath,
 		tasksFolder: tasksFolder,
+		filePattern: filePattern,
 	}
+}
+
+// ValidateVaultPath checks that the vault path exists, is a directory, and is readable/writable.
+func ValidateVaultPath(vaultPath string) error {
+	info, err := os.Stat(vaultPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("obsidian vault path %q does not exist", vaultPath)
+		}
+		return fmt.Errorf("obsidian vault path %q: %w", vaultPath, err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("obsidian vault path %q is not a directory", vaultPath)
+	}
+
+	// Check readable by listing directory
+	f, err := os.Open(vaultPath)
+	if err != nil {
+		return fmt.Errorf("obsidian vault path %q is not readable: %w", vaultPath, err)
+	}
+	_ = f.Close()
+
+	// Check writable by attempting to create and remove a temp file
+	tmpFile := filepath.Join(vaultPath, ".threedoors-write-test")
+	testFile, err := os.Create(tmpFile)
+	if err != nil {
+		return fmt.Errorf("obsidian vault path %q is not writable: %w", vaultPath, err)
+	}
+	_ = testFile.Close()
+	_ = os.Remove(tmpFile)
+
+	return nil
 }
 
 // taskDir returns the absolute path to the directory containing task files.
@@ -144,9 +182,9 @@ func (a *ObsidianAdapter) loadTasksLocked() ([]*Task, error) {
 		return nil, fmt.Errorf("obsidian vault path %q is not a directory", dir)
 	}
 
-	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
+	files, err := filepath.Glob(filepath.Join(dir, a.filePattern))
 	if err != nil {
-		return nil, fmt.Errorf("obsidian glob files: %w", err)
+		return nil, fmt.Errorf("obsidian glob files with pattern %q: %w", a.filePattern, err)
 	}
 
 	var tasks []*Task
@@ -224,7 +262,7 @@ func (a *ObsidianAdapter) SaveTask(task *Task) error {
 		return fmt.Errorf("obsidian create dir: %w", err)
 	}
 
-	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
+	files, err := filepath.Glob(filepath.Join(dir, a.filePattern))
 	if err != nil {
 		return fmt.Errorf("obsidian glob files: %w", err)
 	}
@@ -294,7 +332,7 @@ func (a *ObsidianAdapter) SaveTasks(tasks []*Task) error {
 		taskByID[t.ID] = t
 	}
 
-	files, _ := filepath.Glob(filepath.Join(dir, "*.md"))
+	files, _ := filepath.Glob(filepath.Join(dir, a.filePattern))
 
 	matched := make(map[string]bool)
 
@@ -374,7 +412,7 @@ func (a *ObsidianAdapter) DeleteTask(targetID string) error {
 	defer a.mu.Unlock()
 
 	dir := a.taskDir()
-	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
+	files, err := filepath.Glob(filepath.Join(dir, a.filePattern))
 	if err != nil {
 		return fmt.Errorf("obsidian glob files: %w", err)
 	}
@@ -414,7 +452,7 @@ func (a *ObsidianAdapter) MarkComplete(id string) error {
 	defer a.mu.Unlock()
 
 	dir := a.taskDir()
-	files, err := filepath.Glob(filepath.Join(dir, "*.md"))
+	files, err := filepath.Glob(filepath.Join(dir, a.filePattern))
 	if err != nil {
 		return fmt.Errorf("obsidian glob files: %w", err)
 	}

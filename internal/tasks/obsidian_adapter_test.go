@@ -3,6 +3,7 @@ package tasks
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -108,7 +109,7 @@ Some regular text
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -139,7 +140,7 @@ func TestObsidianAdapter_LoadTasks_NoEmbeddedID(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -156,7 +157,7 @@ func TestObsidianAdapter_LoadTasks_EmptyDir(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -169,7 +170,7 @@ func TestObsidianAdapter_LoadTasks_EmptyDir(t *testing.T) {
 func TestObsidianAdapter_LoadTasks_NonExistentDir(t *testing.T) {
 	t.Parallel()
 
-	adapter := NewObsidianAdapter("/nonexistent/path", "")
+	adapter := NewObsidianAdapter("/nonexistent/path", "", "")
 	_, err := adapter.LoadTasks()
 	if err == nil {
 		t.Error("LoadTasks() should return error for nonexistent dir")
@@ -190,7 +191,7 @@ func TestObsidianAdapter_LoadTasks_SubFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "tasks")
+	adapter := NewObsidianAdapter(dir, "tasks", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -214,7 +215,7 @@ func TestObsidianAdapter_LoadTasks_MultipleFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -233,7 +234,7 @@ func TestObsidianAdapter_LoadTasks_WithMetadata(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -259,7 +260,7 @@ func TestObsidianAdapter_SaveTask_UpdateExisting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -290,7 +291,7 @@ func TestObsidianAdapter_SaveTask_AppendNew(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	newTask := NewTask("Brand new task")
 	if err := adapter.SaveTask(newTask); err != nil {
 		t.Fatalf("SaveTask() error: %v", err)
@@ -322,7 +323,7 @@ func TestObsidianAdapter_SaveTask_AppendNew(t *testing.T) {
 func TestObsidianAdapter_SaveTask_CreateFile(t *testing.T) {
 	dir := t.TempDir()
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	newTask := NewTask("First task")
 	if err := adapter.SaveTask(newTask); err != nil {
 		t.Fatalf("SaveTask() error: %v", err)
@@ -344,7 +345,7 @@ func TestObsidianAdapter_DeleteTask(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	if err := adapter.DeleteTask("del-1"); err != nil {
 		t.Fatalf("DeleteTask() error: %v", err)
 	}
@@ -367,7 +368,7 @@ func TestObsidianAdapter_DeleteTask_NonExistent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	err := adapter.DeleteTask("nonexistent-id")
 	if err != nil {
 		t.Errorf("DeleteTask() for nonexistent ID returned error: %v", err)
@@ -382,7 +383,7 @@ func TestObsidianAdapter_MarkComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	if err := adapter.MarkComplete("comp-1"); err != nil {
 		t.Fatalf("MarkComplete() error: %v", err)
 	}
@@ -402,7 +403,7 @@ func TestObsidianAdapter_MarkComplete_NonExistent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	err := adapter.MarkComplete("nonexistent-id")
 	if err == nil {
 		t.Error("MarkComplete() on nonexistent task should return error")
@@ -416,7 +417,7 @@ func TestObsidianAdapter_MarkComplete_AlreadyComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	err := adapter.MarkComplete("done-1")
 	if err == nil {
 		t.Error("MarkComplete() on already complete task should return error")
@@ -425,7 +426,7 @@ func TestObsidianAdapter_MarkComplete_AlreadyComplete(t *testing.T) {
 
 func TestObsidianAdapter_SaveTasks_Batch(t *testing.T) {
 	dir := t.TempDir()
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 
 	batch := make([]*Task, 5)
 	for i := range batch {
@@ -447,7 +448,7 @@ func TestObsidianAdapter_SaveTasks_Batch(t *testing.T) {
 
 func TestObsidianAdapter_SaveTasks_Empty(t *testing.T) {
 	dir := t.TempDir()
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 
 	if err := adapter.SaveTasks([]*Task{}); err != nil {
 		t.Fatalf("SaveTasks() with empty list error: %v", err)
@@ -462,7 +463,7 @@ func TestObsidianAdapter_PreservesNonCheckboxContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 	tasks, err := adapter.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -489,7 +490,7 @@ func TestObsidianAdapter_PreservesNonCheckboxContent(t *testing.T) {
 
 func TestObsidianAdapter_RoundTrip_IDPreservation(t *testing.T) {
 	dir := t.TempDir()
-	adapter := NewObsidianAdapter(dir, "")
+	adapter := NewObsidianAdapter(dir, "", "")
 
 	original := []*Task{
 		NewTask("Task Alpha"),
@@ -523,6 +524,155 @@ func TestObsidianAdapter_RoundTrip_IDPreservation(t *testing.T) {
 		if lt.Text != orig.Text {
 			t.Errorf("task %q: Text = %q, want %q", orig.ID, lt.Text, orig.Text)
 		}
+	}
+}
+
+// Story 8.3: Vault Configuration Tests
+
+func TestValidateVaultPath_ValidDir(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	if err := ValidateVaultPath(dir); err != nil {
+		t.Errorf("ValidateVaultPath(%q) unexpected error: %v", dir, err)
+	}
+}
+
+func TestValidateVaultPath_NonExistent(t *testing.T) {
+	t.Parallel()
+	err := ValidateVaultPath("/nonexistent/vault/path")
+	if err == nil {
+		t.Fatal("expected error for nonexistent path")
+	}
+	if !strings.Contains(err.Error(), "does not exist") {
+		t.Errorf("expected 'does not exist' in error, got: %v", err)
+	}
+}
+
+func TestValidateVaultPath_NotADirectory(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "notadir.txt")
+	if err := os.WriteFile(filePath, []byte("hello"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	err := ValidateVaultPath(filePath)
+	if err == nil {
+		t.Fatal("expected error for file path")
+	}
+	if !strings.Contains(err.Error(), "not a directory") {
+		t.Errorf("expected 'not a directory' in error, got: %v", err)
+	}
+}
+
+func TestValidateVaultPath_NotWritable(t *testing.T) {
+	if os.Getuid() == 0 {
+		t.Skip("skipping: running as root")
+	}
+	t.Parallel()
+	dir := t.TempDir()
+	readonlyDir := filepath.Join(dir, "readonly")
+	if err := os.Mkdir(readonlyDir, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = os.Chmod(readonlyDir, 0o755)
+	})
+	err := ValidateVaultPath(readonlyDir)
+	if err == nil {
+		t.Fatal("expected error for read-only directory")
+	}
+	if !strings.Contains(err.Error(), "not writable") {
+		t.Errorf("expected 'not writable' in error, got: %v", err)
+	}
+}
+
+func TestObsidianAdapter_FilePattern(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+
+	// Create files with different extensions
+	if err := os.WriteFile(filepath.Join(dir, "tasks.md"), []byte("- [ ] Task A <!-- td:a1 -->\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("- [ ] Task B <!-- td:b2 -->\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "project.md"), []byte("- [ ] Task C <!-- td:c3 -->\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name        string
+		pattern     string
+		wantTaskIDs []string
+	}{
+		{"default pattern matches all md", "", []string{"a1", "c3"}},
+		{"specific file pattern", "tasks.md", []string{"a1"}},
+		{"star md pattern", "*.md", []string{"a1", "c3"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			adapter := NewObsidianAdapter(dir, "", tt.pattern)
+			tasks, err := adapter.LoadTasks()
+			if err != nil {
+				t.Fatalf("LoadTasks() error: %v", err)
+			}
+			gotIDs := make(map[string]bool)
+			for _, task := range tasks {
+				gotIDs[task.ID] = true
+			}
+			for _, wantID := range tt.wantTaskIDs {
+				if !gotIDs[wantID] {
+					t.Errorf("expected task ID %q not found", wantID)
+				}
+			}
+			if len(tasks) != len(tt.wantTaskIDs) {
+				t.Errorf("got %d tasks, want %d", len(tasks), len(tt.wantTaskIDs))
+			}
+		})
+	}
+}
+
+func TestObsidianAdapter_FilePatternSubfolder(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	subdir := filepath.Join(dir, "tasks")
+	if err := os.Mkdir(subdir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Only task files in subfolder match
+	if err := os.WriteFile(filepath.Join(subdir, "todo.md"), []byte("- [ ] Sub task <!-- td:s1 -->\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "root.md"), []byte("- [ ] Root task <!-- td:r1 -->\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter := NewObsidianAdapter(dir, "tasks", "*.md")
+	tasks, err := adapter.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error: %v", err)
+	}
+
+	if len(tasks) != 1 {
+		t.Fatalf("expected 1 task from subfolder, got %d", len(tasks))
+	}
+	if tasks[0].ID != "s1" {
+		t.Errorf("expected task ID 's1', got %q", tasks[0].ID)
+	}
+}
+
+func TestObsidianAdapter_DefaultFilePattern(t *testing.T) {
+	t.Parallel()
+
+	adapter := NewObsidianAdapter("/tmp", "", "")
+	if adapter.filePattern != "*.md" {
+		t.Errorf("expected default file pattern '*.md', got %q", adapter.filePattern)
 	}
 }
 
@@ -595,7 +745,7 @@ func TestObsidianAdapter_InputSanitization(t *testing.T) {
 				t.Fatalf("setup: %v", err)
 			}
 
-			adapter := NewObsidianAdapter(dir, "")
+			adapter := NewObsidianAdapter(dir, "", "")
 			loaded, err := adapter.LoadTasks()
 			if err != nil {
 				t.Fatalf("LoadTasks() error: %v", err)
