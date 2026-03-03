@@ -47,11 +47,22 @@ func main() {
 	}
 
 	var provider tasks.TaskProvider
-	baseProvider := tasks.NewProviderFromConfig(cfg)
-	if configErr == nil {
-		provider = tasks.NewWALProvider(baseProvider, configDir)
+	if len(cfg.Providers) > 1 {
+		// Multi-provider mode: aggregate tasks from all configured providers
+		agg, aggErr := tasks.ResolveAllProviders(cfg, tasks.DefaultRegistry())
+		if aggErr != nil {
+			fmt.Fprintf(os.Stderr, "Failed to initialize providers: %v\n", aggErr)
+			os.Exit(1)
+		}
+		provider = agg
 	} else {
-		provider = baseProvider
+		// Single-provider mode: backward-compatible path
+		baseProvider := tasks.NewProviderFromConfig(cfg)
+		if configErr == nil {
+			provider = tasks.NewWALProvider(baseProvider, configDir)
+		} else {
+			provider = baseProvider
+		}
 	}
 	loadedTasks, err := provider.LoadTasks()
 	if err != nil {
