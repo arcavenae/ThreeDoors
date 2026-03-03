@@ -31,8 +31,15 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Warning: config dir not found: %v, using defaults\n", configErr)
 		cfg = &tasks.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
 	} else {
+		configPath := filepath.Join(configDir, "config.yaml")
+
+		// Generate sample config on first run if none exists
+		if err := tasks.GenerateSampleConfig(configPath, tasks.DefaultRegistry()); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to generate sample config: %v\n", err)
+		}
+
 		var loadErr error
-		cfg, loadErr = tasks.LoadProviderConfig(filepath.Join(configDir, "config.yaml"))
+		cfg, loadErr = tasks.LoadProviderConfig(configPath)
 		if loadErr != nil {
 			fmt.Fprintf(os.Stderr, "Warning: config load failed: %v, using defaults\n", loadErr)
 			cfg = &tasks.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
