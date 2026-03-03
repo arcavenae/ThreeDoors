@@ -120,6 +120,11 @@ jobs:
           security import installer-cert.p12 -k build.keychain -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" -T /usr/bin/productsign
           rm installer-cert.p12
 
+          # Install Apple Developer ID G2 intermediate certificate
+          curl -sfo /tmp/DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+          security add-certificates -k build.keychain /tmp/DeveloperIDG2CA.cer
+          rm /tmp/DeveloperIDG2CA.cer
+
           # Allow codesign to access keychain
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
 
