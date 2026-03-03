@@ -150,6 +150,9 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 			fmt.Fprintf(&b, "#       task_file: ~/.threedoors/tasks.yaml\n")
 		case "applenotes":
 			fmt.Fprintf(&b, "#       note_title: ThreeDoors Tasks\n")
+		case "obsidian":
+			fmt.Fprintf(&b, "#       vault_path: /path/to/your/vault\n")
+			fmt.Fprintf(&b, "#       tasks_folder: tasks  # Optional: subfolder within vault\n")
 		default:
 			fmt.Fprintf(&b, "#       # Add provider-specific settings here\n")
 		}
