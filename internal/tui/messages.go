@@ -148,6 +148,14 @@ type NavigateToLinkedMsg struct {
 	Task *tasks.Task
 }
 
+// SyncStatusUpdateMsg is sent when a provider's sync status changes.
+type SyncStatusUpdateMsg struct {
+	ProviderName string
+	Phase        tasks.SyncPhase
+	PendingCount int
+	ErrorMsg     string
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {
