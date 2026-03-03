@@ -2,7 +2,6 @@ package applenotes
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"html"
 	"os/exec"
@@ -32,6 +31,7 @@ func defaultExecutor(ctx context.Context, script string) (string, error) {
 type AppleNotesProvider struct {
 	noteTitle string
 	executor  CommandExecutor
+	config    Config
 }
 
 // NewAppleNotesProvider creates an AppleNotesProvider with the default osascript executor.
@@ -39,6 +39,7 @@ func NewAppleNotesProvider(noteTitle string) *AppleNotesProvider {
 	return &AppleNotesProvider{
 		noteTitle: noteTitle,
 		executor:  defaultExecutor,
+		config:    DefaultConfig(),
 	}
 }
 
@@ -47,16 +48,30 @@ func NewAppleNotesProviderWithExecutor(noteTitle string, executor CommandExecuto
 	return &AppleNotesProvider{
 		noteTitle: noteTitle,
 		executor:  executor,
+		config:    DefaultConfig(),
+	}
+}
+
+// NewAppleNotesProviderWithConfig creates an AppleNotesProvider with custom executor and config.
+func NewAppleNotesProviderWithConfig(noteTitle string, executor CommandExecutor, cfg Config) *AppleNotesProvider {
+	return &AppleNotesProvider{
+		noteTitle: noteTitle,
+		executor:  executor,
+		config:    cfg,
 	}
 }
 
 // LoadTasks retrieves tasks from Apple Notes via osascript.
 func (p *AppleNotesProvider) LoadTasks() ([]*core.Task, error) {
+	start := time.Now().UTC()
 	raw, err := p.readRawNoteBody()
 	if err != nil {
+		p.log(fmt.Sprintf("LoadTasks failed after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
 		return nil, err
 	}
-	return p.parseNoteBody(raw), nil
+	tasks := p.parseNoteBody(raw)
+	p.log(fmt.Sprintf("LoadTasks completed in %s: %d tasks loaded", time.Since(start).Truncate(time.Millisecond), len(tasks)))
+	return tasks, nil
 }
 
 // escapedNoteTitle returns the note title escaped for AppleScript string embedding.
@@ -65,21 +80,23 @@ func (p *AppleNotesProvider) escapedNoteTitle() string {
 	return strings.ReplaceAll(t, `"`, `\"`)
 }
 
-// readRawNoteBody reads the plaintext note body via osascript without parsing.
+// readRawNoteBody reads the plaintext note body via osascript with retry.
 func (p *AppleNotesProvider) readRawNoteBody() (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), p.config.Timeout)
 	defer cancel()
 	return p.readRawNoteBodyWithCtx(ctx)
 }
 
 // SaveTask writes a single task update back to Apple Notes via read-modify-write.
 func (p *AppleNotesProvider) SaveTask(task *core.Task) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	start := time.Now().UTC()
+	ctx, cancel := context.WithTimeout(context.Background(), p.config.Timeout)
 	defer cancel()
 
 	// Read current note body
 	raw, err := p.readRawNoteBodyWithCtx(ctx)
 	if err != nil {
+		p.log(fmt.Sprintf("SaveTask failed during read after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
 		return err
 	}
 
@@ -107,7 +124,13 @@ func (p *AppleNotesProvider) SaveTask(task *core.Task) error {
 	}
 
 	newBody := strings.Join(lines, "\n")
-	return p.writeNoteBodyWithCtx(ctx, newBody)
+	err = p.writeNoteBodyWithCtx(ctx, newBody)
+	if err != nil {
+		p.log(fmt.Sprintf("SaveTask failed during write after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
+		return err
+	}
+	p.log(fmt.Sprintf("SaveTask completed in %s", time.Since(start).Truncate(time.Millisecond)))
+	return nil
 }
 
 // SaveTasks writes multiple task updates in a single read-modify-write cycle.
@@ -116,11 +139,13 @@ func (p *AppleNotesProvider) SaveTasks(tasks []*core.Task) error {
 		return nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	start := time.Now().UTC()
+	ctx, cancel := context.WithTimeout(context.Background(), p.config.Timeout)
 	defer cancel()
 
 	raw, err := p.readRawNoteBodyWithCtx(ctx)
 	if err != nil {
+		p.log(fmt.Sprintf("SaveTasks failed during read after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
 		return err
 	}
 
@@ -155,16 +180,24 @@ func (p *AppleNotesProvider) SaveTasks(tasks []*core.Task) error {
 	}
 
 	newBody := strings.Join(lines, "\n")
-	return p.writeNoteBodyWithCtx(ctx, newBody)
+	err = p.writeNoteBodyWithCtx(ctx, newBody)
+	if err != nil {
+		p.log(fmt.Sprintf("SaveTasks failed during write after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
+		return err
+	}
+	p.log(fmt.Sprintf("SaveTasks completed in %s: %d tasks updated", time.Since(start).Truncate(time.Millisecond), len(tasks)))
+	return nil
 }
 
 // DeleteTask removes a task line from Apple Notes by ID.
 func (p *AppleNotesProvider) DeleteTask(taskID string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	start := time.Now().UTC()
+	ctx, cancel := context.WithTimeout(context.Background(), p.config.Timeout)
 	defer cancel()
 
 	raw, err := p.readRawNoteBodyWithCtx(ctx)
 	if err != nil {
+		p.log(fmt.Sprintf("DeleteTask failed during read after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
 		return err
 	}
 
@@ -186,17 +219,19 @@ func (p *AppleNotesProvider) DeleteTask(taskID string) error {
 	}
 
 	newBody := strings.Join(result, "\n")
-	return p.writeNoteBodyWithCtx(ctx, newBody)
+	err = p.writeNoteBodyWithCtx(ctx, newBody)
+	if err != nil {
+		p.log(fmt.Sprintf("DeleteTask failed during write after %s: %v", time.Since(start).Truncate(time.Millisecond), err))
+		return err
+	}
+	p.log(fmt.Sprintf("DeleteTask completed in %s", time.Since(start).Truncate(time.Millisecond)))
+	return nil
 }
 
-// readRawNoteBodyWithCtx reads the raw note body using an existing context.
+// readRawNoteBodyWithCtx reads the raw note body using an existing context, with retry.
 func (p *AppleNotesProvider) readRawNoteBodyWithCtx(ctx context.Context) (string, error) {
 	script := fmt.Sprintf(`tell application "Notes" to get plaintext text of note "%s"`, p.escapedNoteTitle())
-	output, err := p.executor(ctx, script)
-	if err != nil {
-		return "", p.wrapError(err)
-	}
-	return output, nil
+	return p.executeWithRetry(ctx, script)
 }
 
 // escapeForAppleScript escapes a string for embedding inside AppleScript double-quoted strings.
@@ -205,16 +240,13 @@ func escapeForAppleScript(s string) string {
 	return strings.ReplaceAll(s, `"`, `\"`)
 }
 
-// writeNoteBodyWithCtx writes plaintext back to Apple Notes as HTML using an existing context.
+// writeNoteBodyWithCtx writes plaintext back to Apple Notes as HTML using an existing context, with retry.
 func (p *AppleNotesProvider) writeNoteBodyWithCtx(ctx context.Context, body string) error {
 	htmlBody := p.plaintextToHTML(body)
 	escapedHTML := escapeForAppleScript(htmlBody)
 	script := fmt.Sprintf(`tell application "Notes" to set body of note "%s" to "%s"`, p.escapedNoteTitle(), escapedHTML)
-	_, err := p.executor(ctx, script)
-	if err != nil {
-		return p.wrapError(err)
-	}
-	return nil
+	_, err := p.executeWithRetry(ctx, script)
+	return err
 }
 
 // taskToNoteLine converts a Task to a checkbox-format note line.
@@ -257,10 +289,11 @@ func (p *AppleNotesProvider) Watch() <-chan core.ChangeEvent {
 // HealthCheck reports the operational status of the Apple Notes provider.
 func (p *AppleNotesProvider) HealthCheck() core.HealthCheckResult {
 	result := core.HealthCheckResult{}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), p.config.Timeout)
 	defer cancel()
 
-	_, err := p.executor(ctx, `tell application "Notes" to get name of first note`)
+	script := `tell application "Notes" to get name of first note`
+	_, err := p.executeWithRetry(ctx, script)
 	if err != nil {
 		result.Items = append(result.Items, core.HealthCheckItem{
 			Name:       "Apple Notes Access",
@@ -281,32 +314,6 @@ func (p *AppleNotesProvider) HealthCheck() core.HealthCheckResult {
 // MarkComplete is not supported — Apple Notes is read-only in this story.
 func (p *AppleNotesProvider) MarkComplete(_ string) error {
 	return ErrReadOnly
-}
-
-// wrapError maps osascript errors to meaningful wrapped errors.
-func (p *AppleNotesProvider) wrapError(err error) error {
-	msg := err.Error()
-
-	if errors.Is(err, context.DeadlineExceeded) {
-		return fmt.Errorf("apple notes: osascript timed out: %w", err)
-	}
-	if strings.Contains(msg, "Can't get note") || strings.Contains(msg, "can't get note") {
-		return fmt.Errorf("apple notes: note %q not found: %w", p.noteTitle, err)
-	}
-	if strings.Contains(msg, "not allowed") || strings.Contains(msg, "Not authorized") {
-		return fmt.Errorf("apple notes: automation permission denied: %w", err)
-	}
-
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) {
-		return fmt.Errorf("apple notes: osascript failed: %w", err)
-	}
-
-	if errors.Is(err, exec.ErrNotFound) {
-		return fmt.Errorf("apple notes: osascript not found (not macOS?): %w", err)
-	}
-
-	return fmt.Errorf("apple notes: %w", err)
 }
 
 // parseNoteBody splits plaintext note content into core.

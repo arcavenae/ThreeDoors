@@ -759,7 +759,8 @@ func TestE2E_ConnectivityFailure_OsascriptNotFound(t *testing.T) {
 func TestE2E_ConnectivityFailure_IntermittentTimeout(t *testing.T) {
 	t.Parallel()
 
-	// First call times out, simulating transient connectivity issue
+	// First executor call times out, second succeeds.
+	// With Story 3.5.4 adapter-level retry, LoadTasks recovers transparently.
 	callCount := 0
 	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
 		func(_ context.Context, _ string) (string, error) {
@@ -770,19 +771,16 @@ func TestE2E_ConnectivityFailure_IntermittentTimeout(t *testing.T) {
 			return "- [ ] Recovered task", nil
 		})
 
-	// First attempt fails
-	_, err := provider.LoadTasks()
-	if err == nil {
-		t.Fatal("first call should fail with timeout")
-	}
-
-	// Second attempt succeeds (simulating retry at application level)
+	// Adapter retries internally — first LoadTasks call should succeed
 	loaded, err := provider.LoadTasks()
 	if err != nil {
-		t.Fatalf("second call should succeed, got: %v", err)
+		t.Fatalf("LoadTasks should recover from transient timeout via retry, got: %v", err)
 	}
 	if len(loaded) != 1 {
-		t.Errorf("expected 1 task after recovery, got %d", len(loaded))
+		t.Errorf("expected 1 task after transparent retry, got %d", len(loaded))
+	}
+	if callCount < 2 {
+		t.Errorf("expected at least 2 executor calls (1 failed + 1 retry), got %d", callCount)
 	}
 }
 
