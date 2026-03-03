@@ -10,13 +10,13 @@ import (
 
 func newTestDetailView(text string) *DetailView {
 	task := tasks.NewTask(text)
-	return NewDetailView(task, nil)
+	return NewDetailView(task, nil, nil, nil)
 }
 
 func newTestDetailViewWithTracker(text string) (*DetailView, *tasks.SessionTracker) {
 	task := tasks.NewTask(text)
 	tracker := tasks.NewSessionTracker()
-	return NewDetailView(task, tracker), tracker
+	return NewDetailView(task, tracker, nil, nil), tracker
 }
 
 // --- View Rendering ---
@@ -32,7 +32,7 @@ func TestDetailView_RendersFullTaskText(t *testing.T) {
 
 func TestDetailView_RendersContext(t *testing.T) {
 	task := tasks.NewTaskWithContext("Buy groceries", "Need healthy food for the week")
-	dv := NewDetailView(task, nil)
+	dv := NewDetailView(task, nil, nil, nil)
 	dv.SetWidth(80)
 	view := dv.View()
 	if !strings.Contains(view, "Why:") {
@@ -45,7 +45,7 @@ func TestDetailView_RendersContext(t *testing.T) {
 
 func TestDetailView_NoContext_DoesNotShowWhy(t *testing.T) {
 	task := tasks.NewTask("Simple task")
-	dv := NewDetailView(task, nil)
+	dv := NewDetailView(task, nil, nil, nil)
 	dv.SetWidth(80)
 	view := dv.View()
 	if strings.Contains(view, "Why:") {

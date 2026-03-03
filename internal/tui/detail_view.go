@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -15,27 +16,51 @@ type DetailViewMode int
 const (
 	DetailModeView DetailViewMode = iota
 	DetailModeBlockerInput
+	DetailModeLinkSelect
+	DetailModeLinkBrowse
 )
 
 // DetailView displays full task details and status action menu.
 type DetailView struct {
-	task         *tasks.Task
-	mode         DetailViewMode
-	blockerInput string
-	width        int
-	tracker      *tasks.SessionTracker
+	task              *tasks.Task
+	mode              DetailViewMode
+	blockerInput      string
+	width             int
+	tracker           *tasks.SessionTracker
+	enrichDB          *enrichment.DB
+	pool              *tasks.TaskPool
+	crossRefs         []enrichment.CrossReference
+	linkCandidates    []*tasks.Task
+	linkSelectedIndex int
+	linkBrowseIndex   int
 }
 
 // NewDetailView creates a detail view for the given task.
-func NewDetailView(task *tasks.Task, tracker *tasks.SessionTracker) *DetailView {
+func NewDetailView(task *tasks.Task, tracker *tasks.SessionTracker, edb *enrichment.DB, pool *tasks.TaskPool) *DetailView {
 	if tracker != nil {
 		tracker.RecordDetailView()
 	}
-	return &DetailView{
-		task:    task,
-		mode:    DetailModeView,
-		tracker: tracker,
+	dv := &DetailView{
+		task:     task,
+		mode:     DetailModeView,
+		tracker:  tracker,
+		enrichDB: edb,
+		pool:     pool,
 	}
+	dv.loadCrossRefs()
+	return dv
+}
+
+// loadCrossRefs fetches cross-references for the current task from the enrichment DB.
+func (dv *DetailView) loadCrossRefs() {
+	if dv.enrichDB == nil || dv.task == nil {
+		return
+	}
+	refs, err := dv.enrichDB.GetCrossReferences(dv.task.ID)
+	if err != nil {
+		return
+	}
+	dv.crossRefs = refs
 }
 
 // SetWidth sets the terminal width.
@@ -47,10 +72,16 @@ func (dv *DetailView) SetWidth(w int) {
 func (dv *DetailView) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if dv.mode == DetailModeBlockerInput {
+		switch dv.mode {
+		case DetailModeBlockerInput:
 			return dv.handleBlockerInput(msg)
+		case DetailModeLinkSelect:
+			return dv.handleLinkSelect(msg)
+		case DetailModeLinkBrowse:
+			return dv.handleLinkBrowse(msg)
+		default:
+			return dv.handleDetailKeys(msg)
 		}
-		return dv.handleDetailKeys(msg)
 	}
 	return nil
 }
@@ -95,6 +126,21 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "m", "M":
 		return func() tea.Msg { return ShowMoodMsg{} }
+	case "l", "L":
+		if dv.enrichDB == nil || dv.pool == nil {
+			return func() tea.Msg { return FlashMsg{Text: "Linking not available"} }
+		}
+		dv.linkCandidates = dv.buildLinkCandidates()
+		if len(dv.linkCandidates) == 0 {
+			return func() tea.Msg { return FlashMsg{Text: "No tasks available to link"} }
+		}
+		dv.linkSelectedIndex = 0
+		dv.mode = DetailModeLinkSelect
+	case "x", "X":
+		if len(dv.crossRefs) > 0 {
+			dv.linkBrowseIndex = 0
+			dv.mode = DetailModeLinkBrowse
+		}
 	}
 	return nil
 }
@@ -126,6 +172,115 @@ func (dv *DetailView) handleBlockerInput(msg tea.KeyMsg) tea.Cmd {
 		}
 	}
 	return nil
+}
+
+// buildLinkCandidates returns tasks that can be linked to (excluding current task and already-linked tasks).
+func (dv *DetailView) buildLinkCandidates() []*tasks.Task {
+	linkedIDs := make(map[string]bool)
+	linkedIDs[dv.task.ID] = true
+	for _, ref := range dv.crossRefs {
+		linkedIDs[ref.SourceTaskID] = true
+		linkedIDs[ref.TargetTaskID] = true
+	}
+
+	var candidates []*tasks.Task
+	for _, t := range dv.pool.GetAllTasks() {
+		if !linkedIDs[t.ID] {
+			candidates = append(candidates, t)
+		}
+	}
+	return candidates
+}
+
+func (dv *DetailView) handleLinkSelect(msg tea.KeyMsg) tea.Cmd {
+	switch msg.String() {
+	case "esc":
+		dv.mode = DetailModeView
+		dv.linkCandidates = nil
+	case "up", "k":
+		if dv.linkSelectedIndex > 0 {
+			dv.linkSelectedIndex--
+		}
+	case "down", "j":
+		if dv.linkSelectedIndex < len(dv.linkCandidates)-1 {
+			dv.linkSelectedIndex++
+		}
+	case "enter":
+		if dv.linkSelectedIndex >= 0 && dv.linkSelectedIndex < len(dv.linkCandidates) {
+			target := dv.linkCandidates[dv.linkSelectedIndex]
+			ref := &enrichment.CrossReference{
+				SourceTaskID: dv.task.ID,
+				TargetTaskID: target.ID,
+				SourceSystem: "local",
+				Relationship: "related",
+			}
+			if err := dv.enrichDB.AddCrossReference(ref); err != nil {
+				dv.mode = DetailModeView
+				dv.linkCandidates = nil
+				return func() tea.Msg { return FlashMsg{Text: "Link failed: " + err.Error()} }
+			}
+			dv.loadCrossRefs()
+			dv.mode = DetailModeView
+			dv.linkCandidates = nil
+			return func() tea.Msg { return FlashMsg{Text: "Linked!"} }
+		}
+	}
+	return nil
+}
+
+func (dv *DetailView) handleLinkBrowse(msg tea.KeyMsg) tea.Cmd {
+	switch msg.String() {
+	case "esc":
+		dv.mode = DetailModeView
+	case "up", "k":
+		if dv.linkBrowseIndex > 0 {
+			dv.linkBrowseIndex--
+		}
+	case "down", "j":
+		if dv.linkBrowseIndex < len(dv.crossRefs)-1 {
+			dv.linkBrowseIndex++
+		}
+	case "enter":
+		if dv.linkBrowseIndex >= 0 && dv.linkBrowseIndex < len(dv.crossRefs) {
+			ref := dv.crossRefs[dv.linkBrowseIndex]
+			targetID := ref.TargetTaskID
+			if targetID == dv.task.ID {
+				targetID = ref.SourceTaskID
+			}
+			if dv.pool != nil {
+				if target := dv.pool.GetTask(targetID); target != nil {
+					return func() tea.Msg { return NavigateToLinkedMsg{Task: target} }
+				}
+			}
+			return func() tea.Msg { return FlashMsg{Text: "Linked task not found in pool"} }
+		}
+	case "u", "U":
+		if dv.linkBrowseIndex >= 0 && dv.linkBrowseIndex < len(dv.crossRefs) {
+			ref := dv.crossRefs[dv.linkBrowseIndex]
+			if err := dv.enrichDB.DeleteCrossReference(ref.ID); err != nil {
+				return func() tea.Msg { return FlashMsg{Text: "Unlink failed: " + err.Error()} }
+			}
+			dv.loadCrossRefs()
+			if len(dv.crossRefs) == 0 {
+				dv.mode = DetailModeView
+			} else if dv.linkBrowseIndex >= len(dv.crossRefs) {
+				dv.linkBrowseIndex = len(dv.crossRefs) - 1
+			}
+			return func() tea.Msg { return FlashMsg{Text: "Unlinked"} }
+		}
+	}
+	return nil
+}
+
+// resolveTaskText looks up task text by ID from the pool.
+func (dv *DetailView) resolveTaskText(taskID string) string {
+	if dv.pool == nil {
+		return taskID
+	}
+	if t := dv.pool.GetTask(taskID); t != nil {
+		return t.Text
+	}
+	return taskID[:8] + "..."
 }
 
 // View renders the detail view.
@@ -167,15 +322,53 @@ func (dv *DetailView) View() string {
 		}
 	}
 
+	// Show cross-references (linked tasks)
+	if len(dv.crossRefs) > 0 {
+		linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("33")).Bold(true)
+		fmt.Fprintf(&s, "\n%s (%d):\n", linkStyle.Render("Linked"), len(dv.crossRefs))
+		for i, ref := range dv.crossRefs {
+			linkedID := ref.TargetTaskID
+			if linkedID == dv.task.ID {
+				linkedID = ref.SourceTaskID
+			}
+			text := dv.resolveTaskText(linkedID)
+			prefix := "  "
+			if dv.mode == DetailModeLinkBrowse && i == dv.linkBrowseIndex {
+				prefix = "> "
+			}
+			fmt.Fprintf(&s, "%s[%s] %s\n", prefix, ref.Relationship, text)
+		}
+	}
+
 	s.WriteString("\n")
 	s.WriteString(separatorStyle.Render("─────────────────────────────────"))
 	s.WriteString("\n\n")
 
-	if dv.mode == DetailModeBlockerInput {
+	switch dv.mode {
+	case DetailModeBlockerInput:
 		s.WriteString("Blocker reason (Enter to submit, Esc to cancel):\n")
 		s.WriteString("> " + dv.blockerInput + "_\n")
-	} else {
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Esc]Back"))
+	case DetailModeLinkSelect:
+		s.WriteString("Select task to link (Enter to link, Esc to cancel):\n\n")
+		for i, t := range dv.linkCandidates {
+			prefix := "  "
+			if i == dv.linkSelectedIndex {
+				prefix = "> "
+			}
+			fmt.Fprintf(&s, "%s%s\n", prefix, t.Text)
+		}
+	case DetailModeLinkBrowse:
+		s.WriteString(helpStyle.Render("[Enter] Navigate [U]nlink [Esc] Back"))
+	default:
+		linkHint := ""
+		if dv.enrichDB != nil {
+			linkHint = " [L]ink"
+		}
+		browseHint := ""
+		if len(dv.crossRefs) > 0 {
+			browseHint = " [X]refs"
+		}
+		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + linkHint + browseHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())

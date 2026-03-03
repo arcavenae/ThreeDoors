@@ -183,7 +183,7 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, L link, X xrefs, q quit"}
 		}
 
 	case "quit", "exit":
