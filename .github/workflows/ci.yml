@@ -171,8 +171,16 @@ jobs:
           security add-certificates -k build.keychain /tmp/DeveloperIDG2CA.cer
           rm /tmp/DeveloperIDG2CA.cer
 
-          # Allow codesign to access keychain
+          # Allow Apple tools (codesign, pkgbuild, productsign) to access keychain
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+
+      - name: Verify certificate import
+        run: |
+          echo "Listing signing identities:"
+          security find-identity -v build.keychain
+          echo ""
+          echo "Checking for installer identity:"
+          security find-identity -v build.keychain | grep -i "installer" || echo "WARNING: No installer identity found in keychain"
 
       - name: Sign darwin binaries
         env:
@@ -216,6 +224,14 @@ jobs:
         env:
           APPLE_INSTALLER_IDENTITY: ${{ secrets.APPLE_INSTALLER_IDENTITY }}
         run: |
+          # Verify installer identity exists in keychain before building
+          if ! security find-identity -v build.keychain | grep -q "$APPLE_INSTALLER_IDENTITY"; then
+            echo "::error::APPLE_INSTALLER_IDENTITY not found in keychain. Expected format: 'Developer ID Installer: Name (TeamID)'"
+            echo "Available identities:"
+            security find-identity -v build.keychain
+            exit 1
+          fi
+
           VERSION="${{ needs.build-binaries.outputs.version }}"
           chmod +x scripts/create-pkg.sh
 
