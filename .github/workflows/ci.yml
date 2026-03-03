@@ -39,19 +39,20 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
 
-      - name: Run tests with coverage
-        run: go test ./... -v -count=1 -coverprofile=coverage.out -covermode=atomic
+      - name: Run tests with coverage and race detector
+        run: go test ./... -v -count=1 -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Display coverage summary
         run: go tool cover -func=coverage.out
 
       - name: Enforce coverage floor
+        env:
+          COVERAGE_THRESHOLD: '75'
         run: |
           COVERAGE=$(go tool cover -func=coverage.out | grep '^total:' | awk '{print $NF}' | tr -d '%')
-          THRESHOLD=75
-          echo "Total coverage: ${COVERAGE}%  (threshold: ${THRESHOLD}%)"
-          if [ "$(echo "$COVERAGE < $THRESHOLD" | bc -l)" -eq 1 ]; then
-            echo "::error::Coverage ${COVERAGE}% is below the ${THRESHOLD}% threshold"
+          echo "Total coverage: ${COVERAGE}%  (threshold: ${COVERAGE_THRESHOLD}%)"
+          if [ "$(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l)" -eq 1 ]; then
+            echo "::error::Coverage ${COVERAGE}% is below the ${COVERAGE_THRESHOLD}% threshold"
             exit 1
           fi
 

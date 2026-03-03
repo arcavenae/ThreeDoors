@@ -203,6 +203,14 @@ grep -rn "WriteString(fmt.Sprintf" internal/ cmd/ --include="*.go"
 
 *Evidence: PR #42 fixed QF1012 incrementally across 3 separate commits, each revealing new instances on different lines.*
 
+## CI Coverage Gates
+
+**Coverage threshold:** 75% (configured in `.github/workflows/ci.yml` via `COVERAGE_THRESHOLD` env var)
+
+The CI pipeline enforces a minimum test coverage floor. PRs that reduce total coverage below the threshold are blocked. A coverage report is automatically posted as a PR comment showing per-package breakdown.
+
+To adjust the threshold, update the `COVERAGE_THRESHOLD` value in the `Enforce coverage floor` step of the `quality-gate` job.
+
 ## Pre-PR Verification Checklist
 
 Run this sequence before every PR submission. All checks MUST pass:
