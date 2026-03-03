@@ -235,3 +235,27 @@ These non-functional requirements establish code quality gates that all contribu
 **NFR-CQ5:** All fix-up commits must be squashed before PR submission — PRs should contain a single clean commit or logically separated commits, not iterative fix-up trails (Evidence: ~15 PRs contained avoidable "fix: address code review findings" commits)
 
 ---
+
+## Systemic NFRs Derived from PR Analysis (PRs #1–#49)
+
+> Analysis of all 49 PRs found 18 (37%) required post-submission changes. These NFRs prevent recurring defect classes. For detailed code examples and patterns, see `docs/architecture/coding-standards.md` Rules 9–13.
+
+| NFR ID | Requirement | Coding Standard | Evidence |
+|--------|------------|-----------------|----------|
+| **NFR-SB1** | Use `fmt.Fprintf()` not `WriteString(Sprintf())` for all string building | Rule 9 | PRs #42, #44, #45 (11+ instances, 5 fix-ups) |
+| **NFR-SB2** | Sweep entire codebase when fixing a lint category, not just reported lines | Rule 13 | PR #42 (3 incremental fix commits) |
+| **NFR-EH1** | Check ALL error return values including `f.Close()`, `os.Remove()`, `os.WriteFile()` | Rule 10 | PRs #16, #42, #43 (18+ violations) |
+| **NFR-EH2** | Makefile targets must not silently swallow errors | Rule 10 | PR #16 |
+| **NFR-EH3** | Configuration/setup errors must be handled or explicitly documented as ignored | Rule 10 | PR #17 |
+| **NFR-IS1** | Escape all user strings interpolated into AppleScript/shell/interpreted languages | Rule 11 | PR #17 (injection vulnerability) |
+| **NFR-IS2** | Include test cases with special characters for dynamic command construction | Rule 11 | PR #17 |
+| **NFR-TQ1** | Deleting test cases requires equivalent replacement coverage in the same PR | — | PRs #5, #7 (324 deleted lines, retroactive fix) |
+| **NFR-TQ2** | Test assertions must verify actual outcomes, not just absence of errors | — | PR #20 |
+| **NFR-TQ3** | Collections must be tested for ordering; non-ordered results must be sorted | — | PR #14 (non-deterministic search) |
+| **NFR-TR1** | `time.Now()` called once per operation, reused — never inside loops | Rule 12 | PR #17 |
+| **NFR-TR2** | Random selection must include anti-repeat guard | — | PR #18 |
+| **NFR-BH1** | Re-run `gofumpt` after every rebase (rebase can introduce formatting drift) | — | PR #23 |
+| **NFR-BH2** | Implement stories in dependency order to avoid merge conflicts | — | PRs #3, #5 |
+| **NFR-BH3** | Coordinate parallel agent story assignments to prevent duplicate work | — | PRs #14/#13, #49/#45 (1,157+ lines wasted) |
+
+---

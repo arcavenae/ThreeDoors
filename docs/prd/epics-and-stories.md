@@ -1207,3 +1207,130 @@ So that Epic 4's learning algorithm is evidence-informed.
 **And** evidence assessment for "progress over perfection"
 **And** actionable recommendations for Epic 4
 **And** bibliography with accessible references
+
+---
+
+## Appendix: PR-Analysis-Derived Quality Acceptance Criteria
+
+> **Source:** Systematic analysis of all 49 PRs (#1–#49) in arcaven/ThreeDoors, examining every delta between initial PR submission and final merge. These ACs are derived from recurring defect patterns and MUST be included in all future stories.
+
+### Issue Categorization Summary
+
+Analysis of 49 PRs found 18 PRs (37%) required post-submission changes. The remaining 31 PRs (63%) merged cleanly on first submission. Issue breakdown by category:
+
+| Category | PRs Affected | % of Issues | Root Cause |
+|----------|-------------|-------------|------------|
+| **Lint/static analysis** (errcheck + staticcheck) | #16, #42, #43, #44, #45 | 23% | Code not linted before push |
+| **Logic/correctness bugs** | #14, #17, #18, #19, #44 | 16% | Insufficient edge-case thinking in ACs |
+| **Merge conflicts** | #3, #5, #19, #23, #42 | 16% | Stale branches, no pre-PR rebase |
+| **gofumpt formatting** | #9, #23, #24, #42 | 13% | Formatter not run before push |
+| **Missing test coverage** | #5, #7, #16, #20 | 13% | No coverage gate in story ACs |
+| **Silently ignored errors** | #16, #17 | 6% | No errcheck enforcement in ACs |
+| **Duplicate/wasted work** | #14, #49 | 6% | Parallel agents implementing same story |
+| **Security vulnerabilities** | #17 | 3% | No input sanitization AC |
+| **Scope creep** | #5 | 3% | No scope-limiting AC |
+
+### Mandatory Quality ACs for All Future Stories
+
+Every story in Epics 4–15 MUST include the following acceptance criteria in addition to feature-specific ACs. These are NON-NEGOTIABLE and derived from empirical PR failure data.
+
+#### AC-Q1: Formatting Gate (PRs #9, #23, #24, #42)
+
+```
+GIVEN code changes are ready for PR
+WHEN `gofumpt -l .` is executed from the repository root
+THEN zero files are listed (all files are properly formatted)
+```
+
+#### AC-Q2: Full Lint Gate (PRs #16, #42, #43, #44, #45)
+
+```
+GIVEN code changes are ready for PR
+WHEN `golangci-lint run ./...` is executed
+THEN zero issues are reported
+AND specifically: no errcheck violations (all error return values checked, including f.Close(), os.Remove(), os.WriteFile())
+AND specifically: no staticcheck QF1012 violations (never use WriteString(fmt.Sprintf(...)), always use fmt.Fprintf())
+AND specifically: no staticcheck S1009 violations (no redundant nil checks before len())
+AND specifically: no staticcheck S1011 violations (use append(slice, other...) not loops)
+```
+
+#### AC-Q3: Test Coverage Gate (PRs #5, #7, #16, #20)
+
+```
+GIVEN code changes are ready for PR
+WHEN `go test ./...` is executed
+THEN all tests pass
+AND new code paths have corresponding test cases
+AND no existing test files are deleted without equivalent replacement coverage
+AND test assertions verify actual outcomes (not just "no error")
+```
+
+#### AC-Q4: Rebase Gate (PRs #3, #5, #19, #23, #42)
+
+```
+GIVEN code changes are ready for PR
+WHEN the branch is compared against upstream/main
+THEN the branch is rebased onto the latest upstream/main with zero conflicts
+AND `gofumpt -l .` still produces zero output after rebase (rebase can introduce formatting drift)
+```
+
+#### AC-Q5: Scope Gate (PR #5)
+
+```
+GIVEN code changes are ready for PR
+WHEN `git diff --stat` is reviewed
+THEN all changed files are directly related to the story's acceptance criteria
+AND no unrelated directories or configuration files are included
+```
+
+#### AC-Q6: Input Sanitization Gate (PR #17)
+
+```
+GIVEN the story involves constructing dynamic commands, scripts, or queries (AppleScript, SQL, shell, etc.)
+WHEN user-provided or external data is interpolated into the command
+THEN all interpolated values are properly escaped/sanitized for the target language
+AND injection test cases are included for special characters (quotes, backslashes, semicolons)
+```
+
+#### AC-Q7: Error Handling Gate (PRs #16, #17)
+
+```
+GIVEN code changes include function calls that return errors
+WHEN reviewing the code diff
+THEN no error return values are silently discarded (assigned to `_` or ignored)
+AND deferred Close() calls on writable files use error-checking patterns
+AND error messages include context via fmt.Errorf("context: %w", err) wrapping
+```
+
+#### AC-Q8: Determinism Gate (PRs #14, #18)
+
+```
+GIVEN code changes involve ordering, randomization, or time-dependent behavior
+WHEN the same inputs are provided
+THEN outputs are deterministic (sorted collections, seeded randomness, or documented non-determinism)
+AND randomized outputs have anti-repeat guards (no consecutive identical selections)
+AND time.Now() is called once per logical operation, not inside loops
+```
+
+### Per-Story Defect Tracing
+
+The following maps each affected story to the specific PR issues it produced:
+
+| Story | PR(s) | Issues Found | Missing AC That Would Have Prevented It |
+|-------|-------|-------------|----------------------------------------|
+| 1.1 | #2 | 26 latent lint issues (discovered in PR #8) | AC-Q2 (lint gate) |
+| 1.2 | #4 | Latent lint issues | AC-Q2 (lint gate) |
+| 1.3 | #3→#5, #7 | Out-of-order impl, merge conflicts, deleted 324 test lines, scope creep (agents/ dir) | AC-Q3 (test gate), AC-Q4 (rebase gate), AC-Q5 (scope gate) |
+| 1.3a | #14 | Non-deterministic ordering, state mutation bug, duplicate of #13 | AC-Q8 (determinism gate) |
+| 1.5 | #16 | 3 CI failures: errcheck, staticcheck S1009, Makefile error swallowing | AC-Q2 (lint gate), AC-Q7 (error gate) |
+| 1.6 | #18 | Consecutive greeting repeats | AC-Q8 (determinism gate) |
+| 1.7 | #8, #9, #10 | CI itself introduced; PR #9 merged with gofumpt failure → PR #10 hotfix | AC-Q1 (formatting gate) |
+| 2.1 | #20 | Missing provider tests, weak assertions, %s vs %q in errors | AC-Q3 (test gate), AC-Q7 (error gate) |
+| 2.3 | #17 | AppleScript injection, silently ignored error, time consistency bug | AC-Q6 (input sanitization), AC-Q7 (error gate), AC-Q8 (determinism gate) |
+| 2.6 | #19 | Stale view state, wrong test target (file vs dir), 2 rounds of merge conflicts | AC-Q3 (test gate), AC-Q4 (rebase gate) |
+| 3.1 | #23 | gofumpt after rebase, merge conflict | AC-Q1 (formatting gate), AC-Q4 (rebase gate) |
+| 3.2 | #24 | gofumpt formatting failure | AC-Q1 (formatting gate) |
+| 4.2 | #43 | 8 errcheck violations, 3 CI failures | AC-Q2 (lint gate) |
+| 4.3 | #44 | staticcheck QF1012 + S1009, logic bugs (duplicate task, case-sensitive mood) | AC-Q2 (lint gate) |
+| 4.4 | #45, #49 | staticcheck S1011 + QF1012, duplicate PR from parallel agent | AC-Q2 (lint gate) |
+| 4.5 | #42 | 4 CI failures, 5-file merge conflict, gofumpt + errcheck + QF1012 (fixed incrementally) | AC-Q1, AC-Q2, AC-Q4 (all gates) |
