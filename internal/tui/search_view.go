@@ -178,12 +178,15 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		}
 		return func() tea.Msg { return ShowValuesSetupMsg{} }
 
+	case "link":
+		return func() tea.Msg { return ShowLinkViewMsg{} }
+
 	case "tag":
 		return func() tea.Msg { return ShowTagViewMsg{} }
 
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :link, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :help, :quit"}
 		}
 
 	case "quit", "exit":

@@ -143,6 +143,26 @@ type ReturnToSearchMsg struct {
 // ShowInsightsMsg is sent to open the insights dashboard view.
 type ShowInsightsMsg struct{}
 
+// ShowLinkViewMsg is sent when :link is selected from command palette.
+type ShowLinkViewMsg struct {
+	SourceTask *tasks.Task
+}
+
+// LinkCreatedMsg is sent when a cross-reference has been created.
+type LinkCreatedMsg struct {
+	SourceTaskID string
+	TargetTaskID string
+	Relationship string
+}
+
+// LinkCancelledMsg is sent when the user cancels link creation.
+type LinkCancelledMsg struct{}
+
+// NavigateToLinkedTaskMsg is sent when the user selects a linked task to navigate to.
+type NavigateToLinkedTaskMsg struct {
+	TaskID string
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

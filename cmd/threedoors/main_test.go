@@ -15,7 +15,7 @@ func newTestModel(t *testing.T) *tui.MainModel {
 	pool.AddTask(tasks.NewTask("Test task 2"))
 	pool.AddTask(tasks.NewTask("Test task 3"))
 	tracker := tasks.NewSessionTracker()
-	return tui.NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil, false)
+	return tui.NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil, false, nil)
 }
 
 func TestQuitKey(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -27,6 +28,7 @@ const (
 	ViewAvoidancePrompt
 	ViewInsights
 	ViewOnboarding
+	ViewLink
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -46,6 +48,7 @@ type MainModel struct {
 	avoidancePromptView *AvoidancePromptView
 	insightsView        *InsightsView
 	onboardingView      *OnboardingView
+	linkView            *LinkView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
@@ -54,6 +57,7 @@ type MainModel struct {
 	patternReport       *tasks.PatternReport
 	patternAnalyzer     *tasks.PatternAnalyzer
 	valuesConfig        *tasks.ValuesConfig
+	enrichDB            *enrichment.DB
 	flash               string
 	width               int
 	height              int
@@ -64,7 +68,7 @@ type MainModel struct {
 
 // NewMainModel creates the root application model.
 // If isFirstRun is true, the onboarding wizard is shown before the doors view.
-func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker, isFirstRun bool) *MainModel {
+func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker, isFirstRun bool, enrichDB *enrichment.DB) *MainModel {
 	// Load values config
 	var valuesConfig *tasks.ValuesConfig
 	if path, err := tasks.GetValuesConfigPath(); err == nil {
@@ -109,6 +113,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		patternReport:     patternReport,
 		patternAnalyzer:   pa,
 		valuesConfig:      valuesConfig,
+		enrichDB:          enrichDB,
 		promptedTasks:     make(map[string]bool),
 	}
 
@@ -167,6 +172,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.onboardingView != nil {
 			m.onboardingView.SetWidth(msg.Width)
+		}
+		if m.linkView != nil {
+			m.linkView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -232,6 +240,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.previousView = ViewSearch
 		m.detailView = NewDetailView(msg.Task, m.tracker)
+		m.detailView.SetEnrichDB(m.enrichDB, m.pool)
 		m.detailView.SetWidth(m.width)
 		m.viewMode = ViewDetail
 		return m, nil
@@ -459,12 +468,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.detailView = NewDetailView(msg.Task, m.tracker)
+			m.detailView.SetEnrichDB(m.enrichDB, m.pool)
 			m.detailView.SetWidth(m.width)
 			m.viewMode = ViewDetail
 			m.flash = "Taking it on!"
 			return m, ClearFlashCmd()
 		case "breakdown":
 			m.detailView = NewDetailView(msg.Task, m.tracker)
+			m.detailView.SetEnrichDB(m.enrichDB, m.pool)
 			m.detailView.SetWidth(m.width)
 			m.viewMode = ViewDetail
 			return m, nil
@@ -507,6 +518,60 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case ShowLinkViewMsg:
+		if m.enrichDB == nil {
+			m.flash = "Enrichment database not available"
+			return m, ClearFlashCmd()
+		}
+		// Use the task from detail view if available, otherwise from the message
+		sourceTask := msg.SourceTask
+		if sourceTask == nil && m.detailView != nil {
+			sourceTask = m.detailView.task
+		}
+		if sourceTask == nil {
+			m.flash = "Open a task first, then use :link"
+			return m, ClearFlashCmd()
+		}
+		m.linkView = NewLinkView(sourceTask, m.pool, m.enrichDB)
+		m.linkView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewLink
+		return m, nil
+
+	case LinkCreatedMsg:
+		m.linkView = nil
+		m.flash = fmt.Sprintf("Linked: %s", msg.Relationship)
+		// Return to detail view if we came from there
+		if m.previousView == ViewDetail && m.detailView != nil {
+			m.detailView.RefreshLinks()
+			m.viewMode = ViewDetail
+		} else {
+			m.viewMode = ViewDoors
+			m.doorsView.RefreshDoors()
+		}
+		return m, ClearFlashCmd()
+
+	case LinkCancelledMsg:
+		m.linkView = nil
+		if m.previousView == ViewDetail && m.detailView != nil {
+			m.viewMode = ViewDetail
+		} else {
+			m.viewMode = ViewDoors
+		}
+		return m, nil
+
+	case NavigateToLinkedTaskMsg:
+		target := m.pool.GetTask(msg.TaskID)
+		if target == nil {
+			m.flash = "Linked task not found in pool"
+			return m, ClearFlashCmd()
+		}
+		m.detailView = NewDetailView(target, m.tracker)
+		m.detailView.SetEnrichDB(m.enrichDB, m.pool)
+		m.detailView.SetWidth(m.width)
+		m.viewMode = ViewDetail
+		return m, nil
+
 	case FlashMsg:
 		m.flash = msg.Text
 		return m, ClearFlashCmd()
@@ -540,6 +605,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateAvoidancePrompt(msg)
 	case ViewOnboarding:
 		return m.updateOnboarding(msg)
+	case ViewLink:
+		return m.updateLink(msg)
 	}
 
 	return m, nil
@@ -584,6 +651,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.tracker.RecordDoorSelection(m.doorsView.selectedDoorIndex, task.Text)
 				}
 				m.detailView = NewDetailView(task, m.tracker)
+				m.detailView.SetEnrichDB(m.enrichDB, m.pool)
 				m.detailView.SetWidth(m.width)
 				m.viewMode = ViewDetail
 			}
@@ -693,6 +761,14 @@ func (m *MainModel) updateOnboarding(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateLink(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.linkView == nil {
+		return m, nil
+	}
+	cmd := m.linkView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.valuesView == nil {
 		return m, nil
@@ -774,6 +850,10 @@ func (m *MainModel) View() string {
 	case ViewOnboarding:
 		if m.onboardingView != nil {
 			view = m.onboardingView.View()
+		}
+	case ViewLink:
+		if m.linkView != nil {
+			view = m.linkView.View()
 		}
 	default:
 		view = m.doorsView.View()

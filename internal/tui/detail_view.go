@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -24,6 +25,16 @@ type DetailView struct {
 	blockerInput string
 	width        int
 	tracker      *tasks.SessionTracker
+	enrichDB     *enrichment.DB
+	pool         *tasks.TaskPool
+	linkedTasks  []linkedTaskInfo
+}
+
+// linkedTaskInfo holds display info for a cross-referenced task.
+type linkedTaskInfo struct {
+	taskID       string
+	text         string
+	relationship string
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -41,6 +52,40 @@ func NewDetailView(task *tasks.Task, tracker *tasks.SessionTracker) *DetailView 
 // SetWidth sets the terminal width.
 func (dv *DetailView) SetWidth(w int) {
 	dv.width = w
+}
+
+// SetEnrichDB sets the enrichment database and task pool for cross-reference display.
+func (dv *DetailView) SetEnrichDB(db *enrichment.DB, pool *tasks.TaskPool) {
+	dv.enrichDB = db
+	dv.pool = pool
+	dv.RefreshLinks()
+}
+
+// RefreshLinks reloads cross-references from the enrichment database.
+func (dv *DetailView) RefreshLinks() {
+	dv.linkedTasks = nil
+	if dv.enrichDB == nil || dv.pool == nil {
+		return
+	}
+	refs, err := dv.enrichDB.GetCrossReferences(dv.task.ID)
+	if err != nil {
+		return
+	}
+	for _, ref := range refs {
+		otherID := ref.TargetTaskID
+		if ref.SourceTaskID != dv.task.ID {
+			otherID = ref.SourceTaskID
+		}
+		text := otherID
+		if t := dv.pool.GetTask(otherID); t != nil {
+			text = t.Text
+		}
+		dv.linkedTasks = append(dv.linkedTasks, linkedTaskInfo{
+			taskID:       otherID,
+			text:         text,
+			relationship: ref.Relationship,
+		})
+	}
 }
 
 // Update handles key input in the detail view.
@@ -95,6 +140,15 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "m", "M":
 		return func() tea.Msg { return ShowMoodMsg{} }
+	case "l", "L":
+		task := dv.task
+		return func() tea.Msg { return ShowLinkViewMsg{SourceTask: task} }
+	case "1", "2", "3", "4", "5", "6", "7", "8", "9":
+		idx := int(msg.String()[0]-'0') - 1
+		if idx >= 0 && idx < len(dv.linkedTasks) {
+			taskID := dv.linkedTasks[idx].taskID
+			return func() tea.Msg { return NavigateToLinkedTaskMsg{TaskID: taskID} }
+		}
 	}
 	return nil
 }
@@ -167,6 +221,17 @@ func (dv *DetailView) View() string {
 		}
 	}
 
+	if len(dv.linkedTasks) > 0 {
+		linkStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("12")).Bold(true)
+		s.WriteString("\n")
+		s.WriteString(linkStyle.Render("Linked Tasks:"))
+		s.WriteString("\n")
+		for i, lt := range dv.linkedTasks {
+			relStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
+			fmt.Fprintf(&s, "  %d. [%s] %s\n", i+1, relStyle.Render(lt.relationship), lt.text)
+		}
+	}
+
 	s.WriteString("\n")
 	s.WriteString(separatorStyle.Render("─────────────────────────────────"))
 	s.WriteString("\n\n")
@@ -175,7 +240,11 @@ func (dv *DetailView) View() string {
 		s.WriteString("Blocker reason (Enter to submit, Esc to cancel):\n")
 		s.WriteString("> " + dv.blockerInput + "_\n")
 	} else {
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Esc]Back"))
+		help := "[C]omplete [B]locked [I]n-progress [L]ink [P]rocrastinate [R]ework [M]ood [Esc]Back"
+		if len(dv.linkedTasks) > 0 {
+			help += " | 1-9: jump to linked task"
+		}
+		s.WriteString(helpStyle.Render(help))
 	}
 
 	return detailBorder.Width(w).Render(s.String())
