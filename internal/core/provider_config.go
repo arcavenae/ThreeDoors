@@ -31,6 +31,8 @@ func (pe ProviderEntry) GetSetting(key, fallback string) string {
 
 // ProviderConfig holds configuration for which task provider to use.
 type ProviderConfig struct {
+	// SchemaVersion enables future config migrations. Default: 1.
+	SchemaVersion int `yaml:"schema_version,omitempty"`
 	// Provider is the legacy flat provider name (backward compatible).
 	Provider string `yaml:"provider,omitempty"`
 	// NoteTitle is the legacy Apple Notes title (backward compatible).
@@ -41,11 +43,15 @@ type ProviderConfig struct {
 	LLM llm.Config `yaml:"llm,omitempty"`
 }
 
+// CurrentSchemaVersion is the current config.yaml schema version.
+const CurrentSchemaVersion = 1
+
 // defaultProviderConfig returns the default configuration.
 func defaultProviderConfig() *ProviderConfig {
 	return &ProviderConfig{
-		Provider:  "textfile",
-		NoteTitle: "ThreeDoors Tasks",
+		SchemaVersion: CurrentSchemaVersion,
+		Provider:      "textfile",
+		NoteTitle:     "ThreeDoors Tasks",
 	}
 }
 
@@ -177,6 +183,7 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# ThreeDoors Configuration\n")
 	fmt.Fprintf(&b, "# See docs for available providers and settings.\n\n")
+	fmt.Fprintf(&b, "schema_version: %d\n\n", CurrentSchemaVersion)
 	fmt.Fprintf(&b, "# Active provider (simple mode — use 'providers:' list for advanced config)\n")
 	fmt.Fprintf(&b, "provider: textfile\n")
 	fmt.Fprintf(&b, "note_title: ThreeDoors Tasks\n\n")

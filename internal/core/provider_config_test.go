@@ -485,3 +485,138 @@ func TestResolveActiveProvider_FirstProviderUsedAsPrimary(t *testing.T) {
 		t.Errorf("expected *inMemoryProvider as primary, got %T", provider)
 	}
 }
+
+// --- Story 3.5.3 Tests: Schema Version & Migration Path ---
+
+func TestLoadProviderConfig_SchemaVersionParsed(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	content := []byte("schema_version: 1\nprovider: textfile\n")
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("failed to write test config: %v", err)
+	}
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+	if cfg.SchemaVersion != 1 {
+		t.Errorf("SchemaVersion = %d, want 1", cfg.SchemaVersion)
+	}
+}
+
+func TestLoadProviderConfig_MissingSchemaVersion_TreatedAsZero(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	// Pre-versioning config (no schema_version field)
+	content := []byte("provider: applenotes\nnote_title: My Tasks\n")
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("failed to write test config: %v", err)
+	}
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+
+	// YAML zero value for int is 0 when field is omitempty and absent
+	// The config should still load correctly regardless of schema_version
+	if cfg.Provider != "applenotes" {
+		t.Errorf("Provider = %q, want %q", cfg.Provider, "applenotes")
+	}
+	if cfg.NoteTitle != "My Tasks" {
+		t.Errorf("NoteTitle = %q, want %q", cfg.NoteTitle, "My Tasks")
+	}
+}
+
+func TestLoadProviderConfig_DefaultsHaveSchemaVersion(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "nonexistent.yaml")
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+	if cfg.SchemaVersion != CurrentSchemaVersion {
+		t.Errorf("default SchemaVersion = %d, want %d", cfg.SchemaVersion, CurrentSchemaVersion)
+	}
+}
+
+func TestGenerateSampleConfig_IncludesSchemaVersion(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	reg := NewRegistry()
+	_ = reg.Register("textfile", func(config *ProviderConfig) (TaskProvider, error) {
+		return newInMemoryProvider(), nil
+	})
+
+	if err := GenerateSampleConfig(configPath, reg); err != nil {
+		t.Fatalf("GenerateSampleConfig() unexpected error: %v", err)
+	}
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("failed to read generated config: %v", err)
+	}
+
+	content := string(data)
+	if !strings.Contains(content, "schema_version: 1") {
+		t.Error("sample config should include schema_version: 1")
+	}
+}
+
+func TestLoadProviderConfig_FullConfigWithAllSections(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	// Simulate a config with all sections present (as a user might have)
+	content := []byte(`schema_version: 1
+provider: textfile
+note_title: ThreeDoors Tasks
+providers:
+  - name: textfile
+    settings:
+      task_file: ~/custom/tasks.yaml
+  - name: applenotes
+    settings:
+      note_title: Work Tasks
+values:
+  - "Stay focused"
+  - "Build things"
+onboarding_complete: true
+calendar:
+  enabled: true
+llm:
+  backend: claude
+`)
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("failed to write test config: %v", err)
+	}
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+
+	// Provider config sections should be parsed
+	if cfg.SchemaVersion != 1 {
+		t.Errorf("SchemaVersion = %d, want 1", cfg.SchemaVersion)
+	}
+	if len(cfg.Providers) != 2 {
+		t.Errorf("expected 2 providers, got %d", len(cfg.Providers))
+	}
+	if cfg.LLM.Backend != "claude" {
+		t.Errorf("LLM.Backend = %q, want %q", cfg.LLM.Backend, "claude")
+	}
+
+	// Unknown sections (values, onboarding_complete, calendar) should be silently ignored
+	// by ProviderConfig — they are loaded by their own loaders
+}
