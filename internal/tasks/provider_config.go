@@ -3,6 +3,7 @@ package tasks
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -119,6 +120,45 @@ func resolveFromFlatConfig(cfg *ProviderConfig, reg *Registry) (TaskProvider, er
 	}
 
 	return provider, nil
+}
+
+// ResolveAllProviders initializes all configured providers and returns a
+// MultiSourceAggregator that merges their tasks. If only one provider is
+// configured, it still wraps it in the aggregator for consistent behavior.
+// The first configured provider is used as the default for tasks with unknown origin.
+func ResolveAllProviders(cfg *ProviderConfig, reg *Registry) (*MultiSourceAggregator, error) {
+	entries := cfg.Providers
+	if len(entries) == 0 {
+		name := cfg.Provider
+		if name == "" {
+			name = "textfile"
+		}
+		entries = []ProviderEntry{{Name: name}}
+	}
+
+	providers := make(map[string]TaskProvider)
+	var firstProvider string
+	for _, entry := range entries {
+		if !reg.IsRegistered(entry.Name) {
+			log.Printf("Warning: provider %q not registered, skipping", entry.Name)
+			continue
+		}
+		provider, err := reg.InitProvider(entry.Name, cfg)
+		if err != nil {
+			log.Printf("Warning: provider %q failed to initialize: %v", entry.Name, err)
+			continue
+		}
+		providers[entry.Name] = provider
+		if firstProvider == "" {
+			firstProvider = entry.Name
+		}
+	}
+
+	if len(providers) == 0 {
+		return nil, fmt.Errorf("no providers could be initialized")
+	}
+
+	return NewMultiSourceAggregatorWithDefault(providers, firstProvider), nil
 }
 
 // GenerateSampleConfig writes a sample config.yaml with commented-out provider examples.
