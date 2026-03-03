@@ -3,6 +3,7 @@ package tasks
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -72,14 +73,43 @@ type TaskCategoryInfo struct {
 	Effort TaskEffort
 }
 
+// DoorPreferences holds door position selection percentages and bias detection.
+type DoorPreferences struct {
+	LeftPercent     float64
+	CenterPercent   float64
+	RightPercent    float64
+	TotalSelections int
+	HasBias         bool
+	BiasPosition    string // "left", "center", or "right" (lowercase)
+}
+
+// WeekComparison holds week-over-week completion comparison data.
+type WeekComparison struct {
+	ThisWeekTotal int
+	LastWeekTotal int
+	PercentChange float64
+	Direction     string // "up", "down", "same"
+}
+
 // PatternAnalyzer analyzes session metrics for user behavior patterns.
 type PatternAnalyzer struct {
 	taskCategories map[string]TaskCategoryInfo
+	sessions       []SessionMetrics
+	nowFunc        func() time.Time
 }
 
 // NewPatternAnalyzer creates a new PatternAnalyzer.
 func NewPatternAnalyzer() *PatternAnalyzer {
-	return &PatternAnalyzer{}
+	return &PatternAnalyzer{
+		nowFunc: time.Now,
+	}
+}
+
+// NewPatternAnalyzerWithNow creates a new PatternAnalyzer with a custom time function for testing.
+func NewPatternAnalyzerWithNow(nowFunc func() time.Time) *PatternAnalyzer {
+	return &PatternAnalyzer{
+		nowFunc: nowFunc,
+	}
 }
 
 // SetTaskCategories sets the task categorization lookup table.
@@ -136,6 +166,49 @@ func (pa *PatternAnalyzer) ReadSessions(path string) ([]SessionMetrics, error) {
 		return sessions, fmt.Errorf("reading sessions file: %w", err)
 	}
 	return sessions, nil
+}
+
+// LoadSessions reads and parses sessions.jsonl into internal storage.
+// Returns nil for non-existent files. Malformed lines are skipped.
+// Returns error for permission issues.
+func (pa *PatternAnalyzer) LoadSessions(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	defer func() { _ = f.Close() }()
+
+	pa.sessions = nil
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+		var sm SessionMetrics
+		if err := json.Unmarshal(line, &sm); err != nil {
+			continue // skip malformed lines
+		}
+		pa.sessions = append(pa.sessions, sm)
+	}
+	return scanner.Err()
+}
+
+// HasSufficientData returns true if at least 3 sessions exist.
+func (pa *PatternAnalyzer) HasSufficientData() bool {
+	return len(pa.sessions) >= 3
+}
+
+// GetSessionsNeeded returns how many more sessions are needed for insights.
+func (pa *PatternAnalyzer) GetSessionsNeeded() int {
+	needed := 3 - len(pa.sessions)
+	if needed < 0 {
+		return 0
+	}
+	return needed
 }
 
 // Analyze processes session metrics and returns a PatternReport.
@@ -507,4 +580,236 @@ func (pa *PatternAnalyzer) NeedsReanalysis(cached *PatternReport, sessions []Ses
 		}
 	}
 	return false
+}
+
+// --- Insights Dashboard methods (Story 4.5) ---
+
+// GetDailyCompletions returns date -> completion count for the last N days.
+// Keys are formatted as "2006-01-02". Days with zero sessions are present with value 0.
+func (pa *PatternAnalyzer) GetDailyCompletions(days int) map[string]int {
+	now := pa.nowFunc().UTC()
+	result := make(map[string]int, days)
+
+	// Initialize all days in range with zero
+	for i := 0; i < days; i++ {
+		d := now.AddDate(0, 0, -i)
+		result[d.Format("2006-01-02")] = 0
+	}
+
+	// Sum completions by StartTime date
+	for _, s := range pa.sessions {
+		dateKey := s.StartTime.UTC().Format("2006-01-02")
+		if _, ok := result[dateKey]; ok {
+			result[dateKey] += s.TasksCompleted
+		}
+	}
+
+	return result
+}
+
+// GetMoodCorrelations returns mood -> avg tasks completed per session, sorted by productivity.
+// Uses internally loaded sessions. Sessions with no mood entries are excluded.
+// Moods with < 2 sessions are excluded. Multi-mood sessions attribute full TasksCompleted to each mood.
+func (pa *PatternAnalyzer) GetMoodCorrelations() []MoodCorrelation {
+	type moodStats struct {
+		totalCompleted int
+		sessionCount   int
+	}
+	stats := make(map[string]*moodStats)
+
+	for _, s := range pa.sessions {
+		if len(s.MoodEntries) == 0 {
+			continue
+		}
+		// Track unique moods per session to avoid double-counting
+		seenMoods := make(map[string]bool)
+		for _, me := range s.MoodEntries {
+			if seenMoods[me.Mood] {
+				continue
+			}
+			seenMoods[me.Mood] = true
+			ms, ok := stats[me.Mood]
+			if !ok {
+				ms = &moodStats{}
+				stats[me.Mood] = ms
+			}
+			ms.totalCompleted += s.TasksCompleted
+			ms.sessionCount++
+		}
+	}
+
+	var result []MoodCorrelation
+	for mood, ms := range stats {
+		if ms.sessionCount < 2 {
+			continue // below minimum sample size
+		}
+		result = append(result, MoodCorrelation{
+			Mood:              mood,
+			SessionCount:      ms.sessionCount,
+			AvgTasksCompleted: float64(ms.totalCompleted) / float64(ms.sessionCount),
+		})
+	}
+
+	// Sort by productivity (highest avg first)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].AvgTasksCompleted > result[j].AvgTasksCompleted
+	})
+
+	return result
+}
+
+// GetDoorPositionPreferences returns door position selection percentages and bias detection.
+// Sessions with no door selections are excluded.
+func (pa *PatternAnalyzer) GetDoorPositionPreferences() DoorPreferences {
+	var left, center, right, total int
+
+	for _, s := range pa.sessions {
+		for _, ds := range s.DoorSelections {
+			total++
+			switch ds.DoorPosition {
+			case 0:
+				left++
+			case 1:
+				center++
+			case 2:
+				right++
+			}
+		}
+	}
+
+	if total == 0 {
+		return DoorPreferences{}
+	}
+
+	leftPct := math.Round(float64(left)/float64(total)*1000) / 10
+	centerPct := math.Round(float64(center)/float64(total)*1000) / 10
+	rightPct := math.Round(float64(right)/float64(total)*1000) / 10
+
+	prefs := DoorPreferences{
+		LeftPercent:     leftPct,
+		CenterPercent:   centerPct,
+		RightPercent:    rightPct,
+		TotalSelections: total,
+	}
+
+	if leftPct > 50 {
+		prefs.HasBias = true
+		prefs.BiasPosition = "left"
+	} else if centerPct > 50 {
+		prefs.HasBias = true
+		prefs.BiasPosition = "center"
+	} else if rightPct > 50 {
+		prefs.HasBias = true
+		prefs.BiasPosition = "right"
+	}
+
+	return prefs
+}
+
+// GetWeekOverWeek returns this week vs last week completion comparison.
+// Weeks run Monday-Sunday (ISO 8601).
+func (pa *PatternAnalyzer) GetWeekOverWeek() WeekComparison {
+	now := pa.nowFunc().UTC()
+
+	// Find Monday of current week
+	weekday := now.Weekday()
+	if weekday == time.Sunday {
+		weekday = 7
+	}
+	daysFromMonday := int(weekday) - int(time.Monday)
+	thisMonday := now.AddDate(0, 0, -daysFromMonday)
+	thisMonday = time.Date(thisMonday.Year(), thisMonday.Month(), thisMonday.Day(), 0, 0, 0, 0, time.UTC)
+	lastMonday := thisMonday.AddDate(0, 0, -7)
+
+	var thisWeek, lastWeek int
+	for _, s := range pa.sessions {
+		st := s.StartTime.UTC()
+		if !st.Before(thisMonday) {
+			thisWeek += s.TasksCompleted
+		} else if !st.Before(lastMonday) && st.Before(thisMonday) {
+			lastWeek += s.TasksCompleted
+		}
+	}
+
+	wk := WeekComparison{
+		ThisWeekTotal: thisWeek,
+		LastWeekTotal: lastWeek,
+	}
+
+	if lastWeek == 0 && thisWeek == 0 {
+		wk.PercentChange = 0.0
+		wk.Direction = "same"
+	} else if lastWeek == 0 {
+		wk.PercentChange = 100.0
+		wk.Direction = "up"
+	} else {
+		wk.PercentChange = math.Round(float64(thisWeek-lastWeek)/float64(lastWeek)*10000) / 100
+		if thisWeek > lastWeek {
+			wk.Direction = "up"
+		} else if thisWeek < lastWeek {
+			wk.Direction = "down"
+		} else {
+			wk.Direction = "same"
+		}
+	}
+
+	return wk
+}
+
+// GetMostProductiveMood returns the mood with the highest average completion rate.
+func (pa *PatternAnalyzer) GetMostProductiveMood() string {
+	corrs := pa.GetMoodCorrelations()
+	if len(corrs) == 0 {
+		return ""
+	}
+	return corrs[0].Mood // already sorted by productivity
+}
+
+// GetMostFrequentMood returns the mood that appears most often across all sessions.
+func (pa *PatternAnalyzer) GetMostFrequentMood() string {
+	counts := make(map[string]int)
+	for _, s := range pa.sessions {
+		seen := make(map[string]bool)
+		for _, me := range s.MoodEntries {
+			if !seen[me.Mood] {
+				counts[me.Mood]++
+				seen[me.Mood] = true
+			}
+		}
+	}
+
+	var best string
+	var bestCount int
+	for mood, count := range counts {
+		if count > bestCount || (count == bestCount && mood < best) {
+			best = mood
+			bestCount = count
+		}
+	}
+	return best
+}
+
+// GetMostRecentMood returns the last mood entry from the most recent session with mood data.
+func (pa *PatternAnalyzer) GetMostRecentMood() string {
+	// Sessions are in order of insertion; find the last one with mood entries
+	for i := len(pa.sessions) - 1; i >= 0; i-- {
+		s := pa.sessions[i]
+		if len(s.MoodEntries) > 0 {
+			return s.MoodEntries[len(s.MoodEntries)-1].Mood
+		}
+	}
+	return ""
+}
+
+// GetBypassRate returns the percentage of door refreshes across all sessions.
+func (pa *PatternAnalyzer) GetBypassRate() float64 {
+	var totalRefreshes, totalViews int
+	for _, s := range pa.sessions {
+		totalRefreshes += s.RefreshesUsed
+		totalViews += s.DoorsViewed
+	}
+	if totalViews == 0 {
+		return 0
+	}
+	return math.Round(float64(totalRefreshes)/float64(totalViews)*1000) / 10
 }

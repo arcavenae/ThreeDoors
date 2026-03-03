@@ -55,6 +55,8 @@ type DoorsView struct {
 	footerMessage     string
 	avoidanceMap      map[string]int // task text → bypass count (TimesBypassed)
 	avoidanceShown    map[string]int // task text → shown count (TimesShown)
+	patternAnalyzer   *tasks.PatternAnalyzer
+	completionCounter *tasks.CompletionCounter
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -83,6 +85,12 @@ func (dv *DoorsView) SetAvoidanceData(report *tasks.PatternReport) {
 		dv.avoidanceMap[entry.TaskText] = entry.TimesBypassed
 		dv.avoidanceShown[entry.TaskText] = entry.TimesShown
 	}
+}
+
+// SetInsightsData sets the pattern analyzer and completion counter for the multi-dimensional greeting.
+func (dv *DoorsView) SetInsightsData(pa *tasks.PatternAnalyzer, cc *tasks.CompletionCounter) {
+	dv.patternAnalyzer = pa
+	dv.completionCounter = cc
 }
 
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
@@ -151,7 +159,15 @@ func (dv *DoorsView) View() string {
 	s.WriteString(headerStyle.Render("ThreeDoors - Technical Demo"))
 	s.WriteString("\n")
 	s.WriteString(greetingStyle.Render(dv.greeting))
-	s.WriteString("\n\n")
+	s.WriteString("\n")
+	if dv.patternAnalyzer != nil && dv.completionCounter != nil {
+		multiGreeting := tasks.FormatMultiDimensionalGreeting(dv.patternAnalyzer, dv.completionCounter)
+		if multiGreeting != "" {
+			s.WriteString(greetingStyle.Render(multiGreeting))
+			s.WriteString("\n")
+		}
+	}
+	s.WriteString("\n")
 
 	if len(dv.currentDoors) == 0 {
 		s.WriteString(flashStyle.Render("All tasks done! Great work!"))

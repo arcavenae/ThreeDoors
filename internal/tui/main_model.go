@@ -25,6 +25,7 @@ const (
 	ViewImprovement
 	ViewNextSteps
 	ViewAvoidancePrompt
+	ViewInsights
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -42,12 +43,14 @@ type MainModel struct {
 	improvementView     *ImprovementView
 	nextStepsView       *NextStepsView
 	avoidancePromptView *AvoidancePromptView
+	insightsView        *InsightsView
 	pool                *tasks.TaskPool
 	tracker             *tasks.SessionTracker
 	provider            tasks.TaskProvider
 	healthChecker       *tasks.HealthChecker
 	completionCounter   *tasks.CompletionCounter
 	patternReport       *tasks.PatternReport
+	patternAnalyzer     *tasks.PatternAnalyzer
 	valuesConfig        *tasks.ValuesConfig
 	flash               string
 	width               int
@@ -78,15 +81,19 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		}
 	}
 
-	// Load cached pattern report (non-blocking — analysis runs in main.go goroutine)
+	// Initialize pattern analyzer: load both cached report and session history
+	pa := tasks.NewPatternAnalyzer()
 	var patternReport *tasks.PatternReport
 	if configPath, err := tasks.GetConfigDirPath(); err == nil {
-		analyzer := tasks.NewPatternAnalyzer()
-		patternReport, _ = analyzer.LoadPatterns(filepath.Join(configPath, "patterns.json"))
+		patternReport, _ = pa.LoadPatterns(filepath.Join(configPath, "patterns.json"))
+		if loadErr := pa.LoadSessions(filepath.Join(configPath, "sessions.jsonl")); loadErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to load session history: %v\n", loadErr)
+		}
 	}
 
 	doorsView := NewDoorsView(pool, tracker)
 	doorsView.SetAvoidanceData(patternReport)
+	doorsView.SetInsightsData(pa, cc)
 
 	return &MainModel{
 		viewMode:          ViewDoors,
@@ -97,6 +104,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		healthChecker:     hc,
 		completionCounter: cc,
 		patternReport:     patternReport,
+		patternAnalyzer:   pa,
 		valuesConfig:      valuesConfig,
 		promptedTasks:     make(map[string]bool),
 	}
@@ -125,6 +133,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.healthView != nil {
 			m.healthView.SetWidth(msg.Width)
+		}
+		if m.insightsView != nil {
+			m.insightsView.SetWidth(msg.Width)
 		}
 		if m.addTaskView != nil {
 			m.addTaskView.SetWidth(msg.Width)
@@ -166,6 +177,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.detailView = nil
 		m.moodView = nil
 		m.healthView = nil
+		m.insightsView = nil
 		m.addTaskView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
@@ -175,6 +187,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.healthView.SetWidth(m.width)
 		m.previousView = m.viewMode
 		m.viewMode = ViewHealth
+		return m, nil
+
+	case ShowInsightsMsg:
+		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter)
+		m.insightsView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewInsights
 		return m, nil
 
 	case ReturnToSearchMsg:
@@ -480,6 +499,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSearch(msg)
 	case ViewHealth:
 		return m.updateHealth(msg)
+	case ViewInsights:
+		return m.updateInsights(msg)
 	case ViewAddTask:
 		return m.updateAddTask(msg)
 	case ViewValuesGoals:
@@ -589,6 +610,14 @@ func (m *MainModel) updateHealth(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateInsights(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.insightsView == nil {
+		return m, nil
+	}
+	cmd := m.insightsView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateSearch(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.searchView == nil {
 		return m, nil
@@ -677,6 +706,10 @@ func (m *MainModel) View() string {
 	case ViewHealth:
 		if m.healthView != nil {
 			view = m.healthView.View()
+		}
+	case ViewInsights:
+		if m.insightsView != nil {
+			view = m.insightsView.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
