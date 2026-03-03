@@ -154,6 +154,10 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 			fmt.Fprintf(&b, "#       vault_path: /path/to/your/vault\n")
 			fmt.Fprintf(&b, "#       tasks_folder: tasks  # Optional: subfolder within vault\n")
 			fmt.Fprintf(&b, "#       file_pattern: \"*.md\"  # Optional: glob pattern for task files\n")
+			fmt.Fprintf(&b, "#       daily_notes: true  # Optional: enable daily note integration\n")
+			fmt.Fprintf(&b, "#       daily_notes_folder: Daily  # Optional: daily notes folder\n")
+			fmt.Fprintf(&b, "#       daily_notes_heading: \"## Tasks\"  # Optional: heading for tasks\n")
+			fmt.Fprintf(&b, "#       daily_notes_format: \"2006-01-02.md\"  # Optional: Go date format\n")
 		default:
 			fmt.Fprintf(&b, "#       # Add provider-specific settings here\n")
 		}
