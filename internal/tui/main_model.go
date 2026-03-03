@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -53,6 +54,7 @@ type MainModel struct {
 	completionCounter   *tasks.CompletionCounter
 	patternReport       *tasks.PatternReport
 	patternAnalyzer     *tasks.PatternAnalyzer
+	enrichDB            *enrichment.DB
 	valuesConfig        *tasks.ValuesConfig
 	flash               string
 	width               int
@@ -64,7 +66,7 @@ type MainModel struct {
 
 // NewMainModel creates the root application model.
 // If isFirstRun is true, the onboarding wizard is shown before the doors view.
-func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker, isFirstRun bool) *MainModel {
+func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker, isFirstRun bool, edb *enrichment.DB) *MainModel {
 	// Load values config
 	var valuesConfig *tasks.ValuesConfig
 	if path, err := tasks.GetValuesConfigPath(); err == nil {
@@ -108,6 +110,7 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 		completionCounter: cc,
 		patternReport:     patternReport,
 		patternAnalyzer:   pa,
+		enrichDB:          edb,
 		valuesConfig:      valuesConfig,
 		promptedTasks:     make(map[string]bool),
 	}
@@ -202,6 +205,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewHealth
 		return m, nil
 
+	case NavigateToLinkedMsg:
+		m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
+		m.detailView.SetWidth(m.width)
+		m.viewMode = ViewDetail
+		return m, nil
+
 	case ShowInsightsMsg:
 		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter)
 		m.insightsView.SetWidth(m.width)
@@ -231,7 +240,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.searchSelectedIndex = m.searchView.selectedIndex
 		}
 		m.previousView = ViewSearch
-		m.detailView = NewDetailView(msg.Task, m.tracker)
+		m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
 		m.detailView.SetWidth(m.width)
 		m.viewMode = ViewDetail
 		return m, nil
@@ -458,13 +467,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 				}
 			}
-			m.detailView = NewDetailView(msg.Task, m.tracker)
+			m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
 			m.detailView.SetWidth(m.width)
 			m.viewMode = ViewDetail
 			m.flash = "Taking it on!"
 			return m, ClearFlashCmd()
 		case "breakdown":
-			m.detailView = NewDetailView(msg.Task, m.tracker)
+			m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
 			m.detailView.SetWidth(m.width)
 			m.viewMode = ViewDetail
 			return m, nil
@@ -583,7 +592,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.tracker != nil {
 					m.tracker.RecordDoorSelection(m.doorsView.selectedDoorIndex, task.Text)
 				}
-				m.detailView = NewDetailView(task, m.tracker)
+				m.detailView = NewDetailView(task, m.tracker, m.enrichDB, m.pool)
 				m.detailView.SetWidth(m.width)
 				m.viewMode = ViewDetail
 			}

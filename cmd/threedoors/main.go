@@ -93,7 +93,7 @@ func main() {
 	enrichWg.Wait()
 
 	isFirstRun := configErr == nil && tasks.IsFirstRun(configDir)
-	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun)
+	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun, enrichDB)
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {
