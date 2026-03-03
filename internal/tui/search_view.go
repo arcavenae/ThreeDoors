@@ -20,6 +20,7 @@ type SearchView struct {
 	healthChecker     *tasks.HealthChecker
 	completionCounter *tasks.CompletionCounter
 	patternReport     *tasks.PatternReport
+	syncLog           *tasks.SyncLog
 	width             int
 	isCommandMode     bool
 }
@@ -49,6 +50,11 @@ func (sv *SearchView) SetWidth(w int) {
 	if w > 4 {
 		sv.textInput.Width = w - 4
 	}
+}
+
+// SetSyncLog sets the sync log for the :synclog command.
+func (sv *SearchView) SetSyncLog(sl *tasks.SyncLog) {
+	sv.syncLog = sl
 }
 
 // RestoreState restores search state after returning from detail view.
@@ -178,12 +184,15 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		}
 		return func() tea.Msg { return ShowValuesSetupMsg{} }
 
+	case "synclog":
+		return sv.showSyncLog()
+
 	case "tag":
 		return func() tea.Msg { return ShowTagViewMsg{} }
 
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, L link, X xrefs, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :synclog, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, L link, X xrefs, q quit"}
 		}
 
 	case "quit", "exit":
@@ -232,6 +241,23 @@ func (sv *SearchView) showStats() tea.Cmd {
 		todayCount, yesterdayCount, metrics.DetailViews, streak)
 	return func() tea.Msg {
 		return FlashMsg{Text: text}
+	}
+}
+
+func (sv *SearchView) showSyncLog() tea.Cmd {
+	if sv.syncLog == nil {
+		return func() tea.Msg {
+			return FlashMsg{Text: "Sync log not available"}
+		}
+	}
+	entries, err := sv.syncLog.ReadRecentEntries(100)
+	if err != nil {
+		return func() tea.Msg {
+			return FlashMsg{Text: fmt.Sprintf("Error reading sync log: %v", err)}
+		}
+	}
+	return func() tea.Msg {
+		return ShowSyncLogMsg{Entries: entries}
 	}
 }
 
