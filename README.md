@@ -1,4 +1,4 @@
-# ThreeDoors 🚪🚪🚪
+# ThreeDoors
 
 [![Go Version](https://img.shields.io/badge/Go-1.25.4+-00ADD8?style=flat&logo=go)](https://golang.org/doc/devel/release.html)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -6,7 +6,7 @@
 
 ## What is ThreeDoors?
 
-ThreeDoors is a **radical rethinking of task management** that reduces decision friction by showing you only **three tasks at a time**. Instead of overwhelming you with an endless list, ThreeDoors presents three carefully selected "doors"—choose one, take action, and move forward. It's built on the philosophy that **progress over perfection** matters more than perfect planning.
+ThreeDoors is a **radical rethinking of task management** that reduces decision friction by showing you only **three tasks at a time**. Instead of overwhelming you with an endless list, ThreeDoors presents three carefully selected "doors" — choose one, take action, and move forward.
 
 ### The Problem
 
@@ -14,90 +14,141 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 
 ### The ThreeDoors Solution
 
-- **Three doors, one choice** - Reduces cognitive load by limiting options
-- **Refresh when needed** - Don't like your options? Roll again (press `s`)
-- **Quick search** - Need something specific? Press `/` to search
-- **Mood-aware tracking** - Log your emotional state to understand work patterns
-- **Pattern learning** - Over time, learn which tasks you avoid and why
-
-## Project Status
-
-**Phase:** Technical Demo & Validation (Epic 1)
-**Current Milestone:** Story 1.2 - Display Three Doors from Task File
-**Goal:** Build and validate core Three Doors UX concept within 1 week
-
-### Completed
-- ✅ Story 1.1: Project Setup & Basic Bubbletea App
-- ✅ Story 1.2: File I/O and Three Doors Display
-
-### In Progress
-- 🔄 Story 1.3: Door Selection & Task Status Management
-- 🔄 Story 1.3a: Quick Search & Command Palette
-
-### Upcoming
-- Story 1.5: Session Metrics Tracking
-- Story 1.6: Essential Polish
+- **Three doors, one choice** — Reduces cognitive load by limiting options
+- **Refresh when needed** — Don't like your options? Roll again
+- **Quick search** — Press `/` to find something specific
+- **Mood-aware tracking** — Log your emotional state to understand work patterns
+- **Pattern learning** — Over time, learn which tasks you avoid and why
+- **Avoidance detection** — Automatically surfaces tasks you keep skipping
+- **Values alignment** — Keep your goals front-and-center while working
 
 ## Features
 
-### Core Functionality
-- 🚪 **Three Doors Display** - View three randomly selected tasks at once
-- 🔄 **Refresh Mechanism** - Re-roll doors when nothing appeals (press `s` or down arrow)
-- ✅ **Task Status Management** - Complete, block, defer, expand, fork, or flag tasks for rework
-- 🔍 **Quick Search** - Press `/` for live task search with bottom-up results
-- ⌨️ **Command Palette** - Press `:` for vi-style commands (`:add`, `:mood`, `:stats`, `:help`, etc.)
-- 😊 **Mood Tracking** - Log your emotional state anytime (press `m`)
-- 📊 **Session Metrics** - Automatic tracking of door selections, bypasses, and patterns
-- 🎨 **Beautiful TUI** - Built with Bubbletea and Lipgloss for a polished terminal experience
+### Core Task Management
+- **Three Doors Display** — View three randomly selected tasks, avoiding recently shown ones
+- **Refresh Mechanism** — Re-roll doors when nothing appeals
+- **Task Status Workflow** — Complete, block, defer, expand, fork, or flag tasks for rework
+- **Quick Add** — Add tasks inline with `:add` or press `a`; supports context capture with `:add --why`
+- **Inline Tagging** — Tag tasks as you add them: `Design homepage #creative #deep-work @work`
+- **Task Categorization** — Classify by type (creative, technical, administrative, physical), effort (quick-win, medium, deep-work), and location (home, work, errands, anywhere)
+- **Cross-Reference Linking** — Link related tasks together; browse and navigate links from detail view
 
-### Key Bindings
+### Search & Commands
+- **Quick Search** — Press `/` for live task search with fuzzy filtering
+- **Command Palette** — Press `:` for vi-style commands (`:add`, `:mood`, `:stats`, `:health`, `:dashboard`, `:goals`, `:help`)
 
-#### Three Doors View
+### Analytics & Insights
+- **Session Metrics** — Automatic tracking of door selections, bypasses, and timing data
+- **Daily Completion Tracking** — Track completions per day with streak counting
+- **Insights Dashboard** — View trends, streaks, mood correlations, and avoidance patterns (`:dashboard`)
+- **Mood Correlation Analysis** — Discover how your emotional state affects task selection
+- **Avoidance Detection** — Tasks bypassed 10+ times trigger an intervention prompt offering breakdown, deferral, or archival
+- **Pattern Analysis** — Identifies door position bias, task type preferences, and procrastination patterns
+
+### Apple Notes Integration
+- **Bidirectional Sync** — Read and write tasks from Apple Notes
+- **Provider Architecture** — Switch between text file and Apple Notes backends via `config.yaml`
+- **Health Check** — Run `:health` to verify provider connectivity, file access, and disk space
+
+### Sync & Offline-First
+- **Write-Ahead Log (WAL)** — Crash-safe task persistence with atomic writes
+- **Offline Queue** — Local change queue with replay when connectivity returns
+- **Sync Status Indicator** — Visual sync state per provider in the TUI
+
+### Calendar Awareness
+- **Local Calendar Reader** — Reads from macOS Calendar.app (AppleScript), `.ics` files, and CalDAV caches
+- **Free Block Detection** — Computes available time blocks between calendar events
+
+### Enrichment Database
+- **SQLite Storage** — Pure-Go SQLite (no CGO) for task metadata, cross-references, learning patterns, and feedback history
+- **Cross-Reference Graph** — Track relationships between tasks across providers
+
+### LLM Task Decomposition (Spike)
+- **Task Breakdown** — Decompose complex tasks into stories using Claude or local Ollama
+- **Git Integration** — Write generated story specs directly to git repos
+
+### User Experience
+- **First-Run Onboarding** — Guided welcome flow with keybinding tutorial, values/goals setup, and optional task import
+- **Values & Goals Display** — Persistent footer showing your values as you work
+- **Mood Logging** — Capture emotional state anytime with presets or custom text
+- **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
+- **Session Improvement Prompt** — On quit, optionally share improvement suggestions
+- **Contextual Next Steps** — After completing or adding a task, see relevant next actions
+
+### Distribution
+- **Homebrew** — Install via `brew install arcaven/tap/threedoors`
+- **Signed & Notarized** — macOS binaries are code-signed and Apple-notarized
+- **Cross-Platform Binaries** — Pre-built for macOS (ARM & Intel) and Linux (x86_64)
+- **GitHub Releases** — Automatic releases on every merge to main
+
+## Key Bindings
+
+### Three Doors View
 | Key | Action |
 |-----|--------|
-| `a` / `←` | Select left door |
-| `w` / `↑` | Select center door |
-| `d` / `→` | Select right door |
-| `s` / `↓` | Refresh doors (re-roll) |
+| `a` / `Left` | Select left door |
+| `w` / `Up` | Select center door |
+| `d` / `Right` | Select right door |
+| `s` / `Down` | Refresh doors (re-roll) |
+| `n` | Send feedback on selected door |
 | `/` | Open quick search |
-| `m` | Log mood/context |
-| `q` / `Ctrl+C` | Quit application |
+| `:` | Open command palette |
+| `m` | Log mood |
+| `q` / `Ctrl+C` | Quit |
 
-#### Task Detail View (After Selecting Door)
+### Task Detail View
 | Key | Action |
 |-----|--------|
-| `c` | Mark as complete |
-| `b` | Mark as blocked |
-| `i` | Mark as in progress |
+| `c` | Mark complete |
+| `i` | Mark in progress |
+| `b` | Mark blocked (prompts for reason) |
 | `e` | Expand task (break down) |
 | `f` | Fork task (clone/split) |
 | `p` | Procrastinate (defer) |
 | `r` | Flag for rework |
-| `Esc` | Return to previous screen |
+| `l` | Link to another task |
+| `x` | Browse cross-references |
+| `m` | Log mood |
+| `Esc` | Return to doors |
 
-#### Search Mode (`/`)
+### Search Mode
 | Key | Action |
 |-----|--------|
 | Type | Live filter tasks |
-| `j` / `↓` / `s` | Move down in results |
-| `k` / `↑` / `w` | Move up in results |
+| `j` / `Down` | Next result |
+| `k` / `Up` | Previous result |
 | `Enter` | Open selected task |
-| `Esc` | Exit search (return to doors) |
+| `Esc` | Exit search |
 
-#### Command Mode (`:`)
+### Command Palette
 | Command | Action |
 |---------|--------|
-| `:add <task>` | Add new task |
-| `:mood [mood]` | Quick mood log |
-| `:stats` | Show session statistics |
-| `:help` | Display all commands |
+| `:add <task>` | Add a new task |
+| `:add --why` | Add task with context (why it matters) |
+| `:mood [mood]` | Log mood (or open selector) |
+| `:tag` | Open task categorization editor |
+| `:stats` | Flash session statistics |
+| `:health` | Run system health check |
+| `:dashboard` | Open insights dashboard |
+| `:insights` | Show full insights dashboard |
+| `:insights mood` | Flash mood & productivity insights |
+| `:insights avoidance` | Flash avoidance patterns |
+| `:goals` | Open values & goals setup |
+| `:goals edit` | Edit existing values & goals |
+| `:help` | Show all commands |
 | `:quit` | Exit application |
 
 ## Getting Started
 
-### Option 1: Download Pre-built Binary
+### Option 1: Homebrew (macOS)
 
-Pre-built binaries are available as CI artifacts for each push to `main`. Download the appropriate binary for your platform:
+```bash
+brew install arcaven/tap/threedoors
+```
+
+### Option 2: Download Pre-built Binary
+
+Download the latest release from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries are available for:
 
 | Platform | Binary |
 |----------|--------|
@@ -105,38 +156,27 @@ Pre-built binaries are available as CI artifacts for each push to `main`. Downlo
 | macOS (Intel) | `threedoors-darwin-amd64` |
 | Linux (x86_64) | `threedoors-linux-amd64` |
 
-To download, go to [Actions](https://github.com/arcaven/ThreeDoors/actions) on GitHub, select the latest successful workflow run, and download the `threedoors-binaries` artifact.
-
 ```bash
-# Make the binary executable and move it to your PATH
 chmod +x threedoors-*
 mv threedoors-darwin-arm64 /usr/local/bin/threedoors   # adjust for your platform
 ```
 
-### Option 2: Install with `go install`
+### Option 3: Install with `go install`
 
 ```bash
 go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
 ```
 
-This places the `threedoors` binary in your `$GOPATH/bin` (or `$HOME/go/bin` by default).
+### Option 4: Build from Source
 
-### Option 3: Build from Source
-
-**Prerequisites:**
-* **Go** 1.25.4 or higher ([installation guide](https://golang.org/doc/install))
-* **Git**
-* **Make** (optional, for build automation)
+**Prerequisites:** Go 1.25.4+, Git, Make (optional)
 
 ```bash
 git clone https://github.com/arcaven/ThreeDoors.git
 cd ThreeDoors
 make build
-# or without Make:
-go build -o bin/threedoors ./cmd/threedoors
+# Binary at bin/threedoors
 ```
-
-The binary will be at `bin/threedoors` (or wherever you specified with `-o`).
 
 ### Usage
 
@@ -144,164 +184,129 @@ The binary will be at `bin/threedoors` (or wherever you specified with `-o`).
    ```bash
    threedoors
    ```
-2. **First run** creates `~/.threedoors/tasks.txt` with sample tasks.
-3. **Add your tasks** by editing `~/.threedoors/tasks.txt` (one task per line).
-4. **Select a door** with `a` (left), `w` (center), or `d` (right) to view task details.
-5. **Re-roll** doors with `s` if nothing appeals.
-6. **Act on a task** using status keys: `c` (complete), `b` (blocked), `i` (in progress), `e` (expand), `f` (fork), `p` (procrastinate).
+2. **First run** starts the onboarding wizard — learn key bindings, set your values/goals, and optionally import existing tasks.
+3. **Select a door** with `a` (left), `w` (center), or `d` (right).
+4. **Re-roll** doors with `s` if nothing appeals.
+5. **Act on a task** using status keys: `c` (complete), `b` (blocked), `i` (in progress), `p` (procrastinate).
+6. **Add tasks** with `:add Buy groceries #quick-win @errands`.
 7. **Log your mood** with `m`.
 8. **Search** with `/` to find a specific task.
-9. **Quit** with `q` or `Ctrl+C`.
+9. **View insights** with `:dashboard` to see trends and patterns.
 
-### Data Directory (`~/.threedoors/`)
+### Data Directory
 
-ThreeDoors stores all data locally in `~/.threedoors/`:
+All data is stored locally in `~/.threedoors/`:
 
 ```
 ~/.threedoors/
-├── tasks.txt          # Active tasks (one per line)
-├── completed.txt      # Tasks marked as complete
-└── sessions.jsonl     # Session metrics (JSON Lines format)
+├── tasks.yaml          # Active tasks (YAML format)
+├── config.yaml         # Provider configuration
+├── values.json         # Your values & goals
+├── completed.txt       # Completed task log
+├── sessions.jsonl      # Session metrics (JSON Lines)
+├── patterns.json       # Cached pattern analysis
+├── enrichment.db       # SQLite enrichment database
+├── improvements.txt    # Your improvement suggestions
+└── onboarding.lock     # First-run marker
 ```
-
-- **`tasks.txt`** — Your active task list. Edit this file directly to add, remove, or reorder tasks.
-- **`completed.txt`** — Tasks that have been marked complete are moved here automatically.
-- **`sessions.jsonl`** — Records of each session including door selections, bypasses, mood logs, and timing data. Each line is a self-contained JSON object.
 
 ## Development
 
 ### Tech Stack
 
-- **Language:** Go 1.25.4
-- **TUI Framework:** [Bubbletea](https://github.com/charmbracelet/bubbletea) (The Elm Architecture for Go)
-- **Styling:** [Lipgloss](https://github.com/charmbracelet/lipgloss) (Style definitions for TUI)
-- **Architecture:** Model-View-Update (MVU) pattern
+- **Language:** Go 1.25.4+
+- **TUI Framework:** [Bubbletea](https://github.com/charmbracelet/bubbletea) + [Lipgloss](https://github.com/charmbracelet/lipgloss)
+- **Database:** [modernc.org/sqlite](https://pkg.go.dev/modernc.org/sqlite) (pure Go, no CGO)
+- **Architecture:** Model-View-Update (MVU) with provider pattern
 - **Build System:** Make
+- **CI/CD:** GitHub Actions (lint, test, build, sign, notarize, release, Homebrew update)
 
 ### Project Structure
 
 ```
 ThreeDoors/
-├── cmd/threedoors/          # Application entry point
-│   ├── main.go
-│   └── main_test.go
+├── cmd/threedoors/           # Entry point
 ├── internal/
-│   └── tasks/               # Task domain logic
-│       ├── task.go          # Task model
-│       ├── file_manager.go  # File I/O
-│       └── session_tracker.go  # Metrics tracking
-├── docs/
-│   ├── prd/                 # Product Requirements
-│   ├── architecture/        # Architecture docs
-│   └── stories/             # User stories
-└── Makefile                 # Build automation
-```
-
-### Running Tests
-
-```bash
-make test
-# or
-go test ./...
-```
-
-### Code Style and Linting
-
-We use `gofumpt` (stricter than `go fmt`) and `golangci-lint`:
-
-```bash
-# Format code
-gofumpt -w .
-
-# Run linter
-golangci-lint run ./...
-
-# Or use Make targets
-make lint
-make fmt
+│   ├── tasks/                # Task domain: models, providers, sync, analytics
+│   ├── tui/                  # Bubbletea views (13 views) and UI components
+│   ├── calendar/             # Local calendar readers (AppleScript, ICS, CalDAV)
+│   ├── enrichment/           # SQLite enrichment database
+│   ├── intelligence/llm/     # LLM backends (Claude, Ollama) & task decomposition
+│   ├── dist/                 # macOS code signing, notarization, pkg building
+│   └── ci/                   # CI validation tests
+├── Formula/                  # Homebrew formula
+├── scripts/                  # Analysis & build scripts
+├── docs/                     # PRD, architecture, stories, research
+└── Makefile
 ```
 
 ### Make Targets
 
 ```bash
-make build    # Build the application
-make run      # Run the application
-make test     # Run tests
-make clean    # Remove build artifacts
-make lint     # Run linter
-make fmt      # Format code
+make build          # Build the application
+make run            # Build and run
+make test           # Run tests
+make lint           # Run golangci-lint
+make fmt            # Format with gofumpt
+make clean          # Remove build artifacts
+make sign           # Code-sign binary (requires APPLE_SIGNING_IDENTITY)
+make pkg            # Build macOS .pkg installer
+make release-local  # Build + sign + pkg
 ```
 
-## Philosophy & Design Principles
+### Code Style
 
-ThreeDoors is built on several core principles:
+We use `gofumpt` (stricter than `gofmt`) and `golangci-lint`. See [CLAUDE.md](CLAUDE.md) for full coding standards.
 
-1. **Progress Over Perfection** - Taking action on imperfect tasks beats perfect planning
-2. **Reduce Friction** - Every interaction should feel effortless and natural
-3. **Learn from Behavior** - Track patterns to help users understand their work habits
-4. **Emotional Context Matters** - Mood affects productivity; acknowledge and track it
-5. **Power Users Welcome** - Vi-style commands for efficiency without sacrificing simplicity
-6. **Local-First** - Your data stays on your machine (`~/.threedoors/`)
+```bash
+make fmt    # Format code
+make lint   # Run linter (must pass with zero warnings)
+```
+
+## Philosophy
+
+1. **Progress Over Perfection** — Taking action on imperfect tasks beats perfect planning
+2. **Reduce Friction** — Every interaction should feel effortless
+3. **Learn from Behavior** — Track patterns to help users understand their work habits
+4. **Emotional Context Matters** — Mood affects productivity; acknowledge and track it
+5. **Power Users Welcome** — Vi-style commands without sacrificing simplicity
+6. **Local-First** — Your data stays on your machine, no accounts, no telemetry
 
 ## Data & Privacy
 
-- **All data is local** - Tasks stored in `~/.threedoors/tasks.txt`
-- **No telemetry** - Session metrics stay on your machine (`~/.threedoors/sessions.jsonl`)
-- **No accounts** - No sign-ups, no servers, no tracking
-- **Plain text** - Your tasks are readable and portable
-
-## Future Roadmap
-
-### Phase 2: Apple Notes Integration (Post-Validation)
-- Sync tasks with Apple Notes
-- Bidirectional updates (edit in Notes or ThreeDoors)
-- iCloud sync across devices
-
-### Phase 3: Enhanced Interaction & Learning
-- Interactive prompts and guidance
-- Values and goals display
-- Daily completion tracking
-- Continuous improvement prompts
-
-### Phase 4: Intelligent Door Selection
-- **Mood correlation analysis** - "When stressed, you avoid complex tasks"
-- **Pattern recognition** - Identify tasks you consistently skip
-- **Adaptive selection** - Show appropriate tasks based on current mood
-- **Goal re-evaluation** - Prompt when persistent avoidance detected
+- **All data is local** — Stored in `~/.threedoors/`
+- **No telemetry** — Session metrics stay on your machine
+- **No accounts** — No sign-ups, no servers, no tracking
+- **Offline-first** — Works without network; syncs when available
 
 ## Contributing
 
-We welcome contributions! ThreeDoors is currently in **Technical Demo phase** (Epic 1).
-
 **Before contributing:**
 1. Read the [PRD](docs/prd/index.md) and [Architecture](docs/architecture/index.md) docs
-2. Check current milestone in [Project Status](#project-status)
+2. Check current status in the [epic list](docs/prd/epic-list.md)
 3. Open an issue to discuss significant changes
 
 **To contribute:**
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Follow coding standards (run `make lint` and `make fmt`)
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Follow coding standards (`make lint && make fmt`)
 4. Write tests for new functionality
-5. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-6. Push to the Branch (`git push origin feature/AmazingFeature`)
-7. Open a Pull Request
+5. Commit your changes
+6. Push and open a Pull Request
 
 **Code Quality Requirements:**
 - `gofumpt` formatting
-- `golangci-lint` passes
+- `golangci-lint` passes with zero warnings
 - Unit tests for new logic
-- Documentation for public APIs
+- No `//nolint` without justification
 
 ## Documentation
 
-Comprehensive documentation is available in the `docs/` directory:
-
-- **[Product Requirements Document (PRD)](docs/prd/index.md)** - Features, requirements, and epic details
-- **[Architecture Documentation](docs/architecture/index.md)** - Technical design, patterns, and standards
-- **[User Stories](docs/stories/)** - Detailed story files with acceptance criteria
-- **[Coding Standards](docs/architecture/coding-standards.md)** - Go best practices for this project
-- **[Tech Stack](docs/architecture/tech-stack.md)** - Dependencies and tooling
+- **[Product Requirements (PRD)](docs/prd/index.md)** — Features, requirements, epics
+- **[Architecture](docs/architecture/index.md)** — Technical design and patterns
+- **[User Stories](docs/stories/)** — Story files with acceptance criteria
+- **[Coding Standards](docs/architecture/coding-standards.md)** — Go best practices
+- **[Research](docs/research/)** — Choice architecture, mood correlation, procrastination
 
 ## License
 
@@ -309,16 +314,17 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Acknowledgments
 
-Built with the excellent [Charm](https://charm.sh/) ecosystem:
-- [Bubbletea](https://github.com/charmbracelet/bubbletea) - TUI framework
-- [Lipgloss](https://github.com/charmbracelet/lipgloss) - Style definitions
+Built with the [Charm](https://charm.sh/) ecosystem:
+- [Bubbletea](https://github.com/charmbracelet/bubbletea) — TUI framework
+- [Lipgloss](https://github.com/charmbracelet/lipgloss) — Style definitions
+- [Bubbles](https://github.com/charmbracelet/bubbles) — TUI components
 
-## Project Links
+## Links
 
-- **Repository:** [https://github.com/arcaven/ThreeDoors](https://github.com/arcaven/ThreeDoors)
-- **Issues:** [https://github.com/arcaven/ThreeDoors/issues](https://github.com/arcaven/ThreeDoors/issues)
-- **Discussions:** [https://github.com/arcaven/ThreeDoors/discussions](https://github.com/arcaven/ThreeDoors/discussions)
+- **Repository:** [github.com/arcaven/ThreeDoors](https://github.com/arcaven/ThreeDoors)
+- **Issues:** [github.com/arcaven/ThreeDoors/issues](https://github.com/arcaven/ThreeDoors/issues)
+- **Releases:** [github.com/arcaven/ThreeDoors/releases](https://github.com/arcaven/ThreeDoors/releases)
 
 ---
 
-**"Progress over perfection. Three doors. One choice. Move forward."** 🚪✨
+**"Progress over perfection. Three doors. One choice. Move forward."**
