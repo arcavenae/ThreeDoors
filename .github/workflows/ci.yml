@@ -148,7 +148,7 @@ jobs:
               --apple-id "$APPLE_NOTARIZATION_APPLE_ID" \
               --password "$APPLE_NOTARIZATION_PASSWORD" \
               --team-id "$APPLE_NOTARIZATION_TEAM_ID" \
-              --wait --timeout 900
+              --wait --timeout 1800
             rm "${BINARY}.zip"
           done
 
@@ -180,7 +180,7 @@ jobs:
               --apple-id "$APPLE_NOTARIZATION_APPLE_ID" \
               --password "$APPLE_NOTARIZATION_PASSWORD" \
               --team-id "$APPLE_NOTARIZATION_TEAM_ID" \
-              --wait --timeout 900
+              --wait --timeout 1800
             xcrun stapler staple "$PKG"
           done
 
