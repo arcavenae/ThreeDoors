@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-3 are COMPLETE (22 stories, 34 merged PRs). Epic 5 is partially complete. Epics 4, 6-15 are not yet started.
+**Implementation Status:** Epics 1-3 are COMPLETE (22 stories, 34 merged PRs). Epic 5 is partially complete. Epics 4, 6-15, 18 are not yet started.
 
 ## Requirements Inventory
 
@@ -105,6 +105,11 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - FR49: Apple Notes integration E2E tests ⏳ Epic 9
 - FR50: Contract tests for adapter compliance ⏳ Epic 9
 - FR51: Functional E2E tests for user workflows ⏳ Epic 9
+
+*Docker E2E & Headless TUI Testing (Party Mode):*
+- FR52: Headless TUI test harness using teatest for automated interaction testing ⏳ Epic 18
+- FR53: Golden file snapshot tests for TUI visual regression detection ⏳ Epic 18
+- FR54: Docker-based reproducible test environment for E2E test execution ⏳ Epic 18
 
 ### Non-Functional Requirements
 
@@ -1319,6 +1324,154 @@ So that Epic 4's learning algorithm is evidence-informed.
 
 ---
 
+## Epic 18: Docker E2E & Headless TUI Testing Infrastructure
+
+**Epic Goal:** Establish reproducible, automated end-to-end testing for the TUI application using Docker containers for environment isolation and Bubbletea's `teatest` package for headless interaction testing — eliminating manual TUI testing as the sole E2E validation method.
+
+**Prerequisites:** Epic 3 ✅, Epic 9 (Stories 9.4, 9.5)
+**FRs covered:** FR49, FR51 (extends Epic 9's scope with concrete implementation approach)
+**Origin:** Party mode testing infrastructure discussion (2026-03-02). Party mode consensus identified two critical gaps: (1) no reproducible test environment — tests depend on developer machine state, and (2) TUI testing is entirely manual — 10% of the test pyramid has zero automation.
+
+**Why a separate epic from Epic 9:** Epic 9 defines *what* to test (Apple Notes E2E, contract tests, performance benchmarks, functional E2E, CI gates). This epic defines *how* to test the TUI layer specifically — the Docker infrastructure and headless testing tooling that Epic 9 Story 9.4 depends on but doesn't specify.
+
+### Story 18.1: Headless TUI Test Harness with teatest
+
+As a developer,
+I want a headless TUI test harness using Bubbletea's `teatest` package,
+So that I can write automated tests that interact with the full TUI without a real terminal.
+
+**Acceptance Criteria:**
+
+**Given** the `teatest` package (`github.com/charmbracelet/x/exp/teatest`) is added to `go.mod`
+**When** a test creates a `teatest.NewTestModel` with the root TUI model
+**Then** the test can send key messages (`tea.KeyMsg`) to simulate user input
+**And** the test can retrieve `FinalOutput` and `FinalModel` for assertions
+**And** `lipgloss.SetColorProfile(termenv.Ascii)` is enforced for deterministic output
+**And** test helper `NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel` is provided in `internal/tui/testhelpers_test.go`
+**And** helper accepts options: `WithTermSize(w, h int)`, `WithTaskFile(path string)`, `WithConfig(cfg Config)`
+**And** at least 3 smoke tests demonstrate the harness: app launch, door display, and quit
+**And** tests use stdlib `testing` package only (no testify); table-driven for >2 cases; t.Helper() in helpers; t.Cleanup() for resources
+
+**Technical Notes:**
+- `teatest` creates a pseudo-TTY internally — no Docker needed for basic headless tests
+- Fixed terminal size (`teatest.WithInitialTermSize(80, 24)`) ensures reproducible layout
+- The harness wraps the existing `tui.NewModel()` constructor — no TUI code changes needed
+- Test fixtures use `t.TempDir()` for task files and config
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
+### Story 18.2: Golden File Snapshot Tests for TUI Views
+
+As a developer,
+I want golden file tests that capture expected TUI output,
+So that visual regressions in the Three Doors interface are caught automatically.
+
+**Acceptance Criteria:**
+
+**Given** the headless test harness from Story 18.1
+**When** golden file tests run
+**Then** `FinalOutput` is compared against `.golden` files in `internal/tui/testdata/`
+**And** golden files cover: main doors view (3 tasks), empty state (0 tasks), too-few-tasks state (1-2 tasks), door selection highlight, status bar with values/goals, help overlay
+**And** `.gitattributes` includes `*.golden -text` to prevent line-ending conversion
+**And** golden files are regenerated via `go test ./internal/tui/... -update`
+**And** CI runs golden file comparison (without `-update`) to catch regressions
+**And** at least 6 golden file scenarios covering the views listed above
+
+**Technical Notes:**
+- Golden files are the teatest-recommended approach for View() output testing
+- ASCII color profile ensures golden files are portable across terminals
+- Golden file diffs in CI provide clear visual indication of what changed
+- Keep golden files focused on layout structure, not exact styling (ASCII mode helps)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
+### Story 18.3: Input Sequence Replay Tests for User Workflows
+
+As a developer,
+I want automated tests that replay user input sequences against the TUI,
+So that complete user workflows (launch → select → manage → exit) are validated end-to-end.
+
+**Acceptance Criteria:**
+
+**Given** the headless test harness from Story 18.1
+**When** workflow replay tests run
+**Then** tests exercise these user journeys via `tm.Send(tea.KeyMsg{...})` sequences:
+  1. Launch → view 3 doors → select door (A key) → verify selection
+  2. Launch → re-roll doors (S key) → verify new doors displayed
+  3. Launch → select door → complete task (C key) → verify task removed from pool
+  4. Launch → select door → mark blocked (B key) → enter blocker text → verify
+  5. Launch → quick add (N key) → type task → submit → verify task in pool
+  6. Launch → open help (?) → verify help overlay → close help (Esc)
+**And** each workflow asserts on `FinalModel` state (not just output text)
+**And** workflows use `teatest.WaitFor` for intermediate state assertions where needed
+**And** test task files are created via `t.TempDir()` with known task sets
+**And** tests use stdlib `testing` package only; table-driven for workflow variants
+
+**Technical Notes:**
+- Input replays test the full Bubbletea Update() → View() cycle
+- Model assertions are more stable than output assertions for workflow correctness
+- `WaitFor` with timeout prevents tests from hanging on unexpected state
+- Each workflow should complete in <2s (set `teatest.WithFinalTimeout(2*time.Second)`)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
+### Story 18.4: Docker Test Environment for Reproducible E2E
+
+As a developer,
+I want a Docker-based test environment,
+So that E2E tests run identically on any machine and in CI regardless of host OS or installed tools.
+
+**Acceptance Criteria:**
+
+**Given** a `Dockerfile.test` in the repository root
+**When** `make test-docker` is run
+**Then** a Docker image is built with: Go toolchain, gofumpt, golangci-lint, and all test dependencies
+**And** the full test suite (`go test ./... -v -count=1`) runs inside the container
+**And** golden file tests and workflow replay tests from Stories 18.2-18.3 pass inside Docker
+**And** test results and coverage report are written to a mounted volume (`./test-results/`)
+**And** `docker-compose.test.yml` defines the test service with: build context, volume mounts for source and results, environment variables for test configuration
+**And** the container uses a non-root user for test execution
+**And** image build time is <2 minutes on a cold build (use multi-stage build with cached Go modules)
+**And** `make test-docker` exits with the same exit code as the test suite
+
+**Technical Notes:**
+- Multi-stage Dockerfile: stage 1 installs tools + caches `go mod download`, stage 2 copies source and runs tests
+- Docker provides the pseudo-TTY that teatest needs — no special terminal setup required
+- Volume mount for source code enables fast iteration without rebuilding the image
+- CI can use the same Docker image, ensuring dev/CI environment parity
+- No macOS-specific dependencies in Docker (Apple Notes tests are excluded via build tags)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
+### Story 18.5: CI Integration for Docker E2E Tests
+
+As the team,
+I want Docker E2E tests running automatically in CI,
+So that TUI regressions are caught on every PR without relying on manual testing.
+
+**Acceptance Criteria:**
+
+**Given** the Docker test environment from Story 18.4
+**When** a PR is submitted
+**Then** a new CI job `test-docker-e2e` runs the Docker test suite
+**And** the job uses `docker-compose.test.yml` to run tests
+**And** test results are uploaded as CI artifacts
+**And** golden file diffs (if any) are included in the CI output for review
+**And** the job runs in parallel with existing `quality-gate` and `build` jobs
+**And** the job completes in <5 minutes (Docker layer caching via GitHub Actions cache)
+**And** the job fails the PR check if any E2E test fails
+**And** `.github/workflows/ci.yml` is updated with the new job
+
+**Technical Notes:**
+- GitHub Actions supports Docker natively — use `docker compose run` in a step
+- Cache Docker layers via `actions/cache` with `docker buildx` for fast rebuilds
+- Separate job (not step) allows parallel execution with existing quality gates
+- Apple Notes integration tests remain macOS-only; Docker E2E covers everything else
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
+---
+
 ## Appendix: PR-Analysis-Derived Quality Acceptance Criteria
 
 > **Source:** Systematic analysis of all 49 PRs (#1–#49) in arcaven/ThreeDoors, examining every delta between initial PR submission and final merge. These ACs are derived from recurring defect patterns and MUST be included in all future stories.
@@ -1341,7 +1494,7 @@ Analysis of 49 PRs found 18 PRs (37%) required post-submission changes. The rema
 
 ### Mandatory Quality ACs for All Future Stories
 
-Every story in Epics 3.5–15 MUST include the following acceptance criteria in addition to feature-specific ACs. These are NON-NEGOTIABLE and derived from empirical PR failure data. Each story references these gates via a compact **Quality Gate** line; this appendix provides the authoritative BDD definitions.
+Every story in Epics 3.5–18 MUST include the following acceptance criteria in addition to feature-specific ACs. These are NON-NEGOTIABLE and derived from empirical PR failure data. Each story references these gates via a compact **Quality Gate** line; this appendix provides the authoritative BDD definitions.
 
 #### AC-Q1: Formatting Gate (PRs #9, #23, #24, #42)
 

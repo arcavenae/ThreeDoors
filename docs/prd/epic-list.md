@@ -229,9 +229,24 @@
 - **Origin:** Party mode mobile app discussion (2026-03-02)
 - **Research:** See `docs/research/mobile-app-research.md` for full analysis
 
-**Epic 17+: Additional Integrations** (Jira, Linear, Google Calendar, Slack, etc.)
-**Epic 18+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 19+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 18: Docker E2E & Headless TUI Testing Infrastructure** 🆕
+- **Goal:** Establish reproducible, automated E2E testing using Docker containers and Bubbletea's `teatest` package for headless TUI interaction testing — replacing manual testing as the sole E2E validation method
+- **Prerequisites:** Epic 3 ✅, Epic 9 (Stories 9.4, 9.5)
+- **Deliverables:**
+  - Headless TUI test harness using `teatest` (pseudo-TTY, programmatic key input, model assertions)
+  - Golden file snapshot tests for TUI visual regression detection
+  - Input sequence replay tests for complete user workflow validation
+  - Docker-based reproducible test environment (`Dockerfile.test` + `docker-compose.test.yml`)
+  - CI integration running Docker E2E tests on every PR
+- **Stories:** 18.1 (Headless Harness), 18.2 (Golden Files), 18.3 (Workflow Replay), 18.4 (Docker Environment), 18.5 (CI Integration)
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **FRs covered:** FR52, FR53, FR54
+- **Risk:** teatest is experimental; API may change. Docker adds CI time; mitigate with layer caching.
+- **Origin:** Party mode testing infrastructure discussion (2026-03-02)
+
+**Epic 19+: Additional Integrations** (Jira, Linear, Google Calendar, Slack, etc.)
+**Epic 20+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 21+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -258,6 +273,7 @@
 | Epic 14: LLM Decomposition | 2 | Not Started |
 | Epic 15: Psychology Research | 2 | Not Started |
 | Epic 16: iPhone Mobile App | 7 | 🆕 Not Started |
-| **Total** | **69** | **21 complete, 48 remaining** |
+| Epic 18: Docker E2E & Headless TUI Testing | 5 | 🆕 Not Started |
+| **Total** | **74** | **21 complete, 53 remaining** |
 
 ---
