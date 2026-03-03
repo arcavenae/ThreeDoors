@@ -22,6 +22,9 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Register built-in adapters with the global registry
+	tasks.RegisterBuiltinAdapters(tasks.DefaultRegistry())
+
 	configDir, configErr := tasks.GetConfigDirPath()
 	var cfg *tasks.ProviderConfig
 	if configErr != nil {
