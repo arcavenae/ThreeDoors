@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -23,22 +23,22 @@ const (
 
 // DetailView displays full task details and status action menu.
 type DetailView struct {
-	task              *tasks.Task
+	task              *core.Task
 	mode              DetailViewMode
 	blockerInput      string
 	width             int
-	tracker           *tasks.SessionTracker
+	tracker           *core.SessionTracker
 	enrichDB          *enrichment.DB
-	pool              *tasks.TaskPool
+	pool              *core.TaskPool
 	agentService      *intelligence.AgentService
 	crossRefs         []enrichment.CrossReference
-	linkCandidates    []*tasks.Task
+	linkCandidates    []*core.Task
 	linkSelectedIndex int
 	linkBrowseIndex   int
 }
 
 // NewDetailView creates a detail view for the given task.
-func NewDetailView(task *tasks.Task, tracker *tasks.SessionTracker, edb *enrichment.DB, pool *tasks.TaskPool) *DetailView {
+func NewDetailView(task *core.Task, tracker *core.SessionTracker, edb *enrichment.DB, pool *core.TaskPool) *DetailView {
 	if tracker != nil {
 		tracker.RecordDetailView()
 	}
@@ -98,7 +98,7 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 	case "esc":
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "c", "C":
-		if err := dv.task.UpdateStatus(tasks.StatusComplete); err != nil {
+		if err := dv.task.UpdateStatus(core.StatusComplete); err != nil {
 			return func() tea.Msg { return FlashMsg{Text: "Cannot complete: " + err.Error()} }
 		}
 		if dv.tracker != nil {
@@ -107,12 +107,12 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		}
 		return func() tea.Msg { return TaskCompletedMsg{Task: dv.task} }
 	case "b", "B":
-		if tasks.IsValidTransition(dv.task.Status, tasks.StatusBlocked) {
+		if core.IsValidTransition(dv.task.Status, core.StatusBlocked) {
 			dv.mode = DetailModeBlockerInput
 			dv.blockerInput = ""
 		}
 	case "i", "I":
-		if err := dv.task.UpdateStatus(tasks.StatusInProgress); err != nil {
+		if err := dv.task.UpdateStatus(core.StatusInProgress); err != nil {
 			return func() tea.Msg { return FlashMsg{Text: "Cannot change status: " + err.Error()} }
 		}
 		if dv.tracker != nil {
@@ -166,7 +166,7 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 func (dv *DetailView) handleBlockerInput(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
 	case "enter":
-		if err := dv.task.UpdateStatus(tasks.StatusBlocked); err == nil {
+		if err := dv.task.UpdateStatus(core.StatusBlocked); err == nil {
 			if dv.blockerInput != "" {
 				_ = dv.task.SetBlocker(dv.blockerInput)
 			}
@@ -193,7 +193,7 @@ func (dv *DetailView) handleBlockerInput(msg tea.KeyMsg) tea.Cmd {
 }
 
 // buildLinkCandidates returns tasks that can be linked to (excluding current task and already-linked tasks).
-func (dv *DetailView) buildLinkCandidates() []*tasks.Task {
+func (dv *DetailView) buildLinkCandidates() []*core.Task {
 	linkedIDs := make(map[string]bool)
 	linkedIDs[dv.task.ID] = true
 	for _, ref := range dv.crossRefs {
@@ -201,7 +201,7 @@ func (dv *DetailView) buildLinkCandidates() []*tasks.Task {
 		linkedIDs[ref.TargetTaskID] = true
 	}
 
-	var candidates []*tasks.Task
+	var candidates []*core.Task
 	for _, t := range dv.pool.GetAllTasks() {
 		if !linkedIDs[t.ID] {
 			candidates = append(candidates, t)

@@ -3,8 +3,8 @@ package tui
 import (
 	"time"
 
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -13,7 +13,7 @@ type ReturnToDoorsMsg struct{}
 
 // TaskUpdatedMsg is sent when a task has been modified.
 type TaskUpdatedMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // ShowMoodMsg is sent to open the mood capture dialog.
@@ -27,7 +27,7 @@ type MoodCapturedMsg struct {
 
 // TaskCompletedMsg is sent when a task is marked complete.
 type TaskCompletedMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // FlashMsg triggers a temporary message display.
@@ -40,17 +40,17 @@ type ClearFlashMsg struct{}
 
 // SearchResultSelectedMsg is sent when a user selects a task from search results.
 type SearchResultSelectedMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // TaskAddedMsg is sent when the :add command creates a new task.
 type TaskAddedMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // HealthCheckMsg is sent when a health check completes.
 type HealthCheckMsg struct {
-	Result tasks.HealthCheckResult
+	Result core.HealthCheckResult
 }
 
 // SearchClosedMsg is sent when the user exits search mode.
@@ -67,7 +67,7 @@ type AddTaskWithContextPromptMsg struct {
 
 // ValuesSavedMsg is sent when values/goals have been saved.
 type ValuesSavedMsg struct {
-	Config *tasks.ValuesConfig
+	Config *core.ValuesConfig
 }
 
 // ShowValuesSetupMsg is sent to open the values setup flow.
@@ -78,12 +78,12 @@ type ShowValuesEditMsg struct{}
 
 // ShowFeedbackMsg is sent to open the door feedback dialog.
 type ShowFeedbackMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // DoorFeedbackMsg is sent when door feedback has been submitted.
 type DoorFeedbackMsg struct {
-	Task         *tasks.Task
+	Task         *core.Task
 	FeedbackType string
 	Comment      string
 }
@@ -115,7 +115,7 @@ type NextStepDismissedMsg struct{}
 
 // TagUpdatedMsg is sent when the :tag command finishes editing a task's categories.
 type TagUpdatedMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // TagCancelledMsg is sent when the user cancels the :tag editor.
@@ -126,12 +126,12 @@ type ShowTagViewMsg struct{}
 
 // ShowAvoidancePromptMsg is sent to display the avoidance action prompt.
 type ShowAvoidancePromptMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // AvoidanceActionMsg is sent when the user picks an avoidance prompt action.
 type AvoidanceActionMsg struct {
-	Task   *tasks.Task
+	Task   *core.Task
 	Action string // "reconsider", "breakdown", "defer", "archive"
 }
 
@@ -146,13 +146,13 @@ type ShowInsightsMsg struct{}
 
 // NavigateToLinkedMsg is sent when user selects a linked task to navigate to.
 type NavigateToLinkedMsg struct {
-	Task *tasks.Task
+	Task *core.Task
 }
 
 // SyncStatusUpdateMsg is sent when a provider's sync status changes.
 type SyncStatusUpdateMsg struct {
 	ProviderName string
-	Phase        tasks.SyncPhase
+	Phase        core.SyncPhase
 	PendingCount int
 	ErrorMsg     string
 }
@@ -172,17 +172,17 @@ type DecomposeResultMsg struct {
 
 // SyncConflictMsg is sent when sync detects conflicts requiring user resolution.
 type SyncConflictMsg struct {
-	ConflictSet *tasks.ConflictSet
+	ConflictSet *core.ConflictSet
 }
 
 // ConflictResolvedMsg is sent when a user resolves a conflict.
 type ConflictResolvedMsg struct {
-	ConflictSet *tasks.ConflictSet
+	ConflictSet *core.ConflictSet
 }
 
 // ShowSyncLogMsg is sent to open the sync log view.
 type ShowSyncLogMsg struct {
-	Entries []tasks.SyncLogEntry
+	Entries []core.SyncLogEntry
 }
 
 // ClearFlashCmd returns a command that clears the flash after a delay.

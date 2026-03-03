@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -20,14 +20,14 @@ const (
 // ValuesView handles the values/goals setup and editing flow.
 type ValuesView struct {
 	mode          ValuesViewMode
-	config        *tasks.ValuesConfig
+	config        *core.ValuesConfig
 	textInput     textinput.Model
 	selectedIndex int
 	width         int
 }
 
 // NewValuesSetupView creates a values view in setup mode.
-func NewValuesSetupView(cfg *tasks.ValuesConfig) *ValuesView {
+func NewValuesSetupView(cfg *core.ValuesConfig) *ValuesView {
 	ti := textinput.New()
 	ti.Placeholder = "Enter a value or goal (1-5 total)..."
 	ti.Focus()
@@ -42,7 +42,7 @@ func NewValuesSetupView(cfg *tasks.ValuesConfig) *ValuesView {
 }
 
 // NewValuesEditView creates a values view in edit mode.
-func NewValuesEditView(cfg *tasks.ValuesConfig) *ValuesView {
+func NewValuesEditView(cfg *core.ValuesConfig) *ValuesView {
 	ti := textinput.New()
 	ti.Placeholder = "Enter new value..."
 	ti.CharLimit = 200
@@ -252,7 +252,7 @@ func (vv *ValuesView) View() string {
 }
 
 // RenderValuesFooter renders a subtle footer showing the user's values/goals.
-func RenderValuesFooter(cfg *tasks.ValuesConfig) string {
+func RenderValuesFooter(cfg *core.ValuesConfig) string {
 	if cfg == nil || !cfg.HasValues() {
 		return ""
 	}

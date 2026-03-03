@@ -15,7 +15,7 @@ type CrossReference struct {
 	CreatedAt    time.Time
 }
 
-// AddCrossReference creates a link between two tasks.
+// AddCrossReference creates a link between two core.
 func (edb *DB) AddCrossReference(ref *CrossReference) error {
 	now := time.Now().UTC()
 	result, err := edb.db.Exec(`

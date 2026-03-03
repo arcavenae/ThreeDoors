@@ -3,7 +3,7 @@ package tui
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/exp/golden"
 	"github.com/muesli/termenv"
@@ -18,15 +18,15 @@ func newGoldenDoorsView(t *testing.T, taskTexts ...string) *DoorsView {
 	lipgloss.SetColorProfile(termenv.Ascii)
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
-	pool := tasks.NewTaskPool()
-	var doorTasks []*tasks.Task
+	pool := core.NewTaskPool()
+	var doorTasks []*core.Task
 	for _, text := range taskTexts {
-		task := tasks.NewTask(text)
+		task := core.NewTask(text)
 		pool.AddTask(task)
 		doorTasks = append(doorTasks, task)
 	}
 
-	tracker := tasks.NewSessionTracker()
+	tracker := core.NewSessionTracker()
 	dv := NewDoorsView(pool, tracker)
 	dv.width = 80
 	dv.greeting = "Pick one. Start small. That's progress."
@@ -43,18 +43,18 @@ func newGoldenMainModel(t *testing.T, taskTexts ...string) *MainModel {
 	lipgloss.SetColorProfile(termenv.Ascii)
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
-	tasks.SetHomeDir(t.TempDir())
-	t.Cleanup(func() { tasks.SetHomeDir("") })
+	core.SetHomeDir(t.TempDir())
+	t.Cleanup(func() { core.SetHomeDir("") })
 
-	pool := tasks.NewTaskPool()
-	var doorTasks []*tasks.Task
+	pool := core.NewTaskPool()
+	var doorTasks []*core.Task
 	for _, text := range taskTexts {
-		task := tasks.NewTask(text)
+		task := core.NewTask(text)
 		pool.AddTask(task)
 		doorTasks = append(doorTasks, task)
 	}
 
-	tracker := tasks.NewSessionTracker()
+	tracker := core.NewSessionTracker()
 	provider := &testProvider{}
 	model := NewMainModel(pool, tracker, provider, nil, false, nil)
 
@@ -113,7 +113,7 @@ func TestGolden_DoorSelectionHighlight(t *testing.T) {
 
 func TestGolden_StatusBarWithValues(t *testing.T) {
 	model := newGoldenMainModel(t, "Write tests", "Review PRs", "Update docs")
-	model.valuesConfig = &tasks.ValuesConfig{
+	model.valuesConfig = &core.ValuesConfig{
 		Values: []string{"Focus", "Quality", "Balance"},
 	}
 	out := model.View()

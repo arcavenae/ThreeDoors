@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -12,15 +12,15 @@ const syncLogPageSize = 20
 
 // SyncLogView displays a scrollable list of sync log entries.
 type SyncLogView struct {
-	entries []tasks.SyncLogEntry
+	entries []core.SyncLogEntry
 	offset  int
 	width   int
 }
 
 // NewSyncLogView creates a new SyncLogView with the given entries.
-func NewSyncLogView(entries []tasks.SyncLogEntry) *SyncLogView {
+func NewSyncLogView(entries []core.SyncLogEntry) *SyncLogView {
 	// Show newest first
-	reversed := make([]tasks.SyncLogEntry, len(entries))
+	reversed := make([]core.SyncLogEntry, len(entries))
 	for i, e := range entries {
 		reversed[len(entries)-1-i] = e
 	}

@@ -11,7 +11,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // fixturesDir returns the absolute path to testdata/applenotes fixtures.
@@ -38,14 +40,14 @@ func loadFixture(t *testing.T, name string) string {
 	return string(data)
 }
 
-// stubExecutor creates a mock CommandExecutor that returns canned responses
+// applenotes_stubExecutor creates a mock applenotes.CommandExecutor that returns canned responses
 // based on script content matching. Responses are matched by substring.
 type stubResponse struct {
 	output string
 	err    error
 }
 
-func stubExecutor(responses map[string]stubResponse) tasks.CommandExecutor {
+func applenotes_stubExecutor(responses map[string]stubResponse) applenotes.CommandExecutor {
 	return func(_ context.Context, script string) (string, error) {
 		for key, resp := range responses {
 			if strings.Contains(script, key) {
@@ -56,7 +58,7 @@ func stubExecutor(responses map[string]stubResponse) tasks.CommandExecutor {
 	}
 }
 
-// trackingExecutor wraps a stubExecutor and records all scripts called.
+// trackingExecutor wraps a applenotes_stubExecutor and records all scripts called.
 type scriptTracker struct {
 	mu      sync.Mutex
 	scripts []string
@@ -80,7 +82,7 @@ func (st *scriptTracker) get(i int) string {
 	return st.scripts[i]
 }
 
-func trackingStubExecutor(responses map[string]stubResponse) (tasks.CommandExecutor, *scriptTracker) {
+func trackingStubExecutor(responses map[string]stubResponse) (applenotes.CommandExecutor, *scriptTracker) {
 	tracker := &scriptTracker{}
 	executor := func(_ context.Context, script string) (string, error) {
 		tracker.record(script)
@@ -106,10 +108,10 @@ func TestE2E_NoteCreation_NewTaskAppears(t *testing.T) {
 		"get plaintext text": {output: fixture},
 		"set body":           {},
 	})
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
 
 	// Create a new task and save it
-	newTask := tasks.NewTask("Brand new E2E task")
+	newTask := core.NewTask("Brand new E2E task")
 	err := provider.SaveTask(newTask)
 	if err != nil {
 		t.Fatalf("SaveTask() error: %v", err)
@@ -138,8 +140,8 @@ func TestE2E_TaskRead_LoadsFromFixture(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -153,9 +155,9 @@ func TestE2E_TaskRead_LoadsFromFixture(t *testing.T) {
 	}
 
 	// Verify status parsing
-	wantStatuses := []tasks.TaskStatus{
-		tasks.StatusTodo, tasks.StatusComplete, tasks.StatusTodo,
-		tasks.StatusTodo, tasks.StatusComplete,
+	wantStatuses := []core.TaskStatus{
+		core.StatusTodo, core.StatusComplete, core.StatusTodo,
+		core.StatusTodo, core.StatusComplete,
 	}
 	for i, task := range loaded {
 		if task.Status != wantStatuses[i] {
@@ -168,8 +170,8 @@ func TestE2E_TaskRead_SpecialCharacters(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "special_chars.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -201,8 +203,8 @@ func TestE2E_TaskRead_LargeNote(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "large_note.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -219,7 +221,7 @@ func TestE2E_TaskRead_LargeNote(t *testing.T) {
 	// Count completed tasks
 	completed := 0
 	for _, task := range loaded {
-		if task.Status == tasks.StatusComplete {
+		if task.Status == core.StatusComplete {
 			completed++
 		}
 	}
@@ -232,8 +234,8 @@ func TestE2E_TaskRead_MixedFormats(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "mixed_formats.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -250,7 +252,7 @@ func TestE2E_TaskRead_MixedFormats(t *testing.T) {
 	// Count completed tasks: "- [x]", "* [x]", "- [X]" = 3
 	completed := 0
 	for _, task := range loaded {
-		if task.Status == tasks.StatusComplete {
+		if task.Status == core.StatusComplete {
 			completed++
 		}
 	}
@@ -262,8 +264,8 @@ func TestE2E_TaskRead_MixedFormats(t *testing.T) {
 func TestE2E_TaskRead_EmptyNote(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: ""},
 		}))
 
@@ -280,8 +282,8 @@ func TestE2E_TaskRead_DeterministicIDs(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -315,8 +317,8 @@ func TestE2E_TaskUpdate_ToggleCompletion(t *testing.T) {
 	fixture := loadFixture(t, "basic_tasks.txt")
 
 	// Parse to get IDs
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, err := tempProvider.LoadTasks()
@@ -326,16 +328,16 @@ func TestE2E_TaskUpdate_ToggleCompletion(t *testing.T) {
 
 	// Toggle first task (todo -> complete)
 	taskToUpdate := loaded[0]
-	if taskToUpdate.Status != tasks.StatusTodo {
+	if taskToUpdate.Status != core.StatusTodo {
 		t.Fatalf("expected first task to be todo, got %q", taskToUpdate.Status)
 	}
-	taskToUpdate.Status = tasks.StatusComplete
+	taskToUpdate.Status = core.StatusComplete
 
 	executor, tracker := trackingStubExecutor(map[string]stubResponse{
 		"get plaintext text": {output: fixture},
 		"set body":           {},
 	})
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
 
 	err = provider.SaveTask(taskToUpdate)
 	if err != nil {
@@ -358,8 +360,8 @@ func TestE2E_TaskUpdate_BatchUpdate(t *testing.T) {
 
 	fixture := loadFixture(t, "basic_tasks.txt")
 
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, err := tempProvider.LoadTasks()
@@ -368,16 +370,16 @@ func TestE2E_TaskUpdate_BatchUpdate(t *testing.T) {
 	}
 
 	// Update multiple tasks at once
-	loaded[0].Status = tasks.StatusComplete // Buy groceries -> complete
-	loaded[2].Status = tasks.StatusComplete // Write report -> complete
+	loaded[0].Status = core.StatusComplete // Buy groceries -> complete
+	loaded[2].Status = core.StatusComplete // Write report -> complete
 
 	executor, tracker := trackingStubExecutor(map[string]stubResponse{
 		"get plaintext text": {output: fixture},
 		"set body":           {},
 	})
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
 
-	err = provider.SaveTasks([]*tasks.Task{loaded[0], loaded[2]})
+	err = provider.SaveTasks([]*core.Task{loaded[0], loaded[2]})
 	if err != nil {
 		t.Fatalf("SaveTasks() error: %v", err)
 	}
@@ -401,8 +403,8 @@ func TestE2E_TaskUpdate_DeleteTask(t *testing.T) {
 
 	fixture := loadFixture(t, "basic_tasks.txt")
 
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, err := tempProvider.LoadTasks()
@@ -417,7 +419,7 @@ func TestE2E_TaskUpdate_DeleteTask(t *testing.T) {
 		"get plaintext text": {output: fixture},
 		"set body":           {},
 	})
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
 
 	err = provider.DeleteTask(deleteID)
 	if err != nil {
@@ -447,8 +449,8 @@ func TestE2E_BidirectionalSync_ReadModifyWrite(t *testing.T) {
 	originalFixture := loadFixture(t, "basic_tasks.txt")
 
 	// Step 1: Read tasks from note
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("Sync Test",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("Sync Test",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: originalFixture},
 		}))
 	loaded, err := tempProvider.LoadTasks()
@@ -457,7 +459,7 @@ func TestE2E_BidirectionalSync_ReadModifyWrite(t *testing.T) {
 	}
 
 	// Step 2: Modify a task
-	loaded[0].Status = tasks.StatusComplete
+	loaded[0].Status = core.StatusComplete
 
 	// Step 3: Write back — capture what gets written
 	var writtenBody string
@@ -468,7 +470,7 @@ func TestE2E_BidirectionalSync_ReadModifyWrite(t *testing.T) {
 		}
 		return originalFixture, nil
 	}
-	provider := tasks.NewAppleNotesProviderWithExecutor("Sync Test", executor)
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Sync Test", executor)
 
 	err = provider.SaveTask(loaded[0])
 	if err != nil {
@@ -484,8 +486,8 @@ func TestE2E_BidirectionalSync_ReadModifyWrite(t *testing.T) {
 	// Build the expected new plaintext from the written HTML
 	// (In real usage, Apple Notes would parse the HTML back to plaintext)
 	modifiedPlaintext := strings.Replace(originalFixture, "- [ ] Buy groceries", "- [x] Buy groceries", 1)
-	rereadProvider := tasks.NewAppleNotesProviderWithExecutor("Sync Test",
-		stubExecutor(map[string]stubResponse{
+	rereadProvider := applenotes.NewAppleNotesProviderWithExecutor("Sync Test",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: modifiedPlaintext},
 		}))
 
@@ -494,7 +496,7 @@ func TestE2E_BidirectionalSync_ReadModifyWrite(t *testing.T) {
 		t.Fatalf("re-read LoadTasks() error: %v", err)
 	}
 
-	if reloaded[0].Status != tasks.StatusComplete {
+	if reloaded[0].Status != core.StatusComplete {
 		t.Errorf("after sync, first task should be complete, got %q", reloaded[0].Status)
 	}
 }
@@ -507,8 +509,8 @@ func TestE2E_BidirectionalSync_MultipleRoundTrips(t *testing.T) {
 
 	for round := 0; round < 3; round++ {
 		// Read
-		provider := tasks.NewAppleNotesProviderWithExecutor("MultiSync",
-			stubExecutor(map[string]stubResponse{
+		provider := applenotes.NewAppleNotesProviderWithExecutor("MultiSync",
+			applenotes_stubExecutor(map[string]stubResponse{
 				"get plaintext text": {output: noteContent},
 			}))
 		loaded, err := provider.LoadTasks()
@@ -521,11 +523,11 @@ func TestE2E_BidirectionalSync_MultipleRoundTrips(t *testing.T) {
 		}
 
 		// Mark task at index `round` as complete
-		loaded[round].Status = tasks.StatusComplete
+		loaded[round].Status = core.StatusComplete
 
 		// Write — capture new content
 		var capturedWrite string
-		writeProvider := tasks.NewAppleNotesProviderWithExecutor("MultiSync",
+		writeProvider := applenotes.NewAppleNotesProviderWithExecutor("MultiSync",
 			func(_ context.Context, script string) (string, error) {
 				if strings.Contains(script, "set body") {
 					capturedWrite = script
@@ -551,8 +553,8 @@ func TestE2E_BidirectionalSync_MultipleRoundTrips(t *testing.T) {
 	}
 
 	// After 3 rounds, all tasks should be marked complete
-	finalProvider := tasks.NewAppleNotesProviderWithExecutor("MultiSync",
-		stubExecutor(map[string]stubResponse{
+	finalProvider := applenotes.NewAppleNotesProviderWithExecutor("MultiSync",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: noteContent},
 		}))
 	final, err := finalProvider.LoadTasks()
@@ -561,7 +563,7 @@ func TestE2E_BidirectionalSync_MultipleRoundTrips(t *testing.T) {
 	}
 
 	for i, task := range final {
-		if task.Status != tasks.StatusComplete {
+		if task.Status != core.StatusComplete {
 			t.Errorf("after 3 rounds, task[%d] should be complete, got %q", i, task.Status)
 		}
 	}
@@ -572,8 +574,8 @@ func TestE2E_BidirectionalSync_IDStability(t *testing.T) {
 
 	// IDs should remain stable across read-write-read cycles
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("ID Stability",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("ID Stability",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -602,8 +604,8 @@ func TestE2E_BidirectionalSync_IDStability(t *testing.T) {
 func TestE2E_Error_NoteNotFound(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("Missing Note",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Missing Note",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {
 				err: errors.New(`execution error: Can't get note "Missing Note"`),
 			},
@@ -621,8 +623,8 @@ func TestE2E_Error_NoteNotFound(t *testing.T) {
 func TestE2E_Error_PermissionDenied(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("Protected Note",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Protected Note",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {
 				err: errors.New("execution error: Not authorized to send Apple events to Notes"),
 			},
@@ -640,8 +642,8 @@ func TestE2E_Error_PermissionDenied(t *testing.T) {
 func TestE2E_Error_Timeout(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("Slow Note",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Slow Note",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {err: context.DeadlineExceeded},
 		}))
 
@@ -657,12 +659,12 @@ func TestE2E_Error_Timeout(t *testing.T) {
 func TestE2E_Error_MarkCompleteReadOnly(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("ReadOnly Note",
-		stubExecutor(map[string]stubResponse{}))
+	provider := applenotes.NewAppleNotesProviderWithExecutor("ReadOnly Note",
+		applenotes_stubExecutor(map[string]stubResponse{}))
 
 	err := provider.MarkComplete("any-id")
-	if !errors.Is(err, tasks.ErrReadOnly) {
-		t.Errorf("MarkComplete() should return ErrReadOnly, got: %v", err)
+	if !errors.Is(err, core.ErrReadOnly) {
+		t.Errorf("MarkComplete() should return core.ErrReadOnly, got: %v", err)
 	}
 }
 
@@ -670,13 +672,13 @@ func TestE2E_Error_WriteFailure_OnSave(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 			"set body":           {err: errors.New("write failed: disk full")},
 		}))
 
-	task := tasks.NewTask("Will fail to save")
+	task := core.NewTask("Will fail to save")
 	err := provider.SaveTask(task)
 	if err == nil {
 		t.Fatal("expected error when write fails")
@@ -686,12 +688,12 @@ func TestE2E_Error_WriteFailure_OnSave(t *testing.T) {
 func TestE2E_Error_ReadFailure_OnSave(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {err: errors.New(`Can't get note "E2E Tasks"`)},
 		}))
 
-	task := tasks.NewTask("Will fail to read")
+	task := core.NewTask("Will fail to read")
 	err := provider.SaveTask(task)
 	if err == nil {
 		t.Fatal("expected error when read fails during save")
@@ -701,8 +703,8 @@ func TestE2E_Error_ReadFailure_OnSave(t *testing.T) {
 func TestE2E_Error_ReadFailure_OnDelete(t *testing.T) {
 	t.Parallel()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {err: errors.New(`Can't get note "E2E Tasks"`)},
 		}))
 
@@ -716,15 +718,15 @@ func TestE2E_Error_WriteFailure_OnDelete(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 			"set body":           {err: errors.New("write failed")},
 		}))
 
 	// Get a valid task ID
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, _ := tempProvider.LoadTasks()
@@ -743,8 +745,8 @@ func TestE2E_ConnectivityFailure_OsascriptNotFound(t *testing.T) {
 	t.Parallel()
 
 	// Simulate osascript binary not being available (non-macOS)
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {err: fmt.Errorf("exec: %w", errors.New("executable file not found in $PATH"))},
 		}))
 
@@ -759,7 +761,7 @@ func TestE2E_ConnectivityFailure_IntermittentTimeout(t *testing.T) {
 
 	// First call times out, simulating transient connectivity issue
 	callCount := 0
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
 		func(_ context.Context, _ string) (string, error) {
 			callCount++
 			if callCount == 1 {
@@ -789,17 +791,17 @@ func TestE2E_ConnectivityFailure_FallbackProvider(t *testing.T) {
 
 	// Simulate the FallbackProvider behavior: primary fails, fallback succeeds
 	primaryErr := errors.New(`execution error: Can't get note "Missing"`)
-	primary := tasks.NewAppleNotesProviderWithExecutor("Missing",
-		stubExecutor(map[string]stubResponse{
+	primary := applenotes.NewAppleNotesProviderWithExecutor("Missing",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {err: primaryErr},
 		}))
 
 	dir := t.TempDir()
-	tasks.SetHomeDir(dir)
-	t.Cleanup(func() { tasks.SetHomeDir("") })
-	fallback := tasks.NewTextFileProvider()
+	core.SetHomeDir(dir)
+	t.Cleanup(func() { core.SetHomeDir("") })
+	fallback := textfile.NewTextFileProvider()
 
-	fp := tasks.NewFallbackProvider(primary, fallback)
+	fp := core.NewFallbackProvider(primary, fallback)
 
 	// Should fall back to TextFileProvider
 	loaded, err := fp.LoadTasks()
@@ -826,16 +828,16 @@ func TestE2E_PartialSync_WriteFailsAfterRead(t *testing.T) {
 	fixture := loadFixture(t, "basic_tasks.txt")
 
 	// Read succeeds but write fails — state should not be corrupted
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, _ := tempProvider.LoadTasks()
 
-	loaded[0].Status = tasks.StatusComplete
+	loaded[0].Status = core.StatusComplete
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 			"set body":           {err: errors.New("partial write failure")},
 		}))
@@ -846,8 +848,8 @@ func TestE2E_PartialSync_WriteFailsAfterRead(t *testing.T) {
 	}
 
 	// Re-read should still return original data (no corruption)
-	reProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	reProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	reloaded, err := reProvider.LoadTasks()
@@ -855,7 +857,7 @@ func TestE2E_PartialSync_WriteFailsAfterRead(t *testing.T) {
 		t.Fatalf("re-read after partial failure: %v", err)
 	}
 
-	if reloaded[0].Status != tasks.StatusTodo {
+	if reloaded[0].Status != core.StatusTodo {
 		t.Error("original data should be intact after partial sync failure")
 	}
 }
@@ -866,22 +868,22 @@ func TestE2E_PartialSync_BatchUpdatePartialFailure(t *testing.T) {
 	fixture := loadFixture(t, "basic_tasks.txt")
 
 	// SaveTasks with write failure — entire batch should fail atomically
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, _ := tempProvider.LoadTasks()
 
-	loaded[0].Status = tasks.StatusComplete
-	loaded[2].Status = tasks.StatusComplete
+	loaded[0].Status = core.StatusComplete
+	loaded[2].Status = core.StatusComplete
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 			"set body":           {err: errors.New("batch write failed")},
 		}))
 
-	err := provider.SaveTasks([]*tasks.Task{loaded[0], loaded[2]})
+	err := provider.SaveTasks([]*core.Task{loaded[0], loaded[2]})
 	if err == nil {
 		t.Fatal("expected error from batch write failure")
 	}
@@ -892,8 +894,8 @@ func TestE2E_PartialSync_DeleteDuringModification(t *testing.T) {
 
 	fixture := loadFixture(t, "basic_tasks.txt")
 
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, _ := tempProvider.LoadTasks()
@@ -905,7 +907,7 @@ func TestE2E_PartialSync_DeleteDuringModification(t *testing.T) {
 		"get plaintext text": {output: fixture},
 		"set body":           {},
 	})
-	provider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
+	provider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks", executor)
 
 	err := provider.DeleteTask(deleteID)
 	if err != nil {
@@ -915,8 +917,8 @@ func TestE2E_PartialSync_DeleteDuringModification(t *testing.T) {
 	// Now the note no longer has "Walk the dog" at position 1.
 	// If we re-save a task with that old ID, it should be appended.
 	modifiedFixture := "- [ ] Buy groceries\n- [ ] Write report\n- [ ] Call dentist\n- [x] Send invoices"
-	appendProvider := tasks.NewAppleNotesProviderWithExecutor("E2E Tasks",
-		stubExecutor(map[string]stubResponse{
+	appendProvider := applenotes.NewAppleNotesProviderWithExecutor("E2E Tasks",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: modifiedFixture},
 			"set body":           {},
 		}))
@@ -937,8 +939,8 @@ func TestE2E_ConcurrentModification_ParallelReads(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("Concurrent",
-		stubExecutor(map[string]stubResponse{
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Concurrent",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 
@@ -975,7 +977,7 @@ func TestE2E_ConcurrentModification_ParallelWrites(t *testing.T) {
 
 	// Track how many writes succeed vs fail
 	var writeCount atomic.Int32
-	provider := tasks.NewAppleNotesProviderWithExecutor("Concurrent",
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Concurrent",
 		func(_ context.Context, script string) (string, error) {
 			if strings.Contains(script, "set body") {
 				writeCount.Add(1)
@@ -989,7 +991,7 @@ func TestE2E_ConcurrentModification_ParallelWrites(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			task := tasks.NewTask("concurrent task")
+			task := core.NewTask("concurrent task")
 			_ = provider.SaveTask(task)
 		}()
 	}
@@ -1006,7 +1008,7 @@ func TestE2E_ConcurrentModification_ReadDuringWrite(t *testing.T) {
 	t.Parallel()
 
 	fixture := loadFixture(t, "basic_tasks.txt")
-	provider := tasks.NewAppleNotesProviderWithExecutor("Concurrent",
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Concurrent",
 		func(_ context.Context, script string) (string, error) {
 			if strings.Contains(script, "set body") {
 				return "", nil
@@ -1030,7 +1032,7 @@ func TestE2E_ConcurrentModification_ReadDuringWrite(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			task := tasks.NewTask("concurrent write")
+			task := core.NewTask("concurrent write")
 			_ = provider.SaveTask(task)
 		}()
 	}
@@ -1052,13 +1054,13 @@ func TestE2E_ConcurrentModification_ParallelDeletes(t *testing.T) {
 
 	fixture := loadFixture(t, "basic_tasks.txt")
 
-	tempProvider := tasks.NewAppleNotesProviderWithExecutor("Concurrent",
-		stubExecutor(map[string]stubResponse{
+	tempProvider := applenotes.NewAppleNotesProviderWithExecutor("Concurrent",
+		applenotes_stubExecutor(map[string]stubResponse{
 			"get plaintext text": {output: fixture},
 		}))
 	loaded, _ := tempProvider.LoadTasks()
 
-	provider := tasks.NewAppleNotesProviderWithExecutor("Concurrent",
+	provider := applenotes.NewAppleNotesProviderWithExecutor("Concurrent",
 		func(_ context.Context, script string) (string, error) {
 			if strings.Contains(script, "set body") {
 				return "", nil

@@ -4,18 +4,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func newTestDetailView(text string) *DetailView {
-	task := tasks.NewTask(text)
+	task := core.NewTask(text)
 	return NewDetailView(task, nil, nil, nil)
 }
 
-func newTestDetailViewWithTracker(text string) (*DetailView, *tasks.SessionTracker) {
-	task := tasks.NewTask(text)
-	tracker := tasks.NewSessionTracker()
+func newTestDetailViewWithTracker(text string) (*DetailView, *core.SessionTracker) {
+	task := core.NewTask(text)
+	tracker := core.NewSessionTracker()
 	return NewDetailView(task, tracker, nil, nil), tracker
 }
 
@@ -31,7 +31,7 @@ func TestDetailView_RendersFullTaskText(t *testing.T) {
 }
 
 func TestDetailView_RendersContext(t *testing.T) {
-	task := tasks.NewTaskWithContext("Buy groceries", "Need healthy food for the week")
+	task := core.NewTaskWithContext("Buy groceries", "Need healthy food for the week")
 	dv := NewDetailView(task, nil, nil, nil)
 	dv.SetWidth(80)
 	view := dv.View()
@@ -44,7 +44,7 @@ func TestDetailView_RendersContext(t *testing.T) {
 }
 
 func TestDetailView_NoContext_DoesNotShowWhy(t *testing.T) {
-	task := tasks.NewTask("Simple task")
+	task := core.NewTask("Simple task")
 	dv := NewDetailView(task, nil, nil, nil)
 	dv.SetWidth(80)
 	view := dv.View()
@@ -107,8 +107,8 @@ func TestDetailView_CKey_CompletesTask(t *testing.T) {
 	msg := cmd()
 	if tcm, ok := msg.(TaskCompletedMsg); !ok {
 		t.Errorf("expected TaskCompletedMsg, got %T", msg)
-	} else if tcm.Task.Status != tasks.StatusComplete {
-		t.Errorf("expected status %q, got %q", tasks.StatusComplete, tcm.Task.Status)
+	} else if tcm.Task.Status != core.StatusComplete {
+		t.Errorf("expected status %q, got %q", core.StatusComplete, tcm.Task.Status)
 	}
 }
 
@@ -121,8 +121,8 @@ func TestDetailView_IKey_SetsInProgress(t *testing.T) {
 	msg := cmd()
 	if tum, ok := msg.(TaskUpdatedMsg); !ok {
 		t.Errorf("expected TaskUpdatedMsg, got %T", msg)
-	} else if tum.Task.Status != tasks.StatusInProgress {
-		t.Errorf("expected status %q, got %q", tasks.StatusInProgress, tum.Task.Status)
+	} else if tum.Task.Status != core.StatusInProgress {
+		t.Errorf("expected status %q, got %q", core.StatusInProgress, tum.Task.Status)
 	}
 }
 
@@ -276,7 +276,7 @@ func TestDetailView_BlockerInput_EnterSubmits(t *testing.T) {
 	if _, ok := msg.(TaskUpdatedMsg); !ok {
 		t.Errorf("expected TaskUpdatedMsg, got %T", msg)
 	}
-	if dv.task.Status != tasks.StatusBlocked {
+	if dv.task.Status != core.StatusBlocked {
 		t.Errorf("expected status blocked, got %q", dv.task.Status)
 	}
 }
@@ -290,7 +290,7 @@ func TestDetailView_BlockerInput_EscCancels(t *testing.T) {
 	if dv.mode != DetailModeView {
 		t.Errorf("Esc should return to DetailModeView, got %d", dv.mode)
 	}
-	if dv.task.Status != tasks.StatusTodo {
+	if dv.task.Status != core.StatusTodo {
 		t.Errorf("task status should remain todo after cancel, got %q", dv.task.Status)
 	}
 }
@@ -347,10 +347,10 @@ func TestDetailView_CKey_RecordsStatusChange(t *testing.T) {
 // --- Invalid Transition ---
 
 func TestDetailView_IKey_InvalidTransition_ShowsError(t *testing.T) {
-	task := tasks.NewTask("test task")
+	task := core.NewTask("test task")
 	// Set to in-review (which cannot go to in-progress via 'i' directly? Actually it can.)
 	// Let's complete the task first. Then try 'i' which should fail.
-	_ = task.UpdateStatus(tasks.StatusComplete)
+	_ = task.UpdateStatus(core.StatusComplete)
 	dv := &DetailView{task: task, mode: DetailModeView}
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("i")})
 	if cmd == nil {

@@ -4,15 +4,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 func newTestDoorsView(texts ...string) *DoorsView {
-	pool := tasks.NewTaskPool()
+	pool := core.NewTaskPool()
 	for _, t := range texts {
-		pool.AddTask(tasks.NewTask(t))
+		pool.AddTask(core.NewTask(t))
 	}
-	tracker := tasks.NewSessionTracker()
+	tracker := core.NewSessionTracker()
 	return NewDoorsView(pool, tracker)
 }
 
@@ -97,7 +97,7 @@ func TestDoorsView_View_RendersHelp(t *testing.T) {
 }
 
 func TestDoorsView_View_EmptyPool_ShowsAllDone(t *testing.T) {
-	pool := tasks.NewTaskPool()
+	pool := core.NewTaskPool()
 	dv := NewDoorsView(pool, nil)
 	dv.SetWidth(80)
 	view := dv.View()

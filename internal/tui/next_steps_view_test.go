@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -13,7 +13,7 @@ import (
 
 func TestNextStepsView_CompletionContext_HasDoorOption(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "doors" {
@@ -28,7 +28,7 @@ func TestNextStepsView_CompletionContext_HasDoorOption(t *testing.T) {
 
 func TestNextStepsView_CompletionContext_HasAddOption(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "add" {
@@ -43,7 +43,7 @@ func TestNextStepsView_CompletionContext_HasAddOption(t *testing.T) {
 
 func TestNextStepsView_CompletionContext_HasMoodOption(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "mood" {
@@ -58,7 +58,7 @@ func TestNextStepsView_CompletionContext_HasMoodOption(t *testing.T) {
 
 func TestNextStepsView_CompletionContext_HasStatsOption(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "stats" {
@@ -75,10 +75,10 @@ func TestNextStepsView_CompletionContext_BlockedTasks_ShowsReviewOption(t *testi
 	pool := makePool("task1", "task2", "task3")
 	// Set one task as blocked
 	for _, task := range pool.GetAllTasks() {
-		_ = task.UpdateStatus(tasks.StatusBlocked)
+		_ = task.UpdateStatus(core.StatusBlocked)
 		break
 	}
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "search" && strings.Contains(opt.Label, "blocked") {
@@ -93,7 +93,7 @@ func TestNextStepsView_CompletionContext_BlockedTasks_ShowsReviewOption(t *testi
 
 func TestNextStepsView_CompletionContext_NoBlockedTasks_NoReviewOption(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	for _, opt := range nv.options {
 		if strings.Contains(opt.Label, "blocked") {
 			t.Error("completion context without blocked tasks should not have 'review blocked' option")
@@ -103,7 +103,7 @@ func TestNextStepsView_CompletionContext_NoBlockedTasks_NoReviewOption(t *testin
 
 func TestNextStepsView_AddedContext_HasBackToDoors(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("added", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("added", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "doors" {
@@ -118,7 +118,7 @@ func TestNextStepsView_AddedContext_HasBackToDoors(t *testing.T) {
 
 func TestNextStepsView_AddedContext_HasAddAnother(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("added", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("added", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "add" {
@@ -133,7 +133,7 @@ func TestNextStepsView_AddedContext_HasAddAnother(t *testing.T) {
 
 func TestNextStepsView_AddedContext_HasSearchOption(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("added", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("added", pool, core.NewCompletionCounter())
 	found := false
 	for _, opt := range nv.options {
 		if opt.Action == "search" {
@@ -148,7 +148,7 @@ func TestNextStepsView_AddedContext_HasSearchOption(t *testing.T) {
 
 func TestNextStepsView_MinimumOptions(t *testing.T) {
 	pool := makePool("task1")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	if len(nv.options) < 3 {
 		t.Errorf("next steps should have at least 3 options, got %d", len(nv.options))
 	}
@@ -158,7 +158,7 @@ func TestNextStepsView_MinimumOptions(t *testing.T) {
 
 func TestNextStepsView_NumberKeySelects(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	nv.SetWidth(80)
 
 	cmd := nv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("1")})
@@ -177,7 +177,7 @@ func TestNextStepsView_NumberKeySelects(t *testing.T) {
 
 func TestNextStepsView_InvalidNumberKey_NoOp(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 
 	// Press a number beyond the options count
 	key := fmt.Sprintf("%d", len(nv.options)+1)
@@ -189,7 +189,7 @@ func TestNextStepsView_InvalidNumberKey_NoOp(t *testing.T) {
 
 func TestNextStepsView_EscDismisses(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 
 	cmd := nv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
@@ -205,7 +205,7 @@ func TestNextStepsView_EscDismisses(t *testing.T) {
 
 func TestNextStepsView_RendersHeader(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	nv.SetWidth(80)
 	view := nv.View()
 	if !strings.Contains(view, "next") && !strings.Contains(view, "Nice") && !strings.Contains(view, "fire") && !strings.Contains(view, "momentum") {
@@ -215,7 +215,7 @@ func TestNextStepsView_RendersHeader(t *testing.T) {
 
 func TestNextStepsView_RendersOptions(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	nv.SetWidth(80)
 	view := nv.View()
 	for i, opt := range nv.options {
@@ -228,7 +228,7 @@ func TestNextStepsView_RendersOptions(t *testing.T) {
 
 func TestNextStepsView_RendersHelpText(t *testing.T) {
 	pool := makePool("task1", "task2", "task3")
-	nv := NewNextStepsView("completed", pool, tasks.NewCompletionCounter())
+	nv := NewNextStepsView("completed", pool, core.NewCompletionCounter())
 	nv.SetWidth(80)
 	view := nv.View()
 	if !strings.Contains(view, "Esc") {
@@ -239,7 +239,7 @@ func TestNextStepsView_RendersHelpText(t *testing.T) {
 // --- Completion Header Variants ---
 
 func TestPickCompletionHeader_HighCount(t *testing.T) {
-	cc := tasks.NewCompletionCounter()
+	cc := core.NewCompletionCounter()
 	for i := 0; i < 5; i++ {
 		cc.IncrementToday()
 	}
@@ -250,7 +250,7 @@ func TestPickCompletionHeader_HighCount(t *testing.T) {
 }
 
 func TestPickCompletionHeader_MediumCount(t *testing.T) {
-	cc := tasks.NewCompletionCounter()
+	cc := core.NewCompletionCounter()
 	for i := 0; i < 3; i++ {
 		cc.IncrementToday()
 	}
@@ -261,7 +261,7 @@ func TestPickCompletionHeader_MediumCount(t *testing.T) {
 }
 
 func TestPickCompletionHeader_LowCount(t *testing.T) {
-	cc := tasks.NewCompletionCounter()
+	cc := core.NewCompletionCounter()
 	header := pickCompletionHeader(cc)
 	if !strings.Contains(header, "Nice") {
 		t.Errorf("expected 'Nice' header for low count, got %q", header)

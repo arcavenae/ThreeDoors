@@ -7,7 +7,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // noteStore provides an in-memory Apple Notes simulation for contract testing.
@@ -24,7 +26,7 @@ func newNoteStore() *noteStore {
 	}
 }
 
-func (ns *noteStore) executor(title string) tasks.CommandExecutor {
+func (ns *noteStore) executor(title string) applenotes.CommandExecutor {
 	return func(_ context.Context, script string) (string, error) {
 		ns.mu.Lock()
 		defer ns.mu.Unlock()
@@ -83,7 +85,7 @@ func htmlToPlaintext(script string) string {
 // AppleNotesProvider using an in-memory note store simulation.
 //
 // IMPORTANT: AppleNotesProvider uses position-based SHA-1 IDs (noteTitle:lineIndex),
-// not stored IDs. This means tasks.NewTask() UUIDs are NOT preserved across
+// not stored IDs. This means core.NewTask() UUIDs are NOT preserved across
 // save/load cycles — the provider regenerates deterministic IDs from line position.
 // This is by design: Apple Notes has no metadata storage, so IDs must be derived.
 //
@@ -94,11 +96,11 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("SaveAndLoad_PreservesTextAndCount", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-save-load"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
-		original := []*tasks.Task{
-			tasks.NewTask("Task Alpha"),
-			tasks.NewTask("Task Beta"),
+		original := []*core.Task{
+			core.NewTask("Task Alpha"),
+			core.NewTask("Task Beta"),
 		}
 
 		if err := provider.SaveTasks(original); err != nil {
@@ -125,9 +127,9 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("SaveTask_AppendsNew", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-save-new"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
-		task := tasks.NewTask("New individual task")
+		task := core.NewTask("New individual task")
 		if err := provider.SaveTask(task); err != nil {
 			t.Fatalf("SaveTask() error: %v", err)
 		}
@@ -151,10 +153,10 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("SaveTask_UpdateExistingByPositionID", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-update"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
 		// Save initial task
-		task := tasks.NewTask("Original text")
+		task := core.NewTask("Original text")
 		if err := provider.SaveTask(task); err != nil {
 			t.Fatalf("SaveTask() setup error: %v", err)
 		}
@@ -169,7 +171,7 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 		}
 
 		// Update using the position-based ID
-		loaded[0].Status = tasks.StatusComplete
+		loaded[0].Status = core.StatusComplete
 		if err := provider.SaveTask(loaded[0]); err != nil {
 			t.Fatalf("SaveTask() update error: %v", err)
 		}
@@ -179,19 +181,19 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 		if err != nil {
 			t.Fatalf("LoadTasks() after update error: %v", err)
 		}
-		if reloaded[0].Status != tasks.StatusComplete {
-			t.Errorf("task status = %q, want %q", reloaded[0].Status, tasks.StatusComplete)
+		if reloaded[0].Status != core.StatusComplete {
+			t.Errorf("task status = %q, want %q", reloaded[0].Status, core.StatusComplete)
 		}
 	})
 
 	t.Run("DeleteTask_ByPositionID", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-delete"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
-		batch := []*tasks.Task{
-			tasks.NewTask("Keep this"),
-			tasks.NewTask("Delete this"),
+		batch := []*core.Task{
+			core.NewTask("Keep this"),
+			core.NewTask("Delete this"),
 		}
 		if err := provider.SaveTasks(batch); err != nil {
 			t.Fatalf("SaveTasks() error: %v", err)
@@ -226,7 +228,7 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("MarkComplete_ReturnsReadOnly", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-mark"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
 		err := provider.MarkComplete("any-id")
 		if err == nil {
@@ -240,11 +242,11 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("SaveTasks_Batch", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-batch"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
-		batch := make([]*tasks.Task, 10)
+		batch := make([]*core.Task, 10)
 		for i := range batch {
-			batch[i] = tasks.NewTask(fmt.Sprintf("Batch task %d", i))
+			batch[i] = core.NewTask(fmt.Sprintf("Batch task %d", i))
 		}
 
 		if err := provider.SaveTasks(batch); err != nil {
@@ -263,11 +265,11 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("ConcurrentReads", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-concurrent-read"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
-		seed := []*tasks.Task{
-			tasks.NewTask("Read test 1"),
-			tasks.NewTask("Read test 2"),
+		seed := []*core.Task{
+			core.NewTask("Read test 1"),
+			core.NewTask("Read test 2"),
 		}
 		if err := provider.SaveTasks(seed); err != nil {
 			t.Fatalf("SaveTasks() setup error: %v", err)
@@ -297,14 +299,14 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 	t.Run("ConcurrentWrites", func(t *testing.T) {
 		store := newNoteStore()
 		title := "contract-concurrent-write"
-		provider := tasks.NewAppleNotesProviderWithExecutor(title, store.executor(title))
+		provider := applenotes.NewAppleNotesProviderWithExecutor(title, store.executor(title))
 
 		var wg sync.WaitGroup
 		for i := 0; i < 10; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				task := tasks.NewTask("concurrent write task")
+				task := core.NewTask("concurrent write task")
 				_ = provider.SaveTask(task)
 			}()
 		}

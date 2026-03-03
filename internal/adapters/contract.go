@@ -5,7 +5,7 @@
 // Usage in adapter tests:
 //
 //	func TestMyAdapterContract(t *testing.T) {
-//	    factory := func(t *testing.T) tasks.TaskProvider {
+//	    factory := func(t *testing.T) core.TaskProvider {
 //	        t.Helper()
 //	        return NewMyAdapter(t.TempDir())
 //	    }
@@ -17,13 +17,13 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // ProviderFactory creates a fresh TaskProvider instance for each test.
 // The factory should return an isolated provider (e.g., using t.TempDir()
 // for file-based providers). Use t.Cleanup() for resource teardown.
-type ProviderFactory func(t *testing.T) tasks.TaskProvider
+type ProviderFactory func(t *testing.T) core.TaskProvider
 
 // RunContractTests runs the full contract test suite against a TaskProvider
 // created by the given factory. Each subtest gets a fresh provider instance.
@@ -92,9 +92,9 @@ func testSaveAndLoad(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	original := []*tasks.Task{
-		tasks.NewTask("Task Alpha"),
-		tasks.NewTask("Task Beta"),
+	original := []*core.Task{
+		core.NewTask("Task Alpha"),
+		core.NewTask("Task Beta"),
 	}
 
 	if err := provider.SaveTasks(original); err != nil {
@@ -110,7 +110,7 @@ func testSaveAndLoad(t *testing.T, factory ProviderFactory) {
 		t.Fatalf("LoadTasks() returned %d tasks, want %d", len(loaded), len(original))
 	}
 
-	tasksByID := make(map[string]*tasks.Task, len(loaded))
+	tasksByID := make(map[string]*core.Task, len(loaded))
 	for _, task := range loaded {
 		tasksByID[task.ID] = task
 	}
@@ -135,11 +135,11 @@ func testSaveTaskNew(t *testing.T, factory ProviderFactory) {
 	provider := factory(t)
 
 	// Start with empty state
-	if err := provider.SaveTasks([]*tasks.Task{}); err != nil {
+	if err := provider.SaveTasks([]*core.Task{}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
-	task := tasks.NewTask("New individual task")
+	task := core.NewTask("New individual task")
 	if err := provider.SaveTask(task); err != nil {
 		t.Fatalf("SaveTask() error: %v", err)
 	}
@@ -167,8 +167,8 @@ func testSaveTaskUpdate(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	task := tasks.NewTask("Original text")
-	if err := provider.SaveTasks([]*tasks.Task{task}); err != nil {
+	task := core.NewTask("Original text")
+	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -197,9 +197,9 @@ func testDeleteTask(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	task1 := tasks.NewTask("Keep this")
-	task2 := tasks.NewTask("Delete this")
-	if err := provider.SaveTasks([]*tasks.Task{task1, task2}); err != nil {
+	task1 := core.NewTask("Keep this")
+	task2 := core.NewTask("Delete this")
+	if err := provider.SaveTasks([]*core.Task{task1, task2}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -234,7 +234,7 @@ func testDeleteTaskNonExistent(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	if err := provider.SaveTasks([]*tasks.Task{}); err != nil {
+	if err := provider.SaveTasks([]*core.Task{}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -249,8 +249,8 @@ func testMarkComplete(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	task := tasks.NewTask("Complete me")
-	if err := provider.SaveTasks([]*tasks.Task{task}); err != nil {
+	task := core.NewTask("Complete me")
+	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -268,7 +268,7 @@ func testMarkCompleteNonExistent(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	if err := provider.SaveTasks([]*tasks.Task{}); err != nil {
+	if err := provider.SaveTasks([]*core.Task{}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -284,9 +284,9 @@ func testSaveTasksBatch(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	batch := make([]*tasks.Task, 10)
+	batch := make([]*core.Task, 10)
 	for i := range batch {
-		batch[i] = tasks.NewTask("Batch task")
+		batch[i] = core.NewTask("Batch task")
 	}
 
 	if err := provider.SaveTasks(batch); err != nil {
@@ -307,9 +307,9 @@ func testConcurrentReads(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	seed := []*tasks.Task{
-		tasks.NewTask("Read test 1"),
-		tasks.NewTask("Read test 2"),
+	seed := []*core.Task{
+		core.NewTask("Read test 1"),
+		core.NewTask("Read test 2"),
 	}
 	if err := provider.SaveTasks(seed); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
@@ -340,7 +340,7 @@ func testConcurrentWrites(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	if err := provider.SaveTasks([]*tasks.Task{}); err != nil {
+	if err := provider.SaveTasks([]*core.Task{}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -355,7 +355,7 @@ func testConcurrentWrites(t *testing.T, factory ProviderFactory) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			task := tasks.NewTask("concurrent write task")
+			task := core.NewTask("concurrent write task")
 			_ = provider.SaveTask(task)
 		}()
 	}
@@ -374,7 +374,7 @@ func testSaveTasksEmpty(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	if err := provider.SaveTasks([]*tasks.Task{}); err != nil {
+	if err := provider.SaveTasks([]*core.Task{}); err != nil {
 		t.Fatalf("SaveTasks([]) error: %v", err)
 	}
 
@@ -395,8 +395,8 @@ func testLoadAfterSave(t *testing.T, factory ProviderFactory) {
 	provider := factory(t)
 
 	// Round 1: save and load
-	task := tasks.NewTask("Round trip task")
-	if err := provider.SaveTasks([]*tasks.Task{task}); err != nil {
+	task := core.NewTask("Round trip task")
+	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
 		t.Fatalf("SaveTasks() round 1 error: %v", err)
 	}
 
@@ -410,7 +410,7 @@ func testLoadAfterSave(t *testing.T, factory ProviderFactory) {
 	}
 
 	// Round 2: save a second task individually
-	task2 := tasks.NewTask("Second task")
+	task2 := core.NewTask("Second task")
 	if err := provider.SaveTask(task2); err != nil {
 		t.Fatalf("SaveTask() round 2 error: %v", err)
 	}
@@ -433,11 +433,11 @@ func testDeleteThenLoad(t *testing.T, factory ProviderFactory) {
 	t.Helper()
 	provider := factory(t)
 
-	t1 := tasks.NewTask("Survivor")
-	t2 := tasks.NewTask("Doomed")
-	t3 := tasks.NewTask("Also survives")
+	t1 := core.NewTask("Survivor")
+	t2 := core.NewTask("Doomed")
+	t3 := core.NewTask("Also survives")
 
-	if err := provider.SaveTasks([]*tasks.Task{t1, t2, t3}); err != nil {
+	if err := provider.SaveTasks([]*core.Task{t1, t2, t3}); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
 	}
 
@@ -476,13 +476,13 @@ func testInterfaceCompliance(t *testing.T, factory ProviderFactory) {
 	}
 
 	// 2. SaveTasks
-	task := tasks.NewTask("Compliance test task")
-	if err := provider.SaveTasks([]*tasks.Task{task}); err != nil {
+	task := core.NewTask("Compliance test task")
+	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
 		t.Fatalf("SaveTasks() error: %v", err)
 	}
 
 	// 3. SaveTask
-	task2 := tasks.NewTask("Individual save")
+	task2 := core.NewTask("Individual save")
 	if err := provider.SaveTask(task2); err != nil {
 		t.Fatalf("SaveTask() error: %v", err)
 	}

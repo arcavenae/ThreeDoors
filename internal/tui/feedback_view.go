@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -17,14 +17,14 @@ var feedbackOptions = []string{
 
 // FeedbackView displays the door feedback dialog.
 type FeedbackView struct {
-	task        *tasks.Task
+	task        *core.Task
 	customInput string
 	isCustom    bool
 	width       int
 }
 
 // NewFeedbackView creates a new feedback view for the given task.
-func NewFeedbackView(task *tasks.Task) *FeedbackView {
+func NewFeedbackView(task *core.Task) *FeedbackView {
 	return &FeedbackView{task: task}
 }
 
@@ -83,7 +83,7 @@ func (fv *FeedbackView) handleCustomInput(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
-func feedbackCmd(task *tasks.Task, feedbackType, comment string) tea.Cmd {
+func feedbackCmd(task *core.Task, feedbackType, comment string) tea.Cmd {
 	return func() tea.Msg {
 		return DoorFeedbackMsg{Task: task, FeedbackType: feedbackType, Comment: comment}
 	}

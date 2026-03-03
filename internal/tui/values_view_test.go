@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestNewValuesSetupView(t *testing.T) {
-	cfg := &tasks.ValuesConfig{}
+	cfg := &core.ValuesConfig{}
 	vv := NewValuesSetupView(cfg)
 	if vv.mode != ValuesSetupMode {
 		t.Errorf("expected setup mode, got %d", vv.mode)
@@ -17,7 +17,7 @@ func TestNewValuesSetupView(t *testing.T) {
 }
 
 func TestNewValuesEditView(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"Health"}}
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
 	vv := NewValuesEditView(cfg)
 	if vv.mode != ValuesEditMode {
 		t.Errorf("expected edit mode, got %d", vv.mode)
@@ -25,7 +25,7 @@ func TestNewValuesEditView(t *testing.T) {
 }
 
 func TestValuesSetupView_AddValue(t *testing.T) {
-	cfg := &tasks.ValuesConfig{}
+	cfg := &core.ValuesConfig{}
 	vv := NewValuesSetupView(cfg)
 	vv.textInput.SetValue("Health and fitness")
 
@@ -42,7 +42,7 @@ func TestValuesSetupView_AddValue(t *testing.T) {
 }
 
 func TestValuesSetupView_EmptyEnterWithValues(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"Health"}}
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
 	vv := NewValuesSetupView(cfg)
 	vv.textInput.SetValue("")
 
@@ -57,7 +57,7 @@ func TestValuesSetupView_EmptyEnterWithValues(t *testing.T) {
 }
 
 func TestValuesSetupView_EmptyEnterNoValues(t *testing.T) {
-	cfg := &tasks.ValuesConfig{}
+	cfg := &core.ValuesConfig{}
 	vv := NewValuesSetupView(cfg)
 	vv.textInput.SetValue("")
 
@@ -68,7 +68,7 @@ func TestValuesSetupView_EmptyEnterNoValues(t *testing.T) {
 }
 
 func TestValuesSetupView_EscWithValues(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"Health"}}
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
 	vv := NewValuesSetupView(cfg)
 
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
@@ -82,7 +82,7 @@ func TestValuesSetupView_EscWithValues(t *testing.T) {
 }
 
 func TestValuesSetupView_EscWithoutValues(t *testing.T) {
-	cfg := &tasks.ValuesConfig{}
+	cfg := &core.ValuesConfig{}
 	vv := NewValuesSetupView(cfg)
 
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
@@ -96,7 +96,7 @@ func TestValuesSetupView_EscWithoutValues(t *testing.T) {
 }
 
 func TestValuesEditView_DeleteValue(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"A", "B", "C"}}
+	cfg := &core.ValuesConfig{Values: []string{"A", "B", "C"}}
 	vv := NewValuesEditView(cfg)
 	vv.selectedIndex = 1
 
@@ -110,7 +110,7 @@ func TestValuesEditView_DeleteValue(t *testing.T) {
 }
 
 func TestValuesEditView_Navigate(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"A", "B", "C"}}
+	cfg := &core.ValuesConfig{Values: []string{"A", "B", "C"}}
 	vv := NewValuesEditView(cfg)
 	vv.selectedIndex = 0
 
@@ -126,7 +126,7 @@ func TestValuesEditView_Navigate(t *testing.T) {
 }
 
 func TestValuesEditView_Reorder(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"A", "B", "C"}}
+	cfg := &core.ValuesConfig{Values: []string{"A", "B", "C"}}
 	vv := NewValuesEditView(cfg)
 	vv.selectedIndex = 0
 
@@ -147,7 +147,7 @@ func TestValuesEditView_Reorder(t *testing.T) {
 }
 
 func TestValuesEditView_SaveOnEsc(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"A"}}
+	cfg := &core.ValuesConfig{Values: []string{"A"}}
 	vv := NewValuesEditView(cfg)
 
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
@@ -163,14 +163,14 @@ func TestValuesEditView_SaveOnEsc(t *testing.T) {
 func TestRenderValuesFooter(t *testing.T) {
 	tests := []struct {
 		name     string
-		cfg      *tasks.ValuesConfig
+		cfg      *core.ValuesConfig
 		contains string
 		empty    bool
 	}{
 		{"nil config", nil, "", true},
-		{"empty values", &tasks.ValuesConfig{}, "", true},
-		{"single value", &tasks.ValuesConfig{Values: []string{"Health"}}, "Health", false},
-		{"multiple values", &tasks.ValuesConfig{Values: []string{"Health", "Family"}}, "·", false},
+		{"empty values", &core.ValuesConfig{}, "", true},
+		{"single value", &core.ValuesConfig{Values: []string{"Health"}}, "Health", false},
+		{"multiple values", &core.ValuesConfig{Values: []string{"Health", "Family"}}, "·", false},
 	}
 
 	for _, tt := range tests {
@@ -187,7 +187,7 @@ func TestRenderValuesFooter(t *testing.T) {
 }
 
 func TestValuesSetupView_View(t *testing.T) {
-	cfg := &tasks.ValuesConfig{}
+	cfg := &core.ValuesConfig{}
 	vv := NewValuesSetupView(cfg)
 	view := vv.View()
 
@@ -200,7 +200,7 @@ func TestValuesSetupView_View(t *testing.T) {
 }
 
 func TestValuesEditView_View(t *testing.T) {
-	cfg := &tasks.ValuesConfig{Values: []string{"Health", "Family"}}
+	cfg := &core.ValuesConfig{Values: []string{"Health", "Family"}}
 	vv := NewValuesEditView(cfg)
 	view := vv.View()
 

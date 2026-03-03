@@ -5,18 +5,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 // HealthView displays health check results.
 type HealthView struct {
-	result tasks.HealthCheckResult
+	result core.HealthCheckResult
 	width  int
 }
 
 // NewHealthView creates a new HealthView with the given result.
-func NewHealthView(result tasks.HealthCheckResult) *HealthView {
+func NewHealthView(result core.HealthCheckResult) *HealthView {
 	return &HealthView{result: result}
 }
 
@@ -45,11 +45,11 @@ func (hv *HealthView) View() string {
 	for _, item := range hv.result.Items {
 		var statusStr string
 		switch item.Status {
-		case tasks.HealthOK:
+		case core.HealthOK:
 			statusStr = healthOKStyle.Render("[OK]")
-		case tasks.HealthFail:
+		case core.HealthFail:
 			statusStr = healthFailStyle.Render("[FAIL]")
-		case tasks.HealthWarn:
+		case core.HealthWarn:
 			statusStr = healthWarnStyle.Render("[WARN]")
 		}
 
@@ -66,11 +66,11 @@ func (hv *HealthView) View() string {
 	// Overall footer
 	var overallStyle func(string) string
 	switch hv.result.Overall {
-	case tasks.HealthOK:
+	case core.HealthOK:
 		overallStyle = func(s string) string { return healthOKStyle.Render(s) }
-	case tasks.HealthFail:
+	case core.HealthFail:
 		overallStyle = func(s string) string { return healthFailStyle.Render(s) }
-	case tasks.HealthWarn:
+	case core.HealthWarn:
 		overallStyle = func(s string) string { return healthWarnStyle.Render(s) }
 	default:
 		overallStyle = func(s string) string { return s }

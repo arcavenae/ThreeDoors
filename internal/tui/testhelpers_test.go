@@ -6,7 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/exp/teatest"
 	"github.com/muesli/termenv"
@@ -20,7 +22,7 @@ type testAppConfig struct {
 	height   int
 	taskFile string
 	tasks    []string
-	provider tasks.TaskProvider
+	provider core.TaskProvider
 }
 
 // WithTermSize sets the virtual terminal dimensions for the test.
@@ -48,7 +50,7 @@ func WithTasks(texts ...string) TestOption {
 }
 
 // WithProvider sets a custom TaskProvider for the test.
-func WithProvider(p tasks.TaskProvider) TestOption {
+func WithProvider(p core.TaskProvider) TestOption {
 	return func(c *testAppConfig) {
 		c.provider = p
 	}
@@ -80,9 +82,9 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 
 	// Isolate filesystem access to a temp directory.
 	tmpDir := t.TempDir()
-	tasks.SetHomeDir(tmpDir)
+	core.SetHomeDir(tmpDir)
 	t.Cleanup(func() {
-		tasks.SetHomeDir("")
+		core.SetHomeDir("")
 	})
 
 	// If a task file was provided, copy it into the temp config directory.
@@ -102,7 +104,7 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 	}
 
 	// Build provider.
-	var provider tasks.TaskProvider
+	var provider core.TaskProvider
 	if cfg.provider != nil {
 		provider = cfg.provider
 	} else {
@@ -110,14 +112,14 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 	}
 
 	// Build pool from explicit task texts.
-	pool := tasks.NewTaskPool()
+	pool := core.NewTaskPool()
 	for _, text := range cfg.tasks {
-		pool.AddTask(tasks.NewTask(text))
+		pool.AddTask(core.NewTask(text))
 	}
 
 	// If using a task file with no explicit tasks, load from the provider.
 	if cfg.taskFile != "" && len(cfg.tasks) == 0 {
-		loaded, err := tasks.NewTextFileProvider().LoadTasks()
+		loaded, err := textfile.NewTextFileProvider().LoadTasks()
 		if err != nil {
 			t.Fatalf("load tasks from file: %v", err)
 		}
@@ -129,7 +131,7 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 		}
 	}
 
-	tracker := tasks.NewSessionTracker()
+	tracker := core.NewSessionTracker()
 	model := NewMainModel(pool, tracker, provider, nil, false, nil)
 
 	tm := teatest.NewTestModel(

@@ -3,7 +3,7 @@ package tui
 import (
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -80,11 +80,11 @@ func (av *AddTaskView) Update(msg tea.Msg) tea.Cmd {
 					av.textInput.CharLimit = 500
 					return nil
 				}
-				cleanText, tt, ef, loc := tasks.ParseInlineTags(text)
+				cleanText, tt, ef, loc := core.ParseInlineTags(text)
 				if cleanText == "" {
 					cleanText = text
 				}
-				newTask := tasks.NewTask(cleanText)
+				newTask := core.NewTask(cleanText)
 				newTask.Type = tt
 				newTask.Effort = ef
 				newTask.Location = loc
@@ -94,11 +94,11 @@ func (av *AddTaskView) Update(msg tea.Msg) tea.Cmd {
 			}
 
 			// step == stepContext
-			cleanText, tt, ef, loc := tasks.ParseInlineTags(av.capturedText)
+			cleanText, tt, ef, loc := core.ParseInlineTags(av.capturedText)
 			if cleanText == "" {
 				cleanText = av.capturedText
 			}
-			newTask := tasks.NewTaskWithContext(cleanText, text)
+			newTask := core.NewTaskWithContext(cleanText, text)
 			newTask.Type = tt
 			newTask.Effort = ef
 			newTask.Location = loc

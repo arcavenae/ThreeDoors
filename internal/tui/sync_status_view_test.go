@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 func TestRenderSyncStatusBarNilTracker(t *testing.T) {
@@ -18,7 +18,7 @@ func TestRenderSyncStatusBarNilTracker(t *testing.T) {
 
 func TestRenderSyncStatusBarEmptyTracker(t *testing.T) {
 	t.Parallel()
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	got := RenderSyncStatusBar(tracker)
 	if got != "" {
 		t.Errorf("expected empty string for empty tracker, got %q", got)
@@ -28,7 +28,7 @@ func TestRenderSyncStatusBarEmptyTracker(t *testing.T) {
 func TestRenderSyncStatusBarSingleProvider(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Local")
 
 	got := RenderSyncStatusBar(tracker)
@@ -43,7 +43,7 @@ func TestRenderSyncStatusBarSingleProvider(t *testing.T) {
 func TestRenderSyncStatusBarMultipleProviders(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Local")
 	tracker.Register("WAL")
 
@@ -59,7 +59,7 @@ func TestRenderSyncStatusBarMultipleProviders(t *testing.T) {
 func TestRenderSyncStatusBarPendingState(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("WAL")
 	tracker.SetPending("WAL", 3)
 
@@ -75,7 +75,7 @@ func TestRenderSyncStatusBarPendingState(t *testing.T) {
 func TestRenderSyncStatusBarErrorState(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Local")
 	tracker.SetError("Local", "connection refused")
 
@@ -88,7 +88,7 @@ func TestRenderSyncStatusBarErrorState(t *testing.T) {
 func TestRenderSyncStatusBarSyncingState(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Local")
 	tracker.SetSyncing("Local")
 
@@ -101,7 +101,7 @@ func TestRenderSyncStatusBarSyncingState(t *testing.T) {
 func TestRenderSyncStatusBarSyncedWithTimestamp(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Local")
 	tracker.SetSynced("Local")
 
@@ -144,7 +144,7 @@ func TestFormatSyncAge(t *testing.T) {
 func TestRenderSyncStatusBarDeterministicOrder(t *testing.T) {
 	t.Parallel()
 
-	tracker := tasks.NewSyncStatusTracker()
+	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Zebra")
 	tracker.Register("Alpha")
 

@@ -5,20 +5,20 @@ import (
 	"math/rand/v2"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/lipgloss"
 )
 
 // typeIcon returns the emoji icon for a task type.
-func typeIcon(t tasks.TaskType) string {
+func typeIcon(t core.TaskType) string {
 	switch t {
-	case tasks.TypeCreative:
+	case core.TypeCreative:
 		return "🎨"
-	case tasks.TypeAdministrative:
+	case core.TypeAdministrative:
 		return "📋"
-	case tasks.TypeTechnical:
+	case core.TypeTechnical:
 		return "🔧"
-	case tasks.TypePhysical:
+	case core.TypePhysical:
 		return "💪"
 	default:
 		return ""
@@ -26,7 +26,7 @@ func typeIcon(t tasks.TaskType) string {
 }
 
 // categoryBadge builds a compact badge string for a task's categories.
-func categoryBadge(task *tasks.Task) string {
+func categoryBadge(task *core.Task) string {
 	var parts []string
 	if icon := typeIcon(task.Type); icon != "" {
 		parts = append(parts, icon)
@@ -45,25 +45,25 @@ func categoryBadge(task *tasks.Task) string {
 
 // DoorsView renders the three doors interface.
 type DoorsView struct {
-	pool              *tasks.TaskPool
-	currentDoors      []*tasks.Task
+	pool              *core.TaskPool
+	currentDoors      []*core.Task
 	selectedDoorIndex int
 	completedCount    int
 	width             int
-	tracker           *tasks.SessionTracker
+	tracker           *core.SessionTracker
 	greeting          string
 	footerMessage     string
 	avoidanceMap      map[string]int // task text → bypass count (TimesBypassed)
 	avoidanceShown    map[string]int // task text → shown count (TimesShown)
-	patternAnalyzer   *tasks.PatternAnalyzer
-	completionCounter *tasks.CompletionCounter
-	syncTracker       *tasks.SyncStatusTracker
-	timeContext       *tasks.TimeContext
+	patternAnalyzer   *core.PatternAnalyzer
+	completionCounter *core.CompletionCounter
+	syncTracker       *core.SyncStatusTracker
+	timeContext       *core.TimeContext
 	pendingConflicts  int
 }
 
 // NewDoorsView creates a new DoorsView.
-func NewDoorsView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *DoorsView {
+func NewDoorsView(pool *core.TaskPool, tracker *core.SessionTracker) *DoorsView {
 	dv := &DoorsView{
 		pool:              pool,
 		selectedDoorIndex: -1,
@@ -78,7 +78,7 @@ func NewDoorsView(pool *tasks.TaskPool, tracker *tasks.SessionTracker) *DoorsVie
 }
 
 // SetAvoidanceData populates the avoidance map from a pattern report.
-func (dv *DoorsView) SetAvoidanceData(report *tasks.PatternReport) {
+func (dv *DoorsView) SetAvoidanceData(report *core.PatternReport) {
 	dv.avoidanceMap = make(map[string]int)
 	dv.avoidanceShown = make(map[string]int)
 	if report == nil {
@@ -91,23 +91,23 @@ func (dv *DoorsView) SetAvoidanceData(report *tasks.PatternReport) {
 }
 
 // SetInsightsData sets the pattern analyzer and completion counter for the multi-dimensional greeting.
-func (dv *DoorsView) SetInsightsData(pa *tasks.PatternAnalyzer, cc *tasks.CompletionCounter) {
+func (dv *DoorsView) SetInsightsData(pa *core.PatternAnalyzer, cc *core.CompletionCounter) {
 	dv.patternAnalyzer = pa
 	dv.completionCounter = cc
 }
 
 // SetSyncTracker sets the sync status tracker for displaying provider sync state.
-func (dv *DoorsView) SetSyncTracker(tracker *tasks.SyncStatusTracker) {
+func (dv *DoorsView) SetSyncTracker(tracker *core.SyncStatusTracker) {
 	dv.syncTracker = tracker
 }
 
 // SetTimeContext sets the calendar time context for time-aware door selection and display.
-func (dv *DoorsView) SetTimeContext(tc *tasks.TimeContext) {
+func (dv *DoorsView) SetTimeContext(tc *core.TimeContext) {
 	dv.timeContext = tc
 }
 
 // TimeContext returns the current time context (for testing).
-func (dv *DoorsView) TimeContext() *tasks.TimeContext {
+func (dv *DoorsView) TimeContext() *core.TimeContext {
 	return dv.timeContext
 }
 
@@ -155,9 +155,9 @@ func (dv *DoorsView) RotateFooterMessage() {
 // Uses time-contextual selection when calendar data is available.
 func (dv *DoorsView) RefreshDoors() {
 	if dv.timeContext != nil && dv.timeContext.HasCalendar {
-		dv.currentDoors = tasks.SelectDoorsWithTimeContext(dv.pool, 3, dv.timeContext)
+		dv.currentDoors = core.SelectDoorsWithTimeContext(dv.pool, 3, dv.timeContext)
 	} else {
-		dv.currentDoors = tasks.SelectDoors(dv.pool, 3)
+		dv.currentDoors = core.SelectDoors(dv.pool, 3)
 	}
 	dv.selectedDoorIndex = -1
 }
@@ -189,13 +189,13 @@ func (dv *DoorsView) View() string {
 	s.WriteString(greetingStyle.Render(dv.greeting))
 	s.WriteString("\n")
 	if dv.patternAnalyzer != nil && dv.completionCounter != nil {
-		multiGreeting := tasks.FormatMultiDimensionalGreeting(dv.patternAnalyzer, dv.completionCounter)
+		multiGreeting := core.FormatMultiDimensionalGreeting(dv.patternAnalyzer, dv.completionCounter)
 		if multiGreeting != "" {
 			s.WriteString(greetingStyle.Render(multiGreeting))
 			s.WriteString("\n")
 		}
 	}
-	if timeStr := tasks.FormatTimeContext(dv.timeContext); timeStr != "" {
+	if timeStr := core.FormatTimeContext(dv.timeContext); timeStr != "" {
 		s.WriteString(badgeStyle.Render(timeStr))
 		s.WriteString("\n")
 	}

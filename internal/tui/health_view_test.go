@@ -5,24 +5,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 // --- Test Helpers ---
 
-func newTestHealthView(items ...tasks.HealthCheckItem) *HealthView {
-	overall := tasks.HealthOK
+func newTestHealthView(items ...core.HealthCheckItem) *HealthView {
+	overall := core.HealthOK
 	for _, item := range items {
-		if item.Status == tasks.HealthFail {
-			overall = tasks.HealthFail
+		if item.Status == core.HealthFail {
+			overall = core.HealthFail
 			break
 		}
-		if item.Status == tasks.HealthWarn && overall == tasks.HealthOK {
-			overall = tasks.HealthWarn
+		if item.Status == core.HealthWarn && overall == core.HealthOK {
+			overall = core.HealthWarn
 		}
 	}
-	result := tasks.HealthCheckResult{
+	result := core.HealthCheckResult{
 		Items:    items,
 		Overall:  overall,
 		Duration: 42 * time.Millisecond,
@@ -35,9 +35,9 @@ func newTestHealthView(items ...tasks.HealthCheckItem) *HealthView {
 // --- View Rendering Tests ---
 
 func TestHealthView_View_RendersOKItem(t *testing.T) {
-	hv := newTestHealthView(tasks.HealthCheckItem{
+	hv := newTestHealthView(core.HealthCheckItem{
 		Name:    "Task File",
-		Status:  tasks.HealthOK,
+		Status:  core.HealthOK,
 		Message: "12 tasks loaded successfully",
 	})
 	view := hv.View()
@@ -50,9 +50,9 @@ func TestHealthView_View_RendersOKItem(t *testing.T) {
 }
 
 func TestHealthView_View_RendersFAILItem(t *testing.T) {
-	hv := newTestHealthView(tasks.HealthCheckItem{
+	hv := newTestHealthView(core.HealthCheckItem{
 		Name:       "Apple Notes",
-		Status:     tasks.HealthFail,
+		Status:     core.HealthFail,
 		Message:    "Cannot access Apple Notes database",
 		Suggestion: "Grant Full Disk Access in System Settings",
 	})
@@ -69,9 +69,9 @@ func TestHealthView_View_RendersFAILItem(t *testing.T) {
 }
 
 func TestHealthView_View_RendersWARNItem(t *testing.T) {
-	hv := newTestHealthView(tasks.HealthCheckItem{
+	hv := newTestHealthView(core.HealthCheckItem{
 		Name:       "Sync Status",
-		Status:     tasks.HealthWarn,
+		Status:     core.HealthWarn,
 		Message:    "Last sync was 48 hours ago",
 		Suggestion: "Press S in doors view to trigger a sync",
 	})
@@ -85,9 +85,9 @@ func TestHealthView_View_RendersWARNItem(t *testing.T) {
 }
 
 func TestHealthView_View_RendersOverallAndDuration(t *testing.T) {
-	hv := newTestHealthView(tasks.HealthCheckItem{
+	hv := newTestHealthView(core.HealthCheckItem{
 		Name:   "Test",
-		Status: tasks.HealthOK,
+		Status: core.HealthOK,
 	})
 	view := hv.View()
 	if !strings.Contains(view, "Overall:") {
@@ -109,9 +109,9 @@ func TestHealthView_View_EmptyResult(t *testing.T) {
 // --- Update Tests ---
 
 func TestHealthView_Update_EscReturnsToDoorsMsg(t *testing.T) {
-	hv := newTestHealthView(tasks.HealthCheckItem{
+	hv := newTestHealthView(core.HealthCheckItem{
 		Name:   "Test",
-		Status: tasks.HealthOK,
+		Status: core.HealthOK,
 	})
 	cmd := hv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
@@ -124,9 +124,9 @@ func TestHealthView_Update_EscReturnsToDoorsMsg(t *testing.T) {
 }
 
 func TestHealthView_Update_QKeyReturnsNil(t *testing.T) {
-	hv := newTestHealthView(tasks.HealthCheckItem{
+	hv := newTestHealthView(core.HealthCheckItem{
 		Name:   "Test",
-		Status: tasks.HealthOK,
+		Status: core.HealthOK,
 	})
 	cmd := hv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
 	if cmd != nil {

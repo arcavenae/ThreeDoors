@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 // AvoidancePromptView displays a gentle prompt for tasks with 10+ bypasses.
 type AvoidancePromptView struct {
-	task  *tasks.Task
+	task  *core.Task
 	count int
 	width int
 }
 
 // NewAvoidancePromptView creates an avoidance prompt for the given task.
-func NewAvoidancePromptView(task *tasks.Task, bypassCount int) *AvoidancePromptView {
+func NewAvoidancePromptView(task *core.Task, bypassCount int) *AvoidancePromptView {
 	return &AvoidancePromptView{
 		task:  task,
 		count: bypassCount,

@@ -6,10 +6,13 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/dist"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
 	"github.com/arcaven/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -24,33 +27,33 @@ func main() {
 	}
 
 	// Register built-in adapters with the global registry
-	tasks.RegisterBuiltinAdapters(tasks.DefaultRegistry())
+	registerBuiltinAdapters(core.DefaultRegistry())
 
-	configDir, configErr := tasks.GetConfigDirPath()
-	var cfg *tasks.ProviderConfig
+	configDir, configErr := core.GetConfigDirPath()
+	var cfg *core.ProviderConfig
 	if configErr != nil {
 		fmt.Fprintf(os.Stderr, "Warning: config dir not found: %v, using defaults\n", configErr)
-		cfg = &tasks.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
+		cfg = &core.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
 	} else {
 		configPath := filepath.Join(configDir, "config.yaml")
 
 		// Generate sample config on first run if none exists
-		if err := tasks.GenerateSampleConfig(configPath, tasks.DefaultRegistry()); err != nil {
+		if err := core.GenerateSampleConfig(configPath, core.DefaultRegistry()); err != nil {
 			fmt.Fprintf(os.Stderr, "Warning: failed to generate sample config: %v\n", err)
 		}
 
 		var loadErr error
-		cfg, loadErr = tasks.LoadProviderConfig(configPath)
+		cfg, loadErr = core.LoadProviderConfig(configPath)
 		if loadErr != nil {
 			fmt.Fprintf(os.Stderr, "Warning: config load failed: %v, using defaults\n", loadErr)
-			cfg = &tasks.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
+			cfg = &core.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
 		}
 	}
 
-	var provider tasks.TaskProvider
+	var provider core.TaskProvider
 	if len(cfg.Providers) > 1 {
 		// Multi-provider mode: aggregate tasks from all configured providers
-		agg, aggErr := tasks.ResolveAllProviders(cfg, tasks.DefaultRegistry())
+		agg, aggErr := core.ResolveAllProviders(cfg, core.DefaultRegistry())
 		if aggErr != nil {
 			fmt.Fprintf(os.Stderr, "Failed to initialize providers: %v\n", aggErr)
 			os.Exit(1)
@@ -58,9 +61,9 @@ func main() {
 		provider = agg
 	} else {
 		// Single-provider mode: backward-compatible path
-		baseProvider := tasks.NewProviderFromConfig(cfg)
+		baseProvider := core.NewProviderFromConfig(cfg)
 		if configErr == nil {
-			provider = tasks.NewWALProvider(baseProvider, configDir)
+			provider = core.NewWALProvider(baseProvider, configDir)
 		} else {
 			provider = baseProvider
 		}
@@ -71,13 +74,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	pool := tasks.NewTaskPool()
+	pool := core.NewTaskPool()
 	for _, t := range loadedTasks {
 		pool.AddTask(t)
 	}
 
-	tracker := tasks.NewSessionTracker()
-	hc := tasks.NewHealthChecker(provider)
+	tracker := core.NewSessionTracker()
+	hc := core.NewHealthChecker(provider)
 
 	// Load enrichment database and run pattern analysis in parallel (non-blocking)
 	var enrichDB *enrichment.DB
@@ -97,7 +100,7 @@ func main() {
 		}()
 
 		go func() {
-			analyzer := tasks.NewPatternAnalyzer()
+			analyzer := core.NewPatternAnalyzer()
 			sessionsPath := filepath.Join(configDir, "sessions.jsonl")
 			patternsPath := filepath.Join(configDir, "patterns.json")
 
@@ -131,7 +134,7 @@ func main() {
 		}
 	}
 
-	isFirstRun := configErr == nil && tasks.IsFirstRun(configDir)
+	isFirstRun := configErr == nil && core.IsFirstRun(configDir)
 	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun, enrichDB)
 	if agentSvc != nil {
 		model.SetAgentService(agentSvc)
@@ -152,9 +155,72 @@ func main() {
 
 	// Persist session metrics on exit
 	if configErr == nil {
-		writer := tasks.NewMetricsWriter(configDir)
+		writer := core.NewMetricsWriter(configDir)
 		if writeErr := writer.AppendSession(tracker.Finalize()); writeErr != nil {
 			fmt.Fprintf(os.Stderr, "Warning: failed to save session metrics: %v\n", writeErr)
 		}
 	}
+}
+
+// registerBuiltinAdapters registers the built-in task provider adapters
+// with the given registry. This is called during application startup.
+func registerBuiltinAdapters(reg *core.Registry) {
+	// Text file provider: YAML-based local file storage
+	_ = reg.Register("textfile", func(config *core.ProviderConfig) (core.TaskProvider, error) {
+		return textfile.NewTextFileProvider(), nil
+	})
+
+	// Apple Notes provider: wrapped in FallbackProvider for graceful degradation
+	_ = reg.Register("applenotes", func(config *core.ProviderConfig) (core.TaskProvider, error) {
+		primary := applenotes.NewAppleNotesProvider(config.NoteTitle)
+		fallback := textfile.NewTextFileProvider()
+		return core.NewFallbackProvider(primary, fallback), nil
+	})
+
+	// Obsidian vault provider: reads/writes Markdown checkbox tasks.
+	// Validates vault path on startup; falls back to textfile on failure.
+	_ = reg.Register("obsidian", func(config *core.ProviderConfig) (core.TaskProvider, error) {
+		vaultPath := ""
+		tasksFolder := ""
+		filePattern := ""
+		dailyNotesEnabled := ""
+		dailyNotesFolder := ""
+		dailyNotesHeading := ""
+		dailyNotesFormat := ""
+		for _, p := range config.Providers {
+			if p.Name == "obsidian" {
+				vaultPath = p.GetSetting("vault_path", "")
+				tasksFolder = p.GetSetting("tasks_folder", "")
+				filePattern = p.GetSetting("file_pattern", "")
+				dailyNotesEnabled = p.GetSetting("daily_notes", "")
+				dailyNotesFolder = p.GetSetting("daily_notes_folder", "")
+				dailyNotesHeading = p.GetSetting("daily_notes_heading", "")
+				dailyNotesFormat = p.GetSetting("daily_notes_format", "")
+				break
+			}
+		}
+		if vaultPath == "" {
+			return nil, fmt.Errorf("obsidian adapter requires vault_path setting")
+		}
+
+		adapter := obsidian.NewObsidianAdapter(vaultPath, tasksFolder, filePattern)
+
+		// Configure daily notes if enabled
+		if dailyNotesEnabled == "true" {
+			adapter.SetDailyNotes(&obsidian.DailyNotesConfig{
+				Enabled:    true,
+				Folder:     dailyNotesFolder,
+				Heading:    dailyNotesHeading,
+				DateFormat: dailyNotesFormat,
+			})
+		}
+
+		if err := obsidian.ValidateVaultPath(vaultPath); err != nil {
+			fallback := textfile.NewTextFileProvider()
+			fmt.Fprintf(os.Stderr, "Warning: %v. Falling back to text file provider.\n", err)
+			return core.NewFallbackProvider(adapter, fallback), nil
+		}
+
+		return adapter, nil
+	})
 }

@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 // ConflictView renders a side-by-side conflict resolution interface.
 type ConflictView struct {
-	conflictSet *tasks.ConflictSet
-	syncLog     *tasks.SyncLog
+	conflictSet *core.ConflictSet
+	syncLog     *core.SyncLog
 	width       int
 }
 
 // NewConflictView creates a new ConflictView for the given conflict set.
-func NewConflictView(cs *tasks.ConflictSet, syncLog *tasks.SyncLog) *ConflictView {
+func NewConflictView(cs *core.ConflictSet, syncLog *core.SyncLog) *ConflictView {
 	return &ConflictView{
 		conflictSet: cs,
 		syncLog:     syncLog,
@@ -35,11 +35,11 @@ func (cv *ConflictView) Update(msg tea.Msg) tea.Cmd {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "l", "L":
-			return cv.resolve(tasks.ChoiceKeepLocal)
+			return cv.resolve(core.ChoiceKeepLocal)
 		case "r", "R":
-			return cv.resolve(tasks.ChoiceKeepRemote)
+			return cv.resolve(core.ChoiceKeepRemote)
 		case "b", "B":
-			return cv.resolve(tasks.ChoiceKeepBoth)
+			return cv.resolve(core.ChoiceKeepBoth)
 		case "q", "esc":
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
 		}
@@ -47,7 +47,7 @@ func (cv *ConflictView) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (cv *ConflictView) resolve(choice tasks.ConflictChoice) tea.Cmd {
+func (cv *ConflictView) resolve(choice core.ConflictChoice) tea.Cmd {
 	current := cv.conflictSet.CurrentConflict()
 	if current == nil {
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
@@ -139,7 +139,7 @@ func (cv *ConflictView) View() string {
 	return s.String()
 }
 
-func formatTaskForConflict(t *tasks.Task, label string) string {
+func formatTaskForConflict(t *core.Task, label string) string {
 	var s strings.Builder
 	fmt.Fprintf(&s, "%s\n", label)
 	fmt.Fprintf(&s, "─────────\n")

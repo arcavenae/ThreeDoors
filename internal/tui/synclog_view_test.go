@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -26,7 +26,7 @@ func TestSyncLogView_Empty(t *testing.T) {
 
 func TestSyncLogView_WithEntries(t *testing.T) {
 	t.Parallel()
-	entries := []tasks.SyncLogEntry{
+	entries := []core.SyncLogEntry{
 		{
 			Timestamp: time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC),
 			Provider:  "Local",
@@ -62,7 +62,7 @@ func TestSyncLogView_WithEntries(t *testing.T) {
 
 func TestSyncLogView_ReverseOrder(t *testing.T) {
 	t.Parallel()
-	entries := []tasks.SyncLogEntry{
+	entries := []core.SyncLogEntry{
 		{
 			Timestamp: time.Date(2025, 1, 15, 10, 0, 0, 0, time.UTC),
 			Provider:  "A",
@@ -87,9 +87,9 @@ func TestSyncLogView_ReverseOrder(t *testing.T) {
 
 func TestSyncLogView_Scroll(t *testing.T) {
 	t.Parallel()
-	var entries []tasks.SyncLogEntry
+	var entries []core.SyncLogEntry
 	for i := 0; i < 30; i++ {
-		entries = append(entries, tasks.SyncLogEntry{
+		entries = append(entries, core.SyncLogEntry{
 			Timestamp: time.Now().UTC(),
 			Provider:  "Test",
 			Operation: "sync",
@@ -135,7 +135,7 @@ func TestSyncLogView_EscReturns(t *testing.T) {
 
 func TestSyncLogView_ConflictResolved(t *testing.T) {
 	t.Parallel()
-	entries := []tasks.SyncLogEntry{
+	entries := []core.SyncLogEntry{
 		{
 			Timestamp:  time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC),
 			Provider:   "Local",

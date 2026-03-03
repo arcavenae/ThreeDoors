@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/lipgloss"
 )
 
 // RenderSyncStatusBar renders a compact sync status bar for all tracked providers.
 // Returns an empty string if no providers are registered.
-func RenderSyncStatusBar(tracker *tasks.SyncStatusTracker) string {
+func RenderSyncStatusBar(tracker *core.SyncStatusTracker) string {
 	if tracker == nil || tracker.Count() == 0 {
 		return ""
 	}
@@ -33,18 +33,18 @@ func RenderSyncStatusBar(tracker *tasks.SyncStatusTracker) string {
 }
 
 // renderProviderStatus renders a single provider's status with appropriate styling.
-func renderProviderStatus(s tasks.ProviderSyncStatus) string {
+func renderProviderStatus(s core.ProviderSyncStatus) string {
 	icon := s.Icon()
 	var styledIcon string
 
 	switch s.Phase {
-	case tasks.SyncPhaseSynced:
+	case core.SyncPhaseSynced:
 		styledIcon = syncStatusSyncedStyle.Render(icon)
-	case tasks.SyncPhaseSyncing:
+	case core.SyncPhaseSyncing:
 		styledIcon = syncStatusSyncingStyle.Render(icon)
-	case tasks.SyncPhasePending:
+	case core.SyncPhasePending:
 		styledIcon = syncStatusPendingStyle.Render(icon)
-	case tasks.SyncPhaseError:
+	case core.SyncPhaseError:
 		styledIcon = syncStatusErrorStyle.Render(icon)
 	default:
 		styledIcon = icon
@@ -60,15 +60,15 @@ func renderProviderStatus(s tasks.ProviderSyncStatus) string {
 }
 
 // renderDetail renders extra information based on sync phase.
-func renderDetail(s tasks.ProviderSyncStatus) string {
+func renderDetail(s core.ProviderSyncStatus) string {
 	switch s.Phase {
-	case tasks.SyncPhasePending:
+	case core.SyncPhasePending:
 		return syncStatusDetailStyle.Render(fmt.Sprintf("(%d)", s.PendingCount))
-	case tasks.SyncPhaseSynced:
+	case core.SyncPhaseSynced:
 		if !s.LastSyncTime.IsZero() {
 			return syncStatusDetailStyle.Render(formatSyncAge(s.LastSyncTime))
 		}
-	case tasks.SyncPhaseError:
+	case core.SyncPhaseError:
 		// Don't show error details in the compact bar
 	}
 	return ""

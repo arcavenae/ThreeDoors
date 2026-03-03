@@ -5,7 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -15,14 +17,14 @@ import (
 type testProvider struct {
 	completedIDs []string
 	completeErr  error
-	savedTasks   []*tasks.Task
+	savedTasks   []*core.Task
 	saveErr      error
 }
 
-func (p *testProvider) LoadTasks() ([]*tasks.Task, error) { return nil, nil }
-func (p *testProvider) SaveTask(t *tasks.Task) error      { return p.saveErr }
+func (p *testProvider) LoadTasks() ([]*core.Task, error) { return nil, nil }
+func (p *testProvider) SaveTask(t *core.Task) error      { return p.saveErr }
 
-func (p *testProvider) SaveTasks(ts []*tasks.Task) error {
+func (p *testProvider) SaveTasks(ts []*core.Task) error {
 	p.savedTasks = append(p.savedTasks, ts...)
 	return p.saveErr
 }
@@ -37,10 +39,10 @@ func (p *testProvider) MarkComplete(id string) error {
 	return nil
 }
 
-func makePool(texts ...string) *tasks.TaskPool {
-	pool := tasks.NewTaskPool()
+func makePool(texts ...string) *core.TaskPool {
+	pool := core.NewTaskPool()
 	for _, t := range texts {
-		pool.AddTask(tasks.NewTask(t))
+		pool.AddTask(core.NewTask(t))
 	}
 	return pool
 }
@@ -49,9 +51,9 @@ func makeModel(texts ...string) *MainModel {
 	return makeModelWithProvider(&testProvider{}, texts...)
 }
 
-func makeModelWithProvider(provider tasks.TaskProvider, texts ...string) *MainModel {
+func makeModelWithProvider(provider core.TaskProvider, texts ...string) *MainModel {
 	pool := makePool(texts...)
-	tracker := tasks.NewSessionTracker()
+	tracker := core.NewSessionTracker()
 	return NewMainModel(pool, tracker, provider, nil, false, nil)
 }
 
@@ -299,9 +301,9 @@ func TestDoorsView_RendersHelpText(t *testing.T) {
 }
 
 func TestDoorsView_AllTasksDone_ShowsMessage(t *testing.T) {
-	pool := tasks.NewTaskPool()
-	tracker := tasks.NewSessionTracker()
-	m := NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil, false, nil)
+	pool := core.NewTaskPool()
+	tracker := core.NewSessionTracker()
+	m := NewMainModel(pool, tracker, textfile.NewTextFileProvider(), nil, false, nil)
 	view := m.View()
 	if !strings.Contains(view, "All tasks done") {
 		t.Errorf("View should show 'All tasks done' when pool is empty, got: %s", view)
@@ -628,7 +630,7 @@ func TestTaskAddedMsg_AddsToPool(t *testing.T) {
 	m := makeModel("task1", "task2", "task3")
 	initialCount := m.pool.Count()
 
-	newTask := tasks.NewTask("brand new task")
+	newTask := core.NewTask("brand new task")
 	m.Update(TaskAddedMsg{Task: newTask})
 
 	if m.pool.Count() != initialCount+1 {
@@ -665,15 +667,15 @@ func TestColonKey_OpensSearchInCommandMode(t *testing.T) {
 
 // T10: TaskAddedMsg with empty pool - pool gets the task
 func TestTaskAddedMsg_EmptyPool_AddsTask(t *testing.T) {
-	pool := tasks.NewTaskPool()
-	tracker := tasks.NewSessionTracker()
-	m := NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil, false, nil)
+	pool := core.NewTaskPool()
+	tracker := core.NewSessionTracker()
+	m := NewMainModel(pool, tracker, textfile.NewTextFileProvider(), nil, false, nil)
 
 	if m.pool.Count() != 0 {
 		t.Fatal("pool should start empty")
 	}
 
-	newTask := tasks.NewTask("first task ever")
+	newTask := core.NewTask("first task ever")
 	m.Update(TaskAddedMsg{Task: newTask})
 
 	if m.pool.Count() != 1 {
@@ -688,7 +690,7 @@ func TestTaskAddedMsg_FromSearch_ReturnsToSearch(t *testing.T) {
 	m.previousView = ViewSearch
 	m.viewMode = ViewAddTask
 
-	newTask := tasks.NewTask("new task from search")
+	newTask := core.NewTask("new task from search")
 	m.Update(TaskAddedMsg{Task: newTask})
 
 	if m.viewMode != ViewSearch {
@@ -702,7 +704,7 @@ func TestTaskAddedMsg_FromDoors_ShowsNextSteps(t *testing.T) {
 	m.previousView = ViewDoors
 	m.viewMode = ViewAddTask
 
-	newTask := tasks.NewTask("new task from doors")
+	newTask := core.NewTask("new task from doors")
 	m.Update(TaskAddedMsg{Task: newTask})
 
 	if m.viewMode != ViewNextSteps {

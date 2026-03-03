@@ -9,22 +9,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 )
 
 // makeInsightsTestSession creates a SessionMetrics for insights view tests.
-func makeInsightsTestSession(startTime time.Time, completed int, moods []string, doorPositions []int) tasks.SessionMetrics {
-	entries := make([]tasks.MoodEntry, len(moods))
+func makeInsightsTestSession(startTime time.Time, completed int, moods []string, doorPositions []int) core.SessionMetrics {
+	entries := make([]core.MoodEntry, len(moods))
 	for i, m := range moods {
-		entries[i] = tasks.MoodEntry{Mood: m, Timestamp: startTime}
+		entries[i] = core.MoodEntry{Mood: m, Timestamp: startTime}
 	}
-	selections := make([]tasks.DoorSelectionRecord, len(doorPositions))
+	selections := make([]core.DoorSelectionRecord, len(doorPositions))
 	for i, p := range doorPositions {
-		selections[i] = tasks.DoorSelectionRecord{DoorPosition: p, TaskText: "task", Timestamp: startTime}
+		selections[i] = core.DoorSelectionRecord{DoorPosition: p, TaskText: "task", Timestamp: startTime}
 	}
-	return tasks.SessionMetrics{
+	return core.SessionMetrics{
 		SessionID:       uuid.New().String(),
 		StartTime:       startTime,
 		EndTime:         startTime.Add(30 * time.Minute),
@@ -37,7 +37,7 @@ func makeInsightsTestSession(startTime time.Time, completed int, moods []string,
 }
 
 // writeInsightsSessionsFile creates a sessions.jsonl for insights tests.
-func writeInsightsSessionsFile(t *testing.T, dir string, sessions []tasks.SessionMetrics) string {
+func writeInsightsSessionsFile(t *testing.T, dir string, sessions []core.SessionMetrics) string {
 	t.Helper()
 	path := filepath.Join(dir, "sessions.jsonl")
 	var buf bytes.Buffer
@@ -61,18 +61,18 @@ func setupInsightsView(t *testing.T) *InsightsView {
 	now := time.Date(2026, 3, 7, 14, 0, 0, 0, time.UTC)
 	frozen := func() time.Time { return now }
 
-	sessions := []tasks.SessionMetrics{
+	sessions := []core.SessionMetrics{
 		makeInsightsTestSession(time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC), 3, []string{"Focused"}, []int{0, 1}),
 		makeInsightsTestSession(time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC), 5, []string{"Tired"}, []int{1, 1, 2}),
 		makeInsightsTestSession(time.Date(2026, 3, 7, 10, 0, 0, 0, time.UTC), 4, []string{"Focused", "Energized"}, []int{0, 2}),
 	}
 	paPath := writeInsightsSessionsFile(t, dir, sessions)
-	pa := tasks.NewPatternAnalyzerWithNow(frozen)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
 	if err := pa.LoadSessions(paPath); err != nil {
 		t.Fatalf("LoadSessions() error: %v", err)
 	}
 
-	cc := tasks.NewCompletionCounterWithNow(frozen)
+	cc := core.NewCompletionCounterWithNow(frozen)
 
 	iv := NewInsightsView(pa, cc)
 	iv.SetWidth(80)
@@ -112,16 +112,16 @@ func TestInsightsView_View_ColdStart(t *testing.T) {
 	now := time.Date(2026, 3, 2, 14, 0, 0, 0, time.UTC)
 	frozen := func() time.Time { return now }
 
-	sessions := []tasks.SessionMetrics{
+	sessions := []core.SessionMetrics{
 		makeInsightsTestSession(now, 2, []string{"Focused"}, []int{1}),
 	}
 	paPath := writeInsightsSessionsFile(t, dir, sessions)
-	pa := tasks.NewPatternAnalyzerWithNow(frozen)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
 	if err := pa.LoadSessions(paPath); err != nil {
 		t.Fatalf("LoadSessions() error: %v", err)
 	}
 
-	cc := tasks.NewCompletionCounterWithNow(frozen)
+	cc := core.NewCompletionCounterWithNow(frozen)
 	iv := NewInsightsView(pa, cc)
 	iv.SetWidth(80)
 

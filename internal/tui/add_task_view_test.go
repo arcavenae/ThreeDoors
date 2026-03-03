@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -56,7 +56,7 @@ func TestAddTaskView_Enter_WithText_EmitsTaskAddedMsg(t *testing.T) {
 	if taskMsg.Task.Text != "buy milk" {
 		t.Errorf("expected task text 'buy milk', got %q", taskMsg.Task.Text)
 	}
-	if taskMsg.Task.Status != tasks.StatusTodo {
+	if taskMsg.Task.Status != core.StatusTodo {
 		t.Errorf("expected task status todo, got %s", taskMsg.Task.Status)
 	}
 }

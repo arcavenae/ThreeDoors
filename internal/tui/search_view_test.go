@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -15,9 +15,9 @@ func newTestSearchView(texts ...string) *SearchView {
 	return NewSearchView(pool, nil, nil, nil, nil)
 }
 
-func newTestSearchViewWithTracker(texts ...string) (*SearchView, *tasks.SessionTracker) {
+func newTestSearchViewWithTracker(texts ...string) (*SearchView, *core.SessionTracker) {
 	pool := makePool(texts...)
-	tracker := tasks.NewSessionTracker()
+	tracker := core.NewSessionTracker()
 	return NewSearchView(pool, tracker, nil, nil, nil), tracker
 }
 
@@ -83,12 +83,12 @@ func TestSearchView_FilterTasks_SpecialCharacters(t *testing.T) {
 }
 
 func TestSearchView_FilterTasks_AllStatuses(t *testing.T) {
-	pool := tasks.NewTaskPool()
-	t1 := tasks.NewTask("todo task")
-	t2 := tasks.NewTask("blocked task")
-	_ = t2.UpdateStatus(tasks.StatusBlocked)
-	t3 := tasks.NewTask("in-progress task")
-	_ = t3.UpdateStatus(tasks.StatusInProgress)
+	pool := core.NewTaskPool()
+	t1 := core.NewTask("todo task")
+	t2 := core.NewTask("blocked task")
+	_ = t2.UpdateStatus(core.StatusBlocked)
+	t3 := core.NewTask("in-progress task")
+	_ = t3.UpdateStatus(core.StatusInProgress)
 	pool.AddTask(t1)
 	pool.AddTask(t2)
 	pool.AddTask(t3)
@@ -211,10 +211,10 @@ func TestSearchView_NavigationJK_ViStyle(t *testing.T) {
 	sv := newTestSearchView("Task A", "Task B", "Task C")
 	// j/k navigation only works when textInput is empty (to avoid conflicting with typing)
 	sv.textInput.SetValue("")
-	sv.results = []*tasks.Task{
-		tasks.NewTask("Task A"),
-		tasks.NewTask("Task B"),
-		tasks.NewTask("Task C"),
+	sv.results = []*core.Task{
+		core.NewTask("Task A"),
+		core.NewTask("Task B"),
+		core.NewTask("Task C"),
 	}
 	sv.selectedIndex = 0
 
@@ -582,7 +582,7 @@ func TestSearchView_View_CommandModeIndicator(t *testing.T) {
 // --- Edge Cases ---
 
 func TestSearchView_EmptyPool_NoResults(t *testing.T) {
-	pool := tasks.NewTaskPool()
+	pool := core.NewTaskPool()
 	sv := NewSearchView(pool, nil, nil, nil, nil)
 	sv.textInput.SetValue("anything")
 	results := sv.filterTasks("anything")

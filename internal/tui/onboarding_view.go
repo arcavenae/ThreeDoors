@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -36,14 +36,14 @@ type OnboardingView struct {
 	textInput textinput.Model
 
 	// Import state
-	importResult *tasks.ImportResult
+	importResult *core.ImportResult
 	importError  string
 }
 
 // OnboardingCompletedMsg is sent when onboarding finishes.
 type OnboardingCompletedMsg struct {
 	Values        []string
-	ImportedTasks []*tasks.Task
+	ImportedTasks []*core.Task
 }
 
 // NewOnboardingView creates a new onboarding wizard.
@@ -68,7 +68,7 @@ func (ov *OnboardingView) SetWidth(w int) {
 
 func (ov *OnboardingView) completeMsg() tea.Cmd {
 	values := ov.values
-	var imported []*tasks.Task
+	var imported []*core.Task
 	if ov.importResult != nil {
 		imported = ov.importResult.Tasks
 	}
@@ -230,7 +230,7 @@ func (ov *OnboardingView) updateImport(msg tea.KeyMsg) tea.Cmd {
 			return nil
 		}
 
-		result, err := tasks.ImportTasksFromFile(path)
+		result, err := core.ImportTasksFromFile(path)
 		if err != nil {
 			ov.importError = err.Error()
 			return nil
@@ -423,7 +423,7 @@ func (ov *OnboardingView) viewImportPreview() string {
 	total := len(ov.importResult.Tasks)
 	todoCount := 0
 	for _, t := range ov.importResult.Tasks {
-		if t.Status == tasks.StatusTodo {
+		if t.Status == core.StatusTodo {
 			todoCount++
 		}
 	}
@@ -443,7 +443,7 @@ func (ov *OnboardingView) viewImportPreview() string {
 	for i := 0; i < previewMax; i++ {
 		t := ov.importResult.Tasks[i]
 		status := "[ ]"
-		if t.Status == tasks.StatusComplete {
+		if t.Status == core.StatusComplete {
 			status = "[x]"
 		}
 		fmt.Fprintf(&s, "  %s %s\n", status, t.Text)

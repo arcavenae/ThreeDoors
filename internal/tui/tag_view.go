@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -28,7 +28,7 @@ const (
 
 // TagView handles editing task categorization fields.
 type TagView struct {
-	task         *tasks.Task
+	task         *core.Task
 	state        tagViewState
 	fieldIndex   int
 	valueIndex   int
@@ -36,48 +36,48 @@ type TagView struct {
 	width        int
 
 	// Snapshot of original values for cancel
-	origType     tasks.TaskType
-	origEffort   tasks.TaskEffort
-	origLocation tasks.TaskLocation
+	origType     core.TaskType
+	origEffort   core.TaskEffort
+	origLocation core.TaskLocation
 }
 
 var fieldLabels = []string{"Type", "Effort", "Location", "Done"}
 
 var typeOptions = []struct {
 	label string
-	value tasks.TaskType
+	value core.TaskType
 }{
 	{"(none)", ""},
-	{"Creative", tasks.TypeCreative},
-	{"Administrative", tasks.TypeAdministrative},
-	{"Technical", tasks.TypeTechnical},
-	{"Physical", tasks.TypePhysical},
+	{"Creative", core.TypeCreative},
+	{"Administrative", core.TypeAdministrative},
+	{"Technical", core.TypeTechnical},
+	{"Physical", core.TypePhysical},
 }
 
 var effortOptions = []struct {
 	label string
-	value tasks.TaskEffort
+	value core.TaskEffort
 }{
 	{"(none)", ""},
-	{"Quick Win", tasks.EffortQuickWin},
-	{"Medium", tasks.EffortMedium},
-	{"Deep Work", tasks.EffortDeepWork},
+	{"Quick Win", core.EffortQuickWin},
+	{"Medium", core.EffortMedium},
+	{"Deep Work", core.EffortDeepWork},
 }
 
 var locationOptions = []struct {
 	label string
-	value tasks.TaskLocation
+	value core.TaskLocation
 }{
 	{"(none)", ""},
-	{"Home", tasks.LocationHome},
-	{"Work", tasks.LocationWork},
-	{"Errands", tasks.LocationErrands},
-	{"Anywhere", tasks.LocationAnywhere},
+	{"Home", core.LocationHome},
+	{"Work", core.LocationWork},
+	{"Errands", core.LocationErrands},
+	{"Anywhere", core.LocationAnywhere},
 }
 
 // NewTagView creates a new TagView for the given task.
 // Returns nil if task is nil.
-func NewTagView(task *tasks.Task) *TagView {
+func NewTagView(task *core.Task) *TagView {
 	if task == nil {
 		return nil
 	}

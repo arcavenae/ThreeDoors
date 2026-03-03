@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -15,13 +15,13 @@ var sparkChars = []rune{'▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'}
 
 // InsightsView displays the user insights dashboard.
 type InsightsView struct {
-	analyzer *tasks.PatternAnalyzer
-	counter  *tasks.CompletionCounter
+	analyzer *core.PatternAnalyzer
+	counter  *core.CompletionCounter
 	width    int
 }
 
 // NewInsightsView creates a new InsightsView.
-func NewInsightsView(analyzer *tasks.PatternAnalyzer, counter *tasks.CompletionCounter) *InsightsView {
+func NewInsightsView(analyzer *core.PatternAnalyzer, counter *core.CompletionCounter) *InsightsView {
 	return &InsightsView{
 		analyzer: analyzer,
 		counter:  counter,

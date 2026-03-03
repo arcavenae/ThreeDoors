@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func newTestTask() *tasks.Task {
-	return tasks.NewTask("Test task for feedback")
+func newTestTask() *core.Task {
+	return core.NewTask("Test task for feedback")
 }
 
 // --- View Rendering ---
@@ -37,7 +37,7 @@ func TestFeedbackView_RendersHeader(t *testing.T) {
 }
 
 func TestFeedbackView_RendersTaskText(t *testing.T) {
-	task := tasks.NewTask("Buy groceries")
+	task := core.NewTask("Buy groceries")
 	fv := NewFeedbackView(task)
 	fv.SetWidth(80)
 	view := fv.View()

@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -54,19 +54,19 @@ type MainModel struct {
 	onboardingView      *OnboardingView
 	conflictView        *ConflictView
 	syncLogView         *SyncLogView
-	pool                *tasks.TaskPool
-	tracker             *tasks.SessionTracker
-	provider            tasks.TaskProvider
-	healthChecker       *tasks.HealthChecker
-	completionCounter   *tasks.CompletionCounter
-	patternReport       *tasks.PatternReport
-	patternAnalyzer     *tasks.PatternAnalyzer
+	pool                *core.TaskPool
+	tracker             *core.SessionTracker
+	provider            core.TaskProvider
+	healthChecker       *core.HealthChecker
+	completionCounter   *core.CompletionCounter
+	patternReport       *core.PatternReport
+	patternAnalyzer     *core.PatternAnalyzer
 	enrichDB            *enrichment.DB
-	valuesConfig        *tasks.ValuesConfig
-	syncTracker         *tasks.SyncStatusTracker
+	valuesConfig        *core.ValuesConfig
+	syncTracker         *core.SyncStatusTracker
 	agentService        *intelligence.AgentService
 	decomposing         bool
-	syncLog             *tasks.SyncLog
+	syncLog             *core.SyncLog
 	flash               string
 	width               int
 	height              int
@@ -77,30 +77,30 @@ type MainModel struct {
 
 // NewMainModel creates the root application model.
 // If isFirstRun is true, the onboarding wizard is shown before the doors view.
-func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider tasks.TaskProvider, hc *tasks.HealthChecker, isFirstRun bool, edb *enrichment.DB) *MainModel {
+func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider core.TaskProvider, hc *core.HealthChecker, isFirstRun bool, edb *enrichment.DB) *MainModel {
 	// Load values config
-	var valuesConfig *tasks.ValuesConfig
-	if path, err := tasks.GetValuesConfigPath(); err == nil {
-		if cfg, err := tasks.LoadValuesConfig(path); err == nil {
+	var valuesConfig *core.ValuesConfig
+	if path, err := core.GetValuesConfigPath(); err == nil {
+		if cfg, err := core.LoadValuesConfig(path); err == nil {
 			valuesConfig = cfg
 		}
 	}
 	if valuesConfig == nil {
-		valuesConfig = &tasks.ValuesConfig{}
+		valuesConfig = &core.ValuesConfig{}
 	}
 
 	// Initialize completion counter for daily tracking
-	cc := tasks.NewCompletionCounter()
-	if configPath, err := tasks.GetConfigDirPath(); err == nil {
+	cc := core.NewCompletionCounter()
+	if configPath, err := core.GetConfigDirPath(); err == nil {
 		if loadErr := cc.LoadFromFile(filepath.Join(configPath, "completed.txt")); loadErr != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to load completion history: %v\n", loadErr)
 		}
 	}
 
 	// Initialize pattern analyzer: load both cached report and session history
-	pa := tasks.NewPatternAnalyzer()
-	var patternReport *tasks.PatternReport
-	if configPath, err := tasks.GetConfigDirPath(); err == nil {
+	pa := core.NewPatternAnalyzer()
+	var patternReport *core.PatternReport
+	if configPath, err := core.GetConfigDirPath(); err == nil {
 		patternReport, _ = pa.LoadPatterns(filepath.Join(configPath, "patterns.json"))
 		if loadErr := pa.LoadSessions(filepath.Join(configPath, "sessions.jsonl")); loadErr != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to load session history: %v\n", loadErr)
@@ -108,15 +108,15 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 	}
 
 	// Initialize sync log and status tracker
-	var syncLog *tasks.SyncLog
-	if configPath, err := tasks.GetConfigDirPath(); err == nil {
-		syncLog = tasks.NewSyncLog(configPath)
+	var syncLog *core.SyncLog
+	if configPath, err := core.GetConfigDirPath(); err == nil {
+		syncLog = core.NewSyncLog(configPath)
 	}
 
-	syncTracker := tasks.NewSyncStatusTracker()
+	syncTracker := core.NewSyncStatusTracker()
 	syncTracker.Register("Local")
 	// Check if provider is WAL-wrapped and show pending count
-	if walP, ok := provider.(*tasks.WALProvider); ok {
+	if walP, ok := provider.(*core.WALProvider); ok {
 		syncTracker.Register("WAL")
 		if pending := walP.PendingCount(); pending > 0 {
 			syncTracker.SetPending("WAL", pending)
@@ -409,8 +409,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case ValuesSavedMsg:
 		m.valuesConfig = msg.Config
-		if path, err := tasks.GetValuesConfigPath(); err == nil {
-			if saveErr := tasks.SaveValuesConfig(path, msg.Config); saveErr != nil {
+		if path, err := core.GetValuesConfigPath(); err == nil {
+			if saveErr := core.SaveValuesConfig(path, msg.Config); saveErr != nil {
 				fmt.Fprintf(os.Stderr, "warning: failed to save values config: %v\n", saveErr)
 			}
 		}
@@ -435,9 +435,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case ImprovementSubmittedMsg:
 		if m.tracker != nil && msg.Text != "" {
-			configDir, err := tasks.GetConfigDirPath()
+			configDir, err := core.GetConfigDirPath()
 			if err == nil {
-				if writeErr := tasks.WriteImprovement(configDir, m.tracker.GetSessionID(), msg.Text); writeErr != nil {
+				if writeErr := core.WriteImprovement(configDir, m.tracker.GetSessionID(), msg.Text); writeErr != nil {
 					fmt.Fprintf(os.Stderr, "warning: failed to save improvement: %v\n", writeErr)
 				}
 			}
@@ -501,7 +501,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.avoidancePromptView = nil
 		switch msg.Action {
 		case "reconsider":
-			if err := msg.Task.UpdateStatus(tasks.StatusInProgress); err == nil {
+			if err := msg.Task.UpdateStatus(core.StatusInProgress); err == nil {
 				if err := m.saveTasks(); err != nil {
 					fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 				}
@@ -515,7 +515,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewMode = ViewDetail
 			return m, nil
 		case "defer":
-			if err := msg.Task.UpdateStatus(tasks.StatusDeferred); err == nil {
+			if err := msg.Task.UpdateStatus(core.StatusDeferred); err == nil {
 				if err := m.saveTasks(); err != nil {
 					fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 				}
@@ -525,7 +525,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.flash = "Task set aside for later"
 			return m, ClearFlashCmd()
 		case "archive":
-			if err := msg.Task.UpdateStatus(tasks.StatusArchived); err == nil {
+			if err := msg.Task.UpdateStatus(core.StatusArchived); err == nil {
 				if err := m.provider.MarkComplete(msg.Task.ID); err != nil {
 					fmt.Fprintf(os.Stderr, "warning: failed to archive task: %v\n", err)
 				}
@@ -546,9 +546,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewDoors
 		// Save values if provided
 		if len(msg.Values) > 0 {
-			m.valuesConfig = &tasks.ValuesConfig{Values: msg.Values}
-			if path, err := tasks.GetValuesConfigPath(); err == nil {
-				if saveErr := tasks.SaveValuesConfig(path, m.valuesConfig); saveErr != nil {
+			m.valuesConfig = &core.ValuesConfig{Values: msg.Values}
+			if path, err := core.GetValuesConfigPath(); err == nil {
+				if saveErr := core.SaveValuesConfig(path, m.valuesConfig); saveErr != nil {
 					fmt.Fprintf(os.Stderr, "warning: failed to save values config: %v\n", saveErr)
 				}
 			}
@@ -565,8 +565,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.doorsView.RefreshDoors()
 		// Persist onboarding state
-		if configDir, err := tasks.GetConfigDirPath(); err == nil {
-			if markErr := tasks.MarkOnboardingComplete(configDir); markErr != nil {
+		if configDir, err := core.GetConfigDirPath(); err == nil {
+			if markErr := core.MarkOnboardingComplete(configDir); markErr != nil {
 				fmt.Fprintf(os.Stderr, "warning: failed to save onboarding state: %v\n", markErr)
 			}
 		}
@@ -635,13 +635,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case SyncStatusUpdateMsg:
 		if m.syncTracker != nil {
 			switch msg.Phase {
-			case tasks.SyncPhaseSynced:
+			case core.SyncPhaseSynced:
 				m.syncTracker.SetSynced(msg.ProviderName)
-			case tasks.SyncPhaseSyncing:
+			case core.SyncPhaseSyncing:
 				m.syncTracker.SetSyncing(msg.ProviderName)
-			case tasks.SyncPhasePending:
+			case core.SyncPhasePending:
 				m.syncTracker.SetPending(msg.ProviderName, msg.PendingCount)
-			case tasks.SyncPhaseError:
+			case core.SyncPhaseError:
 				m.syncTracker.SetError(msg.ProviderName, msg.ErrorMsg)
 			}
 		}
@@ -858,7 +858,7 @@ func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // findAvoidancePromptTask checks current doors for a task with 10+ bypasses
 // that hasn't already been prompted this session. Returns the first match or nil.
-func (m *MainModel) findAvoidancePromptTask() *tasks.Task {
+func (m *MainModel) findAvoidancePromptTask() *core.Task {
 	for _, task := range m.doorsView.currentDoors {
 		count, ok := m.doorsView.avoidanceMap[task.Text]
 		if ok && count >= 10 && !m.promptedTasks[task.Text] {
@@ -868,7 +868,7 @@ func (m *MainModel) findAvoidancePromptTask() *tasks.Task {
 	return nil
 }
 
-func (m *MainModel) newDetailView(task *tasks.Task) *DetailView {
+func (m *MainModel) newDetailView(task *core.Task) *DetailView {
 	dv := NewDetailView(task, m.tracker, m.enrichDB, m.pool)
 	dv.SetWidth(m.width)
 	dv.SetAgentService(m.agentService)

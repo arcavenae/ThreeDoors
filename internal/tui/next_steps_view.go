@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -23,13 +23,13 @@ type NextStepsView struct {
 }
 
 // NewNextStepsView creates a new NextStepsView with context-aware options.
-func NewNextStepsView(context string, pool *tasks.TaskPool, cc *tasks.CompletionCounter) *NextStepsView {
+func NewNextStepsView(context string, pool *core.TaskPool, cc *core.CompletionCounter) *NextStepsView {
 	nv := &NextStepsView{context: context}
 	nv.generateOptions(context, pool, cc)
 	return nv
 }
 
-func (nv *NextStepsView) generateOptions(context string, pool *tasks.TaskPool, cc *tasks.CompletionCounter) {
+func (nv *NextStepsView) generateOptions(context string, pool *core.TaskPool, cc *core.CompletionCounter) {
 	switch context {
 	case "completed":
 		nv.header = pickCompletionHeader(cc)
@@ -43,7 +43,7 @@ func (nv *NextStepsView) generateOptions(context string, pool *tasks.TaskPool, c
 	}
 }
 
-func pickCompletionHeader(cc *tasks.CompletionCounter) string {
+func pickCompletionHeader(cc *core.CompletionCounter) string {
 	if cc != nil {
 		today := cc.GetTodayCount()
 		if today >= 5 {
@@ -56,13 +56,13 @@ func pickCompletionHeader(cc *tasks.CompletionCounter) string {
 	return "Nice work! What would you like to do next?"
 }
 
-func generateCompletionOptions(pool *tasks.TaskPool) []NextStepOption {
+func generateCompletionOptions(pool *core.TaskPool) []NextStepOption {
 	options := []NextStepOption{
 		{Label: "Open another door", Action: "doors"},
 	}
 
 	if pool.Count() > 0 {
-		blocked := pool.GetTasksByStatus(tasks.StatusBlocked)
+		blocked := pool.GetTasksByStatus(core.StatusBlocked)
 		if len(blocked) > 0 {
 			options = append(options, NextStepOption{
 				Label:  fmt.Sprintf("Review blocked tasks (%d)", len(blocked)),
@@ -78,7 +78,7 @@ func generateCompletionOptions(pool *tasks.TaskPool) []NextStepOption {
 	return options
 }
 
-func generateAddedOptions(pool *tasks.TaskPool) []NextStepOption {
+func generateAddedOptions(pool *core.TaskPool) []NextStepOption {
 	options := []NextStepOption{
 		{Label: "Back to doors", Action: "doors"},
 		{Label: "Add another task", Action: "add"},

@@ -3,19 +3,21 @@ package main
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func newTestModel(t *testing.T) *tui.MainModel {
 	t.Helper()
-	pool := tasks.NewTaskPool()
-	pool.AddTask(tasks.NewTask("Test task 1"))
-	pool.AddTask(tasks.NewTask("Test task 2"))
-	pool.AddTask(tasks.NewTask("Test task 3"))
-	tracker := tasks.NewSessionTracker()
-	return tui.NewMainModel(pool, tracker, tasks.NewTextFileProvider(), nil, false, nil)
+	pool := core.NewTaskPool()
+	pool.AddTask(core.NewTask("Test task 1"))
+	pool.AddTask(core.NewTask("Test task 2"))
+	pool.AddTask(core.NewTask("Test task 3"))
+	tracker := core.NewSessionTracker()
+	return tui.NewMainModel(pool, tracker, textfile.NewTextFileProvider(), nil, false, nil)
 }
 
 func TestQuitKey(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -13,22 +13,22 @@ import (
 // SearchView handles search and command palette functionality.
 type SearchView struct {
 	textInput         textinput.Model
-	results           []*tasks.Task
+	results           []*core.Task
 	selectedIndex     int
-	pool              *tasks.TaskPool
-	tracker           *tasks.SessionTracker
-	healthChecker     *tasks.HealthChecker
-	completionCounter *tasks.CompletionCounter
-	patternReport     *tasks.PatternReport
-	syncLog           *tasks.SyncLog
+	pool              *core.TaskPool
+	tracker           *core.SessionTracker
+	healthChecker     *core.HealthChecker
+	completionCounter *core.CompletionCounter
+	patternReport     *core.PatternReport
+	syncLog           *core.SyncLog
 	width             int
 	isCommandMode     bool
 }
 
 // NewSearchView creates a new SearchView.
-func NewSearchView(pool *tasks.TaskPool, tracker *tasks.SessionTracker, hc *tasks.HealthChecker, cc *tasks.CompletionCounter, pr *tasks.PatternReport) *SearchView {
+func NewSearchView(pool *core.TaskPool, tracker *core.SessionTracker, hc *core.HealthChecker, cc *core.CompletionCounter, pr *core.PatternReport) *SearchView {
 	ti := textinput.New()
-	ti.Placeholder = "Search tasks... (or :command for commands)"
+	ti.Placeholder = "Search core... (or :command for commands)"
 	ti.Focus()
 	ti.CharLimit = 256
 	ti.Width = 40
@@ -53,7 +53,7 @@ func (sv *SearchView) SetWidth(w int) {
 }
 
 // SetSyncLog sets the sync log for the :synclog command.
-func (sv *SearchView) SetSyncLog(sl *tasks.SyncLog) {
+func (sv *SearchView) SetSyncLog(sl *core.SyncLog) {
 	sv.syncLog = sl
 }
 
@@ -68,13 +68,13 @@ func (sv *SearchView) RestoreState(query string, selectedIndex int) {
 }
 
 // filterTasks returns tasks matching query by case-insensitive substring match.
-func (sv *SearchView) filterTasks(query string) []*tasks.Task {
+func (sv *SearchView) filterTasks(query string) []*core.Task {
 	if query == "" {
 		return nil
 	}
 	lowerQuery := strings.ToLower(query)
 	allTasks := sv.pool.GetAllTasks()
-	var matched []*tasks.Task
+	var matched []*core.Task
 	for _, t := range allTasks {
 		if strings.Contains(strings.ToLower(t.Text), lowerQuery) {
 			matched = append(matched, t)
@@ -127,7 +127,7 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 				return AddTaskWithContextPromptMsg{}
 			}
 		}
-		newTask := tasks.NewTask(args)
+		newTask := core.NewTask(args)
 		return func() tea.Msg {
 			return TaskAddedMsg{Task: newTask}
 		}
@@ -165,16 +165,16 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		report := sv.patternReport
 		switch args {
 		case "mood":
-			text := tasks.FormatMoodInsights(report)
+			text := core.FormatMoodInsights(report)
 			return func() tea.Msg { return FlashMsg{Text: text} }
 		case "avoidance":
-			text := tasks.FormatAvoidanceInsights(report)
+			text := core.FormatAvoidanceInsights(report)
 			return func() tea.Msg { return FlashMsg{Text: text} }
 		case "":
 			// No args — open the full insights dashboard
 			return func() tea.Msg { return ShowInsightsMsg{} }
 		default:
-			text := tasks.FormatInsights(report)
+			text := core.FormatInsights(report)
 			return func() tea.Msg { return FlashMsg{Text: text} }
 		}
 

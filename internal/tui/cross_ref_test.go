@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -25,10 +25,10 @@ func openTestEnrichDB(t *testing.T) *enrichment.DB {
 	return edb
 }
 
-func makeTestPool(texts ...string) *tasks.TaskPool {
-	pool := tasks.NewTaskPool()
+func makeTestPool(texts ...string) *core.TaskPool {
+	pool := core.NewTaskPool()
 	for _, text := range texts {
-		pool.AddTask(tasks.NewTask(text))
+		pool.AddTask(core.NewTask(text))
 	}
 	return pool
 }

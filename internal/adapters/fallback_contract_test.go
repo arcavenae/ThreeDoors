@@ -4,27 +4,28 @@ import (
 	"testing"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // TestFallbackProviderContract runs the full contract test suite against
 // FallbackProvider with two TextFileProvider instances (primary and fallback).
 func TestFallbackProviderContract(t *testing.T) {
-	factory := func(t *testing.T) tasks.TaskProvider {
+	factory := func(t *testing.T) core.TaskProvider {
 		t.Helper()
 
 		// Each provider gets its own temp dir for isolation
 		primaryDir := t.TempDir()
-		tasks.SetHomeDir(primaryDir)
+		core.SetHomeDir(primaryDir)
 
-		primary := tasks.NewTextFileProvider()
-		fallback := tasks.NewTextFileProvider()
+		primary := textfile.NewTextFileProvider()
+		fallback := textfile.NewTextFileProvider()
 
 		t.Cleanup(func() {
-			tasks.SetHomeDir("")
+			core.SetHomeDir("")
 		})
 
-		return tasks.NewFallbackProvider(primary, fallback)
+		return core.NewFallbackProvider(primary, fallback)
 	}
 
 	adapters.RunContractTests(t, factory)
@@ -38,22 +39,22 @@ func TestFallbackProviderContract_FallbackActivation(t *testing.T) {
 	fallbackDir := t.TempDir()
 
 	// Set up the fallback provider with real data
-	tasks.SetHomeDir(fallbackDir)
-	fallbackProvider := tasks.NewTextFileProvider()
-	seed := []*tasks.Task{tasks.NewTask("Fallback task")}
+	core.SetHomeDir(fallbackDir)
+	fallbackProvider := textfile.NewTextFileProvider()
+	seed := []*core.Task{core.NewTask("Fallback task")}
 	if err := fallbackProvider.SaveTasks(seed); err != nil {
 		t.Fatalf("seed fallback: %v", err)
 	}
 
 	// Primary points to an empty but valid dir — set home to primary dir
-	tasks.SetHomeDir(primaryDir)
-	primaryProvider := tasks.NewTextFileProvider()
+	core.SetHomeDir(primaryDir)
+	primaryProvider := textfile.NewTextFileProvider()
 
 	t.Cleanup(func() {
-		tasks.SetHomeDir("")
+		core.SetHomeDir("")
 	})
 
-	fp := tasks.NewFallbackProvider(primaryProvider, fallbackProvider)
+	fp := core.NewFallbackProvider(primaryProvider, fallbackProvider)
 
 	// Primary should succeed (returns default or empty tasks)
 	_, err := fp.LoadTasks()

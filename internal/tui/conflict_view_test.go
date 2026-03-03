@@ -5,20 +5,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestConflictView_View(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
-	conflicts := []tasks.Conflict{
+	conflicts := []core.Conflict{
 		{
-			LocalTask:  &tasks.Task{ID: "1", Text: "Buy groceries", Status: tasks.StatusInProgress, UpdatedAt: now},
-			RemoteTask: &tasks.Task{ID: "1", Text: "Buy organic groceries", Status: tasks.StatusTodo, UpdatedAt: now},
+			LocalTask:  &core.Task{ID: "1", Text: "Buy groceries", Status: core.StatusInProgress, UpdatedAt: now},
+			RemoteTask: &core.Task{ID: "1", Text: "Buy organic groceries", Status: core.StatusTodo, UpdatedAt: now},
 		},
 	}
-	cs := tasks.NewConflictSet("Local", conflicts)
+	cs := core.NewConflictSet("Local", conflicts)
 	cv := NewConflictView(cs, nil)
 	cv.SetWidth(80)
 
@@ -52,7 +52,7 @@ func TestConflictView_View(t *testing.T) {
 
 func TestConflictView_AllResolved(t *testing.T) {
 	t.Parallel()
-	cs := tasks.NewConflictSet("Local", nil)
+	cs := core.NewConflictSet("Local", nil)
 	cv := NewConflictView(cs, nil)
 
 	view := cv.View()
@@ -65,10 +65,10 @@ func TestConflictView_AllResolved(t *testing.T) {
 func TestConflictView_ResolveLocal(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
-	cs := tasks.NewConflictSet("Test", []tasks.Conflict{
+	cs := core.NewConflictSet("Test", []core.Conflict{
 		{
-			LocalTask:  &tasks.Task{ID: "1", Text: "local", UpdatedAt: now},
-			RemoteTask: &tasks.Task{ID: "1", Text: "remote", UpdatedAt: now},
+			LocalTask:  &core.Task{ID: "1", Text: "local", UpdatedAt: now},
+			RemoteTask: &core.Task{ID: "1", Text: "remote", UpdatedAt: now},
 		},
 	})
 	cv := NewConflictView(cs, nil)
@@ -87,10 +87,10 @@ func TestConflictView_ResolveLocal(t *testing.T) {
 func TestConflictView_ResolveRemote(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
-	cs := tasks.NewConflictSet("Test", []tasks.Conflict{
+	cs := core.NewConflictSet("Test", []core.Conflict{
 		{
-			LocalTask:  &tasks.Task{ID: "1", Text: "local", UpdatedAt: now},
-			RemoteTask: &tasks.Task{ID: "1", Text: "remote", UpdatedAt: now},
+			LocalTask:  &core.Task{ID: "1", Text: "local", UpdatedAt: now},
+			RemoteTask: &core.Task{ID: "1", Text: "remote", UpdatedAt: now},
 		},
 	})
 	cv := NewConflictView(cs, nil)
@@ -118,10 +118,10 @@ func TestConflictView_ResolveRemote(t *testing.T) {
 func TestConflictView_ResolveBoth(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
-	cs := tasks.NewConflictSet("Test", []tasks.Conflict{
+	cs := core.NewConflictSet("Test", []core.Conflict{
 		{
-			LocalTask:  &tasks.Task{ID: "1", Text: "local", UpdatedAt: now},
-			RemoteTask: &tasks.Task{ID: "1", Text: "remote", UpdatedAt: now},
+			LocalTask:  &core.Task{ID: "1", Text: "local", UpdatedAt: now},
+			RemoteTask: &core.Task{ID: "1", Text: "remote", UpdatedAt: now},
 		},
 	})
 	cv := NewConflictView(cs, nil)
@@ -146,10 +146,10 @@ func TestConflictView_ResolveBoth(t *testing.T) {
 func TestConflictView_EscReturns(t *testing.T) {
 	t.Parallel()
 	now := time.Now().UTC()
-	cs := tasks.NewConflictSet("Test", []tasks.Conflict{
+	cs := core.NewConflictSet("Test", []core.Conflict{
 		{
-			LocalTask:  &tasks.Task{ID: "1", Text: "local", UpdatedAt: now},
-			RemoteTask: &tasks.Task{ID: "1", Text: "remote", UpdatedAt: now},
+			LocalTask:  &core.Task{ID: "1", Text: "local", UpdatedAt: now},
+			RemoteTask: &core.Task{ID: "1", Text: "remote", UpdatedAt: now},
 		},
 	})
 	cv := NewConflictView(cs, nil)

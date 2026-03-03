@@ -4,21 +4,23 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+
 	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // TestTextFileProviderContract runs the full contract test suite
 // against the TextFileProvider to validate the reference implementation.
 func TestTextFileProviderContract(t *testing.T) {
-	factory := func(t *testing.T) tasks.TaskProvider {
+	factory := func(t *testing.T) core.TaskProvider {
 		t.Helper()
 		dir := t.TempDir()
-		tasks.SetHomeDir(dir)
+		core.SetHomeDir(dir)
 		t.Cleanup(func() {
-			tasks.SetHomeDir("")
+			core.SetHomeDir("")
 		})
-		return tasks.NewTextFileProvider()
+		return textfile.NewTextFileProvider()
 	}
 
 	adapters.RunContractTests(t, factory)
@@ -27,12 +29,12 @@ func TestTextFileProviderContract(t *testing.T) {
 // TestContractSuite_LoadTasks_Empty verifies LoadTasks on a fresh provider.
 func TestContractSuite_LoadTasks_Empty(t *testing.T) {
 	dir := t.TempDir()
-	tasks.SetHomeDir(dir)
+	core.SetHomeDir(dir)
 	t.Cleanup(func() {
-		tasks.SetHomeDir("")
+		core.SetHomeDir("")
 	})
 
-	provider := tasks.NewTextFileProvider()
+	provider := textfile.NewTextFileProvider()
 	loaded, err := provider.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks() error: %v", err)
@@ -47,18 +49,18 @@ func TestContractSuite_LoadTasks_Empty(t *testing.T) {
 // TestContractSuite_ConcurrentAccess validates thread safety of provider operations.
 func TestContractSuite_ConcurrentAccess(t *testing.T) {
 	dir := t.TempDir()
-	tasks.SetHomeDir(dir)
+	core.SetHomeDir(dir)
 	t.Cleanup(func() {
-		tasks.SetHomeDir("")
+		core.SetHomeDir("")
 	})
 
-	provider := tasks.NewTextFileProvider()
+	provider := textfile.NewTextFileProvider()
 
 	// Initialize with some tasks
-	initial := []*tasks.Task{
-		tasks.NewTask("Concurrent task 1"),
-		tasks.NewTask("Concurrent task 2"),
-		tasks.NewTask("Concurrent task 3"),
+	initial := []*core.Task{
+		core.NewTask("Concurrent task 1"),
+		core.NewTask("Concurrent task 2"),
+		core.NewTask("Concurrent task 3"),
 	}
 	if err := provider.SaveTasks(initial); err != nil {
 		t.Fatalf("SaveTasks() setup error: %v", err)
@@ -80,7 +82,7 @@ func TestContractSuite_ConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			task := tasks.NewTask("concurrent save task")
+			task := core.NewTask("concurrent save task")
 			_ = provider.SaveTask(task)
 		}()
 	}

@@ -4,24 +4,25 @@ import (
 	"testing"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/tasks"
+	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // TestWALProviderContract runs the full contract test suite against
 // WALProvider wrapping a TextFileProvider. When the inner provider
 // succeeds, WAL should be transparent — all operations pass through.
 func TestWALProviderContract(t *testing.T) {
-	factory := func(t *testing.T) tasks.TaskProvider {
+	factory := func(t *testing.T) core.TaskProvider {
 		t.Helper()
 
 		dir := t.TempDir()
-		tasks.SetHomeDir(dir)
+		core.SetHomeDir(dir)
 
-		inner := tasks.NewTextFileProvider()
-		walProvider := tasks.NewWALProvider(inner, dir)
+		inner := textfile.NewTextFileProvider()
+		walProvider := core.NewWALProvider(inner, dir)
 
 		t.Cleanup(func() {
-			tasks.SetHomeDir("")
+			core.SetHomeDir("")
 		})
 
 		return walProvider
@@ -34,15 +35,15 @@ func TestWALProviderContract(t *testing.T) {
 // provider is healthy, no WAL entries accumulate.
 func TestWALProviderContract_PendingCountZero(t *testing.T) {
 	dir := t.TempDir()
-	tasks.SetHomeDir(dir)
+	core.SetHomeDir(dir)
 	t.Cleanup(func() {
-		tasks.SetHomeDir("")
+		core.SetHomeDir("")
 	})
 
-	inner := tasks.NewTextFileProvider()
-	walProvider := tasks.NewWALProvider(inner, dir)
+	inner := textfile.NewTextFileProvider()
+	walProvider := core.NewWALProvider(inner, dir)
 
-	task := tasks.NewTask("WAL test task")
+	task := core.NewTask("WAL test task")
 	if err := walProvider.SaveTask(task); err != nil {
 		t.Fatalf("SaveTask() error: %v", err)
 	}
