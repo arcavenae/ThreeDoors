@@ -140,6 +140,9 @@ type ReturnToSearchMsg struct {
 	SelectedIndex int
 }
 
+// ShowInsightsMsg is sent to open the insights dashboard view.
+type ShowInsightsMsg struct{}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

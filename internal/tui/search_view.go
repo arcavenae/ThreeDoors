@@ -152,6 +152,26 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "health":
 		return sv.runHealthCheck()
 
+	case "dashboard":
+		return func() tea.Msg { return ShowInsightsMsg{} }
+
+	case "insights":
+		report := sv.patternReport
+		switch args {
+		case "mood":
+			text := tasks.FormatMoodInsights(report)
+			return func() tea.Msg { return FlashMsg{Text: text} }
+		case "avoidance":
+			text := tasks.FormatAvoidanceInsights(report)
+			return func() tea.Msg { return FlashMsg{Text: text} }
+		case "":
+			// No args — open the full insights dashboard
+			return func() tea.Msg { return ShowInsightsMsg{} }
+		default:
+			text := tasks.FormatInsights(report)
+			return func() tea.Msg { return FlashMsg{Text: text} }
+		}
+
 	case "goals":
 		if args == "edit" {
 			return func() tea.Msg { return ShowValuesEditMsg{} }
@@ -161,24 +181,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "tag":
 		return func() tea.Msg { return ShowTagViewMsg{} }
 
-	case "insights":
-		report := sv.patternReport
-		var text string
-		switch args {
-		case "mood":
-			text = tasks.FormatMoodInsights(report)
-		case "avoidance":
-			text = tasks.FormatAvoidanceInsights(report)
-		default:
-			text = tasks.FormatInsights(report)
-		}
-		return func() tea.Msg {
-			return FlashMsg{Text: text}
-		}
-
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :insights [mood|avoidance], :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, q quit"}
 		}
 
 	case "quit", "exit":
