@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
 	"gopkg.in/yaml.v3"
 )
 
@@ -36,6 +37,8 @@ type ProviderConfig struct {
 	NoteTitle string `yaml:"note_title,omitempty"`
 	// Providers is the new config-driven list of active providers.
 	Providers []ProviderEntry `yaml:"providers,omitempty"`
+	// LLM holds LLM backend configuration for task decomposition.
+	LLM llm.Config `yaml:"llm,omitempty"`
 }
 
 // defaultProviderConfig returns the default configuration.

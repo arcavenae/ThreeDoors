@@ -1,12 +1,15 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcaven/ThreeDoors/internal/intelligence"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -57,6 +60,8 @@ type MainModel struct {
 	enrichDB            *enrichment.DB
 	valuesConfig        *tasks.ValuesConfig
 	syncTracker         *tasks.SyncStatusTracker
+	agentService        *intelligence.AgentService
+	decomposing         bool
 	flash               string
 	width               int
 	height              int
@@ -135,6 +140,11 @@ func NewMainModel(pool *tasks.TaskPool, tracker *tasks.SessionTracker, provider 
 	}
 
 	return m
+}
+
+// SetAgentService sets the agent service for LLM task decomposition.
+func (m *MainModel) SetAgentService(svc *intelligence.AgentService) {
+	m.agentService = svc
 }
 
 // Init implements tea.Model.
@@ -220,8 +230,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case NavigateToLinkedMsg:
-		m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
-		m.detailView.SetWidth(m.width)
+		m.detailView = m.newDetailView(msg.Task)
 		m.viewMode = ViewDetail
 		return m, nil
 
@@ -254,8 +263,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.searchSelectedIndex = m.searchView.selectedIndex
 		}
 		m.previousView = ViewSearch
-		m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
-		m.detailView.SetWidth(m.width)
+		m.detailView = m.newDetailView(msg.Task)
 		m.viewMode = ViewDetail
 		return m, nil
 
@@ -481,14 +489,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 				}
 			}
-			m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
-			m.detailView.SetWidth(m.width)
+			m.detailView = m.newDetailView(msg.Task)
 			m.viewMode = ViewDetail
 			m.flash = "Taking it on!"
 			return m, ClearFlashCmd()
 		case "breakdown":
-			m.detailView = NewDetailView(msg.Task, m.tracker, m.enrichDB, m.pool)
-			m.detailView.SetWidth(m.width)
+			m.detailView = m.newDetailView(msg.Task)
 			m.viewMode = ViewDetail
 			return m, nil
 		case "defer":
@@ -555,6 +561,24 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case FlashMsg:
 		m.flash = msg.Text
+		return m, ClearFlashCmd()
+
+	case DecomposeStartMsg:
+		if m.decomposing {
+			m.flash = "Decomposition already in progress"
+			return m, ClearFlashCmd()
+		}
+		m.decomposing = true
+		m.flash = "Decomposing task..."
+		return m, m.runDecompose(msg.TaskID, msg.TaskDescription)
+
+	case DecomposeResultMsg:
+		m.decomposing = false
+		if msg.Err != nil {
+			m.flash = fmt.Sprintf("Decompose failed: %s", msg.Err.Error())
+			return m, ClearFlashCmd()
+		}
+		m.flash = fmt.Sprintf("Decomposed into %d stories", len(msg.Result.Stories))
 		return m, ClearFlashCmd()
 
 	case SyncStatusUpdateMsg:
@@ -644,8 +668,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.tracker != nil {
 					m.tracker.RecordDoorSelection(m.doorsView.selectedDoorIndex, task.Text)
 				}
-				m.detailView = NewDetailView(task, m.tracker, m.enrichDB, m.pool)
-				m.detailView.SetWidth(m.width)
+				m.detailView = m.newDetailView(task)
 				m.viewMode = ViewDetail
 			}
 		case "n", "N":
@@ -774,9 +797,38 @@ func (m *MainModel) findAvoidancePromptTask() *tasks.Task {
 	return nil
 }
 
+func (m *MainModel) newDetailView(task *tasks.Task) *DetailView {
+	dv := NewDetailView(task, m.tracker, m.enrichDB, m.pool)
+	dv.SetWidth(m.width)
+	dv.SetAgentService(m.agentService)
+	return dv
+}
+
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
 	return m.provider.SaveTasks(allTasks)
+}
+
+// runDecompose returns a tea.Cmd that runs LLM decomposition asynchronously.
+func (m *MainModel) runDecompose(taskID, taskDescription string) tea.Cmd {
+	svc := m.agentService
+	return func() tea.Msg {
+		if svc == nil {
+			return DecomposeResultMsg{
+				TaskID: taskID,
+				Err:    fmt.Errorf("LLM not configured"),
+			}
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+
+		result, err := svc.DecomposeAndWrite(ctx, taskDescription)
+		return DecomposeResultMsg{
+			TaskID: taskID,
+			Result: result,
+			Err:    err,
+		}
+	}
 }
 
 // View implements tea.Model.

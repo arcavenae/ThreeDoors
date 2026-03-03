@@ -8,6 +8,7 @@ import (
 
 	"github.com/arcaven/ThreeDoors/internal/dist"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcaven/ThreeDoors/internal/intelligence"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	"github.com/arcaven/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
@@ -119,8 +120,22 @@ func main() {
 	// Wait for enrichment DB to be ready before creating the model
 	enrichWg.Wait()
 
+	// Initialize agent service for LLM task decomposition (optional — non-fatal if config is missing)
+	var agentSvc *intelligence.AgentService
+	if cfg.LLM.Output.OutputRepo != "" {
+		svc, agentErr := intelligence.NewAgentService(cfg.LLM)
+		if agentErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: LLM agent service init failed: %v\n", agentErr)
+		} else {
+			agentSvc = svc
+		}
+	}
+
 	isFirstRun := configErr == nil && tasks.IsFirstRun(configDir)
 	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun, enrichDB)
+	if agentSvc != nil {
+		model.SetAgentService(agentSvc)
+	}
 
 	p := tea.NewProgram(model)
 	if _, err := p.Run(); err != nil {

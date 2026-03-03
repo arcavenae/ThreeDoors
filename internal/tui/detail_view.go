@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcaven/ThreeDoors/internal/intelligence"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -29,6 +30,7 @@ type DetailView struct {
 	tracker           *tasks.SessionTracker
 	enrichDB          *enrichment.DB
 	pool              *tasks.TaskPool
+	agentService      *intelligence.AgentService
 	crossRefs         []enrichment.CrossReference
 	linkCandidates    []*tasks.Task
 	linkSelectedIndex int
@@ -61,6 +63,11 @@ func (dv *DetailView) loadCrossRefs() {
 		return
 	}
 	dv.crossRefs = refs
+}
+
+// SetAgentService sets the agent service for LLM task decomposition.
+func (dv *DetailView) SetAgentService(svc *intelligence.AgentService) {
+	dv.agentService = svc
 }
 
 // SetWidth sets the terminal width.
@@ -140,6 +147,17 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		if len(dv.crossRefs) > 0 {
 			dv.linkBrowseIndex = 0
 			dv.mode = DetailModeLinkBrowse
+		}
+	case "g", "G":
+		if dv.agentService == nil {
+			return func() tea.Msg { return FlashMsg{Text: "LLM not configured"} }
+		}
+		desc := strings.TrimSpace(dv.task.Text)
+		if desc == "" {
+			return func() tea.Msg { return FlashMsg{Text: "Task has no description to decompose"} }
+		}
+		return func() tea.Msg {
+			return DecomposeStartMsg{TaskID: dv.task.ID, TaskDescription: desc}
 		}
 	}
 	return nil
@@ -368,7 +386,11 @@ func (dv *DetailView) View() string {
 		if len(dv.crossRefs) > 0 {
 			browseHint = " [X]refs"
 		}
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + linkHint + browseHint + " [Esc]Back"))
+		decomposeHint := ""
+		if dv.agentService != nil {
+			decomposeHint = " [G]enerate stories"
+		}
+		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + linkHint + browseHint + decomposeHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())

@@ -3,6 +3,7 @@ package tui
 import (
 	"time"
 
+	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
 	"github.com/arcaven/ThreeDoors/internal/tasks"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -154,6 +155,19 @@ type SyncStatusUpdateMsg struct {
 	Phase        tasks.SyncPhase
 	PendingCount int
 	ErrorMsg     string
+}
+
+// DecomposeStartMsg is sent when the user triggers task decomposition.
+type DecomposeStartMsg struct {
+	TaskID          string
+	TaskDescription string
+}
+
+// DecomposeResultMsg is sent when task decomposition completes (success or failure).
+type DecomposeResultMsg struct {
+	TaskID string
+	Result *llm.DecompositionResult
+	Err    error
 }
 
 // ClearFlashCmd returns a command that clears the flash after a delay.
