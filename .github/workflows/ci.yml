@@ -93,6 +93,64 @@ jobs:
       - name: Validate build
         run: go build -o /dev/null ./cmd/threedoors
 
+  test-docker-e2e:
+    name: Docker E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile.test', 'go.mod', 'go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.test
+          load: true
+          tags: threedoors-test:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Create test-results directory
+        run: mkdir -p test-results
+
+      - name: Run Docker E2E tests
+        run: docker compose -f docker-compose.test.yml run --rm -T test
+
+      - name: Check for golden file diffs
+        if: always()
+        run: |
+          if git diff --name-only | grep -q '\.golden$'; then
+            echo "::warning::Golden file changes detected:"
+            git diff -- '*.golden'
+          else
+            echo "No golden file changes detected."
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-e2e-results
+          path: test-results/
+          retention-days: 14
+
+      # Rotate buildx cache to prevent unbounded growth
+      - name: Rotate cache
+        if: always()
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache 2>/dev/null || true
+
   build-binaries:
     name: Build Binaries
     needs: quality-gate
