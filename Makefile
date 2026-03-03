@@ -1,7 +1,7 @@
 THREEDOORS_DIR ?= $(HOME)/.threedoors
 VERSION ?= dev
 
-.PHONY: build run clean fmt lint test analyze test-scripts sign pkg release-local test-dist
+.PHONY: build run clean fmt lint test test-docker analyze test-scripts sign pkg release-local test-dist
 
 build:
 	go build -ldflags "-X main.version=$(VERSION)" -o bin/threedoors ./cmd/threedoors
@@ -20,6 +20,12 @@ lint:
 
 test:
 	go test ./... -v
+
+test-docker:
+	@command -v docker >/dev/null 2>&1 || { echo "Error: Docker is required but not found. Install from https://docs.docker.com/get-docker/"; exit 1; }
+	@docker info >/dev/null 2>&1 || { echo "Error: Docker daemon is not running. Start Docker and try again."; exit 1; }
+	@mkdir -p test-results
+	docker compose -f docker-compose.test.yml run --rm test
 
 analyze:
 	@chmod +x scripts/*.sh
