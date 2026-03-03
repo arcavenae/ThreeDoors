@@ -813,3 +813,82 @@ func (pa *PatternAnalyzer) GetBypassRate() float64 {
 	}
 	return math.Round(float64(totalRefreshes)/float64(totalViews)*1000) / 10
 }
+
+// DayOverDayStats holds day-over-day comparison across multiple dimensions.
+type DayOverDayStats struct {
+	TodayDoors        int
+	YesterdayDoors    int
+	TodayBypasses     int
+	YesterdayBypasses int
+	TodayTasks        int
+	YesterdayTasks    int
+}
+
+// GetDayOverDay returns day-over-day comparison of doors opened, bypasses, and tasks completed.
+// Uses session StartTime (UTC) to group by day.
+func (pa *PatternAnalyzer) GetDayOverDay() DayOverDayStats {
+	now := pa.nowFunc().UTC()
+	today := now.Format("2006-01-02")
+	yesterday := now.AddDate(0, 0, -1).Format("2006-01-02")
+
+	var stats DayOverDayStats
+	for _, s := range pa.sessions {
+		day := s.StartTime.UTC().Format("2006-01-02")
+		switch day {
+		case today:
+			stats.TodayDoors += len(s.DoorSelections)
+			stats.TodayBypasses += s.RefreshesUsed
+			stats.TodayTasks += s.TasksCompleted
+		case yesterday:
+			stats.YesterdayDoors += len(s.DoorSelections)
+			stats.YesterdayBypasses += s.RefreshesUsed
+			stats.YesterdayTasks += s.TasksCompleted
+		}
+	}
+	return stats
+}
+
+// GetMoodTrend returns a trend description based on mood-correlated productivity.
+// Returns "improving", "stable", "declining", or "" if insufficient data.
+// Compares the last 3 sessions' mood-productivity against the preceding 3.
+func (pa *PatternAnalyzer) GetMoodTrend() string {
+	if len(pa.sessions) < 6 {
+		return ""
+	}
+
+	// Use the last 6 sessions, split into recent 3 and preceding 3
+	n := len(pa.sessions)
+	recent := pa.sessions[n-3:]
+	preceding := pa.sessions[n-6 : n-3]
+
+	avgRecent := avgCompleted(recent)
+	avgPreceding := avgCompleted(preceding)
+
+	if avgPreceding == 0 {
+		if avgRecent > 0 {
+			return "improving"
+		}
+		return "stable"
+	}
+
+	change := (avgRecent - avgPreceding) / avgPreceding
+	switch {
+	case change > 0.1:
+		return "improving"
+	case change < -0.1:
+		return "declining"
+	default:
+		return "stable"
+	}
+}
+
+func avgCompleted(sessions []SessionMetrics) float64 {
+	if len(sessions) == 0 {
+		return 0
+	}
+	total := 0
+	for _, s := range sessions {
+		total += s.TasksCompleted
+	}
+	return float64(total) / float64(len(sessions))
+}
