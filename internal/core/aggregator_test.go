@@ -66,6 +66,12 @@ func (m *aggMockProvider) MarkComplete(taskID string) error {
 	return nil
 }
 
+func (m *aggMockProvider) Name() string              { return m.name }
+func (m *aggMockProvider) Watch() <-chan ChangeEvent { return nil }
+func (m *aggMockProvider) HealthCheck() HealthCheckResult {
+	return HealthCheckResult{}
+}
+
 func TestMultiSourceAggregator_LoadTasks(t *testing.T) {
 	t.Parallel()
 

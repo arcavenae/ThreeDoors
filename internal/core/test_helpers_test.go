@@ -167,6 +167,12 @@ func (p *inMemoryProvider) MarkComplete(taskID string) error {
 	return fmt.Errorf("task %q not found", taskID)
 }
 
+func (p *inMemoryProvider) Name() string              { return "in-memory" }
+func (p *inMemoryProvider) Watch() <-chan ChangeEvent { return nil }
+func (p *inMemoryProvider) HealthCheck() HealthCheckResult {
+	return HealthCheckResult{}
+}
+
 // IsTextFileBackend identifies this as a textfile-like backend for health checker tests.
 func (p *inMemoryProvider) IsTextFileBackend() bool {
 	return true

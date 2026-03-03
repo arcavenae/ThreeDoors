@@ -39,6 +39,10 @@ func (p *testProvider) MarkComplete(id string) error {
 	return nil
 }
 
+func (p *testProvider) Name() string                        { return "test" }
+func (p *testProvider) Watch() <-chan core.ChangeEvent      { return nil }
+func (p *testProvider) HealthCheck() core.HealthCheckResult { return core.HealthCheckResult{} }
+
 func makePool(texts ...string) *core.TaskPool {
 	pool := core.NewTaskPool()
 	for _, t := range texts {

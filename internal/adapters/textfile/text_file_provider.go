@@ -66,6 +66,37 @@ func (p *TextFileProvider) DeleteTask(taskID string) error {
 	return SaveTasks(filtered)
 }
 
+// Name returns the provider identifier.
+func (p *TextFileProvider) Name() string {
+	return "textfile"
+}
+
+// Watch returns nil because the text file provider does not support external change detection.
+func (p *TextFileProvider) Watch() <-chan core.ChangeEvent {
+	return nil
+}
+
+// HealthCheck reports the operational status of the text file provider.
+func (p *TextFileProvider) HealthCheck() core.HealthCheckResult {
+	result := core.HealthCheckResult{}
+	_, err := LoadTasks()
+	if err != nil {
+		result.Items = append(result.Items, core.HealthCheckItem{
+			Name:       "File Access",
+			Status:     core.HealthFail,
+			Message:    fmt.Sprintf("Cannot read task file: %v", err),
+			Suggestion: "Check file permissions and path",
+		})
+	} else {
+		result.Items = append(result.Items, core.HealthCheckItem{
+			Name:    "File Access",
+			Status:  core.HealthOK,
+			Message: "Task file readable",
+		})
+	}
+	return result
+}
+
 // MarkComplete marks a task as complete, removes it from active tasks, and logs to completed.txt.
 func (p *TextFileProvider) MarkComplete(taskID string) error {
 	allTasks, err := LoadTasks()

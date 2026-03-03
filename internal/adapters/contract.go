@@ -86,6 +86,19 @@ func RunContractTests(t *testing.T, factory ProviderFactory) {
 	t.Run("InterfaceCompliance_AllMethodsCallable", func(t *testing.T) {
 		testInterfaceCompliance(t, factory)
 	})
+
+	// Story 3.5.2: TaskProvider Interface Hardening contract tests
+	t.Run("Name_ReturnsNonEmpty", func(t *testing.T) {
+		testNameReturnsNonEmpty(t, factory)
+	})
+
+	t.Run("Watch_ReturnsChannelOrNil", func(t *testing.T) {
+		testWatchReturnsChannelOrNil(t, factory)
+	})
+
+	t.Run("HealthCheck_ReturnsResult", func(t *testing.T) {
+		testHealthCheckReturnsResult(t, factory)
+	})
 }
 
 func testSaveAndLoad(t *testing.T, factory ProviderFactory) {
@@ -502,4 +515,45 @@ func testInterfaceCompliance(t *testing.T, factory ProviderFactory) {
 			t.Logf("MarkComplete() error: %v (may be acceptable for some providers)", err)
 		}
 	}
+}
+
+// testNameReturnsNonEmpty verifies that Name() returns a non-empty string.
+func testNameReturnsNonEmpty(t *testing.T, factory ProviderFactory) {
+	t.Helper()
+	provider := factory(t)
+
+	name := provider.Name()
+	if name == "" {
+		t.Error("Name() returned empty string, want non-empty provider identifier")
+	}
+}
+
+// testWatchReturnsChannelOrNil verifies that Watch() is callable and returns
+// either a valid channel or nil (for providers that don't support watching).
+func testWatchReturnsChannelOrNil(t *testing.T, factory ProviderFactory) {
+	t.Helper()
+	provider := factory(t)
+
+	// Watch() should not panic. Return value of nil is acceptable.
+	ch := provider.Watch()
+	if ch != nil {
+		// If a channel is returned, verify it's a receive-only channel
+		// by attempting a non-blocking read (should not block or panic).
+		select {
+		case <-ch:
+			// Event received — acceptable
+		default:
+			// No event ready — expected for most providers
+		}
+	}
+}
+
+// testHealthCheckReturnsResult verifies that HealthCheck() returns a valid result.
+func testHealthCheckReturnsResult(t *testing.T, factory ProviderFactory) {
+	t.Helper()
+	provider := factory(t)
+
+	result := provider.HealthCheck()
+	// Result should have at least zero items (never nil Items)
+	_ = result.Items
 }

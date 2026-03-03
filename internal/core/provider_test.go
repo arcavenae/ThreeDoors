@@ -61,6 +61,12 @@ func (m *MockProvider) MarkComplete(taskID string) error {
 	return nil
 }
 
+func (m *MockProvider) Name() string              { return "mock" }
+func (m *MockProvider) Watch() <-chan ChangeEvent { return nil }
+func (m *MockProvider) HealthCheck() HealthCheckResult {
+	return HealthCheckResult{}
+}
+
 // TestMockProvider_ImplementsTaskProvider verifies interface compliance.
 func TestMockProvider_ImplementsTaskProvider(t *testing.T) {
 	var _ TaskProvider = (*MockProvider)(nil)

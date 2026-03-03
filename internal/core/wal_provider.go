@@ -154,6 +154,21 @@ func (wp *WALProvider) MarkComplete(taskID string) error {
 	return wp.enqueue(entry)
 }
 
+// Name returns the name of the inner provider with a WAL suffix.
+func (wp *WALProvider) Name() string {
+	return wp.inner.Name() + " (WAL)"
+}
+
+// Watch delegates to the inner provider's Watch channel.
+func (wp *WALProvider) Watch() <-chan ChangeEvent {
+	return wp.inner.Watch()
+}
+
+// HealthCheck delegates to the inner provider's HealthCheck.
+func (wp *WALProvider) HealthCheck() HealthCheckResult {
+	return wp.inner.HealthCheck()
+}
+
 // PendingCount returns the number of pending WAL entries.
 func (wp *WALProvider) PendingCount() int {
 	wp.mu.Lock()

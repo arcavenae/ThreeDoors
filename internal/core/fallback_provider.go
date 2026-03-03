@@ -95,6 +95,30 @@ func (fp *FallbackProvider) MarkComplete(taskID string) error {
 	return err
 }
 
+// Name returns the name of the active provider (primary or fallback).
+func (fp *FallbackProvider) Name() string {
+	if fp.usedFallback {
+		return fp.fallback.Name() + " (fallback)"
+	}
+	return fp.primary.Name()
+}
+
+// Watch delegates to the active provider's Watch channel.
+func (fp *FallbackProvider) Watch() <-chan ChangeEvent {
+	if fp.usedFallback {
+		return fp.fallback.Watch()
+	}
+	return fp.primary.Watch()
+}
+
+// HealthCheck delegates to the active provider's HealthCheck.
+func (fp *FallbackProvider) HealthCheck() HealthCheckResult {
+	if fp.usedFallback {
+		return fp.fallback.HealthCheck()
+	}
+	return fp.primary.HealthCheck()
+}
+
 // IsFallback returns true if the fallback provider is currently active.
 func (fp *FallbackProvider) IsFallback() bool {
 	return fp.usedFallback
