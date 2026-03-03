@@ -153,6 +153,7 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 		case "obsidian":
 			fmt.Fprintf(&b, "#       vault_path: /path/to/your/vault\n")
 			fmt.Fprintf(&b, "#       tasks_folder: tasks  # Optional: subfolder within vault\n")
+			fmt.Fprintf(&b, "#       file_pattern: \"*.md\"  # Optional: glob pattern for task files\n")
 		default:
 			fmt.Fprintf(&b, "#       # Add provider-specific settings here\n")
 		}

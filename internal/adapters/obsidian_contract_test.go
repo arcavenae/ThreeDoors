@@ -13,7 +13,7 @@ func TestObsidianAdapterContract(t *testing.T) {
 	factory := func(t *testing.T) tasks.TaskProvider {
 		t.Helper()
 		dir := t.TempDir()
-		return tasks.NewObsidianAdapter(dir, "")
+		return tasks.NewObsidianAdapter(dir, "", "")
 	}
 
 	adapters.RunContractTests(t, factory)
