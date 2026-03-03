@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-3 are COMPLETE (40 stories, 73 merged PRs). Epics 4-8, 10-12, 14-15, 18 have implemented stories but stale status markers. See gap analysis report for details.
+**Implementation Status:** Epics 0-8, 3.5, 10-12, 14-15 are COMPLETE. Epics 9, 13, 18 are PARTIAL. 101 merged PRs total. Last audit: 2026-03-03.
 
 ## Requirements Inventory
 
@@ -107,9 +107,9 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - FR51: Functional E2E tests for user workflows ⏳ Epic 9
 
 *Docker E2E & Headless TUI Testing (Party Mode):*
-- FR52: Headless TUI test harness using teatest for automated interaction testing ⏳ Epic 18
-- FR53: Golden file snapshot tests for TUI visual regression detection ⏳ Epic 18
-- FR54: Docker-based reproducible test environment for E2E test execution ⏳ Epic 18
+- FR52: Headless TUI test harness using teatest for automated interaction testing ✅ Epic 18 (Story 18.1, PR #64)
+- FR53: Golden file snapshot tests for TUI visual regression detection ✅ Epic 18 (Story 18.2, PR #86)
+- FR54: Docker-based reproducible test environment for E2E test execution ⏳ Epic 18 (Stories 18.4-18.5 pending)
 
 ### Non-Functional Requirements
 
@@ -191,18 +191,18 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
-| FR20, FR21 | Epic 4 | Learning & Intelligent Door Selection |
+| FR20, FR21 | Epic 4 ✅ | Learning & Intelligent Door Selection (COMPLETE) |
 | FR22-FR26 | Epic 5 ✅ | macOS Distribution & Packaging (COMPLETE) |
-| FR11 | Epic 6 | Data Layer & Enrichment |
-| FR31, FR32, FR33 | Epic 7 | Plugin/Adapter SDK & Registry |
-| FR27, FR28, FR29, FR30 | Epic 8 | Obsidian Integration |
-| FR49, FR50, FR51 | Epic 9 | Testing Strategy & Quality Gates |
-| FR38, FR39 | Epic 10 | First-Run Onboarding |
-| FR40, FR41, FR42, FR43 | Epic 11 | Sync Observability & Offline-First |
-| FR44, FR45 | Epic 12 | Calendar Awareness |
-| FR46, FR47, FR48 | Epic 13 | Multi-Source Aggregation |
-| FR35, FR36, FR37 | Epic 14 | LLM Task Decomposition |
-| FR34 | Epic 15 | Psychology Research & Validation |
+| FR11 | Epic 6 ✅ | Data Layer & Enrichment (COMPLETE — 2/2 stories, optional epic) |
+| FR31, FR32, FR33 | Epic 7 ✅ | Plugin/Adapter SDK & Registry (COMPLETE) |
+| FR27, FR28, FR29, FR30 | Epic 8 ✅ | Obsidian Integration (COMPLETE) |
+| FR49, FR50, FR51 | Epic 9 ◐ | Testing Strategy & Quality Gates (PARTIAL — 2/5 stories) |
+| FR38, FR39 | Epic 10 ✅ | First-Run Onboarding (COMPLETE) |
+| FR40, FR41, FR42, FR43 | Epic 11 ✅ | Sync Observability & Offline-First (COMPLETE) |
+| FR44, FR45 | Epic 12 ✅ | Calendar Awareness (COMPLETE) |
+| FR46, FR47, FR48 | Epic 13 ◐ | Multi-Source Aggregation (PARTIAL — 1/2 stories) |
+| FR35, FR36, FR37 | Epic 14 ✅ | LLM Task Decomposition (COMPLETE) |
+| FR34 | Epic 15 ✅ | Psychology Research & Validation (COMPLETE) |
 
 ## Epic List
 
@@ -226,71 +226,81 @@ Add task capture, values/goals, feedback mechanisms, and navigation improvements
 **FRs covered:** FR3, FR6, FR7, FR8, FR9, FR10, FR16, FR18, FR19
 **Status:** All 7 stories implemented and merged.
 
-### Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging)
+### Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging) ✅ COMPLETE
 Refactor core architecture, harden adapters, establish test infrastructure, and resolve tech debt from rapid Epic 1-3 implementation to prepare for Epic 4+ work.
 **FRs covered:** None (infrastructure/quality — enables FR20-FR51)
 **Prerequisites:** Epic 3 complete ✅
-**Blocks:** Epic 4 (partially), Epic 7, Epic 8, Epic 9, Epic 11
+**Status:** All 8 stories complete (PRs #90-#97).
 
-### Epic 4: Learning & Intelligent Door Selection
+### Epic 4: Learning & Intelligent Door Selection ✅ COMPLETE
 Use historical session metrics to analyze user patterns and adapt door selection.
 **FRs covered:** FR20, FR21
-**Prerequisites:** Epic 3 complete ✅, Epic 3.5 stories 3.5.5/3.5.6 complete, sufficient usage data
+**Prerequisites:** Epic 3 complete ✅, Epic 3.5 stories 3.5.5/3.5.6 complete ✅
+**Status:** All 6 stories complete (PRs #40, #42-#45, #82).
 
 ### Epic 5: macOS Distribution & Packaging ✅ COMPLETE
 Code signing, notarization, Homebrew tap, and pkg installer.
 **FRs covered:** FR22-FR26
-**Status:** Story 5.1 consolidated and implemented.
+**Status:** Story 5.1 consolidated and implemented (PR #30).
 
-### Epic 6: Data Layer & Enrichment (Optional)
+### Epic 6: Data Layer & Enrichment (Optional) ✅ COMPLETE
 SQLite enrichment database for metadata beyond what backends support.
 **FRs covered:** FR11
-**Prerequisites:** Epic 4 complete, proven need
+**Status:** All 2 stories complete (PRs #53, #56). Note: PR #53 titled "Story 5.1" but implements Epic 6 Story 6.1.
 
-### Epic 7: Plugin/Adapter SDK & Registry
+### Epic 7: Plugin/Adapter SDK & Registry ✅ COMPLETE
 Formalize adapter pattern into plugin SDK with registry and developer guide.
 **FRs covered:** FR31, FR32, FR33
 **Prerequisites:** Epic 2 ✅
+**Status:** All 3 stories complete (PRs #68, #70, #72).
 
-### Epic 8: Obsidian Integration (P0 - #2 Integration)
+### Epic 8: Obsidian Integration (P0 - #2 Integration) ✅ COMPLETE
 Add Obsidian vault as second task storage backend.
 **FRs covered:** FR27, FR28, FR29, FR30
-**Prerequisites:** Epic 7
+**Prerequisites:** Epic 7 ✅
+**Status:** All 4 stories complete (PRs #73, #75, #77, #79).
 
-### Epic 9: Testing Strategy & Quality Gates
+### Epic 9: Testing Strategy & Quality Gates ◐ PARTIAL
 Comprehensive testing infrastructure with integration, contract, E2E tests.
 **FRs covered:** FR49, FR50, FR51
-**Prerequisites:** Epic 2 ✅, Epic 7
+**Prerequisites:** Epic 2 ✅, Epic 7 ✅
+**Status:** 2/5 stories complete (PRs #83, #89). Stories 9.3-9.5 pending.
 
-### Epic 10: First-Run Onboarding Experience
+### Epic 10: First-Run Onboarding Experience ✅ COMPLETE
 Guided welcome flow for new users.
 **FRs covered:** FR38, FR39
 **Prerequisites:** Epic 3 ✅
+**Status:** All 2 stories complete (PRs #55, #59).
 
-### Epic 11: Sync Observability & Offline-First
+### Epic 11: Sync Observability & Offline-First ✅ COMPLETE
 Offline-first local change queue, sync status, conflict resolution.
 **FRs covered:** FR40, FR41, FR42, FR43
 **Prerequisites:** Epic 2 ✅
+**Status:** All 3 stories complete (PRs #62, #66, #85).
 
-### Epic 12: Calendar Awareness (Local-First, No OAuth)
+### Epic 12: Calendar Awareness (Local-First, No OAuth) ✅ COMPLETE
 Time-contextual door selection from local calendar sources.
 **FRs covered:** FR44, FR45
-**Prerequisites:** Epic 4
+**Prerequisites:** Epic 4 ✅
+**Status:** All 2 stories complete (PRs #65, #81).
 
-### Epic 13: Multi-Source Task Aggregation View
+### Epic 13: Multi-Source Task Aggregation View ◐ PARTIAL
 Unified cross-provider task pool with dedup and source attribution.
 **FRs covered:** FR46, FR47, FR48
-**Prerequisites:** Epic 7, Epic 8 or additional adapters
+**Prerequisites:** Epic 7 ✅, Epic 8 ✅
+**Status:** 1/2 stories complete (PR #84). Story 13.2 pending.
 
-### Epic 14: LLM Task Decomposition & Agent Action Queue
+### Epic 14: LLM Task Decomposition & Agent Action Queue ✅ COMPLETE
 LLM-powered task breakdown for coding agent pickup.
 **FRs covered:** FR35, FR36, FR37
 **Prerequisites:** Epic 3+ ✅
+**Status:** All 2 stories complete (PRs #63, #87).
 
-### Epic 15: Psychology Research & Validation
+### Epic 15: Psychology Research & Validation ✅ COMPLETE
 Evidence base for ThreeDoors design decisions.
 **FRs covered:** FR34
 **Prerequisites:** None
+**Status:** All 2 stories complete (PRs #54, #58).
 
 ---
 
@@ -588,7 +598,7 @@ So that I can take action on tasks and track my progress.
 
 **Status:** Done (PRs #5, #7)
 
-### Story 1.3a: Quick Search & Command Palette ✅
+### Story 1.3a (originally 1.4): Quick Search & Command Palette ✅
 
 As a user,
 I want to quickly search for specific tasks and execute commands via a text input interface,
@@ -742,19 +752,22 @@ So that the app feels cohesive and encouraging.
 
 ---
 
-## Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging)
+## Epic 3.5: Platform Readiness & Technical Debt Resolution (Bridging) ✅ COMPLETE
 
 **Epic Goal:** Refactor core architecture, harden adapters, establish test infrastructure, and resolve technical debt from rapid Epic 1-3 implementation. This bridging epic prepares the codebase for Epic 4+ work by establishing the architectural foundations specified in Architecture v2.0.
 
 **Prerequisites:** Epic 3 complete ✅
 **Blocks:** Epic 4 (stories 3.5.5, 3.5.6), Epic 7 (stories 3.5.1, 3.5.2, 3.5.3), Epic 9 (story 3.5.7), Epic 11 (story 3.5.4)
 **Origin:** Party mode bridging discussion (2026-03-02)
+**Status:** COMPLETE — All 8 stories implemented and merged (PRs #90-#97).
 
-### Story 3.5.1: Core Domain Extraction
+### Story 3.5.1: Core Domain Extraction ✅
 
 As a developer,
 I want `internal/tasks` split into `internal/core` (domain logic) and separate adapter packages,
 So that the architecture follows the five-layer design specified in Architecture v2.0 and enables the Plugin SDK (Epic 7).
+
+**Status:** Done (PR #90)
 
 **Acceptance Criteria:**
 
@@ -769,7 +782,9 @@ So that the architecture follows the five-layer design specified in Architecture
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.2: TaskProvider Interface Hardening
+### Story 3.5.2: TaskProvider Interface Hardening ✅
+
+**Status:** Done (PR #91)
 
 As a developer building future integrations,
 I want the TaskProvider interface formalized with Watch(), HealthCheck(), and ChangeEvent patterns,
@@ -787,7 +802,9 @@ So that the adapter SDK (Epic 7) has a stable, well-defined contract.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.3: Config.yaml Schema & Migration Spike
+### Story 3.5.3: Config.yaml Schema & Migration Spike ✅
+
+**Status:** Done (PR #92)
 
 As a developer,
 I want a spike on config.yaml schema design and migration path,
@@ -804,7 +821,9 @@ So that Epic 7's config-driven provider selection has a validated foundation.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.4: Apple Notes Adapter Hardening
+### Story 3.5.4: Apple Notes Adapter Hardening ✅
+
+**Status:** Done (PR #93)
 
 As a user relying on Apple Notes sync,
 I want the adapter to handle errors gracefully with timeouts and retries,
@@ -822,7 +841,9 @@ So that sync is reliable before more adapters are added.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.5: Baseline Regression Test Suite
+### Story 3.5.5: Baseline Regression Test Suite ✅
+
+**Status:** Done (PR #94)
 
 As a developer preparing for Epic 4 (Learning),
 I want baseline tests for the current door selection and task management behavior,
@@ -841,7 +862,9 @@ So that the learning engine (Epic 4) can be validated against known-good behavio
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.6: Session Metrics Reader Library
+### Story 3.5.6: Session Metrics Reader Library ✅
+
+**Status:** Done (PR #95)
 
 As a developer building Epic 4 (Learning),
 I want a reusable library for reading and parsing session metrics,
@@ -861,7 +884,9 @@ So that Epic 4 stories can focus on learning logic rather than I/O.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.7: Adapter Test Scaffolding & CI Coverage Floor
+### Story 3.5.7: Adapter Test Scaffolding & CI Coverage Floor ✅
+
+**Status:** Done (PR #96)
 
 As a developer,
 I want test infrastructure scaffolding and CI coverage enforcement,
@@ -881,7 +906,9 @@ So that Epic 9 (Testing Strategy) has a foundation and coverage doesn't erode.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 3.5.8: Validation Gate Decision Documentation
+### Story 3.5.8: Validation Gate Decision Documentation ✅
+
+**Status:** Done (PR #97)
 
 As the product team,
 I want the Phase 1 validation results formally documented,
@@ -901,14 +928,17 @@ So that the proceed-to-MVP decision is recorded and learnings inform Epic 4.
 
 ---
 
-## Epic 4: Learning & Intelligent Door Selection
+## Epic 4: Learning & Intelligent Door Selection ✅ COMPLETE
 
 **Epic Goal:** Use historical session metrics (captured in Epic 1 Story 1.5) to analyze user patterns and adapt door selection to improve task engagement and completion rates.
 
 **Prerequisites:** Epic 3 complete ✅, sufficient usage data collected
 **FRs covered:** FR20, FR21
+**Status:** COMPLETE — All 6 stories implemented and merged (PRs #40, #42-#45, #82).
 
-### Story 4.1: Task Categorization & Tagging
+### Story 4.1: Task Categorization & Tagging ✅
+
+**Status:** Done (PR #40)
 
 As a user,
 I want my tasks automatically categorized by type, effort, and context,
@@ -926,7 +956,9 @@ So that the system can present diverse door selections.
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 **AC-Q8 (Determinism):** Categorization output must be deterministic for the same input; sorted collections where ordering matters.
 
-### Story 4.2: Session Metrics Pattern Analysis
+### Story 4.2: Session Metrics Pattern Analysis ✅
+
+**Status:** Done (PR #43)
 
 As a developer,
 I want to analyze historical session metrics for user behavior patterns,
@@ -943,7 +975,9 @@ So that the learning engine has data to work with.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 4.3: Mood-Aware Adaptive Door Selection
+### Story 4.3: Mood-Aware Adaptive Door Selection ✅
+
+**Status:** Done (PR #44)
 
 As a user,
 I want door selection to consider my current mood and historical patterns,
@@ -961,7 +995,9 @@ So that I'm shown tasks that match my current capacity.
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 **AC-Q8 (Determinism):** Adaptive selection must use seeded randomness or documented non-determinism; anti-repeat guards required; time.Now() called once per selection operation.
 
-### Story 4.4: Avoidance Detection & User Insights
+### Story 4.4: Avoidance Detection & User Insights ✅
+
+**Status:** Done (PR #45)
 
 As a user,
 I want to be gently informed about my avoidance patterns,
@@ -979,7 +1015,9 @@ So that I can make conscious decisions about deferred tasks.
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 **AC-Q8 (Determinism):** Avoidance counts must be deterministic; bypass tracking sorted by count; time.Now() called once per session.
 
-### Story 4.5: Goal Re-evaluation Prompts
+### Story 4.5: Goal Re-evaluation Prompts ✅
+
+**Status:** Done (PR #42)
 
 As a user,
 I want gentle prompts to reconsider goals when persistent avoidance patterns emerge,
@@ -996,7 +1034,9 @@ So that my task list stays aligned with what I actually want to do.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 4.6: "Better Than Yesterday" Multi-Dimensional Tracking
+### Story 4.6: "Better Than Yesterday" Multi-Dimensional Tracking ✅
+
+**Status:** Done (PR #82)
 
 As a user,
 I want to see progress across multiple dimensions,
@@ -1032,14 +1072,17 @@ So that Gatekeeper allows execution without security warnings.
 
 ---
 
-## Epic 6: Data Layer & Enrichment (Optional)
+## Epic 6: Data Layer & Enrichment (Optional) ✅ COMPLETE
 
 **Epic Goal:** Add enrichment storage layer for metadata that cannot live in source systems.
 
 **Prerequisites:** Epic 4 complete, proven need for enrichment beyond what backends support
 **FRs covered:** FR11
+**Status:** COMPLETE — All 2 stories implemented and merged (PRs #53, #56). Note: PR #53 was titled "Story 5.1" but implements Epic 6 Story 6.1 (SQLite Enrichment).
 
-### Story 6.1: SQLite Enrichment Database Setup
+### Story 6.1: SQLite Enrichment Database Setup ✅
+
+**Status:** Done (PR #53)
 
 As a developer,
 I want a local SQLite database for enrichment metadata,
@@ -1058,7 +1101,9 @@ So that cross-reference tracking and learning patterns have persistent storage.
 **AC-Q7 (Error Handling):** All database operations must check error returns including db.Close(); use fmt.Errorf("context: %w", err) wrapping; no silently discarded errors.
 **Atomic Writes:** Database writes must use transactions; file-based operations use write-to-tmp, sync, rename pattern.
 
-### Story 6.2: Cross-Reference Tracking
+### Story 6.2: Cross-Reference Tracking ✅
+
+**Status:** Done (PR #56)
 
 As a user with multiple task sources,
 I want tasks linked across providers,
@@ -1077,14 +1122,17 @@ So that related items are connected regardless of source.
 
 ---
 
-## Epic 7: Plugin/Adapter SDK & Registry
+## Epic 7: Plugin/Adapter SDK & Registry ✅ COMPLETE
 
 **Epic Goal:** Formalize the adapter pattern into a plugin SDK with registry, config-driven provider selection, and developer guide.
 
 **Prerequisites:** Epic 2 ✅ (adapter pattern established)
 **FRs covered:** FR31, FR32, FR33
+**Status:** COMPLETE — All 3 stories implemented and merged (PRs #68, #70, #72).
 
-### Story 7.1: Adapter Registry & Runtime Discovery
+### Story 7.1: Adapter Registry & Runtime Discovery ✅
+
+**Status:** Done (PR #68)
 
 As a developer building integrations,
 I want a formal adapter registry that discovers and loads task providers at runtime,
@@ -1102,7 +1150,9 @@ So that new integrations can be added without modifying core application code.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 7.2: Config-Driven Provider Selection
+### Story 7.2: Config-Driven Provider Selection ✅
+
+**Status:** Done (PR #70)
 
 As a user with multiple task sources,
 I want to configure active backends via `~/.threedoors/config.yaml`,
@@ -1119,7 +1169,9 @@ So that I can choose which task providers are active without code changes.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 7.3: Adapter Developer Guide & Contract Tests
+### Story 7.3: Adapter Developer Guide & Contract Tests ✅
+
+**Status:** Done (PR #72)
 
 As an integration developer,
 I want a clear guide and contract test suite for building adapters,
@@ -1139,14 +1191,17 @@ So that I can create new task provider integrations with confidence.
 
 ---
 
-## Epic 8: Obsidian Integration (P0 - #2 Integration)
+## Epic 8: Obsidian Integration (P0 - #2 Integration) ✅ COMPLETE
 
 **Epic Goal:** Add Obsidian vault as second task storage backend. Local-first Markdown integration with bidirectional sync.
 
-**Prerequisites:** Epic 7 (adapter SDK)
+**Prerequisites:** Epic 7 ✅ (adapter SDK)
 **FRs covered:** FR27, FR28, FR29, FR30
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #73, #75, #77, #79).
 
-### Story 8.1: Obsidian Vault Reader/Writer Adapter
+### Story 8.1: Obsidian Vault Reader/Writer Adapter ✅
+
+**Status:** Done (PR #73)
 
 As a user who manages tasks in Obsidian,
 I want ThreeDoors to read and write tasks from my Obsidian vault,
@@ -1167,7 +1222,9 @@ So that I can use Three Doors with my existing Obsidian workflow.
 **AC-Q6 (Input Sanitization):** File paths and task content from Obsidian vault must be sanitized; test cases with special characters in filenames and task text.
 **Atomic Writes:** File write operations must use write-to-tmp, sync, rename pattern per coding-standards.md.
 
-### Story 8.2: Obsidian Bidirectional Sync
+### Story 8.2: Obsidian Bidirectional Sync ✅
+
+**Status:** Done (PR #75, combined with Story 8.3)
 
 As an Obsidian user,
 I want changes made in Obsidian reflected in ThreeDoors and vice versa,
@@ -1184,7 +1241,9 @@ So that my tasks stay in sync regardless of where I edit them.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 8.3: Obsidian Vault Configuration
+### Story 8.3: Obsidian Vault Configuration ✅
+
+**Status:** Done (PR #75, combined with Story 8.2)
 
 As a user,
 I want to configure my Obsidian vault path and structure via config.yaml,
@@ -1200,7 +1259,9 @@ So that ThreeDoors integrates with my specific vault.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 8.4: Obsidian Daily Note Integration
+### Story 8.4: Obsidian Daily Note Integration ✅
+
+**Status:** Done (PRs #77, #79)
 
 As an Obsidian daily notes user,
 I want ThreeDoors to read/write tasks from my daily notes,
@@ -1220,14 +1281,17 @@ So that tasks captured in daily notes appear in Three Doors.
 
 ---
 
-## Epic 9: Testing Strategy & Quality Gates
+## Epic 9: Testing Strategy & Quality Gates ◐ PARTIAL
 
 **Epic Goal:** Establish comprehensive testing infrastructure ensuring reliability as the adapter ecosystem grows.
 
-**Prerequisites:** Epic 2 ✅, Epic 7
+**Prerequisites:** Epic 2 ✅, Epic 7 ✅
 **FRs covered:** FR49, FR50, FR51
+**Status:** PARTIAL — 2/5 stories implemented (PRs #83, #89). Stories 9.3, 9.4, 9.5 pending.
 
-### Story 9.1: Apple Notes Integration E2E Tests
+### Story 9.1: Apple Notes Integration E2E Tests ✅
+
+**Status:** Done (PR #83)
 
 As a developer,
 I want end-to-end tests for Apple Notes integration,
@@ -1244,7 +1308,9 @@ So that regressions in the sync pipeline are caught automatically.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 9.2: Contract Tests for Adapter Compliance
+### Story 9.2: Contract Tests for Adapter Compliance ✅
+
+**Status:** Done (PR #89)
 
 As an adapter developer,
 I want a reusable contract test suite,
@@ -1313,14 +1379,17 @@ So that code quality doesn't regress.
 
 ---
 
-## Epic 10: First-Run Onboarding Experience
+## Epic 10: First-Run Onboarding Experience ✅ COMPLETE
 
 **Epic Goal:** Provide a guided welcome flow for new users.
 
 **Prerequisites:** Epic 3 ✅
 **FRs covered:** FR38, FR39
+**Status:** COMPLETE — All 2 stories implemented and merged (PRs #55, #59).
 
-### Story 10.1: Welcome Flow & Three Doors Explanation
+### Story 10.1: Welcome Flow & Three Doors Explanation ✅
+
+**Status:** Done (PR #55)
 
 As a new user,
 I want a guided welcome on first launch,
@@ -1337,7 +1406,9 @@ So that I understand the Three Doors concept.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 10.2: Values/Goals Setup & Task Import
+### Story 10.2: Values/Goals Setup & Task Import ✅
+
+**Status:** Done (PR #59)
 
 As a new user,
 I want to set up values/goals and import tasks during onboarding,
@@ -1356,14 +1427,17 @@ So that the tool is immediately useful.
 
 ---
 
-## Epic 11: Sync Observability & Offline-First
+## Epic 11: Sync Observability & Offline-First ✅ COMPLETE
 
 **Epic Goal:** Ensure robust offline-first operation with sync visibility and conflict resolution.
 
 **Prerequisites:** Epic 2 ✅
 **FRs covered:** FR40, FR41, FR42, FR43
+**Status:** COMPLETE — All 3 stories implemented and merged (PRs #62, #66, #85).
 
-### Story 11.1: Offline-First Local Change Queue
+### Story 11.1: Offline-First Local Change Queue ✅
+
+**Status:** Done (PR #62)
 
 As a user working without connectivity,
 I want all changes queued locally and replayed when available,
@@ -1382,7 +1456,9 @@ So that I never lose work.
 **AC-Q7 (Error Handling):** WAL file operations must check all error returns including f.Close(); replay failures must be logged with context via %w wrapping.
 **Atomic Writes:** WAL writes must use write-to-tmp, sync, rename pattern per coding-standards.md.
 
-### Story 11.2: Sync Status Indicator
+### Story 11.2: Sync Status Indicator ✅
+
+**Status:** Done (PR #66)
 
 As a user,
 I want to see sync status per provider in the TUI,
@@ -1398,7 +1474,9 @@ So that I know my changes are synchronized.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 11.3: Conflict Visualization & Sync Log
+### Story 11.3: Conflict Visualization & Sync Log ✅
+
+**Status:** Done (PR #85)
 
 As a user encountering sync conflicts,
 I want to see and resolve them,
@@ -1418,14 +1496,17 @@ So that I trust the sync system.
 
 ---
 
-## Epic 12: Calendar Awareness (Local-First, No OAuth)
+## Epic 12: Calendar Awareness (Local-First, No OAuth) ✅ COMPLETE
 
 **Epic Goal:** Add time-contextual door selection from local calendar sources only.
 
-**Prerequisites:** Epic 4
+**Prerequisites:** Epic 4 ✅
 **FRs covered:** FR44, FR45
+**Status:** COMPLETE — All 2 stories implemented and merged (PRs #65, #81).
 
-### Story 12.1: Local Calendar Source Reader
+### Story 12.1: Local Calendar Source Reader ✅
+
+**Status:** Done (PR #65)
 
 As a user,
 I want ThreeDoors to read my local calendar,
@@ -1443,7 +1524,9 @@ So that it understands my available time.
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 **AC-Q6 (Input Sanitization):** AppleScript calls for Calendar.app must escape all user/event data; test cases with special characters in event titles and calendar names.
 
-### Story 12.2: Time-Contextual Door Selection
+### Story 12.2: Time-Contextual Door Selection ✅
+
+**Status:** Done (PR #81)
 
 As a user with calendar awareness,
 I want doors to suggest time-appropriate tasks,
@@ -1463,14 +1546,17 @@ So that I'm not shown deep-work when I have a meeting in 15 minutes.
 
 ---
 
-## Epic 13: Multi-Source Task Aggregation View
+## Epic 13: Multi-Source Task Aggregation View ◐ PARTIAL
 
 **Epic Goal:** Unified cross-provider task pool with dedup and source attribution.
 
-**Prerequisites:** Epic 7, Epic 8 or additional adapters
+**Prerequisites:** Epic 7 ✅, Epic 8 ✅
 **FRs covered:** FR46, FR47, FR48
+**Status:** PARTIAL — 1/2 stories implemented (PR #84). Story 13.2 pending.
 
-### Story 13.1: Cross-Provider Task Pool Aggregation
+### Story 13.1: Cross-Provider Task Pool Aggregation ✅
+
+**Status:** Done (PR #84)
 
 As a user with multiple task sources,
 I want all tasks merged into a single pool,
@@ -1507,14 +1593,17 @@ So that I don't work on the same task twice.
 
 ---
 
-## Epic 14: LLM Task Decomposition & Agent Action Queue
+## Epic 14: LLM Task Decomposition & Agent Action Queue ✅ COMPLETE
 
 **Epic Goal:** Enable LLM-powered task decomposition for coding agent pickup.
 
 **Prerequisites:** Epic 3+ ✅
 **FRs covered:** FR35, FR36, FR37
+**Status:** COMPLETE — All 2 stories implemented and merged (PRs #63, #87).
 
-### Story 14.1: LLM Task Decomposition Spike
+### Story 14.1: LLM Task Decomposition Spike ✅
+
+**Status:** Done (PR #63)
 
 As a developer,
 I want to spike on LLM task decomposition feasibility,
@@ -1531,7 +1620,9 @@ So that we understand the approach before full implementation.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 14.2: Agent Action Queue Integration
+### Story 14.2: Agent Action Queue Integration ✅
+
+**Status:** Done (PR #87)
 
 As a developer using ThreeDoors with coding agents,
 I want decomposed tasks output to git repos,
@@ -1551,14 +1642,17 @@ So that task decomposition flows into automated implementation.
 
 ---
 
-## Epic 15: Psychology Research & Validation
+## Epic 15: Psychology Research & Validation ✅ COMPLETE
 
 **Epic Goal:** Build evidence base for ThreeDoors design decisions.
 
 **Prerequisites:** None (can run in parallel)
 **FRs covered:** FR34
+**Status:** COMPLETE — All 2 stories implemented and merged (PRs #54, #58).
 
-### Story 15.1: Choice Architecture Literature Review
+### Story 15.1: Choice Architecture Literature Review ✅
+
+**Status:** Done (PR #54)
 
 As the product team,
 I want a literature review on the Three Doors choice architecture,
@@ -1575,7 +1669,9 @@ So that design decisions are grounded in behavioral science.
 
 **Quality Gate (AC-Q5):** All changed files directly related to this story's ACs | scope-checked ✓ | See Appendix for full BDD criteria.
 
-### Story 15.2: Mood-Task Correlation & Procrastination Research
+### Story 15.2: Mood-Task Correlation & Procrastination Research ✅
+
+**Status:** Done (PR #58)
 
 As the product team,
 I want research on mood-task correlation and procrastination interventions,
@@ -1594,17 +1690,20 @@ So that Epic 4's learning algorithm is evidence-informed.
 
 ---
 
-## Epic 18: Docker E2E & Headless TUI Testing Infrastructure
+## Epic 18: Docker E2E & Headless TUI Testing Infrastructure ◐ PARTIAL
 
 **Epic Goal:** Establish reproducible, automated end-to-end testing for the TUI application using Docker containers for environment isolation and Bubbletea's `teatest` package for headless interaction testing — eliminating manual TUI testing as the sole E2E validation method.
 
 **Prerequisites:** Epic 3 ✅, Epic 9 (Stories 9.4, 9.5)
 **FRs covered:** FR49, FR51 (extends Epic 9's scope with concrete implementation approach)
 **Origin:** Party mode testing infrastructure discussion (2026-03-02). Party mode consensus identified two critical gaps: (1) no reproducible test environment — tests depend on developer machine state, and (2) TUI testing is entirely manual — 10% of the test pyramid has zero automation.
+**Status:** PARTIAL — 2/5 stories implemented (PRs #64, #86). Stories 18.3, 18.4, 18.5 pending.
 
 **Why a separate epic from Epic 9:** Epic 9 defines *what* to test (Apple Notes E2E, contract tests, performance benchmarks, functional E2E, CI gates). This epic defines *how* to test the TUI layer specifically — the Docker infrastructure and headless testing tooling that Epic 9 Story 9.4 depends on but doesn't specify.
 
-### Story 18.1: Headless TUI Test Harness with teatest
+### Story 18.1: Headless TUI Test Harness with teatest ✅
+
+**Status:** Done (PR #64)
 
 As a developer,
 I want a headless TUI test harness using Bubbletea's `teatest` package,
@@ -1630,7 +1729,9 @@ So that I can write automated tests that interact with the full TUI without a re
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 18.2: Golden File Snapshot Tests for TUI Views
+### Story 18.2: Golden File Snapshot Tests for TUI Views ✅
+
+**Status:** Done (PR #86)
 
 As a developer,
 I want golden file tests that capture expected TUI output,
