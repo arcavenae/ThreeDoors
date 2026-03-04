@@ -467,6 +467,38 @@ func TestSearchView_HelpCommand_ShowsHelp(t *testing.T) {
 	}
 }
 
+// --- :theme Command ---
+
+func TestSearchView_ThemeCommand_EmitsShowThemePickerMsg(t *testing.T) {
+	sv := newTestSearchView("task1")
+	sv.textInput.SetValue(":theme")
+	cmd := sv.executeCommand()
+	if cmd == nil {
+		t.Fatal(":theme should return a command")
+	}
+	msg := cmd()
+	if _, ok := msg.(ShowThemePickerMsg); !ok {
+		t.Errorf("expected ShowThemePickerMsg, got %T", msg)
+	}
+}
+
+func TestSearchView_HelpCommand_ContainsTheme(t *testing.T) {
+	sv := newTestSearchView("task1")
+	sv.textInput.SetValue(":help")
+	cmd := sv.executeCommand()
+	if cmd == nil {
+		t.Fatal(":help should return a command")
+	}
+	msg := cmd()
+	fm, ok := msg.(FlashMsg)
+	if !ok {
+		t.Fatalf("expected FlashMsg, got %T", msg)
+	}
+	if !strings.Contains(fm.Text, ":theme") {
+		t.Errorf("expected :help output to contain ':theme', got %q", fm.Text)
+	}
+}
+
 // --- :stats Command ---
 
 func TestSearchView_StatsCommand_ShowsStats(t *testing.T) {

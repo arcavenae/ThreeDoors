@@ -486,6 +486,62 @@ func TestResolveActiveProvider_FirstProviderUsedAsPrimary(t *testing.T) {
 	}
 }
 
+// --- SaveProviderConfig Tests ---
+
+func TestSaveProviderConfig_RoundTrip(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 1,
+		Provider:      "textfile",
+		NoteTitle:     "ThreeDoors Tasks",
+		Theme:         "scifi",
+	}
+
+	if err := SaveProviderConfig(configPath, cfg); err != nil {
+		t.Fatalf("SaveProviderConfig() unexpected error: %v", err)
+	}
+
+	loaded, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+	if loaded.Theme != "scifi" {
+		t.Errorf("Theme = %q, want %q", loaded.Theme, "scifi")
+	}
+	if loaded.Provider != "textfile" {
+		t.Errorf("Provider = %q, want %q", loaded.Provider, "textfile")
+	}
+}
+
+func TestSaveProviderConfig_OverwritesExisting(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	// Write initial config
+	cfg := &ProviderConfig{Theme: "classic"}
+	if err := SaveProviderConfig(configPath, cfg); err != nil {
+		t.Fatalf("first save: %v", err)
+	}
+
+	// Overwrite with new theme
+	cfg.Theme = "modern"
+	if err := SaveProviderConfig(configPath, cfg); err != nil {
+		t.Fatalf("second save: %v", err)
+	}
+
+	loaded, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+	if loaded.Theme != "modern" {
+		t.Errorf("Theme = %q, want %q", loaded.Theme, "modern")
+	}
+}
+
 // --- Story 3.5.3 Tests: Schema Version & Migration Path ---
 
 func TestLoadProviderConfig_SchemaVersionParsed(t *testing.T) {

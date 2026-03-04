@@ -11,6 +11,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
+	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -33,6 +34,7 @@ const (
 	ViewOnboarding
 	ViewConflict
 	ViewSyncLog
+	ViewThemePicker
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -54,6 +56,8 @@ type MainModel struct {
 	onboardingView      *OnboardingView
 	conflictView        *ConflictView
 	syncLogView         *SyncLogView
+	themePickerView     *ThemePicker
+	configPath          string
 	pool                *core.TaskPool
 	tracker             *core.SessionTracker
 	provider            core.TaskProvider
@@ -153,6 +157,11 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 	return m
 }
 
+// SetConfigPath sets the path to config.yaml for theme persistence.
+func (m *MainModel) SetConfigPath(path string) {
+	m.configPath = path
+}
+
 // SetAgentService sets the agent service for LLM task decomposition.
 func (m *MainModel) SetAgentService(svc *intelligence.AgentService) {
 	m.agentService = svc
@@ -212,6 +221,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.syncLogView != nil {
 			m.syncLogView.SetWidth(msg.Width)
+		}
+		if m.themePickerView != nil {
+			m.themePickerView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -633,6 +645,34 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.previousView = m.viewMode
 		m.viewMode = ViewSyncLog
 		return m, nil
+	case ShowThemePickerMsg:
+		currentTheme := ""
+		if dv := m.doorsView; dv != nil && dv.theme != nil {
+			currentTheme = dv.theme.Name
+		}
+		reg := m.doorsView.themeRegistry
+		if reg == nil {
+			reg = themes.NewDefaultRegistry()
+		}
+		m.themePickerView = NewThemePicker(reg, currentTheme)
+		m.themePickerView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewThemePicker
+		return m, nil
+
+	case ThemeSelectedMsg:
+		m.doorsView.SetThemeByName(msg.Name)
+		m.themePickerView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		m.flash = fmt.Sprintf("Theme changed to %s", msg.Name)
+		return m, tea.Batch(ClearFlashCmd(), m.saveThemeCmd(msg.Name))
+
+	case ThemeCancelledMsg:
+		m.themePickerView = nil
+		m.viewMode = ViewDoors
+		return m, nil
+
 	case SyncStatusUpdateMsg:
 		if m.syncTracker != nil {
 			switch msg.Phase {
@@ -681,6 +721,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateConflict(msg)
 	case ViewSyncLog:
 		return m.updateSyncLog(msg)
+	case ViewThemePicker:
+		return m.updateThemePicker(msg)
 	}
 
 	return m, nil
@@ -841,6 +883,14 @@ func (m *MainModel) updateConflict(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateThemePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.themePickerView == nil {
+		return m, nil
+	}
+	cmd := m.themePickerView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.syncLogView == nil {
 		return m, nil
@@ -885,6 +935,26 @@ func (m *MainModel) newSearchView() *SearchView {
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
 	return m.provider.SaveTasks(allTasks)
+}
+
+// saveThemeCmd returns a tea.Cmd that persists the theme to config.yaml.
+func (m *MainModel) saveThemeCmd(themeName string) tea.Cmd {
+	configPath := m.configPath
+	return func() tea.Msg {
+		if configPath == "" {
+			return nil
+		}
+		cfg, err := core.LoadProviderConfig(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to load config for theme save: %v\n", err)
+			return nil
+		}
+		cfg.Theme = themeName
+		if err := core.SaveProviderConfig(configPath, cfg); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save theme to config: %v\n", err)
+		}
+		return nil
+	}
 }
 
 // runDecompose returns a tea.Cmd that runs LLM decomposition asynchronously.
@@ -973,6 +1043,10 @@ func (m *MainModel) View() string {
 	case ViewSyncLog:
 		if m.syncLogView != nil {
 			view = m.syncLogView.View()
+		}
+	case ViewThemePicker:
+		if m.themePickerView != nil {
+			view = m.themePickerView.View()
 		}
 	default:
 		view = m.doorsView.View()

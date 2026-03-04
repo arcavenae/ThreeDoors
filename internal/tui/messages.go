@@ -185,6 +185,17 @@ type ShowSyncLogMsg struct {
 	Entries []core.SyncLogEntry
 }
 
+// ShowThemePickerMsg is sent to open the theme picker view.
+type ShowThemePickerMsg struct{}
+
+// ThemeSelectedMsg is sent when the user selects a theme from the picker.
+type ThemeSelectedMsg struct {
+	Name string
+}
+
+// ThemeCancelledMsg is sent when the user cancels the theme picker.
+type ThemeCancelledMsg struct{}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

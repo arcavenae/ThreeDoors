@@ -8,88 +8,125 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func TestThemePicker_InitialState(t *testing.T) {
+func newTestRegistry() *themes.Registry {
+	return themes.NewDefaultRegistry()
+}
+
+func TestNewThemePicker(t *testing.T) {
 	t.Parallel()
+	reg := newTestRegistry()
 
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
+	tp := NewThemePicker(reg, "modern")
 
+	if tp == nil {
+		t.Fatal("NewThemePicker returned nil")
+	}
+	if len(tp.themeNames) == 0 {
+		t.Fatal("expected theme names to be populated")
+	}
+	if tp.currentTheme != "modern" {
+		t.Errorf("got currentTheme=%q, want %q", tp.currentTheme, "modern")
+	}
+}
+
+func TestThemePickerCursorStartsOnCurrentTheme(t *testing.T) {
+	t.Parallel()
+	reg := newTestRegistry()
+
+	tests := []struct {
+		name         string
+		currentTheme string
+	}{
+		{"starts on modern", "modern"},
+		{"starts on classic", "classic"},
+		{"starts on scifi", "scifi"},
+		{"starts on shoji", "shoji"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			tp := NewThemePicker(reg, tt.currentTheme)
+			selectedName := tp.themeNames[tp.cursor]
+			if selectedName != tt.currentTheme {
+				t.Errorf("cursor at %q, want %q", selectedName, tt.currentTheme)
+			}
+		})
+	}
+}
+
+func TestThemePickerCursorFallbackOnUnknown(t *testing.T) {
+	t.Parallel()
+	reg := newTestRegistry()
+
+	tp := NewThemePicker(reg, "nonexistent")
 	if tp.cursor != 0 {
-		t.Errorf("cursor = %d, want 0", tp.cursor)
-	}
-	if tp.confirmed {
-		t.Error("should not be confirmed initially")
-	}
-
-	view := tp.View()
-	if !strings.Contains(view, "Theme") {
-		t.Error("view should contain 'Theme'")
+		t.Errorf("expected cursor=0 for unknown theme, got %d", tp.cursor)
 	}
 }
 
-func TestThemePicker_NavigateRight(t *testing.T) {
+func TestThemePickerNavigateLeftRight(t *testing.T) {
 	t.Parallel()
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, tp_firstName(reg))
 
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
-
-	initialCursor := tp.cursor
+	startCursor := tp.cursor
+	// Move right
 	tp.Update(tea.KeyMsg{Type: tea.KeyRight})
-
-	if tp.cursor != initialCursor+1 {
-		t.Errorf("cursor = %d, want %d after right", tp.cursor, initialCursor+1)
+	if tp.cursor != startCursor+1 {
+		t.Errorf("after right: cursor=%d, want %d", tp.cursor, startCursor+1)
 	}
-}
-
-func TestThemePicker_NavigateLeft(t *testing.T) {
-	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
-
-	// Move right first, then left
-	tp.Update(tea.KeyMsg{Type: tea.KeyRight})
+	// Move left
 	tp.Update(tea.KeyMsg{Type: tea.KeyLeft})
-
-	if tp.cursor != 0 {
-		t.Errorf("cursor = %d, want 0 after right+left", tp.cursor)
+	if tp.cursor != startCursor {
+		t.Errorf("after left: cursor=%d, want %d", tp.cursor, startCursor)
 	}
 }
 
-func TestThemePicker_NavigateWrapsAround(t *testing.T) {
+func TestThemePickerNavigateUpDown(t *testing.T) {
 	t.Parallel()
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, tp_firstName(reg))
 
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
+	startCursor := tp.cursor
+	tp.Update(tea.KeyMsg{Type: tea.KeyDown})
+	if tp.cursor != startCursor+1 {
+		t.Errorf("after down: cursor=%d, want %d", tp.cursor, startCursor+1)
+	}
+	tp.Update(tea.KeyMsg{Type: tea.KeyUp})
+	if tp.cursor != startCursor {
+		t.Errorf("after up: cursor=%d, want %d", tp.cursor, startCursor)
+	}
+}
 
-	// Left from 0 should wrap to last
+func TestThemePickerWrapAround(t *testing.T) {
+	t.Parallel()
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, tp_firstName(reg))
+
+	// Move left past first element — should stay at 0
+	tp.cursor = 0
 	tp.Update(tea.KeyMsg{Type: tea.KeyLeft})
-	expected := len(tp.themeNames) - 1
-	if tp.cursor != expected {
-		t.Errorf("cursor = %d, want %d after wrapping left", tp.cursor, expected)
+	if tp.cursor != 0 {
+		t.Errorf("cursor went below 0: %d", tp.cursor)
 	}
 
-	// Right from last should wrap to 0
+	// Move right past last element — should stay at last
+	tp.cursor = len(tp.themeNames) - 1
 	tp.Update(tea.KeyMsg{Type: tea.KeyRight})
-	if tp.cursor != 0 {
-		t.Errorf("cursor = %d, want 0 after wrapping right", tp.cursor)
+	if tp.cursor != len(tp.themeNames)-1 {
+		t.Errorf("cursor went past last: %d", tp.cursor)
 	}
 }
 
-func TestThemePicker_ConfirmWithEnter(t *testing.T) {
+func TestThemePickerEnterSelectsTheme(t *testing.T) {
 	t.Parallel()
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, tp_firstName(reg))
 
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
-
+	tp.cursor = 1
 	cmd := tp.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
-		t.Fatal("expected command on Enter")
+		t.Fatal("expected non-nil cmd on Enter")
 	}
 
 	msg := cmd()
@@ -97,118 +134,70 @@ func TestThemePicker_ConfirmWithEnter(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected ThemeSelectedMsg, got %T", msg)
 	}
-
-	if selected.ThemeName == "" {
-		t.Error("expected non-empty theme name")
-	}
-	if !tp.confirmed {
-		t.Error("should be confirmed after Enter")
+	if selected.Name != tp.themeNames[1] {
+		t.Errorf("selected %q, want %q", selected.Name, tp.themeNames[1])
 	}
 }
 
-func TestThemePicker_SkipWithEscape(t *testing.T) {
+func TestThemePickerEscapeCancels(t *testing.T) {
 	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
-
-	// Move to a non-default theme first
-	tp.Update(tea.KeyMsg{Type: tea.KeyRight})
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, "modern")
 
 	cmd := tp.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
-		t.Fatal("expected command on Escape")
+		t.Fatal("expected non-nil cmd on Escape")
 	}
 
 	msg := cmd()
-	selected, ok := msg.(ThemeSelectedMsg)
-	if !ok {
-		t.Fatalf("expected ThemeSelectedMsg, got %T", msg)
-	}
-
-	// Escape should default to modern
-	if selected.ThemeName != themes.DefaultThemeName {
-		t.Errorf("theme = %q, want %q on escape", selected.ThemeName, themes.DefaultThemeName)
-	}
-	if !selected.Skipped {
-		t.Error("expected Skipped=true on escape")
+	if _, ok := msg.(ThemeCancelledMsg); !ok {
+		t.Fatalf("expected ThemeCancelledMsg, got %T", msg)
 	}
 }
 
-func TestThemePicker_ViewShowsThemeName(t *testing.T) {
+func TestThemePickerViewShowsCurrentIndicator(t *testing.T) {
 	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, "modern")
 	tp.SetWidth(80)
 
 	view := tp.View()
-	// Should show the current theme's name
-	currentName := tp.themeNames[tp.cursor]
-	if !strings.Contains(view, currentName) {
-		t.Errorf("view should contain theme name %q", currentName)
+	if !strings.Contains(view, "[current]") {
+		t.Error("expected [current] indicator in view output")
 	}
 }
 
-func TestThemePicker_ViewShowsPreview(t *testing.T) {
+func TestThemePickerViewShowsAllThemes(t *testing.T) {
 	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, "modern")
 	tp.SetWidth(80)
 
 	view := tp.View()
-	// The preview should render something (door frame chars)
-	if !strings.Contains(view, "Sample Task") {
-		t.Error("view should contain sample task preview")
-	}
-}
-
-func TestThemePicker_NarrowTerminalFallback(t *testing.T) {
-	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(30) // Very narrow
-
-	view := tp.View()
-	// Should still render without crashing
-	if view == "" {
-		t.Error("view should not be empty even at narrow width")
-	}
-}
-
-func TestThemePicker_SetWidth(t *testing.T) {
-	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(100)
-
-	if tp.width != 100 {
-		t.Errorf("width = %d, want 100", tp.width)
-	}
-}
-
-func TestThemePicker_AllThemesAccessible(t *testing.T) {
-	t.Parallel()
-
-	reg := themes.NewDefaultRegistry()
-	tp := NewThemePicker(reg)
-	tp.SetWidth(80)
-
-	names := reg.Names()
-	seen := make(map[string]bool)
-
-	for range names {
-		seen[tp.themeNames[tp.cursor]] = true
-		tp.Update(tea.KeyMsg{Type: tea.KeyRight})
-	}
-
-	for _, name := range names {
-		if !seen[name] {
-			t.Errorf("theme %q was not accessible via navigation", name)
+	for _, name := range reg.Names() {
+		if !strings.Contains(view, name) {
+			t.Errorf("theme %q not found in view output", name)
 		}
 	}
+}
+
+func TestThemePickerViewShowsCursorIndicator(t *testing.T) {
+	t.Parallel()
+	reg := newTestRegistry()
+	tp := NewThemePicker(reg, tp_firstName(reg))
+	tp.SetWidth(80)
+
+	view := tp.View()
+	if !strings.Contains(view, "▸") {
+		t.Error("expected cursor indicator ▸ in view output")
+	}
+}
+
+// tp_firstName returns the first theme name from the registry (sorted).
+func tp_firstName(reg *themes.Registry) string {
+	names := reg.Names()
+	if len(names) == 0 {
+		return ""
+	}
+	return names[0]
 }
