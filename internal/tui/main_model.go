@@ -304,6 +304,18 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewAddTask
 		return m, nil
 
+	case ExpandTaskMsg:
+		newTask := core.NewTask(msg.NewTaskText)
+		m.pool.AddTask(newTask)
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.flash = "Subtask added"
+		m.detailView = nil
+		m.doorsView.RefreshDoors()
+		m.viewMode = ViewDoors
+		return m, ClearFlashCmd()
+
 	case TaskAddedMsg:
 		m.pool.AddTask(msg.Task)
 		if err := m.saveTasks(); err != nil {

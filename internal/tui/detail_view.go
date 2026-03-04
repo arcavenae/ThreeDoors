@@ -17,6 +17,7 @@ type DetailViewMode int
 const (
 	DetailModeView DetailViewMode = iota
 	DetailModeBlockerInput
+	DetailModeExpandInput
 	DetailModeLinkSelect
 	DetailModeLinkBrowse
 )
@@ -26,6 +27,7 @@ type DetailView struct {
 	task              *core.Task
 	mode              DetailViewMode
 	blockerInput      string
+	expandInput       string
 	width             int
 	tracker           *core.SessionTracker
 	enrichDB          *enrichment.DB
@@ -82,6 +84,8 @@ func (dv *DetailView) Update(msg tea.Msg) tea.Cmd {
 		switch dv.mode {
 		case DetailModeBlockerInput:
 			return dv.handleBlockerInput(msg)
+		case DetailModeExpandInput:
+			return dv.handleExpandInput(msg)
 		case DetailModeLinkSelect:
 			return dv.handleLinkSelect(msg)
 		case DetailModeLinkBrowse:
@@ -120,11 +124,11 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		}
 		return func() tea.Msg { return TaskUpdatedMsg{Task: dv.task} }
 	case "e", "E":
-		// Expand: not yet implemented (deferred UX)
-		return func() tea.Msg { return FlashMsg{Text: "Expand not yet implemented"} }
+		dv.mode = DetailModeExpandInput
+		dv.expandInput = ""
 	case "f", "F":
-		// Fork: not yet implemented (deferred UX)
-		return func() tea.Msg { return FlashMsg{Text: "Fork not yet implemented"} }
+		forked := core.NewTask(dv.task.Text)
+		return func() tea.Msg { return TaskAddedMsg{Task: forked} }
 	case "p", "P":
 		// Procrastinate: just return to doors (task stays in pool)
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
@@ -187,6 +191,34 @@ func (dv *DetailView) handleBlockerInput(msg tea.KeyMsg) tea.Cmd {
 	default:
 		if len(msg.String()) == 1 && len(dv.blockerInput) < 200 {
 			dv.blockerInput += msg.String()
+		}
+	}
+	return nil
+}
+
+func (dv *DetailView) handleExpandInput(msg tea.KeyMsg) tea.Cmd {
+	switch msg.String() {
+	case "enter":
+		text := strings.TrimSpace(dv.expandInput)
+		if text == "" {
+			return func() tea.Msg { return FlashMsg{Text: "Subtask text cannot be empty"} }
+		}
+		parentTask := dv.task
+		dv.mode = DetailModeView
+		dv.expandInput = ""
+		return func() tea.Msg {
+			return ExpandTaskMsg{ParentTask: parentTask, NewTaskText: text}
+		}
+	case "esc":
+		dv.mode = DetailModeView
+		dv.expandInput = ""
+	case "backspace":
+		if len(dv.expandInput) > 0 {
+			dv.expandInput = dv.expandInput[:len(dv.expandInput)-1]
+		}
+	default:
+		if len(msg.String()) == 1 && len(dv.expandInput) < 500 {
+			dv.expandInput += msg.String()
 		}
 	}
 	return nil
@@ -370,6 +402,9 @@ func (dv *DetailView) View() string {
 	case DetailModeBlockerInput:
 		s.WriteString("Blocker reason (Enter to submit, Esc to cancel):\n")
 		s.WriteString("> " + dv.blockerInput + "_\n")
+	case DetailModeExpandInput:
+		s.WriteString("New subtask text (Enter to submit, Esc to cancel):\n")
+		s.WriteString("> " + dv.expandInput + "_\n")
 	case DetailModeLinkSelect:
 		s.WriteString("Select task to link (Enter to link, Esc to cancel):\n\n")
 		for i, t := range dv.linkCandidates {
