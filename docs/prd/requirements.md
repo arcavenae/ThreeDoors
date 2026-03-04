@@ -10,7 +10,7 @@
 
 **TD3:** The system shall display the Three Doors interface showing three tasks selected from the text file
 
-**TD4:** The system shall allow users to select a door using 'a' or 'left arrow' for the left door, 'w' or 'up arrow' for the center door, and 'd' or 'right arrow' for the right door. Initially, or after re-rolling, no door shall be selected.
+**TD4:** The system shall support door selection via 'a' or 'left arrow' (left door), 'w' or 'up arrow' (center door), and 'd' or 'right arrow' (right door). Initially, or after re-rolling, no door shall be selected.
 
 **TD5:** The system shall provide a refresh mechanism using 's' or 'down arrow' to generate a new set of three doors.
 
@@ -44,7 +44,7 @@
 
 **FR4:** The system shall retrieve and display tasks from Apple Notes within the application interface
 
-**FR5:** The system shall allow users to mark tasks as complete, updating both the application state and Apple Notes
+**FR5:** The system shall mark tasks as complete upon user action, updating both the application state and Apple Notes
 
 **FR12:** The system shall allow updates to tasks from either the application or directly in Apple Notes on iPhone, with changes reflected bidirectionally
 
@@ -52,7 +52,7 @@
 
 **Phase 3 - Enhanced Interaction & Learning:**
 
-**FR3:** The system shall allow users to capture new tasks with optional context (what and why) through the CLI/TUI
+**FR3:** The system shall support new task capture with optional context (what and why) through the CLI/TUI
 
 **FR6:** The system shall display user-defined values and goals persistently throughout task work sessions
 
@@ -66,7 +66,7 @@
 
 **FR16:** The system shall support a "quick add" mode for capturing tasks in 3 or fewer keystrokes beyond typing the task text (e.g., `:add <text>` + Enter)
 
-**FR18:** The system shall allow users to provide feedback on why a specific door isn't suitable with options: Blocked, Not now, Needs breakdown, or Other comment
+**FR18:** The system shall present door feedback options (Blocked, Not now, Needs breakdown, Other comment) when a door is dismissed, capturing the reason for future selection tuning
 
 **FR19:** The system shall capture and store blocker information when a task is marked as blocked
 
@@ -170,7 +170,7 @@
 
 **FR56:** The system shall ship with at least three door themes (Modern/Minimalist, Sci-Fi/Spaceship, Japanese Shoji) plus a Classic theme that preserves the current Lipgloss border rendering
 
-**FR57:** The system shall allow users to browse and select a door theme during first-run onboarding, displaying a horizontal preview of doors rendered with each available theme
+**FR57:** The system shall display a horizontal theme preview during first-run onboarding, enabling theme browsing and selection before the first session begins
 
 **FR58:** The system shall provide a theme selection view accessible via `:theme` command in the TUI, allowing users to change their active theme with immediate visual effect (no restart required)
 
@@ -210,7 +210,7 @@
 
 **NFR2:** The system shall continue using Bubbletea/Charm Bracelet ecosystem
 
-**NFR3:** The system shall operate on macOS as primary platform, with binaries that are code-signed and notarized for seamless Gatekeeper approval
+**NFR3:** The system shall operate on macOS 13+ (Ventura and later) as primary platform, with binaries code-signed and notarized such that `spctl --assess --type execute` returns "accepted" and Gatekeeper permits first launch without user override
 
 **NFR4:** The system shall store all user data locally or in user's iCloud (via Apple Notes), with no external telemetry or tracking
 
@@ -218,15 +218,15 @@
 
 **NFR6:** The system shall respond to user interactions within the CLI/TUI with minimal latency (target: <500ms for typical operations)
 
-**NFR7:** The system shall provide graceful degradation when Apple Notes integration is unavailable, maintaining core functionality
+**NFR7:** The system shall fall back to local text file storage when Apple Notes integration is unavailable, maintaining door selection, task status changes, and session metrics without error — verified by running the full test suite with Apple Notes disconnected
 
 **NFR8:** The system shall implement secure credential storage using OS keychain for any API keys or authentication tokens
 
-**NFR9:** The system shall never log sensitive user data or credentials
+**NFR9:** The system shall never write API keys, authentication tokens, or keychain data to log files, session metrics, or stdout — verified by `grep -ri` scan of all output files after an integration test run returning zero matches
 
 **NFR10:** The system shall use Make as the build system
 
-**NFR11:** The system shall maintain clear architectural separation between core engine, TUI layer, integration adapters, and enrichment storage
+**NFR11:** The system shall enforce architectural separation such that `internal/core` has zero import dependencies on `internal/tui`, adapter packages, or enrichment storage — verified by `go vet` dependency analysis and CI import-cycle checks
 
 **NFR12:** The system shall maintain data integrity even when Apple Notes is modified externally while app is running
 

@@ -134,3 +134,23 @@
 **Success Criteria:** Door selection patterns differ measurably based on mood state; user reports doors feel more relevant.
 
 ---
+
+## Journey 9: Door Theme Customization
+
+**User State:** User wants to personalize the Three Doors appearance to match their aesthetic preference.
+
+**Flow:**
+1. During first-run onboarding, user is presented with a horizontal preview of available door themes
+2. User browses themes with arrow keys, seeing doors rendered in each theme style
+3. User selects preferred theme (e.g., Modern/Minimalist, Sci-Fi/Spaceship, Japanese Shoji, or Classic)
+4. Theme is applied immediately — all three doors render with the chosen theme frame
+5. Later, user types `:theme` to open the theme selection view
+6. User previews and switches to a different theme; change takes effect immediately without restart
+7. Selected theme persists in `~/.threedoors/config.yaml`
+8. When terminal is too narrow for the active theme, doors gracefully fall back to Classic rendering
+
+**Supported By:** FR55, FR56, FR57, FR58, FR59, FR60, FR61, FR62
+
+**Success Criteria:** Theme change applies instantly to all three doors; config.yaml reflects selection after restart; narrow terminal triggers Classic fallback without error.
+
+---

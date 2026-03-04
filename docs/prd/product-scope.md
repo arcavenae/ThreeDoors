@@ -44,6 +44,7 @@
 - Health check command for backend connectivity
 
 - Door theme system with user-selectable themed door frames (onboarding picker, settings view, config.yaml)
+- Platform readiness refactoring: core domain extraction, adapter hardening, config schema, regression test suite, session metrics reader, CI coverage floor (Epic 3.5)
 
 **Out of Scope for Phase 2:**
 - Third-party integrations beyond Apple Notes
@@ -66,10 +67,10 @@
 - Multi-source task aggregation with dedup
 - LLM-powered task decomposition
 - Psychology research validation
+- Docker-based E2E and headless TUI testing infrastructure (teatest, golden file snapshots, workflow replay, CI integration)
 
 **Out of Scope (Deferred Indefinitely):**
 - Web interface
-- Dedicated mobile apps
 - Voice interface
 - Gamification and trading mechanics
 - Multi-user support
@@ -90,5 +91,20 @@
 - EventKit/cgo-based Apple Reminders (future optimization behind build tag)
 - Property-level conflict resolution (deferred to Phase 5)
 - Cross-computer sync
+
+---
+
+## Phase 4: Future Expansion (12+ months out)
+
+**In Scope:**
+- LLM-powered task decomposition and agent action queue
+- Psychology research and validation
+- iPhone mobile app (SwiftUI) with Apple Notes sync and Three Doors card carousel
+
+**Out of Scope (Deferred Indefinitely):**
+- iPad app
+- Apple Watch app
+- Android app
+- Multi-user support
 
 ---
