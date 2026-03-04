@@ -41,6 +41,8 @@ type ProviderConfig struct {
 	Providers []ProviderEntry `yaml:"providers,omitempty"`
 	// LLM holds LLM backend configuration for task decomposition.
 	LLM llm.Config `yaml:"llm,omitempty"`
+	// Theme is the door theme name (e.g. "classic", "modern", "scifi", "shoji").
+	Theme string `yaml:"theme,omitempty"`
 }
 
 // CurrentSchemaVersion is the current config.yaml schema version.

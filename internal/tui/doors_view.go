@@ -2,10 +2,12 @@ package tui
 
 import (
 	"fmt"
+	"log"
 	"math/rand/v2"
 	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -61,6 +63,8 @@ type DoorsView struct {
 	syncTracker       *core.SyncStatusTracker
 	timeContext       *core.TimeContext
 	pendingConflicts  int
+	theme             *themes.DoorTheme
+	themeRegistry     *themes.Registry
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -115,6 +119,33 @@ func (dv *DoorsView) TimeContext() *core.TimeContext {
 // SetPendingConflicts sets the number of unresolved sync conflicts.
 func (dv *DoorsView) SetPendingConflicts(count int) {
 	dv.pendingConflicts = count
+}
+
+// SetThemeByName looks up the named theme in the registry and sets it as active.
+// Falls back to DefaultThemeName if the name is not found, and logs a warning.
+func (dv *DoorsView) SetThemeByName(name string) {
+	if dv.themeRegistry == nil {
+		dv.themeRegistry = themes.NewDefaultRegistry()
+	}
+	if name == "" {
+		name = themes.DefaultThemeName
+	}
+	theme, ok := dv.themeRegistry.Get(name)
+	if !ok {
+		log.Printf("theme %q not found, falling back to %q", name, themes.DefaultThemeName)
+		theme, _ = dv.themeRegistry.Get(themes.DefaultThemeName)
+	}
+	dv.theme = theme
+}
+
+// Theme returns the currently active door theme.
+func (dv *DoorsView) Theme() *themes.DoorTheme {
+	return dv.theme
+}
+
+// SetThemeRegistry sets a custom theme registry (useful for testing).
+func (dv *DoorsView) SetThemeRegistry(r *themes.Registry) {
+	dv.themeRegistry = r
 }
 
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
@@ -213,8 +244,6 @@ func (dv *DoorsView) View() string {
 		return s.String()
 	}
 
-	usePerDoorColors := dv.width >= 60
-
 	doorWidth := 30
 	if dv.width > 20 {
 		doorWidth = (dv.width - 6) / 3
@@ -230,6 +259,19 @@ func (dv *DoorsView) View() string {
 			doorHeight = 10
 		}
 	}
+
+	// Resolve the active theme for this render cycle.
+	// Width-aware fallback: if per-door width is below the theme's minimum, use Classic.
+	activeTheme := dv.theme
+	if activeTheme != nil && doorWidth < activeTheme.MinWidth {
+		if dv.themeRegistry != nil {
+			if classic, ok := dv.themeRegistry.Get("classic"); ok {
+				activeTheme = classic
+			}
+		}
+	}
+
+	usePerDoorColors := dv.width >= 60
 
 	var renderedDoors []string
 	for i, task := range dv.currentDoors {
@@ -261,15 +303,20 @@ func (dv *DoorsView) View() string {
 			Render(fmt.Sprintf("[%s]", task.Status))
 		content = statusIndicator + "\n\n" + content
 
-		var style lipgloss.Style
-		if i == dv.selectedDoorIndex {
-			style = selectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
-		} else if usePerDoorColors && i < len(doorColors) {
-			style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
+		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
+		if activeTheme != nil {
+			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, i == dv.selectedDoorIndex))
 		} else {
-			style = doorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
+			var style lipgloss.Style
+			if i == dv.selectedDoorIndex {
+				style = selectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
+			} else if usePerDoorColors && i < len(doorColors) {
+				style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
+			} else {
+				style = doorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
+			}
+			renderedDoors = append(renderedDoors, style.Render(content))
 		}
-		renderedDoors = append(renderedDoors, style.Render(content))
 	}
 
 	s.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...))
