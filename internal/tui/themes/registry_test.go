@@ -103,7 +103,6 @@ func TestNewDefaultRegistry(t *testing.T) {
 	}
 }
 
-
 func TestNames(t *testing.T) {
 	t.Parallel()
 

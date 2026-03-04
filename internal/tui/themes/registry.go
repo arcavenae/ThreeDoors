@@ -36,7 +36,6 @@ func NewDefaultRegistry() *Registry {
 	return r
 }
 
-
 // Names returns sorted names of all registered themes.
 func (r *Registry) Names() []string {
 	names := make([]string, 0, len(r.themes))
