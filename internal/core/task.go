@@ -14,6 +14,13 @@ type TaskNote struct {
 	Text      string    `yaml:"text" json:"text"`
 }
 
+// SourceRef links a task to its identity in a specific provider.
+// A task may have multiple SourceRefs if it exists in several providers.
+type SourceRef struct {
+	Provider string `yaml:"provider" json:"provider"`
+	NativeID string `yaml:"native_id" json:"native_id"`
+}
+
 // Task represents a single task with full lifecycle metadata.
 type Task struct {
 	ID             string       `yaml:"id" json:"id"`
@@ -29,6 +36,49 @@ type Task struct {
 	UpdatedAt      time.Time    `yaml:"updated_at" json:"updated_at"`
 	CompletedAt    *time.Time   `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
 	SourceProvider string       `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
+	SourceRefs     []SourceRef  `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
+}
+
+// HasSourceRef returns true if the task has a SourceRef matching the given provider and native ID.
+func (t *Task) HasSourceRef(provider, nativeID string) bool {
+	for _, ref := range t.SourceRefs {
+		if ref.Provider == provider && ref.NativeID == nativeID {
+			return true
+		}
+	}
+	return false
+}
+
+// AddSourceRef adds a SourceRef if one for the same provider and native ID doesn't already exist.
+func (t *Task) AddSourceRef(provider, nativeID string) {
+	if t.HasSourceRef(provider, nativeID) {
+		return
+	}
+	t.SourceRefs = append(t.SourceRefs, SourceRef{
+		Provider: provider,
+		NativeID: nativeID,
+	})
+}
+
+// EffectiveSourceProvider returns the source provider name, preferring SourceRefs[0]
+// over the legacy SourceProvider field for backward compatibility.
+func (t *Task) EffectiveSourceProvider() string {
+	if len(t.SourceRefs) > 0 {
+		return t.SourceRefs[0].Provider
+	}
+	return t.SourceProvider
+}
+
+// MigrateSourceProvider converts the legacy SourceProvider field to a SourceRef entry.
+// This is a no-op if SourceRefs is already populated or SourceProvider is empty.
+func (t *Task) MigrateSourceProvider() {
+	if len(t.SourceRefs) > 0 || t.SourceProvider == "" {
+		return
+	}
+	t.SourceRefs = []SourceRef{{
+		Provider: t.SourceProvider,
+		NativeID: t.ID,
+	}}
 }
 
 // NewTask creates a new task with a UUID and default "todo" status.
