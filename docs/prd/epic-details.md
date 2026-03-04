@@ -1337,3 +1337,279 @@
 **Dependencies:** Stories 17.1, 17.2
 
 ---
+
+## Epic 19: Jira Integration
+
+**Epic Goal:** Integrate Jira as a task source, enabling developers to see their Jira issues as ThreeDoors tasks. Phase 1 is read-only; Phase 2 adds bidirectional sync via the transitions API.
+
+**Prerequisites:** Epic 7 (adapter SDK), Epic 11 (sync observability), Epic 13 (multi-source aggregation)
+
+---
+
+### Story 19.1: Jira HTTP Client
+
+**As a** developer,
+**I want** a thin HTTP client for the Jira REST API v3,
+**so that** the JiraProvider can query and transition issues without a third-party SDK dependency.
+
+**Acceptance Criteria:**
+1. `Client` struct in `internal/adapters/jira/jira_client.go` with `NewClient(config AuthConfig) *Client`
+2. Basic Auth (Cloud) and PAT Bearer (Server/DC) authentication support
+3. `SearchJQL(ctx, jql, fields, maxResults, pageToken) (*SearchResult, error)` method using `POST /rest/api/3/search/jql`
+4. Cursor-based pagination support via `nextPageToken`
+5. HTTP 429 handling: parse `Retry-After` header, return `*RateLimitError`
+6. Unit tests using `httptest.NewServer` with canned responses
+7. No third-party dependencies beyond stdlib
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** None — foundation for Epic 19
+
+---
+
+### Story 19.2: Jira Read-Only Provider
+
+**As a** ThreeDoors user with Jira,
+**I want** my Jira issues to appear as tasks in ThreeDoors,
+**so that** I can use the Three Doors selection for my sprint work.
+
+**Acceptance Criteria:**
+1. `JiraProvider` in `internal/adapters/jira/jira_provider.go` implementing `core.TaskProvider`
+2. `LoadTasks()` executes configured JQL, paginates results, maps to `[]*core.Task`
+3. Field mapping: issue key → ID, summary → Text, statusCategory → Status, priority → Effort, project+labels → Context
+4. `SaveTask/SaveTasks/DeleteTask/MarkComplete` return `core.ErrReadOnly`
+5. `Watch()` returns `nil`; `HealthCheck()` tests API connectivity
+6. Adapter factory registered in `Registry` as `"jira"`
+7. Contract tests pass via `adapters.RunContractTests`
+8. Table-driven field mapping tests for all status/priority combinations
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** Story 19.1
+
+---
+
+### Story 19.3: Jira Bidirectional Sync
+
+**As a** ThreeDoors user,
+**I want** completing a Jira task in ThreeDoors to transition the issue to Done in Jira,
+**so that** my task status stays synchronized.
+
+**Acceptance Criteria:**
+1. `MarkComplete(taskID)` implementation: GET transitions → find Done transition → POST transition
+2. Handle 409 Conflict (concurrent transition) with retry
+3. WAL wrapping: `core.NewWALProvider(jiraProvider)` for offline queuing
+4. FallbackProvider wrapping for graceful degradation when Jira is unreachable
+5. Local cache file (`~/.threedoors/jira-cache.yaml`) updated on successful LoadTasks, used as fallback
+6. Unit tests for transition discovery, execution, conflict handling, and WAL replay
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** Stories 19.1, 19.2
+
+---
+
+### Story 19.4: Jira Config and Registration
+
+**As a** ThreeDoors user,
+**I want** to configure Jira integration in my config.yaml,
+**so that** I can connect to my Jira instance with my preferred JQL filter.
+
+**Acceptance Criteria:**
+1. Config section for Jira in `~/.threedoors/config.yaml`: url, auth_type, jql, max_results, poll_interval
+2. Environment variable fallback: `JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
+3. Config validation: required fields (url, auth_type), URL format, auth_type enum
+4. Adapter factory wired to config parsing
+5. Registration in `RegisterBuiltinAdapters()`
+6. Unit tests for config parsing, validation, env var fallback
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Story 19.2
+
+---
+
+## Epic 20: Apple Reminders Integration
+
+**Epic Goal:** Add Apple Reminders as a task source with full CRUD support, leveraging its structured data model for a higher-quality integration than Apple Notes.
+
+**Prerequisites:** Epic 7 (adapter SDK), macOS only
+
+---
+
+### Story 20.1: Reminders JXA Scripts and CommandExecutor
+
+**As a** developer,
+**I want** JXA scripts for reading, creating, updating, completing, and deleting reminders,
+**so that** the RemindersProvider has a reliable access layer for Apple Reminders.
+
+**Acceptance Criteria:**
+1. `CommandExecutor` interface in `internal/adapters/reminders/` (reuse pattern from applenotes)
+2. `OSAScriptExecutor` implementation using `osascript -l JavaScript`
+3. JXA script: read incomplete reminders from specified lists as JSON array
+4. JXA script: read all reminder list names as JSON array
+5. JXA script: complete a reminder by ID
+6. JXA script: create a new reminder with name, body, priority, list
+7. JXA script: delete a reminder by ID
+8. Unit tests with mock executor returning canned JSON responses
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** None — foundation for Epic 20
+
+---
+
+### Story 20.2: Reminders Read-Only Provider
+
+**As a** ThreeDoors user on macOS,
+**I want** my Apple Reminders to appear as tasks in ThreeDoors,
+**so that** I can use Three Doors selection for my reminder lists.
+
+**Acceptance Criteria:**
+1. `RemindersProvider` in `internal/adapters/reminders/reminders_provider.go` implementing `core.TaskProvider`
+2. `LoadTasks()` reads incomplete reminders via JXA, maps to `[]*core.Task`
+3. Field mapping: id → ID (stable persistent URI), name → Text, body → Notes, priority → Effort, completed → Status
+4. Configurable list filtering (empty = all lists)
+5. `SaveTask/SaveTasks/DeleteTask/MarkComplete` return `core.ErrReadOnly`
+6. `HealthCheck()` attempts lightweight read, reports TCC permission status
+7. Contract tests pass via `adapters.RunContractTests`
+8. Table-driven field mapping tests
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** Story 20.1
+
+---
+
+### Story 20.3: Reminders Write Support
+
+**As a** ThreeDoors user,
+**I want** to complete, create, and delete reminders from within ThreeDoors,
+**so that** changes sync back to Apple Reminders on all my devices via iCloud.
+
+**Acceptance Criteria:**
+1. `MarkComplete(taskID)` sets `completed = true` via JXA
+2. `SaveTask(task)` creates new reminder if ID is empty, updates existing if ID matches
+3. `DeleteTask(taskID)` removes reminder via JXA
+4. Error categorization: permission denied, reminder not found, timeout
+5. Retry logic with configurable attempts and backoff (reuse pattern from applenotes)
+6. Full contract test compliance (stable IDs enable complete round-trip testing)
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** Stories 20.1, 20.2
+
+---
+
+### Story 20.4: Reminders Config, Registration, and Health Check
+
+**As a** ThreeDoors user,
+**I want** to configure Apple Reminders in config.yaml with list filtering,
+**so that** I only see reminders from my work-related lists.
+
+**Acceptance Criteria:**
+1. Config section: lists (comma-separated), include_completed (bool)
+2. Adapter factory wired to config parsing
+3. Registration in `RegisterBuiltinAdapters()` as `"reminders"`
+4. `HealthCheck()` returns clear guidance when Reminders access is denied
+5. Platform guard: `//go:build darwin` — adapter only available on macOS
+6. Unit tests for config parsing and validation
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Story 20.2
+
+---
+
+## Epic 21: Sync Protocol Hardening
+
+**Epic Goal:** Harden the sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping.
+
+**Prerequisites:** Epic 11 (sync observability), Epic 13 (multi-source aggregation)
+
+---
+
+### Story 21.1: Sync Scheduler with Per-Provider Loops
+
+**As a** ThreeDoors user with multiple task sources,
+**I want** background sync to run automatically per provider,
+**so that** I don't have to interact with the app to discover remote changes.
+
+**Acceptance Criteria:**
+1. `SyncScheduler` struct in `internal/core/sync_scheduler.go` managing per-provider `ProviderLoop` goroutines
+2. Each loop runs independently with configurable poll interval
+3. Hybrid trigger: `Watch()` channel as primary, polling as fallback (concurrent)
+4. `AdaptiveInterval`: reset to min on success, multiply on failure (up to max), ±20% jitter
+5. Results fan-in to a single channel consumed by the TUI via `tea.Cmd`
+6. `Start(ctx)` and `Stop()` lifecycle methods
+7. Unit tests with fake clock, mock providers, deterministic scheduling
+8. No goroutine leaks on Stop() (verified by test)
+
+**Estimated Time:** 120-150 minutes
+
+**Dependencies:** None within this epic — but requires Epic 11 SyncEngine
+
+---
+
+### Story 21.2: Circuit Breaker per Provider
+
+**As a** ThreeDoors user,
+**I want** a failing provider to be isolated without affecting other providers,
+**so that** one unreachable service doesn't degrade my entire task view.
+
+**Acceptance Criteria:**
+1. `CircuitBreaker` struct in `internal/core/circuit_breaker.go` with Closed/Open/Half-Open states
+2. Closed → Open after 5 consecutive failures within 2-minute window
+3. Open → Half-Open after probe interval (starts 30s, doubles, max 30m)
+4. Half-Open → Closed on successful probe; → Open on failed probe
+5. Integration with `SyncStatusTracker`: expose circuit state per provider
+6. `MultiSourceAggregator` uses circuit state to return cached tasks for Open providers
+7. Table-driven state transition tests
+8. Thread-safe (sync.Mutex protected)
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** None within this epic
+
+---
+
+### Story 21.3: Canonical ID Mapping (SourceRef)
+
+**As a** ThreeDoors user with tasks in multiple providers,
+**I want** tasks to be permanently linked across providers,
+**so that** deduplication is reliable and write-back works to all sources.
+
+**Acceptance Criteria:**
+1. `SourceRef` struct added to `internal/core/task.go`: Provider (string), NativeID (string)
+2. `Task` gains `SourceRefs []SourceRef` field with YAML/JSON serialization
+3. Backward compatibility: if `SourceRefs` is empty, fall back to `SourceProvider`
+4. Identity resolution: lookup by SourceRef → match, or heuristic dedup → link
+5. Write routing uses `SourceRefs` to update all providers that know a task
+6. Schema version bump to 2 with migration function for existing tasks
+7. Unit tests for SourceRef matching, migration, backward compatibility
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** None within this epic
+
+---
+
+### Story 21.4: Sync Dashboard Enhancements
+
+**As a** ThreeDoors user,
+**I want** to see per-provider sync health, staleness, and pending queue status,
+**so that** I know which data is current and which may be stale.
+
+**Acceptance Criteria:**
+1. `ProviderSyncStatus` gains: CircuitState, RetryIn, StaleSince, SyncCount24h, ErrorCount24h
+2. TUI sync status line shows circuit state icons: ✓ (closed), ✗ (open), ↻ (half-open)
+3. Staleness indicator: tasks from providers exceeding staleness threshold are visually annotated
+4. WAL pending count displayed: ⏳ WAL pending (N items, oldest Xm)
+5. Unit tests for status rendering at all circuit states
+6. No new TUI views — extends existing `SyncStatusTracker` display
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Stories 21.1, 21.2
+
+---

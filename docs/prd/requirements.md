@@ -246,6 +246,38 @@
 
 ---
 
+## Phase 7+ - Task Source Sync Integration (Accepted)
+
+*The following requirements extend the product with external task source integrations and sync protocol improvements.*
+
+**Jira Integration:**
+
+**FR63:** The system shall integrate with Jira as a read-only task source, querying issues via configurable JQL and mapping them to the ThreeDoors task model
+
+**FR64:** The system shall provide configurable status mapping from Jira `statusCategory` and `status.name` to ThreeDoors `TaskStatus` values, with `statusCategory` as the default fallback
+
+**FR65:** The system shall support Jira Cloud authentication via API Token + Basic Auth, and Jira Server/DC authentication via Personal Access Token + Bearer, configurable in `~/.threedoors/config.yaml`
+
+**FR66:** The system shall support bidirectional Jira sync by transitioning issues to "Done" via the Jira transitions API when tasks are marked complete in ThreeDoors, with offline queuing via WALProvider
+
+**Apple Reminders Integration:**
+
+**FR67:** The system shall integrate with Apple Reminders as a task source using JXA (JavaScript for Automation) via `osascript`, reading reminders with structured field mapping (title, notes, due date, priority, completion status)
+
+**FR68:** The system shall support full CRUD operations on Apple Reminders: creating, updating, completing, and deleting reminders from within the ThreeDoors TUI
+
+**FR69:** The system shall allow users to configure which Apple Reminders lists to include as task sources via `~/.threedoors/config.yaml`, defaulting to all lists
+
+**Sync Protocol Hardening:**
+
+**FR70:** The system shall provide a sync scheduler with per-provider independent sync loops, supporting hybrid push (Watch channel) and polling with adaptive intervals (backoff on failure, reset on success)
+
+**FR71:** The system shall implement a per-provider circuit breaker (Closed → Open → Half-Open states) that prevents cascading failures and displays health state in the TUI sync status
+
+**FR72:** The system shall maintain canonical ID mapping via `SourceRef` entries linking internal task UUIDs to provider-native IDs, enabling permanent cross-provider deduplication
+
+---
+
 ## Code Quality & Submission Standards
 
 These non-functional requirements establish code quality gates that all contributions must pass before submission. They are derived from recurring patterns identified across 31+ pull requests (see `docs/architecture/pr-submission-standards.md` for full rationale and evidence).
@@ -283,5 +315,19 @@ These non-functional requirements establish code quality gates that all contribu
 | **NFR-BH1** | Re-run `gofumpt` after every rebase (rebase can introduce formatting drift) | — | PR #23 |
 | **NFR-BH2** | Implement stories in dependency order to avoid merge conflicts | — | PRs #3, #5 |
 | **NFR-BH3** | Coordinate parallel agent story assignments to prevent duplicate work | — | PRs #14/#13, #49/#45 (1,157+ lines wasted) |
+
+---
+
+## Task Source Integration NFRs
+
+> Requirements specific to API-based and IPC-based task source adapters.
+
+**NFR20:** API-based adapters must handle HTTP 429 (Too Many Requests) responses by respecting the `Retry-After` header and applying exponential backoff with jitter before retrying
+
+**NFR21:** API-based adapters must cache loaded tasks locally with a configurable TTL to avoid hitting rate limits on every TUI refresh; stale cache must be flagged in the UI
+
+**NFR22:** Credential storage for external adapters must use environment variables or `~/.threedoors/config.yaml` settings — credentials must never be stored in task YAML files or sync state
+
+**NFR23:** The per-provider circuit breaker must trip to Open state after 5 consecutive failures within a 2-minute window; probe requests must occur at configurable intervals (default 30 seconds, max 30 minutes with exponential backoff)
 
 ---

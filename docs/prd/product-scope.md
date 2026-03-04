@@ -73,6 +73,22 @@
 - Voice interface
 - Gamification and trading mechanics
 - Multi-user support
-- Jira, Linear, Slack, Google Calendar integrations (until plugin SDK is mature)
+
+---
+
+## Phase 4: Task Source Integration & Sync Hardening
+
+**In Scope:**
+- Jira integration: read-only adapter (JQL search, status mapping, auth config), then bidirectional sync (MarkComplete via transitions API, WAL queuing)
+- Apple Reminders integration: JXA-based adapter with full CRUD (read, create, update, complete, delete), configurable list filtering
+- Sync protocol hardening: per-provider sync scheduler with adaptive intervals, circuit breaker per provider, canonical ID mapping via SourceRef
+- Generic adapter patterns: rate limit handling, local cache with TTL, credential management via config.yaml/env vars
+
+**Out of Scope for Phase 4:**
+- Todoist, Linear, GitHub Issues, ClickUp integrations (deferred to Phase 5+)
+- OAuth 2.0 flows (API token/PAT auth only for initial integrations)
+- EventKit/cgo-based Apple Reminders (future optimization behind build tag)
+- Property-level conflict resolution (deferred to Phase 5)
+- Cross-computer sync
 
 ---
