@@ -1,0 +1,125 @@
+package themes
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/exp/golden"
+	"github.com/muesli/termenv"
+)
+
+// setAsciiProfile forces ASCII color profile for deterministic golden output
+// and restores the original profile on test cleanup.
+func setAsciiProfile(t *testing.T) {
+	t.Helper()
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+}
+
+// allThemes returns the four built-in themes in a stable order.
+func allThemes() []*DoorTheme {
+	return []*DoorTheme{
+		NewClassicTheme(),
+		NewModernTheme(),
+		NewSciFiTheme(),
+		NewShojiTheme(),
+	}
+}
+
+// TestGolden_ThemeRender tests each theme at 28-char and 40-char widths,
+// in both selected and unselected states (AC1, AC2).
+func TestGolden_ThemeRender(t *testing.T) {
+	setAsciiProfile(t)
+
+	tests := []struct {
+		width    int
+		selected bool
+	}{
+		{28, false},
+		{28, true},
+		{40, false},
+		{40, true},
+	}
+
+	for _, theme := range allThemes() {
+		for _, tt := range tests {
+			state := "unselected"
+			if tt.selected {
+				state = "selected"
+			}
+			name := theme.Name + "/" + state + "_w" + itoa(tt.width)
+			t.Run(name, func(t *testing.T) {
+				out := theme.Render("Buy groceries for the week", tt.width, tt.selected)
+				golden.RequireEqual(t, []byte(out))
+			})
+		}
+	}
+}
+
+// TestGolden_ThemeBoundaryWidth tests each theme at MinWidth (should render
+// correctly) and MinWidth-1 (verifies behavior at below-minimum width) (AC5).
+func TestGolden_ThemeBoundaryWidth(t *testing.T) {
+	setAsciiProfile(t)
+
+	for _, theme := range allThemes() {
+		t.Run(theme.Name+"/at_min_width", func(t *testing.T) {
+			out := theme.Render("Task text", theme.MinWidth, false)
+			golden.RequireEqual(t, []byte(out))
+		})
+		t.Run(theme.Name+"/below_min_width", func(t *testing.T) {
+			out := theme.Render("Task text", theme.MinWidth-1, false)
+			golden.RequireEqual(t, []byte(out))
+		})
+	}
+}
+
+// TestGolden_ThemeContentLength tests each theme with short, medium, and long
+// content to verify wrapping behavior (AC6).
+func TestGolden_ThemeContentLength(t *testing.T) {
+	setAsciiProfile(t)
+
+	contentCases := []struct {
+		label   string
+		content string
+	}{
+		{"short", "Do it"},
+		{"medium", "Review the pull request and leave comments on the architecture decisions"},
+		{"long", strings.Join([]string{
+			"This is a very long task description that should wrap across",
+			"multiple lines to verify that each theme handles content",
+			"wrapping gracefully without visual artifacts or broken",
+			"borders. The text keeps going to ensure at least five",
+			"lines of wrapped content appear in the rendered output.",
+		}, " ")},
+	}
+
+	for _, theme := range allThemes() {
+		for _, cc := range contentCases {
+			t.Run(theme.Name+"/"+cc.label, func(t *testing.T) {
+				out := theme.Render(cc.content, 40, false)
+				golden.RequireEqual(t, []byte(out))
+			})
+		}
+	}
+}
+
+// itoa converts a small int to its string representation without importing strconv.
+func itoa(n int) string {
+	if n == 0 {
+		return "0"
+	}
+	digits := []byte{}
+	neg := n < 0
+	if neg {
+		n = -n
+	}
+	for n > 0 {
+		digits = append([]byte{byte('0' + n%10)}, digits...)
+		n /= 10
+	}
+	if neg {
+		digits = append([]byte{'-'}, digits...)
+	}
+	return string(digits)
+}
