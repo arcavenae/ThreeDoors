@@ -1967,3 +1967,229 @@ The following maps each affected story to the specific PR issues it produced:
 | 4.3 | #44 | staticcheck QF1012 + S1009, logic bugs (duplicate task, case-sensitive mood) | AC-Q2 (lint gate) |
 | 4.4 | #45, #49 | staticcheck S1011 + QF1012, duplicate PR from parallel agent | AC-Q2 (lint gate) |
 | 4.5 | #42 | 4 CI failures, 5-file merge conflict, gofumpt + errcheck + QF1012 (fixed incrementally) | AC-Q1, AC-Q2, AC-Q4 (all gates) |
+
+---
+
+## Epic 22: Self-Driving Development Pipeline 🆕
+
+**Epic Goal:** Enable ThreeDoors tasks to directly trigger multiclaude worker agents, creating a closed loop where the app dispatches its own development work and tracks results (PRs, CI status) back in the TUI. This is the "meta" feature: ThreeDoors managing its own development.
+
+**Prerequisites:** Epic 14 ✅ (LLM Decomposition — provides AgentService for optional story generation), multiclaude installed and configured
+**FRs covered:** FR73, FR74, FR75, FR76, FR77, FR78, FR79, FR80
+**NFRs covered:** NFR24, NFR25, NFR26, NFR27
+**Origin:** Self-driving development pipeline research (2026-03-04). Research document at `docs/research/self-driving-development-pipeline.md`.
+**Architecture:** Option B (TUI-Native Dispatch) — single-process, unified UX, leverages existing multiclaude CLI and Bubbletea patterns.
+**Status:** Not Started
+
+**Key Design Decisions:**
+- Dispatch state (`DevDispatch`) is orthogonal to task lifecycle status — a task can be `in-progress` AND dispatched
+- File-based queue (`~/.threedoors/dev-queue.yaml`) — consistent with YAML data model, offline-capable, inspectable
+- 30-second `tea.Tick` polling via `multiclaude repo history` — simple, reliable, matches Bubbletea patterns
+- Feature gated behind `dev_dispatch_enabled: true` in config — disabled by default
+- No auto-dispatch by default — user must explicitly approve each dispatch
+- Max 2 concurrent workers — conservative default to prevent cost runaway
+
+### Story 22.1: Dev Dispatch Data Model and Queue Persistence
+
+**Status:** draft
+
+As a developer,
+I want a `DevDispatch` struct on the `Task` type and a file-based dev queue,
+So that dispatch state is tracked independently from task lifecycle and persists across TUI restarts.
+
+**Acceptance Criteria:**
+
+**Given** the need to track dev dispatch state orthogonal to task status
+**When** the data model is created
+**Then:**
+- AC1: `DevDispatch` struct defined in `internal/dispatch/model.go` with fields: Queued (`bool`), QueuedAt (`*time.Time`), WorkerName (`string`), PRNumber (`int`), PRStatus (`string`), DispatchErr (`string`)
+- AC2: `QueueItem` struct defined with fields: ID, TaskID, TaskText, Context, Status (pending/dispatched/completed/failed), Priority, Scope, AcceptanceCriteria, QueuedAt, DispatchedAt, CompletedAt, WorkerName, PRNumber, PRURL, Error
+- AC3: `DevQueue` struct with `Load(path string) error`, `Save(path string) error`, `Add(item QueueItem) error`, `Get(id string) (QueueItem, error)`, `Update(id string, fn func(*QueueItem)) error`, `List() []QueueItem`
+- AC4: Queue file location defaults to `~/.threedoors/dev-queue.yaml`
+- AC5: Queue persistence uses atomic write pattern (write to `.tmp`, sync, rename)
+- AC6: `Task` struct in `internal/core/task.go` extended with `DevDispatch *DevDispatch` field (pointer, omitempty)
+- AC7: Unit tests for queue CRUD operations and atomic write safety
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.2: Dispatch Engine with multiclaude CLI Wrapper
+
+**Status:** draft
+
+As a developer,
+I want a dispatch engine that wraps the multiclaude CLI,
+So that ThreeDoors can create workers, list workers, get history, and remove workers programmatically.
+
+**Acceptance Criteria:**
+
+**Given** the need to interact with multiclaude from within ThreeDoors
+**When** the dispatch engine is implemented
+**Then:**
+- AC1: `Dispatcher` interface defined in `internal/dispatch/dispatcher.go` with methods: `CreateWorker(ctx, task string) (workerName string, err error)`, `ListWorkers(ctx) ([]WorkerInfo, error)`, `GetHistory(ctx, limit int) ([]HistoryEntry, error)`, `RemoveWorker(ctx, name string) error`
+- AC2: `CLIDispatcher` concrete implementation wraps `os/exec` calls to `multiclaude` CLI
+- AC3: `CommandRunner` interface for testability (mock subprocess execution)
+- AC4: Task-to-worker translation builds rich prompt from task text, context, acceptance criteria, scope, and standard suffix (signing, fork workflow)
+- AC5: `CheckAvailable(ctx) error` method validates `multiclaude` is on PATH
+- AC6: Unit tests with mock `CommandRunner` for all dispatch operations
+- AC7: Error wrapping follows `fmt.Errorf("dispatch %s: %w", op, err)` pattern
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.3: TUI Dispatch Key Binding and Confirmation Flow
+
+**Status:** draft
+
+As a user,
+I want to press 'x' in the task detail view or type `:dispatch` to dispatch a task to the dev queue,
+So that I can trigger automated development work on a selected task.
+
+**Acceptance Criteria:**
+
+**Given** a task is selected in the detail view and dev dispatch is enabled
+**When** the user presses 'x' or types `:dispatch`
+**Then:**
+- AC1: Confirmation dialog appears: "Dispatch '<task text>' to dev queue? [y/n]"
+- AC2: On 'y', task is added to dev queue with status `pending` and `Task.DevDispatch.Queued` set to `true`
+- AC3: On 'n', confirmation is dismissed with no side effects
+- AC4: If task is already dispatched, show message "Task already dispatched" and do not re-enqueue
+- AC5: If multiclaude is not available, 'x' key and `:dispatch` command are hidden/disabled with message "multiclaude not found — dev dispatch unavailable"
+- AC6: If `dev_dispatch_enabled` is `false` in config, 'x' key and `:dispatch` are not registered
+- AC7: `[DEV]` badge appears on dispatched tasks in the doors view
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.4: Dev Queue View (List, Approve, Kill)
+
+**Status:** draft
+
+As a user,
+I want a dev queue view where I can see pending dispatches, approve them, and kill running workers,
+So that I maintain control over what gets dispatched and can stop runaway agents.
+
+**Acceptance Criteria:**
+
+**Given** the user opens the dev queue view via `:devqueue` command
+**When** the view renders
+**Then:**
+- AC1: Queue items displayed as a list with columns: Status (icon), Task Text (truncated), Worker Name, PR #, Queued At
+- AC2: 'y' key approves a pending item (triggers `multiclaude worker create`)
+- AC3: 'n' key rejects a pending item (removes from queue)
+- AC4: 'K' key kills a dispatched/running worker (`multiclaude worker rm`)
+- AC5: 'j'/'k' or arrow keys navigate the list
+- AC6: ESC returns to the doors view
+- AC7: Status icons: ⏳ pending, ⚙️ dispatched, ✅ completed, ❌ failed
+- AC8: View auto-refreshes on 30-second tick (same as worker status polling)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.5: Worker Status Polling and Task Update Loop
+
+**Status:** draft
+
+As a user,
+I want ThreeDoors to automatically check on worker status and update tasks with PR results,
+So that I can see development progress without leaving the TUI.
+
+**Acceptance Criteria:**
+
+**Given** one or more queue items are in `dispatched` status
+**When** the 30-second tick fires
+**Then:**
+- AC1: `tea.Tick` command fires every 30 seconds while any queue items are in `dispatched` status
+- AC2: Tick runs `multiclaude repo history` via the dispatch engine and parses output
+- AC3: Worker name matched to queue item; status updated (dispatched → completed/failed)
+- AC4: PR number and URL extracted and set on queue item and `Task.DevDispatch`
+- AC5: Task badge in doors view updates to show PR status (e.g., `[PR #134]`)
+- AC6: Polling stops when no items are in `dispatched` status (no unnecessary ticks)
+- AC7: Parse errors logged but do not crash the TUI — Bubbletea `Update()` must never panic
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.6: Auto-Generated Review and Follow-Up Tasks
+
+**Status:** draft
+
+As a user,
+I want ThreeDoors to automatically create review and follow-up tasks when workers produce results,
+So that PR reviews and CI fixes appear naturally in my door rotation.
+
+**Acceptance Criteria:**
+
+**Given** a worker has completed and a PR has been created
+**When** the polling loop detects the completion
+**Then:**
+- AC1: New task created: "Review PR #N: <original task text>" with status `todo`
+- AC2: If CI fails on the PR, new task created: "Fix CI on PR #N: <failure summary>" with status `todo`
+- AC3: Generated tasks appear in normal door rotation
+- AC4: Generated tasks reference the original task ID in their context field
+- AC5: No duplicate tasks generated — if "Review PR #N" already exists, skip creation
+- AC6: Auto-generated tasks have `DevDispatch.PRNumber` pre-set for traceability
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.7: Optional Story File Generation via AgentService
+
+**Status:** draft
+
+As a user,
+I want to optionally generate story files before dispatching a task,
+So that workers receive structured requirements following the project's story-driven development pattern.
+
+**Acceptance Criteria:**
+
+**Given** `require_story: true` is set in dev queue settings
+**When** a task is dispatched
+**Then:**
+- AC1: `AgentService.DecomposeAndWrite()` is called to generate BMAD-style story files from the task
+- AC2: Story files are committed to a branch before the worker is spawned
+- AC3: Worker task description includes instructions to implement the generated stories
+- AC4: If `require_story: false`, story generation is skipped and the worker receives the raw task description
+- AC5: Story generation failure is non-fatal — logs error, proceeds with raw task dispatch, sets warning on queue item
+- AC6: Configuration option `require_story` defaults to `false`
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 22.8: Safety Guardrails (Rate Limiting, Cost Caps, Audit Log)
+
+**Status:** draft
+
+As a user,
+I want safety guardrails preventing runaway agent spawning and providing an audit trail,
+So that I can use the self-driving pipeline without risk of excessive cost or uncontrolled automation.
+
+**Acceptance Criteria:**
+
+**Given** the dispatch engine is operational
+**When** guardrails are configured
+**Then:**
+- AC1: Max concurrent workers enforced (default 2) — dispatch refused with message if at capacity
+- AC2: Manual approval gate by default (`auto_dispatch: false`) — pending items require explicit 'y' in dev queue view
+- AC3: Minimum 5-minute cooldown between dispatches to the same task
+- AC4: Daily dispatch limit enforced (default 10) — dispatch refused with message if exceeded
+- AC5: Every dispatch, completion, and failure logged to `~/.threedoors/dev-dispatch.log` in JSONL format
+- AC6: `:dispatch --dry-run` shows the full multiclaude command without executing
+- AC7: Guardrail settings configurable in `~/.threedoors/config.yaml` under `dev_dispatch` section
+- AC8: All guardrail violations produce user-visible messages in the TUI (not silent failures)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Epic 22 Story Dependencies
+
+```
+22.1 (Data Model) ──┬──> 22.2 (Dispatch Engine) ──┬──> 22.4 (Dev Queue View)
+                    │                               ├──> 22.5 (Status Polling)
+                    │                               ├──> 22.7 (Story Generation)
+                    │                               └──> 22.8 (Safety Guardrails)
+                    │
+                    └──> 22.3 (TUI Dispatch Binding)
+
+                         22.5 (Status Polling) ────> 22.6 (Auto-Generated Tasks)
+```
+
+### MVP Phasing
+
+**MVP-1 (Stories 22.1, 22.2, 22.3):** Data model + dispatch engine + TUI binding. User can dispatch tasks from the TUI; approval and execution via manual script or dev queue view.
+
+**MVP-2 (Stories 22.4, 22.5):** Dev queue view + polling. Full TUI-integrated dispatch with automatic status tracking.
+
+**MVP-3 (Stories 22.6, 22.7, 22.8):** Auto-generated tasks + story generation + safety guardrails. Complete closed-loop self-driving pipeline.

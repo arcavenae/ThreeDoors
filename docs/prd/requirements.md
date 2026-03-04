@@ -278,6 +278,40 @@
 
 ---
 
+## Phase 8+ - Self-Driving Development Pipeline (Accepted)
+
+*The following requirements enable ThreeDoors to dispatch its own development tasks to multiclaude worker agents, creating a closed loop where the app manages its own development.*
+
+**Self-Driving Dev Dispatch:**
+
+**FR73:** The system shall support task dispatch to multiclaude worker agents via a `DevDispatch` metadata struct on the `Task` type, maintaining dispatch state (queued, dispatched, completed, failed) orthogonal to the task lifecycle status
+
+**FR74:** The system shall provide a file-based dev queue at `~/.threedoors/dev-queue.yaml` that persists dispatch items with task reference, acceptance criteria, scope constraints, worker name, PR number, and status — using the existing atomic write pattern for safe persistence
+
+**FR75:** The system shall provide a dispatch engine (`internal/dispatch/`) that wraps the `multiclaude` CLI, supporting `CreateWorker`, `ListWorkers`, `GetHistory`, and `RemoveWorker` operations via a `Dispatcher` interface for testability
+
+**FR76:** The system shall support task dispatch from the TUI via an 'x' key binding in the detail view and a `:dispatch` command in the command palette, with a confirmation dialog before enqueueing
+
+**FR77:** The system shall provide a dev queue view accessible via `:devqueue` command, displaying pending/dispatched/completed queue items with approve ('y'), reject ('n'), and kill ('K') actions
+
+**FR78:** The system shall poll for worker status updates via `tea.Tick` at 30-second intervals using `multiclaude repo history`, automatically updating queue items and task `DevDispatch` fields with PR number, URL, and status
+
+**FR79:** The system shall auto-generate follow-up tasks when workers produce results: "Review PR #N" on PR creation, "Fix CI on PR #N" on CI failure, and "Address review comments on PR #N" when review comments are posted
+
+**FR80:** The system shall enforce safety guardrails: maximum concurrent workers (default 2), manual approval gate by default (`auto_dispatch: false`), minimum 5-minute cooldown between dispatches, daily dispatch limit (default 10), and JSONL audit log at `~/.threedoors/dev-dispatch.log`
+
+**Self-Driving Dev Dispatch NFRs:**
+
+**NFR24:** The dispatch engine shall validate that `multiclaude` is available on PATH during initialization; if not found, dispatch-related key bindings and commands shall be hidden/disabled with a user-facing message
+
+**NFR25:** The dispatch feature shall be gated behind `dev_dispatch_enabled: true` in `~/.threedoors/config.yaml`, disabled by default, to prevent accidental exposure for users who do not use multiclaude
+
+**NFR26:** All dispatched worker task descriptions shall include fork workflow instructions, commit signing requirements, and scope constraints — ensuring workers follow the project's contribution standards
+
+**NFR27:** The dev queue file shall survive TUI process restarts; on TUI launch, the dispatch engine shall read the queue and resume polling for any items in `dispatched` status
+
+---
+
 ## Code Quality & Submission Standards
 
 These non-functional requirements establish code quality gates that all contributions must pass before submission. They are derived from recurring patterns identified across 31+ pull requests (see `docs/architecture/pr-submission-standards.md` for full rationale and evidence).

@@ -310,9 +310,28 @@
 - **Risk:** Concurrent sync loop testing complexity; SourceRef migration breaks sync state format
 - **Research:** See `docs/research/sync-architecture-scaling-research.md`, `docs/research/task-sync-analyst-brief.md`
 
-**Epic 22+: Additional Integrations** (Todoist, Linear, GitHub Issues, ClickUp, etc.)
-**Epic 23+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 24+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 22: Self-Driving Development Pipeline** 🆕
+- **Goal:** Enable ThreeDoors tasks to directly trigger multiclaude worker agents, creating a closed loop where the app dispatches its own development work and tracks results (PRs, CI status) back in the TUI
+- **Prerequisites:** Epic 14 ✅ (LLM Decomposition — provides AgentService for optional story generation), multiclaude installed and configured
+- **Deliverables:**
+  - DevDispatch data model and file-based queue persistence (`~/.threedoors/dev-queue.yaml`)
+  - Dispatch engine wrapping multiclaude CLI (`CreateWorker`, `ListWorkers`, `GetHistory`, `RemoveWorker`)
+  - TUI dispatch key binding ('x' in detail view) and `:dispatch` command
+  - Dev queue view (list, approve, kill queue items)
+  - Worker status polling via `tea.Tick` (30-second intervals)
+  - Auto-generated follow-up tasks (review PRs, fix CI, address comments)
+  - Optional story file generation via existing `AgentService`
+  - Safety guardrails (max concurrent workers, approval gate, rate limiting, audit log)
+- **Stories:** 22.1 (Data Model & Queue), 22.2 (Dispatch Engine), 22.3 (TUI Dispatch Binding), 22.4 (Dev Queue View), 22.5 (Worker Status Polling), 22.6 (Auto-Generated Tasks), 22.7 (Story File Generation), 22.8 (Safety Guardrails)
+- **Estimated Effort:** 4-6 weeks at 2-4 hrs/week
+- **FRs covered:** FR73, FR74, FR75, FR76, FR77, FR78, FR79, FR80
+- **NFRs covered:** NFR24, NFR25, NFR26, NFR27
+- **Risk:** Depends on multiclaude CLI availability and stability; feature gated behind config flag to mitigate. Worker cost management requires careful defaults.
+- **Research:** See `docs/research/self-driving-development-pipeline.md` for full analysis
+
+**Epic 23+: Additional Integrations** (Todoist, Linear, GitHub Issues, ClickUp, etc.)
+**Epic 24+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 25+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -344,6 +363,7 @@
 | Epic 19: Jira Integration | 4 | 🆕 Not Started |
 | Epic 20: Apple Reminders Integration | 4 | 🆕 Not Started |
 | Epic 21: Sync Protocol Hardening | 4 | 🆕 Not Started |
-| **Total** | **92** | **26 complete, 66 remaining** |
+| Epic 22: Self-Driving Dev Pipeline | 8 | 🆕 Not Started |
+| **Total** | **100** | **26 complete, 74 remaining** |
 
 ---

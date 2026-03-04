@@ -634,6 +634,106 @@ func (a *MultiSourceAggregator) GetProviderForTask(taskID string) (TaskProvider,
 - User can confirm duplicate (merge) or dismiss (mark as distinct)
 - Stores dedup decisions in enrichment DB to avoid re-flagging
 
+### Dispatch Layer Components (Epic 22)
+
+#### Component: DispatchEngine (Epic 22)
+
+**Responsibility:** Manage the dev dispatch pipeline — queue persistence, multiclaude CLI interaction, guardrail enforcement, and audit logging.
+
+**Package:** `internal/dispatch/`
+
+**Key Interfaces:**
+
+```go
+// Dispatcher abstracts the multiclaude CLI for testability.
+type Dispatcher interface {
+    CreateWorker(ctx context.Context, task string) (workerName string, err error)
+    ListWorkers(ctx context.Context) ([]WorkerInfo, error)
+    GetHistory(ctx context.Context, limit int) ([]HistoryEntry, error)
+    RemoveWorker(ctx context.Context, name string) error
+    CheckAvailable(ctx context.Context) error
+}
+
+// CommandRunner abstracts subprocess execution for testing.
+type CommandRunner interface {
+    Run(ctx context.Context, name string, args ...string) ([]byte, error)
+}
+```
+
+**Concrete Implementation:** `CLIDispatcher` wraps `os/exec` calls to the `multiclaude` binary.
+
+**Key Behaviors:**
+- `CreateWorker` builds a rich task description from queue item fields and executes `multiclaude worker create`
+- `ListWorkers` parses `multiclaude worker list` output into structured `WorkerInfo` slices
+- `GetHistory` parses `multiclaude repo history` output into `HistoryEntry` slices
+- `CheckAvailable` validates `multiclaude` is on PATH via `exec.LookPath`
+- All subprocess calls use `exec.CommandContext` with 30-second timeout
+
+**Dependencies:**
+- `os/exec` for subprocess execution
+- `internal/dispatch/model.go` for data types
+
+#### Component: DevQueue (Epic 22)
+
+**Responsibility:** Persist and manage the dev dispatch queue as a YAML file.
+
+**Key Interfaces:**
+
+```go
+type DevQueue struct {
+    items []QueueItem
+    path  string
+}
+
+func NewDevQueue(path string) *DevQueue
+func (q *DevQueue) Load() error
+func (q *DevQueue) Save() error
+func (q *DevQueue) Add(item QueueItem) error
+func (q *DevQueue) Get(id string) (QueueItem, error)
+func (q *DevQueue) Update(id string, fn func(*QueueItem)) error
+func (q *DevQueue) List() []QueueItem
+```
+
+**Key Behaviors:**
+- File location: `~/.threedoors/dev-queue.yaml`
+- Atomic write pattern: write to `.tmp`, fsync, rename
+- Survives TUI process restarts
+- Queue items tagged with status: pending, dispatched, completed, failed
+
+#### Component: GuardrailChecker (Epic 22)
+
+**Responsibility:** Enforce safety limits on dispatch operations.
+
+**Key Behaviors:**
+- Max concurrent workers (default 2) — checks `Dispatcher.ListWorkers` count
+- Minimum 5-minute cooldown per task between dispatches
+- Daily dispatch limit (default 10) — counts from audit log
+- Manual approval gate by default (`auto_dispatch: false`)
+- All violations produce user-visible TUI messages
+
+#### Component: AuditLogger (Epic 22)
+
+**Responsibility:** Log every dispatch event to JSONL for debugging and daily limit enforcement.
+
+**Storage:** `~/.threedoors/dev-dispatch.log` (append-only JSONL, consistent with `sessions.jsonl` pattern)
+
+**Event Types:** dispatch, complete, fail, kill
+
+#### Component: DevQueueView (Epic 22, TUI Layer)
+
+**Responsibility:** Bubbletea view for managing the dev dispatch queue — list items, approve pending, kill running workers.
+
+**Key Interfaces:**
+- `NewDevQueueView(queue *DevQueue, dispatcher Dispatcher) *DevQueueView`
+- `Update(msg tea.Msg) (tea.Model, tea.Cmd)`
+- `View() string`
+
+**Key Behaviors:**
+- List display with status icons (⏳ pending, ⚙️ dispatched, ✅ completed, ❌ failed)
+- 'y' approves pending items, 'n' rejects, 'K' kills running workers
+- j/k or arrow navigation, ESC returns to previous view
+- Accessible via `:devqueue` command in command palette
+
 ### Post-MVP Component Interaction Diagram
 
 ```mermaid
@@ -708,6 +808,25 @@ graph TB
 
     Enrichment -.-> DupDetector
     Learning -.-> Enrichment
+
+    subgraph Dispatch[Dispatch Layer - internal/dispatch]
+        DispatchEngine[CLIDispatcher]
+        DevQueue[DevQueue<br/>YAML Persistence]
+        Guardrails[GuardrailChecker]
+        AuditLog[AuditLogger<br/>JSONL]
+    end
+
+    subgraph TUI_Dispatch[TUI - Dispatch Views]
+        DevQueueView[DevQueueView]
+    end
+
+    MainModel --> DevQueueView
+    DevQueueView --> DispatchEngine
+    DevQueueView --> DevQueue
+    DispatchEngine --> Guardrails
+    Guardrails --> AuditLog
+    DetailView --> DevQueue
+    DispatchEngine -.->|os/exec| multiclaude[multiclaude CLI]
 ```
 
 ---
