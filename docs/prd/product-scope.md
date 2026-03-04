@@ -43,6 +43,8 @@
 - Local enrichment storage (SQLite) for metadata
 - Health check command for backend connectivity
 
+- Door theme system with user-selectable themed door frames (onboarding picker, settings view, config.yaml)
+
 **Out of Scope for Phase 2:**
 - Third-party integrations beyond Apple Notes
 - Cross-computer sync

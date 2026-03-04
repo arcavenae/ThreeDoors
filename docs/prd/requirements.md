@@ -164,6 +164,26 @@
 
 **FR51:** The system shall include functional E2E tests covering full user workflows
 
+**Door Theme System:**
+
+**FR55:** The system shall provide a theme registry containing named door themes, each defining a render function that produces a visually distinct ASCII/ANSI art frame around task content
+
+**FR56:** The system shall ship with at least three door themes (Modern/Minimalist, Sci-Fi/Spaceship, Japanese Shoji) plus a Classic theme that preserves the current Lipgloss border rendering
+
+**FR57:** The system shall allow users to browse and select a door theme during first-run onboarding, displaying a horizontal preview of doors rendered with each available theme
+
+**FR58:** The system shall provide a theme selection view accessible via `:theme` command in the TUI, allowing users to change their active theme with immediate visual effect (no restart required)
+
+**FR59:** The system shall persist the selected theme in `~/.threedoors/config.yaml` as a string key (e.g., `theme: modern`), falling back to the default theme (Modern/Minimalist) when the configured theme name is invalid
+
+**FR60:** The system shall apply the same theme to all three doors in the trio (single theme selection, not per-door assignment)
+
+**FR61:** The system shall gracefully fall back to Classic theme rendering when the terminal width is below a theme's declared minimum width
+
+**FR62:** The system shall overlay door number labels separately from the theme frame, maintaining consistent door identification across all themes
+
+---
+
 ## Non-Functional Requirements
 
 **Technical Demo Phase:**
@@ -217,6 +237,12 @@
 **NFR15:** The system shall never require OAuth or cloud API credentials for calendar integration; only local calendar sources (AppleScript, .ics files, CalDAV cache) are permitted
 
 **NFR16:** The system shall maintain CI coverage gates ensuring test coverage does not regress below established thresholds
+
+**NFR17:** Door theme rendering shall use only Unicode characters from the box-drawing (`U+2500–U+257F`), block elements (`U+2580–U+259F`), and geometric shapes (`U+25A0–U+25FF`) ranges to ensure consistent rendering across modern terminal emulators (iTerm2, Terminal.app, Alacritty, kitty, Windows Terminal)
+
+**NFR18:** Door theme render functions shall complete within 1ms for standard terminal widths (40-200 columns), as theme rendering is pure string manipulation with no I/O
+
+**NFR19:** Each door theme shall include golden file tests verifying rendered output at multiple widths (minimum width, standard width, wide terminal) in both selected and unselected states
 
 ---
 

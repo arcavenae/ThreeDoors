@@ -225,6 +225,8 @@ Once MVP proves the core philosophy and daily utility:
 
 4. **Cross-platform consistency** - Ensure experience works well across Mac, Linux, and Geodesic environments. Apple Notes continues providing mobile bridge.
 
+5. **Door theme system** - Replace the uniform rounded-border door appearance with visually distinct themed doors using ASCII/ANSI art frames. Each door gets its own visual personality (e.g., minimalist, sci-fi, Japanese shoji). Users can browse and select a door theme during first-run onboarding (scroll through previews), change themes later via a settings/preferences view in the TUI, or override the theme via config file edits (`config.yaml`). Themed doors add personality and delight, combat interface fatigue, and create stronger mental associations with tasks. Start with 3 high-reliability themes, expand the collection over time.
+
 **Long-term Direction (12+ months)**
 
 As understanding deepens from real use:
