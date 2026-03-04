@@ -73,6 +73,37 @@ func TestRegisterOverwrite(t *testing.T) {
 	}
 }
 
+func TestNewDefaultRegistry(t *testing.T) {
+	t.Parallel()
+
+	reg := NewDefaultRegistry()
+
+	// All four built-in themes should be registered
+	expected := []string{"classic", "modern", "scifi", "shoji"}
+	names := reg.Names()
+	if len(names) != len(expected) {
+		t.Fatalf("got %d themes, want %d: %v", len(names), len(expected), names)
+	}
+	for i, name := range expected {
+		if names[i] != name {
+			t.Errorf("names[%d] = %q, want %q", i, names[i], name)
+		}
+	}
+
+	// Each theme should have a working Render function
+	for _, name := range expected {
+		theme, ok := reg.Get(name)
+		if !ok {
+			t.Fatalf("theme %q not found", name)
+		}
+		output := theme.Render("Test", 30, false)
+		if output == "" {
+			t.Errorf("theme %q rendered empty output", name)
+		}
+	}
+}
+
+
 func TestNames(t *testing.T) {
 	t.Parallel()
 

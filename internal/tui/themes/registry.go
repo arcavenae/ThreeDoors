@@ -26,6 +26,17 @@ func (r *Registry) Get(name string) (*DoorTheme, bool) {
 	return t, ok
 }
 
+// NewDefaultRegistry creates a registry pre-populated with all built-in themes.
+func NewDefaultRegistry() *Registry {
+	r := NewRegistry()
+	r.Register(NewClassicTheme())
+	r.Register(NewModernTheme())
+	r.Register(NewSciFiTheme())
+	r.Register(NewShojiTheme())
+	return r
+}
+
+
 // Names returns sorted names of all registered themes.
 func (r *Registry) Names() []string {
 	names := make([]string, 0, len(r.themes))
