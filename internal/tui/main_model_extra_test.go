@@ -217,6 +217,230 @@ func TestInsightsView_Transition(t *testing.T) {
 	}
 }
 
+// --- Delegate function exercise (send msg WHILE in view mode) ---
+
+func TestUpdateInsights_Delegate(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(ShowInsightsMsg{})
+	// Now in ViewInsights, send a key to exercise updateInsights
+	m.Update(keyMsg("j"))
+	m.Update(keyMsg("esc"))
+}
+
+func TestUpdateFeedback_Delegate(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	task := core.NewTask("fb task")
+	m.Update(ShowFeedbackMsg{Task: task})
+	// Now in ViewFeedback, send a key to exercise updateFeedback
+	m.Update(keyMsg("1"))
+}
+
+func TestUpdateOnboarding_Delegate(t *testing.T) {
+	pool := makePool("task1", "task2", "task3")
+	tracker := core.NewSessionTracker()
+	m := NewMainModel(pool, tracker, &testProvider{}, nil, true, nil)
+	// Now in ViewOnboarding, send a key to exercise updateOnboarding
+	m.Update(keyMsg("enter"))
+}
+
+func TestUpdateConflict_Delegate(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	localTask := core.NewTask("c1")
+	remoteTask := core.NewTask("c2")
+	cs := core.NewConflictSet("test", []core.Conflict{
+		{LocalTask: localTask, RemoteTask: remoteTask},
+	})
+	m.Update(SyncConflictMsg{ConflictSet: cs})
+	// Now in ViewConflict, send a key to exercise updateConflict
+	m.Update(keyMsg("j"))
+}
+
+func TestUpdateSyncLog_Delegate(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(ShowSyncLogMsg{})
+	// Now in ViewSyncLog, send a key to exercise updateSyncLog
+	m.Update(keyMsg("esc"))
+}
+
+func TestUpdateValues_Delegate(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(ShowValuesSetupMsg{})
+	// Now in ViewValuesGoals, send a key to exercise updateValues
+	m.Update(keyMsg("j"))
+}
+
+func TestUpdateInsights_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewInsights
+	m.insightsView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil insightsView")
+	}
+}
+
+func TestUpdateFeedback_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewFeedback
+	m.feedbackView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil feedbackView")
+	}
+}
+
+func TestUpdateOnboarding_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewOnboarding
+	m.onboardingView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil onboardingView")
+	}
+}
+
+func TestUpdateConflict_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewConflict
+	m.conflictView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil conflictView")
+	}
+}
+
+func TestUpdateSyncLog_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewSyncLog
+	m.syncLogView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil syncLogView")
+	}
+}
+
+func TestUpdateValues_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewValuesGoals
+	m.valuesView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil valuesView")
+	}
+}
+
+func TestUpdateNextSteps_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewNextSteps
+	m.nextStepsView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil nextStepsView")
+	}
+}
+
+func TestUpdateAvoidancePrompt_NilView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.viewMode = ViewAvoidancePrompt
+	m.avoidancePromptView = nil
+	_, cmd := m.Update(keyMsg("j"))
+	if cmd != nil {
+		t.Error("expected nil cmd for nil avoidancePromptView")
+	}
+}
+
+// --- View rendering for all view modes ---
+
+func TestViewRendering_InsightsView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(ShowInsightsMsg{})
+	_ = m.View()
+}
+
+func TestViewRendering_FeedbackView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	task := core.NewTask("render fb")
+	m.Update(ShowFeedbackMsg{Task: task})
+	_ = m.View()
+}
+
+func TestViewRendering_ValuesView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(ShowValuesSetupMsg{})
+	_ = m.View()
+}
+
+func TestViewRendering_ConflictView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	localTask := core.NewTask("c1")
+	remoteTask := core.NewTask("c2")
+	cs := core.NewConflictSet("test", []core.Conflict{
+		{LocalTask: localTask, RemoteTask: remoteTask},
+	})
+	m.Update(SyncConflictMsg{ConflictSet: cs})
+	_ = m.View()
+}
+
+func TestViewRendering_SyncLogView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(ShowSyncLogMsg{})
+	_ = m.View()
+}
+
+func TestViewRendering_OnboardingView(t *testing.T) {
+	pool := makePool("task1", "task2", "task3")
+	tracker := core.NewSessionTracker()
+	m := NewMainModel(pool, tracker, &testProvider{}, nil, true, nil)
+	_ = m.View()
+}
+
+func TestViewRendering_AvoidancePromptView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	task := core.NewTask("avoided")
+	m.Update(ShowAvoidancePromptMsg{Task: task})
+	_ = m.View()
+}
+
+func TestViewRendering_HealthView(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(HealthCheckMsg{Result: core.HealthCheckResult{
+		Items: []core.HealthCheckItem{{Name: "test", Status: core.HealthOK}},
+	}})
+	_ = m.View()
+}
+
+// --- ClearFlashMsg ---
+
+func TestClearFlashMsg(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.flash = "some flash"
+	m.Update(ClearFlashMsg{})
+	if m.flash != "" {
+		t.Error("expected flash to be cleared")
+	}
+}
+
+// --- FlashMsg ---
+
+func TestFlashMsg(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(FlashMsg{Text: "hello"})
+	if m.flash != "hello" {
+		t.Errorf("expected flash 'hello', got %q", m.flash)
+	}
+}
+
+// --- SyncStatusUpdateMsg ---
+
+func TestSyncStatusUpdateMsg(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.syncTracker = core.NewSyncStatusTracker()
+	m.Update(SyncStatusUpdateMsg{
+		ProviderName: "test",
+		Phase:        core.SyncPhaseSyncing,
+	})
+}
+
 // --- View rendering for different modes ---
 
 func TestViewRendering_SearchView(t *testing.T) {
