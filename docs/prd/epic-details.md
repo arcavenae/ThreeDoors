@@ -1199,3 +1199,141 @@
 **Estimated Time:** 120-150 minutes
 
 ---
+
+## Epic 17: Door Theme System
+
+**Epic Goal:** Replace the uniform rounded-border door appearance with visually distinct themed doors using ASCII/ANSI art frames, with user-selectable themes via onboarding, settings view, and config.yaml.
+
+**Scope:** Theme type definitions, registry, three new theme implementations (Modern, Sci-Fi, Shoji), Classic theme wrapper, DoorsView integration, onboarding theme picker, settings `:theme` command, config persistence, and golden file tests.
+
+**Research:** See `docs/research/door-themes-research.md` (8 ANSI mockups, feasibility matrix), `docs/research/door-themes-analyst-review.md` (analyst assessment), `docs/research/door-themes-party-mode.md` (architecture decisions).
+
+---
+
+### Story 17.1: Theme Types, Registry, and Classic Theme Wrapper
+
+**As a** developer,
+**I want** a DoorTheme type, ThemeColors struct, theme registry, and a Classic theme that wraps the current rendering,
+**so that** the theme infrastructure is in place and existing behavior is preserved as a theme option.
+
+**Acceptance Criteria:**
+1. `DoorTheme` struct defined in `internal/tui/themes/theme.go` with fields: Name, Description, Render function, Colors (ThemeColors), MinWidth
+2. `ThemeColors` struct defined with Frame, Fill, Accent, Selected fields (all `lipgloss.Color`)
+3. Theme registry in `internal/tui/themes/registry.go` as `map[string]DoorTheme` with lookup helper
+4. `DefaultThemeName` constant set to `"modern"`
+5. Classic theme in `internal/tui/themes/classic.go` that wraps current Lipgloss `doorStyle`/`selectedDoorStyle` rendering
+6. Classic theme produces output identical to current door rendering (verified by test)
+7. All code passes `make fmt` and `make lint`
+
+**Estimated Time:** 60-90 minutes
+
+---
+
+### Story 17.2: Modern, Sci-Fi, and Shoji Theme Implementations
+
+**As a** user,
+**I want** three visually distinct door themes to choose from,
+**so that** my Three Doors interface has personality and visual variety.
+
+**Acceptance Criteria:**
+1. Modern/Minimalist theme (`modern.go`): clean single-line frame, minimal `●` doorknob, generous whitespace
+2. Sci-Fi/Spaceship theme (`scifi.go`): double-line outer frame (`╔╗╚╝═║`), side rails with `░▓` shade, upper content panel + lower control panel
+3. Japanese Shoji theme (`shoji.go`): grid pattern using `┼─│┬┴├┤` characters, task text overlaid on central cells
+4. All themes render correctly at widths from their declared MinWidth up to 60+ characters
+5. All themes handle the `selected` flag by adjusting frame colors
+6. All themes word-wrap content text to fit within their interior content area
+7. Only Unicode characters from box-drawing, block elements, and geometric shapes ranges used (NFR17)
+8. All code passes `make fmt` and `make lint`
+
+**Estimated Time:** 120-180 minutes
+
+**Dependencies:** Story 17.1
+
+---
+
+### Story 17.3: DoorsView Integration — Load Theme from Config
+
+**As a** user,
+**I want** my selected door theme applied to the Three Doors display,
+**so that** the doors render with my chosen visual style.
+
+**Acceptance Criteria:**
+1. `DoorsView` struct gains a `theme themes.DoorTheme` field
+2. Theme loaded from `config.yaml` `theme` key at DoorsView initialization
+3. `View()` method uses `theme.Render()` instead of `doorStyle.Render()`
+4. Invalid or missing theme config falls back to `DefaultThemeName` ("modern") with warning logged
+5. Terminal width checked against `theme.MinWidth`; falls back to Classic theme when too narrow
+6. Existing per-door color system replaced by theme's ThemeColors when a non-classic theme is active
+7. Door number labels overlaid consistently regardless of active theme
+8. All existing TUI tests continue to pass
+9. All code passes `make fmt` and `make lint`
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Stories 17.1, 17.2
+
+---
+
+### Story 17.4: Theme Picker in Onboarding Flow
+
+**As a** new user,
+**I want** to browse and select a door theme during first-run onboarding,
+**so that** I can personalize my Three Doors experience from the start.
+
+**Acceptance Criteria:**
+1. Theme picker step added to the first-run onboarding flow (after values/goals, before key bindings walkthrough)
+2. Picker displays doors rendered with each available theme in a horizontal preview
+3. Left/right arrow keys browse between themes; current theme name and description shown
+4. Enter confirms selection; Escape or "Skip" defaults to Modern/Minimalist
+5. Selected theme written to `config.yaml`
+6. Picker handles narrow terminals gracefully (vertical layout or one-at-a-time display)
+7. All code passes `make fmt` and `make lint`
+
+**Estimated Time:** 90-120 minutes
+
+**Dependencies:** Story 17.3, Epic 10 (onboarding infrastructure — can stub if not yet implemented)
+
+---
+
+### Story 17.5: Settings View — `:theme` Command with Preview
+
+**As a** user,
+**I want** to change my door theme from within the TUI at any time,
+**so that** I can try different themes without editing config files.
+
+**Acceptance Criteria:**
+1. `:theme` command registered in command palette
+2. Command opens theme picker view (reuses component from Story 17.4)
+3. Current theme highlighted in the picker
+4. Theme change takes effect immediately (no restart required)
+5. New theme selection persisted to `config.yaml`
+6. `:theme` command listed in `:help` output
+7. All code passes `make fmt` and `make lint`
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Stories 17.3, 17.4
+
+---
+
+### Story 17.6: Golden File Tests for All Themes
+
+**As a** developer,
+**I want** golden file tests for every door theme,
+**so that** visual regressions are caught automatically.
+
+**Acceptance Criteria:**
+1. Golden file test for each theme (Classic, Modern, Sci-Fi, Shoji) at 28-char and 40-char widths
+2. Both selected and unselected states tested per theme
+3. Golden files stored in `internal/tui/themes/testdata/`
+4. Tests use `go test -update` flag to regenerate golden files
+5. Width boundary tests: each theme at MinWidth (should render) and MinWidth-1 (should indicate fallback)
+6. Content wrapping tests: short (1 line), medium (2-3 lines), and long (5+ lines) task text
+7. All tests pass with `make test`
+8. All code passes `make fmt` and `make lint`
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Stories 17.1, 17.2
+
+---

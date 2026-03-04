@@ -229,6 +229,27 @@
 - **Origin:** Party mode mobile app discussion (2026-03-02)
 - **Research:** See `docs/research/mobile-app-research.md` for full analysis
 
+**Epic 17: Door Theme System** 🆕
+- **Goal:** Replace the uniform rounded-border door appearance with visually distinct themed doors using ASCII/ANSI art frames, with user-selectable themes via onboarding, settings view, and config.yaml
+- **Prerequisites:** Epic 3 ✅ (enhanced interaction), Epic 10 (onboarding — for theme picker integration, can proceed independently)
+- **Deliverables:**
+  - DoorTheme type, ThemeColors, and theme registry (`internal/tui/themes/`)
+  - Classic theme wrapper (preserves current Lipgloss border rendering)
+  - Three new themes: Modern/Minimalist, Sci-Fi/Spaceship, Japanese Shoji
+  - DoorsView integration — load theme from config, apply in View()
+  - Theme picker in first-run onboarding flow (horizontal preview, arrow key browsing)
+  - Settings view — `:theme` command with live preview
+  - Config.yaml persistence for theme selection
+  - Width-aware fallback to Classic theme at narrow terminal widths
+  - Golden file tests for all themes at multiple widths and selection states
+- **Stories:** 17.1 (Theme Types & Registry), 17.2 (Theme Implementations), 17.3 (DoorsView Integration), 17.4 (Onboarding Theme Picker), 17.5 (Settings Theme Command), 17.6 (Golden File Tests)
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **FRs covered:** FR55, FR56, FR57, FR58, FR59, FR60, FR61, FR62
+- **NFRs covered:** NFR17, NFR18, NFR19
+- **Risk:** Unicode character width inconsistency across terminal emulators; mitigated by using only low-risk box-drawing characters for v1 themes
+- **Origin:** Door theme research (PR #116) + analyst review + party mode discussion (2026-03-03)
+- **Research:** See `docs/research/door-themes-research.md`, `docs/research/door-themes-analyst-review.md`, `docs/research/door-themes-party-mode.md`
+
 **Epic 18: Docker E2E & Headless TUI Testing Infrastructure** 🆕
 - **Goal:** Establish reproducible, automated E2E testing using Docker containers and Bubbletea's `teatest` package for headless TUI interaction testing — replacing manual testing as the sole E2E validation method
 - **Prerequisites:** Epic 3 ✅, Epic 9 (Stories 9.4, 9.5)
@@ -273,7 +294,8 @@
 | Epic 14: LLM Decomposition | 2 | Not Started |
 | Epic 15: Psychology Research | 2 | Not Started |
 | Epic 16: iPhone Mobile App | 7 | 🆕 Not Started |
+| Epic 17: Door Theme System | 6 | 🆕 Not Started |
 | Epic 18: Docker E2E & Headless TUI Testing | 5 | 🆕 Not Started |
-| **Total** | **74** | **21 complete, 53 remaining** |
+| **Total** | **80** | **21 complete, 59 remaining** |
 
 ---
