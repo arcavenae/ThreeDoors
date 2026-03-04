@@ -14,11 +14,21 @@
 package adapters
 
 import (
+	"errors"
 	"sync"
 	"testing"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
 )
+
+// skipIfReadOnly calls t.Skipf if err is ErrReadOnly, otherwise calls t.Fatalf.
+func skipIfReadOnly(t *testing.T, context string, err error) {
+	t.Helper()
+	if errors.Is(err, core.ErrReadOnly) {
+		t.Skipf("%s: provider is read-only", context)
+	}
+	t.Fatalf("%s: %v", context, err)
+}
 
 // ProviderFactory creates a fresh TaskProvider instance for each test.
 // The factory should return an isolated provider (e.g., using t.TempDir()
@@ -111,7 +121,7 @@ func testSaveAndLoad(t *testing.T, factory ProviderFactory) {
 	}
 
 	if err := provider.SaveTasks(original); err != nil {
-		t.Fatalf("SaveTasks() error: %v", err)
+		skipIfReadOnly(t, "SaveTasks()", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -149,12 +159,12 @@ func testSaveTaskNew(t *testing.T, factory ProviderFactory) {
 
 	// Start with empty state
 	if err := provider.SaveTasks([]*core.Task{}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	task := core.NewTask("New individual task")
 	if err := provider.SaveTask(task); err != nil {
-		t.Fatalf("SaveTask() error: %v", err)
+		skipIfReadOnly(t, "SaveTask()", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -182,12 +192,12 @@ func testSaveTaskUpdate(t *testing.T, factory ProviderFactory) {
 
 	task := core.NewTask("Original text")
 	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	task.Text = "Updated text"
 	if err := provider.SaveTask(task); err != nil {
-		t.Fatalf("SaveTask() update error: %v", err)
+		skipIfReadOnly(t, "SaveTask() update", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -213,11 +223,11 @@ func testDeleteTask(t *testing.T, factory ProviderFactory) {
 	task1 := core.NewTask("Keep this")
 	task2 := core.NewTask("Delete this")
 	if err := provider.SaveTasks([]*core.Task{task1, task2}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	if err := provider.DeleteTask(task2.ID); err != nil {
-		t.Fatalf("DeleteTask() error: %v", err)
+		skipIfReadOnly(t, "DeleteTask()", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -248,7 +258,7 @@ func testDeleteTaskNonExistent(t *testing.T, factory ProviderFactory) {
 	provider := factory(t)
 
 	if err := provider.SaveTasks([]*core.Task{}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	// Deleting a non-existent task should not error (idempotent)
@@ -264,16 +274,12 @@ func testMarkComplete(t *testing.T, factory ProviderFactory) {
 
 	task := core.NewTask("Complete me")
 	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	err := provider.MarkComplete(task.ID)
 	if err != nil {
-		// Some providers return ErrReadOnly — that's acceptable behavior
-		if err.Error() == "provider is read-only" {
-			t.Skipf("provider does not support MarkComplete (read-only)")
-		}
-		t.Fatalf("MarkComplete() error: %v", err)
+		skipIfReadOnly(t, "MarkComplete()", err)
 	}
 }
 
@@ -282,7 +288,7 @@ func testMarkCompleteNonExistent(t *testing.T, factory ProviderFactory) {
 	provider := factory(t)
 
 	if err := provider.SaveTasks([]*core.Task{}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	err := provider.MarkComplete("nonexistent-id")
@@ -303,7 +309,7 @@ func testSaveTasksBatch(t *testing.T, factory ProviderFactory) {
 	}
 
 	if err := provider.SaveTasks(batch); err != nil {
-		t.Fatalf("SaveTasks() batch error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() batch", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -325,7 +331,7 @@ func testConcurrentReads(t *testing.T, factory ProviderFactory) {
 		core.NewTask("Read test 2"),
 	}
 	if err := provider.SaveTasks(seed); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	var wg sync.WaitGroup
@@ -354,7 +360,7 @@ func testConcurrentWrites(t *testing.T, factory ProviderFactory) {
 	provider := factory(t)
 
 	if err := provider.SaveTasks([]*core.Task{}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	// Concurrent writes may encounter transient errors on file-based providers
@@ -388,7 +394,7 @@ func testSaveTasksEmpty(t *testing.T, factory ProviderFactory) {
 	provider := factory(t)
 
 	if err := provider.SaveTasks([]*core.Task{}); err != nil {
-		t.Fatalf("SaveTasks([]) error: %v", err)
+		skipIfReadOnly(t, "SaveTasks([])", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -410,7 +416,7 @@ func testLoadAfterSave(t *testing.T, factory ProviderFactory) {
 	// Round 1: save and load
 	task := core.NewTask("Round trip task")
 	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
-		t.Fatalf("SaveTasks() round 1 error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() round 1", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -425,7 +431,7 @@ func testLoadAfterSave(t *testing.T, factory ProviderFactory) {
 	// Round 2: save a second task individually
 	task2 := core.NewTask("Second task")
 	if err := provider.SaveTask(task2); err != nil {
-		t.Fatalf("SaveTask() round 2 error: %v", err)
+		skipIfReadOnly(t, "SaveTask() round 2", err)
 	}
 
 	loaded2, err := provider.LoadTasks()
@@ -451,11 +457,11 @@ func testDeleteThenLoad(t *testing.T, factory ProviderFactory) {
 	t3 := core.NewTask("Also survives")
 
 	if err := provider.SaveTasks([]*core.Task{t1, t2, t3}); err != nil {
-		t.Fatalf("SaveTasks() setup error: %v", err)
+		skipIfReadOnly(t, "SaveTasks() setup", err)
 	}
 
 	if err := provider.DeleteTask(t2.ID); err != nil {
-		t.Fatalf("DeleteTask() error: %v", err)
+		skipIfReadOnly(t, "DeleteTask()", err)
 	}
 
 	loaded, err := provider.LoadTasks()
@@ -488,10 +494,15 @@ func testInterfaceCompliance(t *testing.T, factory ProviderFactory) {
 		t.Logf("LoadTasks() on fresh provider: %v (acceptable for some providers)", err)
 	}
 
-	// 2. SaveTasks
+	// 2. SaveTasks — read-only providers skip remaining write tests
 	task := core.NewTask("Compliance test task")
-	if err := provider.SaveTasks([]*core.Task{task}); err != nil {
-		t.Fatalf("SaveTasks() error: %v", err)
+	saveErr := provider.SaveTasks([]*core.Task{task})
+	if saveErr != nil {
+		if errors.Is(saveErr, core.ErrReadOnly) {
+			t.Logf("SaveTasks() returned ErrReadOnly — skipping write compliance checks")
+			return
+		}
+		t.Fatalf("SaveTasks() error: %v", saveErr)
 	}
 
 	// 3. SaveTask
@@ -508,8 +519,7 @@ func testInterfaceCompliance(t *testing.T, factory ProviderFactory) {
 	// 5. MarkComplete
 	err = provider.MarkComplete(task.ID)
 	if err != nil {
-		// Read-only providers may return ErrReadOnly — that's acceptable
-		if err.Error() == "provider is read-only" {
+		if errors.Is(err, core.ErrReadOnly) {
 			t.Logf("MarkComplete() returned ErrReadOnly (acceptable)")
 		} else {
 			t.Logf("MarkComplete() error: %v (may be acceptable for some providers)", err)
