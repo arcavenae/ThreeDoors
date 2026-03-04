@@ -172,6 +172,40 @@ func ResolveAllProviders(cfg *ProviderConfig, reg *Registry) (*MultiSourceAggreg
 	return NewMultiSourceAggregatorWithDefault(providers, firstProvider), nil
 }
 
+// SaveProviderConfig persists provider configuration to a YAML file using atomic write.
+func SaveProviderConfig(path string, cfg *ProviderConfig) error {
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("marshal provider config: %w", err)
+	}
+
+	tmpPath := path + ".tmp"
+
+	f, err := os.Create(tmpPath)
+	if err != nil {
+		return fmt.Errorf("create temp config file: %w", err)
+	}
+
+	if _, err := f.Write(data); err != nil {
+		_ = f.Close()
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("write temp config file: %w", err)
+	}
+
+	if err := f.Sync(); err != nil {
+		_ = f.Close()
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("sync temp config file: %w", err)
+	}
+	_ = f.Close()
+
+	if err := os.Rename(tmpPath, path); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("rename temp config file: %w", err)
+	}
+	return nil
+}
+
 // GenerateSampleConfig writes a sample config.yaml with commented-out provider examples.
 // If the file already exists, it does nothing (preserves user config).
 func GenerateSampleConfig(path string, reg *Registry) error {

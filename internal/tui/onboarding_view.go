@@ -64,7 +64,7 @@ func NewOnboardingView() *OnboardingView {
 	return &OnboardingView{
 		triedKeys:     make(map[string]bool),
 		textInput:     ti,
-		themePicker:   NewThemePicker(reg),
+		themePicker:   NewThemePicker(reg, ""),
 		selectedTheme: themes.DefaultThemeName,
 	}
 }
@@ -242,7 +242,7 @@ func (ov *OnboardingView) updateTheme(msg tea.KeyMsg) tea.Cmd {
 		// Intercept ThemeSelectedMsg to capture selection and advance step
 		result := cmd()
 		if sel, ok := result.(ThemeSelectedMsg); ok {
-			ov.selectedTheme = sel.ThemeName
+			ov.selectedTheme = sel.Name
 			ov.step = stepImport
 			ov.textInput.Placeholder = "Path to task file (e.g. ~/tasks.txt)..."
 			ov.textInput.SetValue("")
