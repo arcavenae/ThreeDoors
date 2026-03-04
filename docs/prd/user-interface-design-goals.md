@@ -75,14 +75,18 @@ From a product perspective, these are the critical views necessary to deliver MV
 Leverage Charm Bracelet/Bubbletea's capabilities for styled terminal UI—think clean, readable typography with subtle use of color for status indication (green for progress, yellow for prompts, red sparingly for errors).
 
 **Three Doors Visual Metaphor:**
-The main interface will render three visual "doors" arranged horizontally in ASCII art or styled terminal boxes. These doors will dynamically adjust their width based on the terminal size.
+The main interface will render three visual "doors" arranged horizontally in ASCII art or styled terminal boxes. Doors dynamically adjust their width based on terminal width and their height to 60% of terminal height (minimum 10 lines), with content vertically centered within each door. This makes the interface feel immersive at any terminal size.
 ```
 ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│             │  │             │  │             │
 │             │  │             │  │             │
 │  [Task A]   │  │  [Task B]   │  │  [Task C]   │
 │  Quick win  │  │  Deep work  │  │  Creative   │
 │  ~5min      │  │  ~30min     │  │  ~15min     │
+│             │  │             │  │             │
+│             │  │             │  │             │
 └─────────────┘  └─────────────┘  └─────────────┘
+  (Height: 60% of terminal, min 10 lines, content vertically centered)
 
 Press A/Left, W/Up, or D/Right to select  |  S/Down to re-roll  |  Q to quit
 Press C (complete), B (blocked), I (in progress), E (expand), F (fork), P (procrastinate) for task actions

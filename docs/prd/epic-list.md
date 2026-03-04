@@ -130,9 +130,10 @@
 - **FRs covered:** FR49, FR50, FR51
 - **Risk:** Test infrastructure overhead; keep pragmatic
 
-**Epic 10: First-Run Onboarding Experience**
+**Epic 10: First-Run Onboarding Experience** 🔄 IN PROGRESS
 - **Goal:** Provide a guided welcome flow for new users to set up values/goals, understand Three Doors, learn key bindings, and optionally import existing tasks
 - **Prerequisites:** Epic 3 ✅
+- **Status:** IN PROGRESS — Stories 10.1 and 10.2 both in progress
 - **Deliverables:**
   - Welcome flow with Three Doors concept explanation
   - Values/goals setup wizard
@@ -266,7 +267,7 @@
 | Epic 7: Plugin/Adapter SDK | 3 | Not Started |
 | Epic 8: Obsidian Integration | 4 | Not Started |
 | Epic 9: Testing Strategy | 5 | Not Started |
-| Epic 10: Onboarding | 2 | Not Started |
+| Epic 10: Onboarding | 2 | 🔄 In Progress |
 | Epic 11: Sync Observability | 3 | Not Started |
 | Epic 12: Calendar Awareness | 2 | Not Started |
 | Epic 13: Multi-Source Aggregation | 2 | Not Started |
