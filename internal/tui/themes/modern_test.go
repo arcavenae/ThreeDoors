@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"unicode/utf8"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 func TestNewModernTheme(t *testing.T) {
@@ -194,10 +196,10 @@ func TestModernRenderConsistentLineWidths(t *testing.T) {
 		t.Fatal("expected at least 3 lines of output")
 	}
 
-	// All lines should have the same rune count (consistent width)
-	firstWidth := utf8.RuneCountInString(lines[0])
+	// All lines should have the same visual width (ANSI-aware)
+	firstWidth := ansi.StringWidth(lines[0])
 	for i, line := range lines {
-		w := utf8.RuneCountInString(line)
+		w := ansi.StringWidth(line)
 		if w != firstWidth {
 			t.Errorf("line %d width %d != first line width %d\nline: %q", i, w, firstWidth, line)
 		}

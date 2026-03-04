@@ -3,7 +3,8 @@ package themes
 import (
 	"strings"
 	"testing"
-	"unicode/utf8"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 func TestNewShojiTheme(t *testing.T) {
@@ -193,9 +194,9 @@ func TestShojiRenderConsistentLineWidths(t *testing.T) {
 		t.Fatal("expected at least 3 lines of output")
 	}
 
-	firstWidth := utf8.RuneCountInString(lines[0])
+	firstWidth := ansi.StringWidth(lines[0])
 	for i, line := range lines {
-		w := utf8.RuneCountInString(line)
+		w := ansi.StringWidth(line)
 		if w != firstWidth {
 			t.Errorf("line %d width %d != first line width %d\nline: %q", i, w, firstWidth, line)
 		}
