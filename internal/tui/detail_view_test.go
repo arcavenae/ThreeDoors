@@ -174,31 +174,122 @@ func TestDetailView_MKey_ShowsMoodMsg(t *testing.T) {
 	}
 }
 
-func TestDetailView_EKey_FlashesNotImplemented(t *testing.T) {
+// --- Expand ('E' key) ---
+
+func TestDetailView_EKey_EntersExpandInputMode(t *testing.T) {
 	dv := newTestDetailView("test task")
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
-	if cmd == nil {
-		t.Fatal("'e' should return a command")
+	if cmd != nil {
+		t.Error("'e' should not return a command (transitions to expand input mode)")
 	}
-	msg := cmd()
-	if fm, ok := msg.(FlashMsg); !ok {
-		t.Errorf("expected FlashMsg, got %T", msg)
-	} else if !strings.Contains(fm.Text, "not yet implemented") {
-		t.Errorf("expected 'not yet implemented', got %q", fm.Text)
+	if dv.mode != DetailModeExpandInput {
+		t.Errorf("expected DetailModeExpandInput, got %d", dv.mode)
 	}
 }
 
-func TestDetailView_FKey_FlashesNotImplemented(t *testing.T) {
+func TestDetailView_ExpandInput_EnterWithTextSendsExpandMsg(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	// Type subtask text
+	for _, r := range "subtask" {
+		dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("Enter with text should return a command")
+	}
+	msg := cmd()
+	em, ok := msg.(ExpandTaskMsg)
+	if !ok {
+		t.Fatalf("expected ExpandTaskMsg, got %T", msg)
+	}
+	if em.NewTaskText != "subtask" {
+		t.Errorf("expected new task text 'subtask', got %q", em.NewTaskText)
+	}
+	if em.ParentTask.Text != "parent task" {
+		t.Errorf("expected parent task 'parent task', got %q", em.ParentTask.Text)
+	}
+}
+
+func TestDetailView_ExpandInput_EnterEmptyShowsFlash(t *testing.T) {
 	dv := newTestDetailView("test task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("Enter with empty text should return a command")
+	}
+	msg := cmd()
+	fm, ok := msg.(FlashMsg)
+	if !ok {
+		t.Fatalf("expected FlashMsg, got %T", msg)
+	}
+	if !strings.Contains(fm.Text, "cannot be empty") {
+		t.Errorf("expected empty warning, got %q", fm.Text)
+	}
+	if dv.mode != DetailModeExpandInput {
+		t.Error("should stay in expand input mode after empty submit")
+	}
+}
+
+func TestDetailView_ExpandInput_EscCancels(t *testing.T) {
+	dv := newTestDetailView("test task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	if dv.mode != DetailModeView {
+		t.Errorf("Esc should return to DetailModeView, got %d", dv.mode)
+	}
+	if dv.expandInput != "" {
+		t.Errorf("expand input should be cleared after cancel, got %q", dv.expandInput)
+	}
+}
+
+func TestDetailView_ExpandInput_BackspaceWorks(t *testing.T) {
+	dv := newTestDetailView("test task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("a")})
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("b")})
+	dv.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+
+	if dv.expandInput != "a" {
+		t.Errorf("expected 'a' after backspace, got %q", dv.expandInput)
+	}
+}
+
+func TestDetailView_ExpandMode_ShowsInputPrompt(t *testing.T) {
+	dv := newTestDetailView("test task")
+	dv.SetWidth(80)
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+	view := dv.View()
+	if !strings.Contains(view, "subtask") || !strings.Contains(view, "Enter") {
+		t.Error("View should show expand input prompt when in expand mode")
+	}
+}
+
+// --- Fork ('F' key) ---
+
+func TestDetailView_FKey_SendsTaskAddedMsg(t *testing.T) {
+	dv := newTestDetailView("original task")
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("f")})
 	if cmd == nil {
 		t.Fatal("'f' should return a command")
 	}
 	msg := cmd()
-	if fm, ok := msg.(FlashMsg); !ok {
-		t.Errorf("expected FlashMsg, got %T", msg)
-	} else if !strings.Contains(fm.Text, "not yet implemented") {
-		t.Errorf("expected 'not yet implemented', got %q", fm.Text)
+	tam, ok := msg.(TaskAddedMsg)
+	if !ok {
+		t.Fatalf("expected TaskAddedMsg, got %T", msg)
+	}
+	if tam.Task.Text != "original task" {
+		t.Errorf("forked task should have same text, got %q", tam.Task.Text)
+	}
+	if tam.Task.ID == dv.task.ID {
+		t.Error("forked task should have a different ID")
+	}
+	if tam.Task.Status != core.StatusTodo {
+		t.Errorf("forked task should have todo status, got %q", tam.Task.Status)
 	}
 }
 
@@ -208,20 +299,27 @@ func TestDetailView_AllStatusKeys(t *testing.T) {
 	tests := []struct {
 		key           string
 		expectMsgType string
+		expectNoCmd   bool // for keys that transition to input modes
 	}{
-		{"c", "TaskCompletedMsg"},
-		{"i", "TaskUpdatedMsg"},
-		{"p", "ReturnToDoorsMsg"},
-		{"r", "ReturnToDoorsMsg"},
-		{"m", "ShowMoodMsg"},
-		{"e", "FlashMsg"},
-		{"f", "FlashMsg"},
+		{"c", "TaskCompletedMsg", false},
+		{"i", "TaskUpdatedMsg", false},
+		{"p", "ReturnToDoorsMsg", false},
+		{"r", "ReturnToDoorsMsg", false},
+		{"m", "ShowMoodMsg", false},
+		{"e", "", true}, // transitions to expand input mode
+		{"f", "TaskAddedMsg", false},
 	}
 
 	for _, tt := range tests {
 		t.Run("key_"+tt.key, func(t *testing.T) {
 			dv := newTestDetailView("test task")
 			cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(tt.key)})
+			if tt.expectNoCmd {
+				if cmd != nil {
+					t.Fatalf("key %q should not return a command", tt.key)
+				}
+				return
+			}
 			if cmd == nil {
 				if tt.key == "b" {
 					return // 'b' transitions to blocker mode, no cmd
@@ -241,6 +339,8 @@ func TestDetailView_AllStatusKeys(t *testing.T) {
 				msgType = "ShowMoodMsg"
 			case FlashMsg:
 				msgType = "FlashMsg"
+			case TaskAddedMsg:
+				msgType = "TaskAddedMsg"
 			default:
 				msgType = "unknown"
 			}

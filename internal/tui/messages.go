@@ -30,6 +30,12 @@ type TaskCompletedMsg struct {
 	Task *core.Task
 }
 
+// ExpandTaskMsg is sent when the user creates a subtask via the expand action.
+type ExpandTaskMsg struct {
+	ParentTask  *core.Task
+	NewTaskText string
+}
+
 // FlashMsg triggers a temporary message display.
 type FlashMsg struct {
 	Text string
