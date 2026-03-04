@@ -211,3 +211,94 @@ func TestValuesEditView_View(t *testing.T) {
 		t.Error("expected values in view")
 	}
 }
+
+func TestValuesView_SetWidth(t *testing.T) {
+	t.Parallel()
+	cfg := &core.ValuesConfig{}
+	vv := NewValuesSetupView(cfg)
+	vv.SetWidth(100)
+	if vv.width != 100 {
+		t.Errorf("expected width 100, got %d", vv.width)
+	}
+}
+
+func TestValuesView_SetWidth_Small(t *testing.T) {
+	t.Parallel()
+	cfg := &core.ValuesConfig{}
+	vv := NewValuesSetupView(cfg)
+	vv.SetWidth(3)
+	if vv.width != 3 {
+		t.Errorf("expected width 3, got %d", vv.width)
+	}
+}
+
+func TestValuesEditView_AddMode(t *testing.T) {
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
+	vv := NewValuesEditView(cfg)
+
+	// Press 'a' to enter add mode
+	vv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+	if !vv.textInput.Focused() {
+		t.Error("expected textInput to be focused after 'a'")
+	}
+
+	// Type a value and press Enter
+	vv.textInput.SetValue("Family")
+	vv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if len(cfg.Values) != 2 {
+		t.Errorf("expected 2 values, got %d", len(cfg.Values))
+	}
+	if vv.textInput.Focused() {
+		t.Error("expected textInput to blur after enter")
+	}
+}
+
+func TestValuesEditView_AddMode_Escape(t *testing.T) {
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
+	vv := NewValuesEditView(cfg)
+
+	// Press 'a' to enter add mode, then Escape
+	vv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+	vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
+
+	if vv.textInput.Focused() {
+		t.Error("expected textInput to blur after escape")
+	}
+	if len(cfg.Values) != 1 {
+		t.Errorf("expected 1 value unchanged, got %d", len(cfg.Values))
+	}
+}
+
+func TestValuesEditView_AddMode_EmptyEnter(t *testing.T) {
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
+	vv := NewValuesEditView(cfg)
+
+	vv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+	vv.textInput.SetValue("")
+	vv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	if len(cfg.Values) != 1 {
+		t.Errorf("expected 1 value unchanged, got %d", len(cfg.Values))
+	}
+}
+
+func TestValuesEditView_View_NoValues(t *testing.T) {
+	cfg := &core.ValuesConfig{}
+	vv := NewValuesEditView(cfg)
+	view := vv.View()
+
+	if !strings.Contains(view, "No values defined") {
+		t.Error("expected 'No values defined' message")
+	}
+}
+
+func TestValuesEditView_View_Focused(t *testing.T) {
+	cfg := &core.ValuesConfig{Values: []string{"Health"}}
+	vv := NewValuesEditView(cfg)
+	vv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+
+	view := vv.View()
+	if !strings.Contains(view, "Enter to add") {
+		t.Error("expected add mode help text")
+	}
+}
