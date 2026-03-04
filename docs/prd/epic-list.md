@@ -266,9 +266,51 @@
 - **Risk:** teatest is experimental; API may change. Docker adds CI time; mitigate with layer caching.
 - **Origin:** Party mode testing infrastructure discussion (2026-03-02)
 
-**Epic 19+: Additional Integrations** (Jira, Linear, Google Calendar, Slack, etc.)
-**Epic 20+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 21+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 19: Jira Integration** 🆕
+- **Goal:** Integrate Jira as a task source via read-only adapter (Phase 1) and bidirectional sync (Phase 2), enabling developers to see their Jira issues as ThreeDoors tasks
+- **Prerequisites:** Epic 7 (adapter SDK), Epic 11 (sync observability), Epic 13 (multi-source aggregation)
+- **Deliverables:**
+  - Thin Jira REST API v3 HTTP client (auth, search, pagination, rate limits)
+  - JiraProvider implementing TaskProvider (JQL search, field mapping)
+  - Bidirectional sync via transitions API + WAL queuing
+  - Configurable status/priority mapping and JQL in config.yaml
+- **Stories:** 19.1 (HTTP Client), 19.2 (Read-Only Provider), 19.3 (Bidirectional Sync), 19.4 (Config & Registration)
+- **Estimated Effort:** 3-4 weeks at 2-4 hrs/week
+- **FRs covered:** FR63, FR64, FR65, FR66
+- **Risk:** Jira ADF description format; rate limit changes; instance-specific custom fields
+- **Research:** See `docs/research/jira-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
+
+**Epic 20: Apple Reminders Integration** 🆕
+- **Goal:** Add Apple Reminders as a task source with full CRUD support, leveraging structured data model (persistent IDs, native priority/due dates) for a higher-quality integration than Apple Notes
+- **Prerequisites:** Epic 7 (adapter SDK), macOS only
+- **Deliverables:**
+  - JXA scripts for reading, creating, updating, completing, and deleting reminders
+  - RemindersProvider implementing TaskProvider with CommandExecutor pattern
+  - Field mapping (priority → effort, completion → status, list → source)
+  - Configurable list filtering in config.yaml
+- **Stories:** 20.1 (JXA Scripts & CommandExecutor), 20.2 (Read-Only Provider), 20.3 (Write Support), 20.4 (Config, Registration & Health Check)
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **FRs covered:** FR67, FR68, FR69
+- **Risk:** JXA semi-maintained by Apple; TCC permission prompts; osascript latency
+- **Research:** See `docs/research/apple-reminders-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
+
+**Epic 21: Sync Protocol Hardening** 🆕
+- **Goal:** Harden the sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping
+- **Prerequisites:** Epic 11 (sync observability), Epic 13 (multi-source aggregation)
+- **Deliverables:**
+  - Sync scheduler with per-provider independent loops and adaptive intervals
+  - Circuit breaker per provider (Closed/Open/Half-Open states)
+  - Canonical ID mapping via SourceRef for cross-provider deduplication
+  - Enhanced sync status dashboard with staleness indicators
+- **Stories:** 21.1 (Sync Scheduler), 21.2 (Circuit Breaker), 21.3 (Canonical ID Mapping), 21.4 (Dashboard Enhancements)
+- **Estimated Effort:** 3-4 weeks at 2-4 hrs/week
+- **FRs covered:** FR70, FR71, FR72
+- **Risk:** Concurrent sync loop testing complexity; SourceRef migration breaks sync state format
+- **Research:** See `docs/research/sync-architecture-scaling-research.md`, `docs/research/task-sync-analyst-brief.md`
+
+**Epic 22+: Additional Integrations** (Todoist, Linear, GitHub Issues, ClickUp, etc.)
+**Epic 23+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 24+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -297,6 +339,9 @@
 | Epic 16: iPhone Mobile App | 7 | 🆕 Not Started |
 | Epic 17: Door Theme System | 6 | 🆕 Not Started |
 | Epic 18: Docker E2E & Headless TUI Testing | 5 | 🆕 Not Started |
-| **Total** | **80** | **21 complete, 59 remaining** |
+| Epic 19: Jira Integration | 4 | 🆕 Not Started |
+| Epic 20: Apple Reminders Integration | 4 | 🆕 Not Started |
+| Epic 21: Sync Protocol Hardening | 4 | 🆕 Not Started |
+| **Total** | **92** | **21 complete, 71 remaining** |
 
 ---
