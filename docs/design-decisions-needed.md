@@ -36,6 +36,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option B (incremental) — aligns with YAGNI principle and lets each epic own its migration.
 
+**Decision:** Option B
+
 **Blocked:** Epics 12, 13, 19, 20, 21
 
 **Source:** `docs/research/sync-architecture-scaling-research.md`, `docs/research/task-source-expansion-research.md`, `docs/architecture/task-sync-architecture.md`
@@ -60,6 +62,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epics 11, 19, 20, 21
 
+**Decision:** Option B
+
 **Source:** `docs/architecture/task-sync-architecture.md`
 
 ---
@@ -79,6 +83,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 | C. Task-level LWW now, property-level later | Ship with A, migrate to B when multi-source is real | Lower upfront cost, but migration is harder once data exists |
 
 **Recommendation:** Option C — start simple, but design the SourceRef schema to accommodate future property-level tracking.
+
+**Decision:** Option B
 
 **Blocked:** Epic 21 (Sync Protocol Hardening)
 
@@ -102,6 +108,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option A (read-only) for Phase 1, confirmed by research.
 
+**Decision:** Option A
+
 **Blocked:** Epic 19 story breakdown and estimation
 
 **Source:** `docs/research/jira-integration-research.md`
@@ -123,6 +131,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 | C. Adapter-local metadata | Store in adapter-specific sidecar, don't surface in Task | No migration, but due dates invisible to door selection |
 
 **Recommendation:** Option B — due dates are too important to hack into Context. Align with C1 decision.
+
+**Decision:** Option B
 
 **Blocked:** Epic 20 (Apple Reminders Integration)
 
@@ -147,6 +157,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option B (auto-detect + confirm) for user-facing, Option D (SourceRef) for programmatic.
 
+**Decision:** As recomemnded, option B for user-facing, option D for programmatic
+
 **Blocked:** Epic 13 (Multi-Source Aggregation)
 
 **Source:** `docs/research/task-source-expansion-research.md`, `docs/architecture/task-sync-architecture.md`
@@ -169,6 +181,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option A (auto-migrate on load) — least user friction.
 
+**Decision:** Option A
+
 **Blocked:** Epic 21 (Sync Protocol Hardening)
 
 **Source:** `docs/architecture/task-sync-architecture.md`
@@ -184,6 +198,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Context:** Marked as "optional — may be YAGNI" in epic details. No evaluation criteria exist for making this decision.
 
 **Recommendation:** Define a concrete trigger (e.g., "if >3 adapters need cross-reference queries, build it; otherwise cancel"). Currently leaning toward cancel — file-based storage with in-memory indexing seems sufficient.
+
+**Decision:** Cancelled
 
 **Blocked:** Architecture planning for Epics 13+
 
@@ -207,6 +223,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option A for now, evolve to B when 3+ adapters exist.
 
+**Decision:** Option A
+
 **Blocked:** Epics 8, 19, 20 (adapter implementation approach)
 
 **Source:** `docs/prd/epic-details.md`, `docs/research/task-source-expansion-research.md`
@@ -220,6 +238,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Context:** The sync architecture doc specifies defaults (5 failures / 2 min window / 30s–30min probe interval) but doesn't say whether users can tune these.
 
 **Recommendation:** Hardcoded defaults with per-provider override in config.yaml. Most users won't need to change them.
+
+**Decision:** As recommended
 
 **Blocked:** Epic 21 stories
 
@@ -243,6 +263,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option A (status bar) — least invasive, most informative.
 
+**Decision:** As recommended
+
 **Blocked:** Epic 21 TUI integration stories
 
 **Source:** `docs/architecture/task-sync-architecture.md`
@@ -265,6 +287,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option A — simplest, and `ErrReadOnly` is already the established pattern.
 
+**Decision:** As recommended
+
 **Blocked:** Epic 9 (Testing Strategy), Epics 19, 20
 
 **Source:** `docs/prd/epic-details.md`, `docs/research/jira-integration-research.md`
@@ -278,6 +302,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Context:** Onboarding currently targets text files only. But if Obsidian and Apple Notes adapters ship before/alongside onboarding, should import support them too?
 
 **Recommendation:** Text files only for initial onboarding. Add adapter-specific import flows as each adapter ships.
+
+**Decision:** support on-demand imports (including initial)
 
 **Blocked:** Epic 10 story completion
 
@@ -302,6 +328,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Option A (shell script) as immediate MVP, then evaluate C vs D.
 
+**Decision:** Option A
+
 **Blocked:** Self-driving development pipeline
 
 **Source:** `docs/research/multiclaude-auto-execution-research.md`
@@ -323,6 +351,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 | C. Todoist → Apple Reminders → Jira | Research-recommended order | Fastest path to a shipped adapter, but no existing epic/stories |
 
 **Recommendation:** Option B — Apple Reminders builds on existing Apple Notes patterns, Jira can follow.
+
+**Decision:** Option B
 
 **Blocked:** Roadmap prioritization for post-Epic 17 work
 
@@ -354,6 +384,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Expand = Option A (manual sub-tasks), Fork = Option B (variant creation). Keep LLM decomposition in `[G]enerate`.
 
+**Decision:** As recommended
+
 **Blocked:** Detail view stories (no epic assigned yet)
 
 **Source:** `internal/tui/detail_view.go`
@@ -367,6 +399,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Context:** NFR specifies "<100ms" but doesn't say for what. Local file operations are trivially fast; network adapters obviously can't meet 100ms.
 
 **Recommendation:** Benchmark `LoadTasks()`, `SaveTask()`, `MarkComplete()` for local adapters only. Network adapters should have separate SLAs (e.g., <2s for API calls).
+
+**Decision:** As recommended
 
 **Blocked:** Epic 9 (Testing Strategy & Quality Gates)
 
@@ -382,6 +416,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** 60 columns — standard minimum for TUI apps.
 
+**Decision:** As recommended
+
 **Blocked:** Epic 17 golden file tests
 
 **Source:** `docs/prd/epics-and-stories.md` (Epic 17 stories)
@@ -394,6 +430,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Show 3 themes side-by-side (matching the "three doors" metaphor), arrow keys to scroll through remaining themes.
 
+**Decision:** As recommended, but s shuffles also, a w d highlights and [enter] confirms
+
 **Blocked:** Epic 17, Story 17.5 or 17.6
 
 ---
@@ -403,6 +441,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Should Jira's Atlassian Document Format descriptions be ignored, converted to plain text, or rendered as markdown?
 
 **Recommendation:** Strip to plain text for Phase 1 (extract text nodes only). Full ADF rendering is Phase 3+.
+
+**Decision:** As recommended
 
 **Blocked:** Epic 19 implementation
 
@@ -416,6 +456,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Priority (simpler, always present). Story points can be added as an option in Phase 2.
 
+**Decision:** As recommended
+
 **Blocked:** Epic 19 implementation
 
 **Source:** `docs/research/jira-integration-research.md`
@@ -427,6 +469,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** How frequently should the Apple Reminders adapter poll for changes?
 
 **Recommendation:** 30-second default, configurable in provider settings.
+
+**Decision:** Fifteen minutes, configurable
 
 **Blocked:** Epic 20 implementation
 
@@ -440,6 +484,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Map 0/null to "no effort assigned" (default Effort value).
 
+**Decision:** As recommended
+
 **Blocked:** Epic 20 implementation
 
 **Source:** `docs/research/apple-reminders-integration-research.md`
@@ -451,6 +497,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Should the Obsidian adapter support multiple vaults simultaneously, or one vault at a time?
 
 **Recommendation:** Single vault for Phase 1. Multi-vault is a Phase 2 feature.
+
+**Decision:** As recommended
 
 **Blocked:** Epic 8 implementation
 
@@ -464,6 +512,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Start with "related" only. Add "blocks" when dependency tracking is needed (Epic 13+).
 
+**Decision:** Add related, blocks, duplicates, parent-of, child-of
+
 **Blocked:** Detail view stories
 
 **Source:** `internal/tui/detail_view.go`
@@ -475,6 +525,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Who validates adapter-specific configuration? Provider constructor, registry factory, or dedicated validator?
 
 **Recommendation:** Provider constructor validates on creation. Return clear error messages. No separate validator needed.
+
+**Decision:** As recommended
 
 **Blocked:** Epic 7 (Plugin/Adapter SDK)
 
@@ -488,6 +540,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Env vars override config file (standard 12-factor convention).
 
+**Decision:** As recommended
+
 **Blocked:** Epic 7 configuration design
 
 ---
@@ -497,6 +551,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Should Jira Cloud, Server, and Data Center all be supported in Phase 1?
 
 **Recommendation:** Cloud only for Phase 1. Server/DC support in Phase 2 if demand exists.
+
+**Decision:** Cloud only
 
 **Blocked:** Epic 19 implementation scope
 
@@ -510,6 +566,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Add to new stories only. Backfilling completed stories adds no value.
 
+**Decision:** Yes update existing story files, updating the spec even if done is important
+
 **Blocked:** Self-driving pipeline implementation
 
 **Source:** `docs/research/multiclaude-auto-execution-research.md`
@@ -522,6 +580,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** 7 days of sync logs, rotated daily. Configurable via config.yaml.
 
+**Decision:** As recommended
+
 **Blocked:** Epic 11 (Sync Observability)
 
 ---
@@ -531,6 +591,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** What are the target code coverage thresholds? Global? Per-package? Regression tolerance?
 
 **Recommendation:** 70% global minimum, no per-package targets, 0% regression tolerance (coverage must not decrease).
+
+**Decision:** As recommended
 
 **Blocked:** Epic 9 (Testing Strategy)
 
@@ -546,6 +608,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Manual removal — auto-detection is complex and error-prone.
 
+**Decision:** As recommended
+
 **Source:** `internal/tui/detail_view.go`
 
 ---
@@ -555,6 +619,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** What format should `[G]enerate stories` produce? YAML tasks, BMAD story files, or git-committed stories?
 
 **Recommendation:** YAML tasks first (native format). BMAD story generation is a separate feature.
+
+**Decision:** As recommended
 
 **Source:** `internal/tui/detail_view.go`
 
@@ -566,6 +632,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** After CloudKit integration (Epic 20) proves stable. Not before Phase 4.
 
+**Decision:** As recommended
+
 **Source:** `docs/prd/product-scope.md`
 
 ---
@@ -575,6 +643,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Under what conditions would a web interface become worth building?
 
 **Recommendation:** Only if mobile app (Epic 16) proves that multi-platform demand exists. Not before Phase 5.
+
+**Decision:** As recommended
 
 **Source:** `docs/prd/product-scope.md`
 
@@ -586,6 +656,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** When the first adapter that requires it (likely MS To Do or Google Tasks) is prioritized.
 
+**Decision:** As recommended (Jira probably)
+
 **Source:** `docs/research/task-source-expansion-research.md`
 
 ---
@@ -595,6 +667,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Should the iPhone app share the Apple Notes backend, or use a dedicated mobile persistence layer?
 
 **Recommendation:** Shared Apple Notes backend via CloudKit. Dedicated persistence only if CloudKit proves insufficient.
+
+**Decision:** As recommended
 
 **Blocked:** Epic 16 (far future)
 
@@ -608,6 +682,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** When an HTTP-based provider (Todoist, Linear) with webhook support is implemented.
 
+**Decision:** As recommended
+
 **Source:** `docs/research/sync-architecture-scaling-research.md`
 
 ---
@@ -617,6 +693,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** Can critical fixes bypass lint/test quality gates? Under what conditions?
 
 **Recommendation:** No overrides. If a fix is critical, it can still pass lint. This prevents bad habits.
+
+**Decision:** As recommended
 
 **Source:** `docs/prd/requirements.md`
 
@@ -628,6 +706,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Keep rejected. Single theme is simpler and more cohesive.
 
+**Decision:** As recommended
+
 **Source:** `docs/prd/epics-and-stories.md` (Epic 17)
 
 ---
@@ -638,6 +718,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Recommendation:** Standardize: 5 min for local, 60s for network (with configurable override).
 
+**Decision:** As recommended
+
 **Source:** `docs/research/task-source-expansion-research.md`, `docs/research/sync-architecture-scaling-research.md`
 
 ---
@@ -647,6 +729,8 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 **Question:** What is the maximum number of stories per automated multiclaude run?
 
 **Recommendation:** 3 stories per run. Allows review between batches.
+
+**Decision:** As recommended
 
 **Source:** `docs/research/multiclaude-auto-execution-research.md`
 
