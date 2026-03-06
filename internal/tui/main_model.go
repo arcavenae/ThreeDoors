@@ -71,6 +71,9 @@ type MainModel struct {
 	agentService        *intelligence.AgentService
 	decomposing         bool
 	syncLog             *core.SyncLog
+	dedupStore          *core.DedupStore
+	duplicateTaskIDs    map[string]bool
+	duplicatePairs      []core.DuplicatePair
 	flash               string
 	width               int
 	height              int
@@ -127,10 +130,31 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		}
 	}
 
+	// Initialize dedup store for duplicate detection decisions
+	var dedupStore *core.DedupStore
+	duplicateTaskIDs := make(map[string]bool)
+	var duplicatePairs []core.DuplicatePair
+	if configPath, err := core.GetConfigDirPath(); err == nil {
+		ds, dsErr := core.NewDedupStore(filepath.Join(configPath, "dedup_decisions.yaml"))
+		if dsErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to load dedup store: %v\n", dsErr)
+		} else {
+			dedupStore = ds
+			allTasks := pool.GetAllTasks()
+			rawPairs := core.DetectDuplicates(allTasks, 0.8)
+			duplicatePairs = dedupStore.FilterUndecided(rawPairs)
+			for _, p := range duplicatePairs {
+				duplicateTaskIDs[p.TaskA.ID] = true
+				duplicateTaskIDs[p.TaskB.ID] = true
+			}
+		}
+	}
+
 	doorsView := NewDoorsView(pool, tracker)
 	doorsView.SetAvoidanceData(patternReport)
 	doorsView.SetInsightsData(pa, cc)
 	doorsView.SetSyncTracker(syncTracker)
+	doorsView.SetDuplicateTaskIDs(duplicateTaskIDs)
 
 	m := &MainModel{
 		viewMode:          ViewDoors,
@@ -146,6 +170,9 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		valuesConfig:      valuesConfig,
 		syncTracker:       syncTracker,
 		syncLog:           syncLog,
+		dedupStore:        dedupStore,
+		duplicateTaskIDs:  duplicateTaskIDs,
+		duplicatePairs:    duplicatePairs,
 		promptedTasks:     make(map[string]bool),
 	}
 
@@ -657,6 +684,27 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.previousView = m.viewMode
 		m.viewMode = ViewSyncLog
 		return m, nil
+	case DuplicateDismissedMsg:
+		m.refreshDuplicates()
+		m.flash = "Duplicate flag dismissed"
+		m.detailView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		return m, ClearFlashCmd()
+
+	case DuplicateMergedMsg:
+		// Remove the duplicate task
+		if err := m.provider.DeleteTask(msg.RemovedTask.ID); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to delete merged duplicate: %v\n", err)
+		}
+		m.pool.RemoveTask(msg.RemovedTask.ID)
+		m.refreshDuplicates()
+		m.flash = "Duplicate merged"
+		m.detailView = nil
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		return m, ClearFlashCmd()
+
 	case ShowThemePickerMsg:
 		currentTheme := ""
 		if dv := m.doorsView; dv != nil && dv.theme != nil {
@@ -935,18 +983,50 @@ func (m *MainModel) newDetailView(task *core.Task) *DetailView {
 	dv := NewDetailView(task, m.tracker, m.enrichDB, m.pool)
 	dv.SetWidth(m.width)
 	dv.SetAgentService(m.agentService)
+	if m.duplicateTaskIDs[task.ID] && m.dedupStore != nil {
+		pair := m.findDuplicatePair(task.ID)
+		dv.SetDuplicateInfo(true, m.dedupStore, pair)
+	}
 	return dv
 }
 
 func (m *MainModel) newSearchView() *SearchView {
 	sv := NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 	sv.SetSyncLog(m.syncLog)
+	sv.SetDuplicateTaskIDs(m.duplicateTaskIDs)
 	return sv
 }
 
 func (m *MainModel) saveTasks() error {
 	allTasks := m.pool.GetAllTasks()
 	return m.provider.SaveTasks(allTasks)
+}
+
+// findDuplicatePair finds the DuplicatePair involving the given task ID.
+func (m *MainModel) findDuplicatePair(taskID string) *core.DuplicatePair {
+	for i := range m.duplicatePairs {
+		if m.duplicatePairs[i].TaskA.ID == taskID || m.duplicatePairs[i].TaskB.ID == taskID {
+			return &m.duplicatePairs[i]
+		}
+	}
+	return nil
+}
+
+// refreshDuplicates re-runs duplicate detection (after merge/dismiss).
+func (m *MainModel) refreshDuplicates() {
+	m.duplicateTaskIDs = make(map[string]bool)
+	m.duplicatePairs = nil
+	if m.dedupStore == nil {
+		return
+	}
+	allTasks := m.pool.GetAllTasks()
+	rawPairs := core.DetectDuplicates(allTasks, 0.8)
+	m.duplicatePairs = m.dedupStore.FilterUndecided(rawPairs)
+	for _, p := range m.duplicatePairs {
+		m.duplicateTaskIDs[p.TaskA.ID] = true
+		m.duplicateTaskIDs[p.TaskB.ID] = true
+	}
+	m.doorsView.SetDuplicateTaskIDs(m.duplicateTaskIDs)
 }
 
 // saveThemeCmd returns a tea.Cmd that persists the theme to config.yaml.

@@ -37,6 +37,9 @@ type DetailView struct {
 	linkCandidates    []*core.Task
 	linkSelectedIndex int
 	linkBrowseIndex   int
+	isDuplicate       bool
+	dedupStore        *core.DedupStore
+	duplicatePair     *core.DuplicatePair
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -70,6 +73,13 @@ func (dv *DetailView) loadCrossRefs() {
 // SetAgentService sets the agent service for LLM task decomposition.
 func (dv *DetailView) SetAgentService(svc *intelligence.AgentService) {
 	dv.agentService = svc
+}
+
+// SetDuplicateInfo sets the duplicate detection state for the current task.
+func (dv *DetailView) SetDuplicateInfo(isDup bool, store *core.DedupStore, pair *core.DuplicatePair) {
+	dv.isDuplicate = isDup
+	dv.dedupStore = store
+	dv.duplicatePair = pair
 }
 
 // SetWidth sets the terminal width.
@@ -162,6 +172,23 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		}
 		return func() tea.Msg {
 			return DecomposeStartMsg{TaskID: dv.task.ID, TaskDescription: desc}
+		}
+	case "d", "D":
+		if dv.isDuplicate && dv.dedupStore != nil && dv.duplicatePair != nil {
+			_ = dv.dedupStore.RecordDecision(dv.duplicatePair.TaskA.ID, dv.duplicatePair.TaskB.ID, core.DecisionDistinct)
+			dv.isDuplicate = false
+			return func() tea.Msg { return DuplicateDismissedMsg{Task: dv.task} }
+		}
+	case "y", "Y":
+		if dv.isDuplicate && dv.dedupStore != nil && dv.duplicatePair != nil {
+			_ = dv.dedupStore.RecordDecision(dv.duplicatePair.TaskA.ID, dv.duplicatePair.TaskB.ID, core.DecisionDuplicate)
+			// Remove the other task (the one that's not currently being viewed)
+			otherTask := dv.duplicatePair.TaskB
+			if dv.task.ID == dv.duplicatePair.TaskB.ID {
+				otherTask = dv.duplicatePair.TaskA
+			}
+			dv.isDuplicate = false
+			return func() tea.Msg { return DuplicateMergedMsg{Task: dv.task, RemovedTask: otherTask} }
 		}
 	}
 	return nil
@@ -355,6 +382,10 @@ func (dv *DetailView) View() string {
 		fmt.Fprintf(&s, "Source: %s\n", SourceBadge(dv.task.SourceProvider))
 	}
 
+	if dv.isDuplicate {
+		fmt.Fprintf(&s, "%s\n", DuplicateIndicator())
+	}
+
 	if dv.task.Blocker != "" {
 		blockerStyle := lipgloss.NewStyle().Foreground(colorBlocked)
 		fmt.Fprintf(&s, "Blocker: %s\n", blockerStyle.Render(dv.task.Blocker))
@@ -429,7 +460,11 @@ func (dv *DetailView) View() string {
 		if dv.agentService != nil {
 			decomposeHint = " [G]enerate stories"
 		}
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + linkHint + browseHint + decomposeHint + " [Esc]Back"))
+		dupHint := ""
+		if dv.isDuplicate && dv.dedupStore != nil {
+			dupHint = " [D]ismiss-dup [Y]es-merge"
+		}
+		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + linkHint + browseHint + decomposeHint + dupHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())

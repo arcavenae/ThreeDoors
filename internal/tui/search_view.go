@@ -23,6 +23,7 @@ type SearchView struct {
 	syncLog           *core.SyncLog
 	width             int
 	isCommandMode     bool
+	duplicateTaskIDs  map[string]bool
 }
 
 // NewSearchView creates a new SearchView.
@@ -41,6 +42,7 @@ func NewSearchView(pool *core.TaskPool, tracker *core.SessionTracker, hc *core.H
 		healthChecker:     hc,
 		completionCounter: cc,
 		patternReport:     pr,
+		duplicateTaskIDs:  make(map[string]bool),
 	}
 }
 
@@ -55,6 +57,11 @@ func (sv *SearchView) SetWidth(w int) {
 // SetSyncLog sets the sync log for the :synclog command.
 func (sv *SearchView) SetSyncLog(sl *core.SyncLog) {
 	sv.syncLog = sl
+}
+
+// SetDuplicateTaskIDs sets the set of task IDs flagged as potential duplicates.
+func (sv *SearchView) SetDuplicateTaskIDs(ids map[string]bool) {
+	sv.duplicateTaskIDs = ids
 }
 
 // RestoreState restores search state after returning from detail view.
@@ -371,7 +378,11 @@ func (sv *SearchView) View() string {
 				Render(fmt.Sprintf("[%s]", task.Status))
 
 			srcBadge := SourceBadge(task.SourceProvider)
-			line := fmt.Sprintf("  %s %s %s", statusIndicator, task.Text, srcBadge)
+			dupBadge := ""
+			if sv.duplicateTaskIDs[task.ID] {
+				dupBadge = " " + DuplicateIndicator()
+			}
+			line := fmt.Sprintf("  %s %s %s%s", statusIndicator, task.Text, srcBadge, dupBadge)
 			if i == sv.selectedIndex {
 				line = searchSelectedStyle.Render(line)
 			} else {

@@ -65,6 +65,7 @@ type DoorsView struct {
 	pendingConflicts  int
 	theme             *themes.DoorTheme
 	themeRegistry     *themes.Registry
+	duplicateTaskIDs  map[string]bool
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -77,6 +78,7 @@ func NewDoorsView(pool *core.TaskPool, tracker *core.SessionTracker) *DoorsView 
 		footerMessage:     pickFooterMessage(-1),
 		avoidanceMap:      make(map[string]int),
 		avoidanceShown:    make(map[string]int),
+		duplicateTaskIDs:  make(map[string]bool),
 	}
 	dv.RefreshDoors()
 	return dv
@@ -114,6 +116,11 @@ func (dv *DoorsView) SetTimeContext(tc *core.TimeContext) {
 // TimeContext returns the current time context (for testing).
 func (dv *DoorsView) TimeContext() *core.TimeContext {
 	return dv.timeContext
+}
+
+// SetDuplicateTaskIDs sets the set of task IDs flagged as potential duplicates.
+func (dv *DoorsView) SetDuplicateTaskIDs(ids map[string]bool) {
+	dv.duplicateTaskIDs = ids
 }
 
 // SetPendingConflicts sets the number of unresolved sync conflicts.
@@ -280,6 +287,11 @@ func (dv *DoorsView) View() string {
 		// Source provider badge
 		if srcBadge := SourceBadge(task.SourceProvider); srcBadge != "" {
 			content = content + "\n" + srcBadge
+		}
+
+		// Duplicate indicator
+		if dv.duplicateTaskIDs[task.ID] {
+			content = content + "\n" + DuplicateIndicator()
 		}
 
 		// Category badges

@@ -202,6 +202,17 @@ type ThemeSelectedMsg struct {
 // ThemeCancelledMsg is sent when the user cancels the theme picker.
 type ThemeCancelledMsg struct{}
 
+// DuplicateDismissedMsg is sent when the user dismisses a duplicate flag (marks as distinct).
+type DuplicateDismissedMsg struct {
+	Task *core.Task
+}
+
+// DuplicateMergedMsg is sent when the user merges a duplicate pair (removes the other copy).
+type DuplicateMergedMsg struct {
+	Task        *core.Task
+	RemovedTask *core.Task
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

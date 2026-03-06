@@ -140,3 +140,209 @@ func TestDuplicateIndicator(t *testing.T) {
 		t.Errorf("DuplicateIndicator() = %q, want to contain 'Possible duplicate'", indicator)
 	}
 }
+
+// --- Integration: DoorsView shows duplicate indicator ---
+
+func TestDoorsView_ShowsDuplicateIndicator(t *testing.T) {
+	t.Parallel()
+	pool := core.NewTaskPool()
+	task1 := core.NewTask("buy groceries from the store")
+	task1.SourceProvider = "textfile"
+	pool.AddTask(task1)
+
+	task2 := core.NewTask("buy groceries from the store")
+	task2.SourceProvider = "obsidian"
+	pool.AddTask(task2)
+
+	task3 := core.NewTask("filler task")
+	task3.SourceProvider = "textfile"
+	pool.AddTask(task3)
+
+	tracker := core.NewSessionTracker()
+	dv := NewDoorsView(pool, tracker)
+	dv.SetDuplicateTaskIDs(map[string]bool{task1.ID: true, task2.ID: true})
+	view := dv.View()
+
+	if !strings.Contains(view, "Possible duplicate") {
+		t.Error("expected door view to show duplicate indicator for flagged tasks")
+	}
+}
+
+func TestDoorsView_NoDuplicateIndicatorWhenNotFlagged(t *testing.T) {
+	t.Parallel()
+	pool := core.NewTaskPool()
+	for i := 0; i < 3; i++ {
+		task := core.NewTask("unique task")
+		task.SourceProvider = "textfile"
+		pool.AddTask(task)
+	}
+
+	tracker := core.NewSessionTracker()
+	dv := NewDoorsView(pool, tracker)
+	view := dv.View()
+
+	if strings.Contains(view, "Possible duplicate") {
+		t.Error("expected no duplicate indicator when no tasks are flagged")
+	}
+}
+
+// --- Integration: DetailView shows duplicate indicator ---
+
+func TestDetailView_ShowsDuplicateIndicator(t *testing.T) {
+	t.Parallel()
+	task := core.NewTask("buy groceries from the store")
+	task.SourceProvider = "textfile"
+	pool := core.NewTaskPool()
+	pool.AddTask(task)
+	tracker := core.NewSessionTracker()
+
+	dv := NewDetailView(task, tracker, nil, pool)
+	dv.SetDuplicateInfo(true, nil, nil)
+	view := dv.View()
+
+	if !strings.Contains(view, "Possible duplicate") {
+		t.Error("expected detail view to show duplicate indicator")
+	}
+}
+
+func TestDetailView_ShowsDupHintWhenFlagged(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	store, err := core.NewDedupStore(dir + "/dedup.yaml")
+	if err != nil {
+		t.Fatalf("NewDedupStore: %v", err)
+	}
+
+	taskA := core.NewTask("buy groceries")
+	taskA.SourceProvider = "textfile"
+	taskB := core.NewTask("buy groceries")
+	taskB.SourceProvider = "obsidian"
+	pair := &core.DuplicatePair{TaskA: taskA, TaskB: taskB, Similarity: 0.95}
+
+	pool := core.NewTaskPool()
+	pool.AddTask(taskA)
+	pool.AddTask(taskB)
+	tracker := core.NewSessionTracker()
+
+	dv := NewDetailView(taskA, tracker, nil, pool)
+	dv.SetDuplicateInfo(true, store, pair)
+	view := dv.View()
+
+	if !strings.Contains(view, "ismiss") {
+		t.Errorf("expected detail view to show dismiss hint, got: %s", view)
+	}
+	if !strings.Contains(view, "merge") {
+		t.Errorf("expected detail view to show merge hint, got: %s", view)
+	}
+}
+
+// --- Integration: SearchView shows duplicate indicator ---
+
+func TestSearchView_ShowsDuplicateIndicator(t *testing.T) {
+	t.Parallel()
+	pool := core.NewTaskPool()
+	task := core.NewTask("buy groceries from the store")
+	task.SourceProvider = "textfile"
+	pool.AddTask(task)
+
+	tracker := core.NewSessionTracker()
+	sv := NewSearchView(pool, tracker, nil, nil, nil)
+	sv.SetDuplicateTaskIDs(map[string]bool{task.ID: true})
+	sv.results = []*core.Task{task}
+	view := sv.View()
+
+	if !strings.Contains(view, "Possible duplicate") {
+		t.Error("expected search view to show duplicate indicator for flagged task")
+	}
+}
+
+// --- DetailView duplicate dismiss action ---
+
+func TestDetailView_DismissDuplicate(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	store, err := core.NewDedupStore(dir + "/dedup.yaml")
+	if err != nil {
+		t.Fatalf("NewDedupStore: %v", err)
+	}
+
+	taskA := core.NewTask("buy groceries")
+	taskA.SourceProvider = "textfile"
+	taskB := core.NewTask("buy groceries")
+	taskB.SourceProvider = "obsidian"
+	pair := &core.DuplicatePair{TaskA: taskA, TaskB: taskB, Similarity: 0.95}
+
+	pool := core.NewTaskPool()
+	pool.AddTask(taskA)
+	pool.AddTask(taskB)
+	tracker := core.NewSessionTracker()
+
+	dv := NewDetailView(taskA, tracker, nil, pool)
+	dv.SetDuplicateInfo(true, store, pair)
+
+	// Press 'd' to dismiss
+	cmd := dv.Update(keyMsg("d"))
+	if cmd == nil {
+		t.Fatal("expected command from dismiss action")
+	}
+
+	// Verify decision was persisted
+	if !store.HasDecision(taskA.ID, taskB.ID) {
+		t.Error("expected decision to be recorded after dismiss")
+	}
+	decision, _ := store.GetDecision(taskA.ID, taskB.ID)
+	if decision != core.DecisionDistinct {
+		t.Errorf("expected decision %q, got %q", core.DecisionDistinct, decision)
+	}
+}
+
+// --- DetailView duplicate merge action ---
+
+func TestDetailView_MergeDuplicate(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	store, err := core.NewDedupStore(dir + "/dedup.yaml")
+	if err != nil {
+		t.Fatalf("NewDedupStore: %v", err)
+	}
+
+	taskA := core.NewTask("buy groceries")
+	taskA.SourceProvider = "textfile"
+	taskB := core.NewTask("buy groceries")
+	taskB.SourceProvider = "obsidian"
+	pair := &core.DuplicatePair{TaskA: taskA, TaskB: taskB, Similarity: 0.95}
+
+	pool := core.NewTaskPool()
+	pool.AddTask(taskA)
+	pool.AddTask(taskB)
+	tracker := core.NewSessionTracker()
+
+	dv := NewDetailView(taskA, tracker, nil, pool)
+	dv.SetDuplicateInfo(true, store, pair)
+
+	// Press 'y' to merge
+	cmd := dv.Update(keyMsg("y"))
+	if cmd == nil {
+		t.Fatal("expected command from merge action")
+	}
+
+	// Execute the command and check the message
+	msg := cmd()
+	mergeMsg, ok := msg.(DuplicateMergedMsg)
+	if !ok {
+		t.Fatalf("expected DuplicateMergedMsg, got %T", msg)
+	}
+	// The removed task should be the other one (taskB since we're viewing taskA)
+	if mergeMsg.RemovedTask.ID != taskB.ID {
+		t.Errorf("expected removed task %s, got %s", taskB.ID, mergeMsg.RemovedTask.ID)
+	}
+
+	// Verify decision was persisted
+	if !store.HasDecision(taskA.ID, taskB.ID) {
+		t.Error("expected decision to be recorded after merge")
+	}
+	decision, _ := store.GetDecision(taskA.ID, taskB.ID)
+	if decision != core.DecisionDuplicate {
+		t.Errorf("expected decision %q, got %q", core.DecisionDuplicate, decision)
+	}
+}
