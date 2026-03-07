@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-8, 3.5, 10-12, 14-15 are COMPLETE. Epics 9, 13, 18 are PARTIAL. 101 merged PRs total. Last audit: 2026-03-03.
+**Implementation Status:** Epics 0-15, 3.5, 17-18 are COMPLETE. Epics 19-21 are PARTIAL. Epic 16 and Epic 22 are NOT STARTED. 144 merged PRs total. Last audit: 2026-03-06.
 
 ## Requirements Inventory
 
@@ -109,7 +109,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 *Docker E2E & Headless TUI Testing (Party Mode):*
 - FR52: Headless TUI test harness using teatest for automated interaction testing ✅ Epic 18 (Story 18.1, PR #64)
 - FR53: Golden file snapshot tests for TUI visual regression detection ✅ Epic 18 (Story 18.2, PR #86)
-- FR54: Docker-based reproducible test environment for E2E test execution ⏳ Epic 18 (Stories 18.4-18.5 pending)
+- FR54: Docker-based reproducible test environment for E2E test execution ✅ Epic 18 (Stories 18.4 PR #104, 18.5 PR #107)
 
 ### Non-Functional Requirements
 
@@ -196,13 +196,19 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR11 | Epic 6 ✅ | Data Layer & Enrichment (COMPLETE — 2/2 stories, optional epic) |
 | FR31, FR32, FR33 | Epic 7 ✅ | Plugin/Adapter SDK & Registry (COMPLETE) |
 | FR27, FR28, FR29, FR30 | Epic 8 ✅ | Obsidian Integration (COMPLETE) |
-| FR49, FR50, FR51 | Epic 9 ◐ | Testing Strategy & Quality Gates (PARTIAL — 2/5 stories) |
+| FR49, FR50, FR51 | Epic 9 ✅ | Testing Strategy & Quality Gates (COMPLETE) |
 | FR38, FR39 | Epic 10 ✅ | First-Run Onboarding (COMPLETE) |
 | FR40, FR41, FR42, FR43 | Epic 11 ✅ | Sync Observability & Offline-First (COMPLETE) |
 | FR44, FR45 | Epic 12 ✅ | Calendar Awareness (COMPLETE) |
-| FR46, FR47, FR48 | Epic 13 ◐ | Multi-Source Aggregation (PARTIAL — 1/2 stories) |
+| FR46, FR47, FR48 | Epic 13 ✅ | Multi-Source Aggregation (COMPLETE) |
 | FR35, FR36, FR37 | Epic 14 ✅ | LLM Task Decomposition (COMPLETE) |
 | FR34 | Epic 15 ✅ | Psychology Research & Validation (COMPLETE) |
+| (mobile-specific) | Epic 16 | iPhone Mobile App (NOT STARTED) |
+| FR55-FR62 | Epic 17 ✅ | Door Theme System (COMPLETE) |
+| FR63-FR66 | Epic 19 ◐ | Jira Integration (PARTIAL — 2/4 stories) |
+| FR67-FR69 | Epic 20 ◐ | Apple Reminders Integration (PARTIAL — 1/4 stories) |
+| FR70-FR72 | Epic 21 ◐ | Sync Protocol Hardening (PARTIAL — 3/4 stories) |
+| FR73-FR80 | Epic 22 | Self-Driving Development Pipeline (NOT STARTED) |
 
 ## Epic List
 
@@ -260,11 +266,11 @@ Add Obsidian vault as second task storage backend.
 **Prerequisites:** Epic 7 ✅
 **Status:** All 4 stories complete (PRs #73, #75, #77, #79).
 
-### Epic 9: Testing Strategy & Quality Gates ◐ PARTIAL
+### Epic 9: Testing Strategy & Quality Gates ✅ COMPLETE
 Comprehensive testing infrastructure with integration, contract, E2E tests.
 **FRs covered:** FR49, FR50, FR51
 **Prerequisites:** Epic 2 ✅, Epic 7 ✅
-**Status:** 2/5 stories complete (PRs #83, #89). Stories 9.3-9.5 pending.
+**Status:** All 5 stories complete (PRs #83, #89, #142, #103, #102).
 
 ### Epic 10: First-Run Onboarding Experience ✅ COMPLETE
 Guided welcome flow for new users.
@@ -284,11 +290,11 @@ Time-contextual door selection from local calendar sources.
 **Prerequisites:** Epic 4 ✅
 **Status:** All 2 stories complete (PRs #65, #81).
 
-### Epic 13: Multi-Source Task Aggregation View ◐ PARTIAL
+### Epic 13: Multi-Source Task Aggregation View ✅ COMPLETE
 Unified cross-provider task pool with dedup and source attribution.
 **FRs covered:** FR46, FR47, FR48
 **Prerequisites:** Epic 7 ✅, Epic 8 ✅
-**Status:** 1/2 stories complete (PR #84). Story 13.2 pending.
+**Status:** All 2 stories complete (PRs #84, #143).
 
 ### Epic 14: LLM Task Decomposition & Agent Action Queue ✅ COMPLETE
 LLM-powered task breakdown for coding agent pickup.
@@ -301,6 +307,36 @@ Evidence base for ThreeDoors design decisions.
 **FRs covered:** FR34
 **Prerequisites:** None
 **Status:** All 2 stories complete (PRs #54, #58).
+
+### Epic 16: iPhone Mobile App (SwiftUI) — NOT STARTED
+Native SwiftUI iPhone app with Three Doors card carousel.
+**FRs covered:** Mobile-specific (not yet in PRD FRs)
+**Prerequisites:** Epic 2 ✅
+**Status:** Not Started. 7 stories planned (16.1-16.7). See `docs/prd/epic-details.md`.
+
+### Epic 17: Door Theme System ✅ COMPLETE
+Visually distinct themed doors with user-selectable themes.
+**FRs covered:** FR55-FR62
+**Prerequisites:** Epic 3 ✅, Epic 10 ✅
+**Status:** All 6 stories complete (PRs #119, #120, #121, #123, #124, #122).
+
+### Epic 19: Jira Integration ◐ PARTIAL
+Jira as a task source with read-only adapter and bidirectional sync.
+**FRs covered:** FR63-FR66
+**Prerequisites:** Epic 7 ✅, Epic 11 ✅, Epic 13 ✅
+**Status:** 2/4 stories complete (PRs #132, #138). Stories 19.3, 19.4 pending.
+
+### Epic 20: Apple Reminders Integration ◐ PARTIAL
+Apple Reminders as a task source with full CRUD support.
+**FRs covered:** FR67-FR69
+**Prerequisites:** Epic 7 ✅
+**Status:** 1/4 stories complete (PR #137). Stories 20.2-20.4 pending.
+
+### Epic 21: Sync Protocol Hardening ◐ PARTIAL
+Background sync scheduling, circuit breakers, and cross-provider identity mapping.
+**FRs covered:** FR70-FR72
+**Prerequisites:** Epic 11 ✅, Epic 13 ✅
+**Status:** 3/4 stories complete (PRs #139; 21.2, 21.3 done). Story 21.4 pending.
 
 ---
 
@@ -1281,13 +1317,13 @@ So that tasks captured in daily notes appear in Three Doors.
 
 ---
 
-## Epic 9: Testing Strategy & Quality Gates ◐ PARTIAL
+## Epic 9: Testing Strategy & Quality Gates ✅ COMPLETE
 
 **Epic Goal:** Establish comprehensive testing infrastructure ensuring reliability as the adapter ecosystem grows.
 
 **Prerequisites:** Epic 2 ✅, Epic 7 ✅
 **FRs covered:** FR49, FR50, FR51
-**Status:** PARTIAL — 2/5 stories implemented (PRs #83, #89). Stories 9.3, 9.4, 9.5 pending.
+**Status:** COMPLETE — All 5 stories implemented and merged (PRs #83, #89, #142, #103, #102).
 
 ### Story 9.1: Apple Notes Integration E2E Tests ✅
 
@@ -1326,7 +1362,9 @@ So that all adapters behave consistently.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 9.3: Performance Benchmarks
+### Story 9.3: Performance Benchmarks ✅
+
+**Status:** Done (PR #142)
 
 As a developer,
 I want automated performance benchmarks,
@@ -1342,7 +1380,9 @@ So that <100ms NFR is validated and regressions caught.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 9.4: Functional E2E Tests
+### Story 9.4: Functional E2E Tests ✅
+
+**Status:** Done (PR #103)
 
 As a developer,
 I want functional E2E tests covering full user workflows,
@@ -1360,7 +1400,9 @@ So that the complete user experience is validated.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 9.5: CI Coverage Gates
+### Story 9.5: CI Coverage Gates ✅
+
+**Status:** Done (PR #102)
 
 As the team,
 I want CI coverage gates,
@@ -1546,13 +1588,13 @@ So that I'm not shown deep-work when I have a meeting in 15 minutes.
 
 ---
 
-## Epic 13: Multi-Source Task Aggregation View ◐ PARTIAL
+## Epic 13: Multi-Source Task Aggregation View ✅ COMPLETE
 
 **Epic Goal:** Unified cross-provider task pool with dedup and source attribution.
 
 **Prerequisites:** Epic 7 ✅, Epic 8 ✅
 **FRs covered:** FR46, FR47, FR48
-**Status:** PARTIAL — 1/2 stories implemented (PR #84). Story 13.2 pending.
+**Status:** COMPLETE — All 2 stories implemented and merged (PRs #84, #143).
 
 ### Story 13.1: Cross-Provider Task Pool Aggregation ✅
 
@@ -1573,7 +1615,9 @@ So that I see everything without switching sources.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 13.2: Duplicate Detection & Source Attribution
+### Story 13.2: Duplicate Detection & Source Attribution ✅
+
+**Status:** Done (PR #143)
 
 As a user with overlapping sources,
 I want duplicates flagged and sources shown,
@@ -1690,14 +1734,14 @@ So that Epic 4's learning algorithm is evidence-informed.
 
 ---
 
-## Epic 18: Docker E2E & Headless TUI Testing Infrastructure ◐ PARTIAL
+## Epic 18: Docker E2E & Headless TUI Testing Infrastructure ✅ COMPLETE
 
 **Epic Goal:** Establish reproducible, automated end-to-end testing for the TUI application using Docker containers for environment isolation and Bubbletea's `teatest` package for headless interaction testing — eliminating manual TUI testing as the sole E2E validation method.
 
 **Prerequisites:** Epic 3 ✅, Epic 9 (Stories 9.4, 9.5)
 **FRs covered:** FR49, FR51 (extends Epic 9's scope with concrete implementation approach)
 **Origin:** Party mode testing infrastructure discussion (2026-03-02). Party mode consensus identified two critical gaps: (1) no reproducible test environment — tests depend on developer machine state, and (2) TUI testing is entirely manual — 10% of the test pyramid has zero automation.
-**Status:** PARTIAL — 2/5 stories implemented (PRs #64, #86). Stories 18.3, 18.4, 18.5 pending.
+**Status:** COMPLETE — All 5 stories implemented and merged (PRs #64, #86, #105, #104, #107).
 
 **Why a separate epic from Epic 9:** Epic 9 defines *what* to test (Apple Notes E2E, contract tests, performance benchmarks, functional E2E, CI gates). This epic defines *how* to test the TUI layer specifically — the Docker infrastructure and headless testing tooling that Epic 9 Story 9.4 depends on but doesn't specify.
 
@@ -1756,7 +1800,9 @@ So that visual regressions in the Three Doors interface are caught automatically
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 18.3: Input Sequence Replay Tests for User Workflows
+### Story 18.3: Input Sequence Replay Tests for User Workflows ✅
+
+**Status:** Done (PR #105)
 
 As a developer,
 I want automated tests that replay user input sequences against the TUI,
@@ -1786,7 +1832,9 @@ So that complete user workflows (launch → select → manage → exit) are vali
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 18.4: Docker Test Environment for Reproducible E2E
+### Story 18.4: Docker Test Environment for Reproducible E2E ✅
+
+**Status:** Done (PR #104)
 
 As a developer,
 I want a Docker-based test environment,
@@ -1814,7 +1862,9 @@ So that E2E tests run identically on any machine and in CI regardless of host OS
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
 
-### Story 18.5: CI Integration for Docker E2E Tests
+### Story 18.5: CI Integration for Docker E2E Tests ✅
+
+**Status:** Done (PR #107)
 
 As the team,
 I want Docker E2E tests running automatically in CI,
@@ -1840,6 +1890,137 @@ So that TUI regressions are caught on every PR without relying on manual testing
 - Apple Notes integration tests remain macOS-only; Docker E2E covers everything else
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓ | See Appendix for full BDD criteria and pre-PR checklist.
+
+---
+
+## Epic 16: iPhone Mobile App (SwiftUI) — NOT STARTED
+
+**Epic Goal:** Bring the Three Doors experience to iPhone with a native SwiftUI app that syncs tasks via Apple Notes.
+
+**Prerequisites:** Epic 2 ✅
+**Tech Stack:** Swift 5.9+, SwiftUI, iCloud Drive, Xcode 16+, iOS 17+
+**Status:** NOT STARTED — 7 stories planned (16.1-16.7). See `docs/prd/epic-details.md` for full story details.
+
+### Stories:
+- **16.1:** SwiftUI Project Setup & CI
+- **16.2:** Task Provider Protocol & Apple Notes Reader
+- **16.3:** Three Doors Card Carousel
+- **16.4:** Door Detail & Status Actions
+- **16.5:** Session Metrics & iCloud Sync
+- **16.6:** Swipe Gestures & Pull-to-Refresh
+- **16.7:** Polish & TestFlight Distribution
+
+---
+
+## Epic 17: Door Theme System ✅ COMPLETE
+
+**Epic Goal:** Replace uniform door appearance with visually distinct themed doors using ASCII/ANSI art frames, with user-selectable themes via onboarding, settings, and config.yaml.
+
+**Prerequisites:** Epic 3 ✅, Epic 10 ✅
+**FRs covered:** FR55-FR62
+**Status:** COMPLETE — All 6 stories implemented and merged (PRs #119, #120, #121, #123, #124, #122).
+
+### Story 17.1: Theme Types, Registry, and Classic Theme Wrapper ✅
+
+**Status:** Done (PR #119)
+
+### Story 17.2: Modern, Sci-Fi, and Shoji Theme Implementations ✅
+
+**Status:** Done (PR #120)
+
+### Story 17.3: DoorsView Integration — Load Theme from Config ✅
+
+**Status:** Done (PR #121)
+
+### Story 17.4: Theme Picker in Onboarding Flow ✅
+
+**Status:** Done (PR #123)
+
+### Story 17.5: Settings View — `:theme` Command with Preview ✅
+
+**Status:** Done (PR #124)
+
+### Story 17.6: Golden File Tests for All Themes ✅
+
+**Status:** Done (PR #122)
+
+---
+
+## Epic 19: Jira Integration ◐ PARTIAL
+
+**Epic Goal:** Integrate Jira as a task source, enabling developers to see Jira issues as ThreeDoors tasks.
+
+**Prerequisites:** Epic 7 ✅, Epic 11 ✅, Epic 13 ✅
+**FRs covered:** FR63-FR66
+**Status:** PARTIAL — 2/4 stories implemented (PRs #132, #138). Stories 19.3, 19.4 pending.
+
+### Story 19.1: Jira HTTP Client ✅
+
+**Status:** Done (PR #132)
+
+### Story 19.2: Jira Read-Only Provider ✅
+
+**Status:** Done (PR #138)
+
+### Story 19.3: Jira Bidirectional Sync
+
+**Status:** Draft
+
+### Story 19.4: Jira Config and Registration
+
+**Status:** Draft
+
+---
+
+## Epic 20: Apple Reminders Integration ◐ PARTIAL
+
+**Epic Goal:** Add Apple Reminders as a task source with full CRUD support.
+
+**Prerequisites:** Epic 7 ✅
+**FRs covered:** FR67-FR69
+**Status:** PARTIAL — 1/4 stories implemented (PR #137). Stories 20.2-20.4 pending.
+
+### Story 20.1: Reminders JXA Scripts and CommandExecutor ✅
+
+**Status:** Done (PR #137)
+
+### Story 20.2: Reminders Read-Only Provider
+
+**Status:** Draft
+
+### Story 20.3: Reminders Write Support
+
+**Status:** Draft
+
+### Story 20.4: Reminders Config, Registration, and Health Check
+
+**Status:** Draft
+
+---
+
+## Epic 21: Sync Protocol Hardening ◐ PARTIAL
+
+**Epic Goal:** Harden sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping.
+
+**Prerequisites:** Epic 11 ✅, Epic 13 ✅
+**FRs covered:** FR70-FR72
+**Status:** PARTIAL — 3/4 stories implemented (PRs #139; 21.2, 21.3 done). Story 21.4 pending.
+
+### Story 21.1: Sync Scheduler with Per-Provider Loops ✅
+
+**Status:** Done (PR #139)
+
+### Story 21.2: Circuit Breaker per Provider ✅
+
+**Status:** Done
+
+### Story 21.3: Canonical ID Mapping (SourceRef) ✅
+
+**Status:** Done (partial — SourceRef type and Task methods; TaskPool integration deferred)
+
+### Story 21.4: Sync Dashboard Enhancements
+
+**Status:** Draft
 
 ---
 

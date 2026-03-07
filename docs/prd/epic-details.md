@@ -1200,9 +1200,11 @@
 
 ---
 
-## Epic 17: Door Theme System
+## Epic 17: Door Theme System ✅ COMPLETE
 
 **Epic Goal:** Replace the uniform rounded-border door appearance with visually distinct themed doors using ASCII/ANSI art frames, with user-selectable themes via onboarding, settings view, and config.yaml.
+
+**Status:** COMPLETE — All 6 stories implemented and merged (PRs #119, #120, #121, #123, #124, #122).
 
 **Scope:** Theme type definitions, registry, three new theme implementations (Modern, Sci-Fi, Shoji), Classic theme wrapper, DoorsView integration, onboarding theme picker, settings `:theme` command, config persistence, and golden file tests.
 

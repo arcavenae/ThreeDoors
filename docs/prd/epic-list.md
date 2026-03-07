@@ -110,10 +110,10 @@
 - **Stories:** 8.1-8.4 (4 stories)
 - **FRs covered:** FR27, FR28, FR29, FR30
 
-**Epic 9: Testing Strategy & Quality Gates** PARTIAL
+**Epic 9: Testing Strategy & Quality Gates** COMPLETE
 - **Goal:** Establish comprehensive testing infrastructure with integration, contract, performance, and E2E tests
 - **Prerequisites:** Epic 2, Epic 7
-- **Status:** PARTIAL -- 2/5 stories complete (PRs #83, #89). Stories 9.3-9.5 pending.
+- **Status:** COMPLETE -- All 5 stories implemented and merged (PRs #83, #89, #142, #103, #102).
 - **Deliverables:**
   - Apple Notes integration E2E tests
   - Contract tests for adapter compliance
@@ -159,10 +159,10 @@
 - **Stories:** 12.1-12.2 (2 stories)
 - **FRs covered:** FR44, FR45
 
-**Epic 13: Multi-Source Task Aggregation View** PARTIAL
+**Epic 13: Multi-Source Task Aggregation View** COMPLETE
 - **Goal:** Unified cross-provider task pool with dedup detection and source attribution in the TUI
 - **Prerequisites:** Epic 7, Epic 8
-- **Status:** PARTIAL -- 1/2 stories complete (PR #84). Story 13.2 pending.
+- **Status:** COMPLETE -- All 2 stories implemented and merged (PRs #84, #143).
 - **Deliverables:**
   - Cross-provider task pool aggregation
   - Duplicate detection across providers
@@ -216,10 +216,10 @@
 - **FRs covered:** (mobile-specific, not yet in PRD FRs)
 - **Research:** See `docs/research/mobile-app-research.md` for full analysis
 
-**Epic 17: Door Theme System** IN PROGRESS
+**Epic 17: Door Theme System** COMPLETE
 - **Goal:** Replace the uniform rounded-border door appearance with visually distinct themed doors using ASCII/ANSI art frames, with user-selectable themes via onboarding, settings view, and config.yaml
 - **Prerequisites:** Epic 3 (enhanced interaction), Epic 10 (onboarding -- for theme picker integration, can proceed independently)
-- **Status:** IN PROGRESS -- Stories 17.1-17.6 being implemented
+- **Status:** COMPLETE -- All 6 stories implemented and merged (PRs #119-#124)
 - **Deliverables:**
   - DoorTheme type, ThemeColors, and theme registry (`internal/tui/themes/`)
   - Classic theme wrapper (preserves current Lipgloss border rendering)
@@ -249,10 +249,10 @@
 - **Stories:** 18.1 (Headless Harness), 18.2 (Golden Files), 18.3 (Workflow Replay), 18.4 (Docker Environment), 18.5 (CI Integration)
 - **FRs covered:** FR52, FR53, FR54
 
-**Epic 19: Jira Integration**
+**Epic 19: Jira Integration** PARTIAL
 - **Goal:** Integrate Jira as a task source via read-only adapter (Phase 1) and bidirectional sync (Phase 2), enabling developers to see their Jira issues as ThreeDoors tasks
 - **Prerequisites:** Epic 7 (adapter SDK), Epic 11 (sync observability), Epic 13 (multi-source aggregation)
-- **Status:** Not Started
+- **Status:** Partial (2/4) — Stories 19.1 (PR #132), 19.2 (PR #138) done. Stories 19.3, 19.4 pending.
 - **Deliverables:**
   - Thin Jira REST API v3 HTTP client (auth, search, pagination, rate limits)
   - JiraProvider implementing TaskProvider (JQL search, field mapping)
@@ -263,10 +263,10 @@
 - **FRs covered:** FR63, FR64, FR65, FR66
 - **Research:** See `docs/research/jira-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
 
-**Epic 20: Apple Reminders Integration**
+**Epic 20: Apple Reminders Integration** PARTIAL
 - **Goal:** Add Apple Reminders as a task source with full CRUD support, leveraging structured data model (persistent IDs, native priority/due dates) for a higher-quality integration than Apple Notes
 - **Prerequisites:** Epic 7 (adapter SDK), macOS only
-- **Status:** Not Started
+- **Status:** Partial (1/4) — Story 20.1 (PR #137) done. Stories 20.2-20.4 pending.
 - **Deliverables:**
   - JXA scripts for reading, creating, updating, completing, and deleting reminders
   - RemindersProvider implementing TaskProvider with CommandExecutor pattern
@@ -277,10 +277,10 @@
 - **FRs covered:** FR67, FR68, FR69
 - **Research:** See `docs/research/apple-reminders-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
 
-**Epic 21: Sync Protocol Hardening**
+**Epic 21: Sync Protocol Hardening** PARTIAL
 - **Goal:** Harden the sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping
 - **Prerequisites:** Epic 11 (sync observability), Epic 13 (multi-source aggregation)
-- **Status:** Not Started
+- **Status:** Partial (3/4) — Stories 21.1 (PR #139), 21.2, 21.3 done. Story 21.4 pending.
 - **Deliverables:**
   - Sync scheduler with per-provider independent loops and adaptive intervals
   - Circuit breaker per provider (Closed/Open/Half-Open states)
@@ -332,20 +332,20 @@
 | Epic 6: Data Layer (Optional) | 2 | Complete |
 | Epic 7: Plugin/Adapter SDK | 3 | Complete |
 | Epic 8: Obsidian Integration | 4 | Complete |
-| Epic 9: Testing Strategy | 5 | Partial (2/5) |
+| Epic 9: Testing Strategy | 5 | Complete |
 | Epic 10: Onboarding | 2 | Complete |
 | Epic 11: Sync Observability | 3 | Complete |
 | Epic 12: Calendar Awareness | 2 | Complete |
-| Epic 13: Multi-Source Aggregation | 2 | Partial (1/2) |
+| Epic 13: Multi-Source Aggregation | 2 | Complete |
 | Epic 14: LLM Decomposition | 2 | Complete |
 | Epic 15: Psychology Research | 2 | Complete |
 | Epic 16: iPhone Mobile App | 7 | Not Started |
-| Epic 17: Door Theme System | 6 | In Progress |
+| Epic 17: Door Theme System | 6 | Complete |
 | Epic 18: Docker E2E & Headless TUI Testing | 5 | Complete |
-| Epic 19: Jira Integration | 4 | Not Started |
-| Epic 20: Apple Reminders Integration | 4 | Not Started |
-| Epic 21: Sync Protocol Hardening | 4 | Not Started |
+| Epic 19: Jira Integration | 4 | Partial (2/4) |
+| Epic 20: Apple Reminders Integration | 4 | Partial (1/4) |
+| Epic 21: Sync Protocol Hardening | 4 | Partial (3/4) |
 | Epic 22: Self-Driving Dev Pipeline | 8 | Not Started |
-| **Total** | **119** | **81 complete, 3 partial, 35 remaining** |
+| **Total** | **119** | **97 complete, 3 partial, 19 remaining** |
 
 ---
