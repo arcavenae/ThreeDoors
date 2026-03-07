@@ -424,6 +424,26 @@ These non-functional requirements establish code quality gates that all contribu
 
 ---
 
+## Phase 6+ - Task Dependencies & Blocked-Task Filtering (Accepted)
+
+*The following requirements add a native dependency graph for tasks, ensuring the Three Doors only present genuinely actionable tasks by automatically filtering those whose prerequisites are incomplete.*
+
+**Task Dependencies:**
+
+**FR110:** The system shall support a `depends_on` field on tasks containing a list of task IDs that must be completed before the task becomes actionable — stored as `depends_on: [task-id-1, task-id-2]` in YAML and persisted through the enrichment DB for cross-provider dependencies
+
+**FR111:** Tasks whose dependencies include any task not in `complete` status shall be automatically excluded from door selection by `GetAvailableForDoors()` — the filter checks dependency completion state on every door refresh, requiring no manual status management; if a dependency references a task ID that no longer exists in the pool, the dependency is treated as unmet (pessimistic) and the task remains blocked
+
+**FR112:** The system shall display a "Blocked by: [task text]" indicator on tasks in the doors view and detail view when they have incomplete dependencies, showing the first incomplete dependency's text (truncated to 40 characters) with a count of additional blockers if more than one exists (e.g., "Blocked by: Review PR from alex... (+2 more)")
+
+**FR113:** When a task is marked complete and other tasks depend on it, the system shall check all dependents — if a dependent's dependencies are now all complete, emit a `dependency_unblocked` notification event and refresh the doors view to potentially include the newly unblocked task
+
+**FR114:** The system shall provide dependency management in the task detail view: `+` key to add a dependency (opens task search/picker), `-` key to remove a selected dependency, with the dependency list displayed in the detail view below the notes section
+
+**FR115:** The system shall detect and reject circular dependencies when adding a new dependency — if adding dependency A->B would create a cycle (B already depends on A directly or transitively), the operation fails with a user-visible error message "Cannot add dependency: would create a circular chain"
+
+---
+
 ## Task Source Integration NFRs
 
 > Requirements specific to API-based and IPC-based task source adapters.
