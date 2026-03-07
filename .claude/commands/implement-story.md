@@ -59,18 +59,35 @@ This is the complete, end-to-end workflow for implementing a story from preparat
 
 ---
 
+## Phase 3.5: Baseline — Run Existing Tests
+
+**Goal:** Observe the current project test status before adding any new tests.
+
+1. Launch `/tea` (Test Engineering Architect agent) to run the existing test suite.
+2. Instruct TEA to:
+   - Run `make test` (or `go test ./... -v`) to execute all existing tests
+   - Record the current pass/fail state and coverage baseline
+   - Note any pre-existing failures so they are not confused with new test failures in Phase 4
+3. If there are pre-existing test failures:
+   - Document them clearly (which tests, which packages)
+   - These are NOT blockers — proceed to Phase 4, but do not regress them
+4. Save the baseline results for comparison in later phases.
+
+---
+
 ## Phase 4: Red Phase — Create Failing Tests
 
 **Goal:** Write comprehensive tests that define the expected behavior (all tests should FAIL since code doesn't exist yet).
 
 1. Launch `/tea` (Test Engineering Architect agent) to create tests for the story.
-2. Provide the story file path so TEA has full context.
+2. Provide the story file path AND the baseline results from Phase 3.5 so TEA has full context.
 3. TEA should create:
    - Unit tests for each acceptance criterion
    - Integration tests for component interactions
    - Edge case and error handling tests
-4. Run the test suite to confirm tests FAIL (red phase validation).
-5. If tests pass unexpectedly, investigate — the tests may not be testing new functionality correctly.
+4. Run the test suite to confirm new tests FAIL (red phase validation) while pre-existing tests still pass.
+5. If new tests pass unexpectedly, investigate — the tests may not be testing new functionality correctly.
+6. If pre-existing tests that were passing in Phase 3.5 now fail, fix immediately — new test files must not break existing tests.
 
 ---
 
