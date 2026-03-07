@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/dispatch"
 )
 
 // --- SourceBadgeLabel ---
@@ -128,6 +129,77 @@ func TestSearchView_ShowsSourceBadge(t *testing.T) {
 
 	if !strings.Contains(view, "OBS") {
 		t.Error("expected search view to contain source badge OBS")
+	}
+}
+
+// --- DevDispatchBadge ---
+
+func TestDevDispatchBadge(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		task     *core.Task
+		contains string
+		empty    bool
+	}{
+		{
+			name:  "nil DevDispatch returns empty",
+			task:  core.NewTask("no dispatch"),
+			empty: true,
+		},
+		{
+			name: "queued shows QUEUED",
+			task: func() *core.Task {
+				task := core.NewTask("queued task")
+				task.DevDispatch = &dispatch.DevDispatch{Queued: true}
+				return task
+			}(),
+			contains: "QUEUED",
+		},
+		{
+			name: "open PR shows PR number",
+			task: func() *core.Task {
+				task := core.NewTask("pr task")
+				task.DevDispatch = &dispatch.DevDispatch{PRNumber: 42, PRStatus: "open"}
+				return task
+			}(),
+			contains: "PR #42",
+		},
+		{
+			name: "merged PR shows MERGED",
+			task: func() *core.Task {
+				task := core.NewTask("merged task")
+				task.DevDispatch = &dispatch.DevDispatch{PRNumber: 42, PRStatus: "merged"}
+				return task
+			}(),
+			contains: "MERGED",
+		},
+		{
+			name: "no PR no queued returns empty",
+			task: func() *core.Task {
+				task := core.NewTask("empty dispatch")
+				task.DevDispatch = &dispatch.DevDispatch{}
+				return task
+			}(),
+			empty: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := DevDispatchBadge(tt.task)
+			if tt.empty {
+				if got != "" {
+					t.Errorf("DevDispatchBadge() = %q, want empty", got)
+				}
+				return
+			}
+			if !strings.Contains(got, tt.contains) {
+				t.Errorf("DevDispatchBadge() = %q, want to contain %q", got, tt.contains)
+			}
+		})
 	}
 }
 
