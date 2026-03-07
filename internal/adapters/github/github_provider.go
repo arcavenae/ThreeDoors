@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,9 +16,10 @@ import (
 )
 
 const (
-	providerName  = "github"
-	cacheFileName = "github-cache.yaml"
-	defaultTTL    = 5 * time.Minute
+	providerName        = "github"
+	cacheFileName       = "github-cache.yaml"
+	defaultTTL          = 5 * time.Minute
+	maxRateLimitRetries = 3
 )
 
 // default priority label to effort mappings per AC4
@@ -32,10 +35,11 @@ var defaultPriorityEffort = map[string]core.TaskEffort{
 type IssueLister interface {
 	ListIssues(ctx context.Context, owner, repo, assignee string) ([]*GitHubIssue, error)
 	GetAuthenticatedUser(ctx context.Context) (string, error)
+	CloseIssue(ctx context.Context, owner, repo string, issueNumber int) error
 }
 
 // GitHubProvider implements core.TaskProvider for GitHub Issues.
-// It is read-only: Save, Delete, and MarkComplete return core.ErrReadOnly.
+// Save and Delete return core.ErrReadOnly. MarkComplete closes issues via the GitHub API.
 type GitHubProvider struct {
 	client          IssueLister
 	config          *GitHubConfig
@@ -46,6 +50,8 @@ type GitHubProvider struct {
 	effortMap       map[string]core.TaskEffort
 	watchCh         chan core.ChangeEvent
 	stopCh          chan struct{}
+	cb              *core.CircuitBreaker
+	sleepFn         func(time.Duration) // injectable for testing
 }
 
 // NewGitHubProvider creates a GitHubProvider with the given client and config.
@@ -67,6 +73,8 @@ func NewGitHubProvider(client IssueLister, config *GitHubConfig) *GitHubProvider
 		cacheTTL:  config.PollInterval,
 		effortMap: effortMap,
 		stopCh:    make(chan struct{}),
+		cb:        core.NewCircuitBreaker(core.DefaultCircuitBreakerConfig()),
+		sleepFn:   time.Sleep,
 	}
 }
 
@@ -220,9 +228,76 @@ func (p *GitHubProvider) DeleteTask(_ string) error {
 	return core.ErrReadOnly
 }
 
-// MarkComplete returns ErrReadOnly; GitHub provider is read-only (AC6).
-func (p *GitHubProvider) MarkComplete(_ string) error {
-	return core.ErrReadOnly
+// MarkComplete closes a GitHub issue by calling the API via the circuit breaker.
+// The taskID must be in the format "github:<owner>/<repo>#<number>".
+// Rate limit errors are retried with exponential backoff respecting Retry-After.
+// Other API failures are returned as-is for WALProvider to queue.
+func (p *GitHubProvider) MarkComplete(taskID string) error {
+	owner, repo, number, err := parseTaskID(taskID)
+	if err != nil {
+		return fmt.Errorf("github mark complete: %w", err)
+	}
+
+	return p.cb.Execute(func() error {
+		return p.closeIssueWithRetry(owner, repo, number)
+	})
+}
+
+// closeIssueWithRetry calls CloseIssue with rate limit retry and exponential backoff.
+func (p *GitHubProvider) closeIssueWithRetry(owner, repo string, number int) error {
+	ctx := context.Background()
+	var lastErr error
+
+	for attempt := range maxRateLimitRetries {
+		err := p.client.CloseIssue(ctx, owner, repo, number)
+		if err == nil {
+			return nil
+		}
+
+		var rle *RateLimitError
+		if !errors.As(err, &rle) {
+			return fmt.Errorf("close issue %s/%s#%d: %w", owner, repo, number, err)
+		}
+
+		lastErr = err
+		if attempt < maxRateLimitRetries-1 {
+			backoff := rle.RetryAfter
+			if backoff <= 0 {
+				backoff = time.Duration(1<<uint(attempt)) * time.Second
+			}
+			p.sleepFn(backoff)
+		}
+	}
+
+	return fmt.Errorf("close issue %s/%s#%d: %w", owner, repo, number, lastErr)
+}
+
+// parseTaskID extracts owner, repo, and issue number from "github:<owner>/<repo>#<number>".
+func parseTaskID(taskID string) (string, string, int, error) {
+	rest, found := strings.CutPrefix(taskID, "github:")
+	if !found {
+		return "", "", 0, fmt.Errorf("invalid github task ID %q: missing github: prefix", taskID)
+	}
+
+	hashIdx := strings.LastIndex(rest, "#")
+	if hashIdx < 0 {
+		return "", "", 0, fmt.Errorf("invalid github task ID %q: missing # separator", taskID)
+	}
+
+	repoSpec := rest[:hashIdx]
+	numberStr := rest[hashIdx+1:]
+
+	owner, repo, err := splitOwnerRepo(repoSpec)
+	if err != nil {
+		return "", "", 0, fmt.Errorf("invalid github task ID %q: %w", taskID, err)
+	}
+
+	number, err := strconv.Atoi(numberStr)
+	if err != nil {
+		return "", "", 0, fmt.Errorf("invalid github task ID %q: bad issue number: %w", taskID, err)
+	}
+
+	return owner, repo, number, nil
 }
 
 // Watch returns a channel that emits ChangeEvents on polling interval (AC13).
