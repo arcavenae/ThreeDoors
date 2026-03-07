@@ -34,6 +34,18 @@ Working as intended. Clean rounded borders, readable text, clear selected state.
 
 All custom themes use `countRunes()` for width calculation, which does not account for ANSI escape sequence byte length. The function should be replaced with `ansi.StringWidth()` from `charmbracelet/x/ansi`, which properly handles escape sequences and wide characters.
 
+## Target Experience
+
+The core principle: **every theme must put task text first**. Decoration exists to give the door personality, not to compete with content. A user should be able to glance at any themed door and read the task in under 2 seconds.
+
+**Classic** — Already achieves this. Baseline.
+
+**Modern** — Should feel like a high-end apartment door: clean, quiet, confident. The thin lines and single doorknob say "I don't need to shout." But the selected state needs to actually *glow* — right now it barely whispers. Fix: widen the brightness gap between selected and unselected.
+
+**Sci-Fi** — Should feel like tapping an airlock panel on a spaceship. The double-line frame and shade rails say "industrial" and "mechanical." But the current implementation has so many visual layers (rails + inner borders + mid-bar + separate panels) that it reads like a circuit diagram, not a door. Fix: flatten to one content panel, slim the rails, keep the `[ACCESS]` label as flavor text inside the content area.
+
+**Shoji** — Should feel like looking through a Japanese sliding screen: thin wooden lattice with large paper panes. The grid pattern IS the identity, but the current implementation subdivides into tiny cells that create visual noise at real terminal widths. Fix: use a few horizontal lattice bars with one cross junction instead of a dense grid. The open space between bars IS the paper pane.
+
 ## Corrective Actions
 
 ### Story 17.7: Fix width calculation and Shoji ANSI leak (Critical)
