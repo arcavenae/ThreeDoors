@@ -23,6 +23,10 @@ func newTaskCmd() *cobra.Command {
 	cmd.AddCommand(newTaskCompleteCmd())
 	cmd.AddCommand(newTaskListCmd())
 	cmd.AddCommand(newTaskShowCmd())
+	cmd.AddCommand(newTaskEditCmd())
+	cmd.AddCommand(newTaskDeleteCmd())
+	cmd.AddCommand(newTaskNoteCmd())
+	cmd.AddCommand(newTaskSearchCmd())
 	return cmd
 }
 
@@ -502,4 +506,331 @@ func runTaskShow(cmd *cobra.Command, idPrefix string) error {
 	}
 
 	return nil
+}
+
+// resolveOneTask finds exactly one task by prefix, writing errors and calling os.Exit on failure.
+// Returns the task on success, nil on failure (after os.Exit).
+func resolveOneTask(ctx *cliContext, formatter *OutputFormatter, cmdName, idPrefix string, isJSON bool) *core.Task {
+	matches := ctx.pool.FindByPrefix(idPrefix)
+
+	if len(matches) == 0 {
+		if isJSON {
+			_ = formatter.WriteJSONError(cmdName, ExitNotFound, "task not found", idPrefix)
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: no task found with prefix %q\n", idPrefix)
+		}
+		os.Exit(ExitNotFound)
+	}
+
+	if len(matches) > 1 {
+		msg := fmt.Sprintf("ambiguous prefix %q matches %d tasks", idPrefix, len(matches))
+		if isJSON {
+			_ = formatter.WriteJSONError(cmdName, ExitAmbiguousInput, msg, "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", msg)
+		}
+		os.Exit(ExitAmbiguousInput)
+	}
+
+	return matches[0]
+}
+
+// newTaskEditCmd creates the "task edit" subcommand.
+func newTaskEditCmd() *cobra.Command {
+	var (
+		text    string
+		context string
+	)
+
+	cmd := &cobra.Command{
+		Use:   "edit <id>",
+		Short: "Edit a task's text or context",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runTaskEdit(cmd, args[0], text, context)
+		},
+	}
+
+	cmd.Flags().StringVar(&text, "text", "", "new task text")
+	cmd.Flags().StringVar(&context, "context", "", "new task context")
+
+	return cmd
+}
+
+func runTaskEdit(cmd *cobra.Command, idPrefix, text, context string) error {
+	isJSON := isJSONOutput(cmd)
+	formatter := NewOutputFormatter(os.Stdout, isJSON)
+
+	if text == "" && context == "" {
+		msg := "at least one of --text or --context is required"
+		if isJSON {
+			_ = formatter.WriteJSONError("task edit", ExitValidation, msg, "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", msg)
+		}
+		os.Exit(ExitValidation)
+	}
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task edit", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	task := resolveOneTask(ctx, formatter, "task edit", idPrefix, isJSON)
+
+	if text != "" {
+		task.Text = text
+	}
+	if context != "" {
+		task.Context = context
+	}
+
+	ctx.pool.UpdateTask(task)
+	if err := ctx.provider.SaveTask(task); err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task edit", ExitProviderError, fmt.Sprintf("save task: %v", err), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: save task: %v\n", err)
+		}
+		os.Exit(ExitProviderError)
+	}
+
+	if isJSON {
+		return formatter.WriteJSON("task edit", task, nil)
+	}
+	return formatter.Writef("Updated task %s\n", shortID(task.ID))
+}
+
+// deleteResult tracks the outcome of deleting a single task.
+type deleteResult struct {
+	ID       string `json:"id"`
+	ShortID  string `json:"short_id"`
+	Success  bool   `json:"success"`
+	Error    string `json:"error,omitempty"`
+	ExitCode int    `json:"exit_code"`
+}
+
+// newTaskDeleteCmd creates the "task delete" subcommand.
+func newTaskDeleteCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete <id> [id...]",
+		Short: "Delete tasks",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runTaskDelete(cmd, args)
+		},
+	}
+	return cmd
+}
+
+func runTaskDelete(cmd *cobra.Command, ids []string) error {
+	isJSON := isJSONOutput(cmd)
+	formatter := NewOutputFormatter(os.Stdout, isJSON)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task delete", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	results := make([]deleteResult, 0, len(ids))
+	worstExit := ExitSuccess
+
+	for _, idPrefix := range ids {
+		result := deleteOneTask(ctx, idPrefix)
+		results = append(results, result)
+		if result.ExitCode > worstExit {
+			worstExit = result.ExitCode
+		}
+	}
+
+	if isJSON {
+		_ = formatter.WriteJSON("task delete", results, nil)
+	} else {
+		for _, r := range results {
+			if r.Success {
+				_ = formatter.Writef("Deleted task %s\n", r.ShortID)
+			} else {
+				fmt.Fprintf(os.Stderr, "Error deleting %s: %s\n", r.ShortID, r.Error)
+			}
+		}
+	}
+
+	if worstExit != ExitSuccess {
+		os.Exit(worstExit)
+	}
+	return nil
+}
+
+func deleteOneTask(ctx *cliContext, idPrefix string) deleteResult {
+	matches := ctx.pool.FindByPrefix(idPrefix)
+
+	if len(matches) == 0 {
+		return deleteResult{
+			ID:       idPrefix,
+			ShortID:  shortID(idPrefix),
+			Success:  false,
+			Error:    "task not found",
+			ExitCode: ExitNotFound,
+		}
+	}
+
+	if len(matches) > 1 {
+		return deleteResult{
+			ID:       idPrefix,
+			ShortID:  shortID(idPrefix),
+			Success:  false,
+			Error:    fmt.Sprintf("ambiguous prefix, matches %d tasks", len(matches)),
+			ExitCode: ExitAmbiguousInput,
+		}
+	}
+
+	task := matches[0]
+
+	if err := ctx.provider.DeleteTask(task.ID); err != nil {
+		return deleteResult{
+			ID:       task.ID,
+			ShortID:  shortID(task.ID),
+			Success:  false,
+			Error:    fmt.Sprintf("delete: %v", err),
+			ExitCode: ExitProviderError,
+		}
+	}
+
+	ctx.pool.RemoveTask(task.ID)
+
+	return deleteResult{
+		ID:       task.ID,
+		ShortID:  shortID(task.ID),
+		Success:  true,
+		ExitCode: ExitSuccess,
+	}
+}
+
+// newTaskNoteCmd creates the "task note" subcommand.
+func newTaskNoteCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "note <id> <text>",
+		Short: "Add a note to a task",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runTaskNote(cmd, args[0], args[1])
+		},
+	}
+	return cmd
+}
+
+func runTaskNote(cmd *cobra.Command, idPrefix, noteText string) error {
+	isJSON := isJSONOutput(cmd)
+	formatter := NewOutputFormatter(os.Stdout, isJSON)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task note", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	task := resolveOneTask(ctx, formatter, "task note", idPrefix, isJSON)
+
+	task.AddNote(noteText)
+
+	ctx.pool.UpdateTask(task)
+	if err := ctx.provider.SaveTask(task); err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task note", ExitProviderError, fmt.Sprintf("save task: %v", err), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: save task: %v\n", err)
+		}
+		os.Exit(ExitProviderError)
+	}
+
+	if isJSON {
+		return formatter.WriteJSON("task note", task, nil)
+	}
+	return formatter.Writef("Added note to task %s\n", shortID(task.ID))
+}
+
+// searchMetadata holds metadata for JSON search output.
+type searchMetadata struct {
+	Query   string `json:"query"`
+	Matched int    `json:"matched"`
+	Total   int    `json:"total"`
+}
+
+// newTaskSearchCmd creates the "task search" subcommand.
+func newTaskSearchCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "search <query>",
+		Short: "Search tasks by text",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runTaskSearch(cmd, args[0])
+		},
+	}
+	return cmd
+}
+
+func runTaskSearch(cmd *cobra.Command, query string) error {
+	isJSON := isJSONOutput(cmd)
+	formatter := NewOutputFormatter(os.Stdout, isJSON)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task search", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	allTasks := ctx.pool.GetAllTasks()
+	sort.Slice(allTasks, func(i, j int) bool {
+		return allTasks[i].CreatedAt.Before(allTasks[j].CreatedAt)
+	})
+
+	queryLower := strings.ToLower(query)
+	matched := make([]*core.Task, 0)
+	for _, t := range allTasks {
+		if strings.Contains(strings.ToLower(t.Text), queryLower) ||
+			strings.Contains(strings.ToLower(t.Context), queryLower) {
+			matched = append(matched, t)
+		}
+	}
+
+	if isJSON {
+		meta := searchMetadata{
+			Query:   query,
+			Matched: len(matched),
+			Total:   len(allTasks),
+		}
+		return formatter.WriteJSON("task search", matched, meta)
+	}
+
+	tw := formatter.TableWriter()
+	_, _ = fmt.Fprintf(tw, "ID\tSTATUS\tTYPE\tEFFORT\tTEXT\n")
+	for _, t := range matched {
+		_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n",
+			shortID(t.ID),
+			t.Status,
+			t.Type,
+			t.Effort,
+			t.Text,
+		)
+	}
+	_ = tw.Flush()
+	return formatter.Writef("%d tasks matched\n", len(matched))
 }

@@ -3,7 +3,9 @@ package cli
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -276,7 +278,7 @@ func TestNewTaskCmd_Structure(t *testing.T) {
 		names[sub.Name()] = true
 	}
 
-	for _, want := range []string{"add", "complete", "list", "show"} {
+	for _, want := range []string{"add", "complete", "list", "show", "edit", "delete", "note", "search"} {
 		if !names[want] {
 			t.Errorf("missing %q subcommand", want)
 		}
@@ -479,6 +481,243 @@ func TestListMetadata_JSON(t *testing.T) {
 		t.Errorf("filtered = %v, want 3", decoded["filtered"])
 	}
 }
+
+func TestDeleteOneTask(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		setupIDs []string
+		prefix   string
+		wantOK   bool
+		wantExit int
+	}{
+		{
+			name:     "not found",
+			setupIDs: []string{"abc-111"},
+			prefix:   "xyz",
+			wantOK:   false,
+			wantExit: ExitNotFound,
+		},
+		{
+			name:     "ambiguous prefix",
+			setupIDs: []string{"abc-111", "abc-222"},
+			prefix:   "abc",
+			wantOK:   false,
+			wantExit: ExitAmbiguousInput,
+		},
+		{
+			name:     "success",
+			setupIDs: []string{"unique-task-id"},
+			prefix:   "unique",
+			wantOK:   true,
+			wantExit: ExitSuccess,
+		},
+		{
+			name:     "exact match",
+			setupIDs: []string{"abc-111", "def-222"},
+			prefix:   "abc-111",
+			wantOK:   true,
+			wantExit: ExitSuccess,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			pool := core.NewTaskPool()
+			for _, id := range tt.setupIDs {
+				task := core.NewTask("Task " + id)
+				task.ID = id
+				pool.AddTask(task)
+			}
+
+			provider := &fakeProvider{}
+			ctx := &cliContext{pool: pool, provider: provider}
+
+			result := deleteOneTask(ctx, tt.prefix)
+
+			if result.Success != tt.wantOK {
+				t.Errorf("Success = %v, want %v", result.Success, tt.wantOK)
+			}
+			if result.ExitCode != tt.wantExit {
+				t.Errorf("ExitCode = %d, want %d", result.ExitCode, tt.wantExit)
+			}
+
+			if tt.wantOK {
+				// Verify task was removed from pool
+				if pool.GetTask(result.ID) != nil {
+					t.Error("task should have been removed from pool")
+				}
+			}
+		})
+	}
+}
+
+func TestDeleteOneTask_ProviderError(t *testing.T) {
+	t.Parallel()
+
+	pool := core.NewTaskPool()
+	task := core.NewTask("Test task")
+	task.ID = "provider-err-id"
+	pool.AddTask(task)
+
+	provider := &fakeProviderWithDeleteErr{err: fmt.Errorf("disk full")}
+	ctx := &cliContext{pool: pool, provider: provider}
+
+	result := deleteOneTask(ctx, "provider-err")
+
+	if result.Success {
+		t.Error("expected failure when provider errors")
+	}
+	if result.ExitCode != ExitProviderError {
+		t.Errorf("ExitCode = %d, want %d", result.ExitCode, ExitProviderError)
+	}
+}
+
+func TestResolveOneTask(t *testing.T) {
+	t.Parallel()
+
+	pool := core.NewTaskPool()
+	task := core.NewTask("Resolve me")
+	task.ID = "resolve-test-id"
+	pool.AddTask(task)
+
+	ctx := &cliContext{pool: pool, provider: &fakeProvider{}}
+	formatter := NewOutputFormatter(os.Stdout, false)
+
+	got := resolveOneTask(ctx, formatter, "test", "resolve-test", false)
+	if got == nil {
+		t.Fatal("expected task, got nil")
+	}
+	if got.ID != "resolve-test-id" {
+		t.Errorf("ID = %q, want %q", got.ID, "resolve-test-id")
+	}
+}
+
+func TestDeleteResult_JSON(t *testing.T) {
+	t.Parallel()
+
+	r := deleteResult{
+		ID:       "abc-123",
+		ShortID:  "abc-123",
+		Success:  true,
+		ExitCode: 0,
+	}
+
+	data, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	if decoded["success"] != true {
+		t.Errorf("success = %v, want true", decoded["success"])
+	}
+	if _, ok := decoded["error"]; ok {
+		t.Error("error field should be omitted when empty")
+	}
+}
+
+func TestSearchMetadata_JSON(t *testing.T) {
+	t.Parallel()
+
+	meta := searchMetadata{
+		Query:   "test",
+		Matched: 3,
+		Total:   10,
+	}
+
+	data, err := json.Marshal(meta)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	if decoded["query"] != "test" {
+		t.Errorf("query = %v, want %q", decoded["query"], "test")
+	}
+	if decoded["matched"] != float64(3) {
+		t.Errorf("matched = %v, want 3", decoded["matched"])
+	}
+	if decoded["total"] != float64(10) {
+		t.Errorf("total = %v, want 10", decoded["total"])
+	}
+}
+
+func TestNewTaskEditCmd_Flags(t *testing.T) {
+	t.Parallel()
+
+	cmd := newTaskEditCmd()
+	if cmd.Use != "edit <id>" {
+		t.Errorf("Use = %q, want %q", cmd.Use, "edit <id>")
+	}
+	for _, name := range []string{"text", "context"} {
+		if cmd.Flags().Lookup(name) == nil {
+			t.Errorf("missing flag %q", name)
+		}
+	}
+}
+
+func TestNewTaskDeleteCmd_Args(t *testing.T) {
+	t.Parallel()
+
+	cmd := newTaskDeleteCmd()
+	if cmd.Use != "delete <id> [id...]" {
+		t.Errorf("Use = %q, want %q", cmd.Use, "delete <id> [id...]")
+	}
+	// Requires at least 1 arg
+	if err := cmd.Args(cmd, []string{}); err == nil {
+		t.Error("expected error for 0 args")
+	}
+	if err := cmd.Args(cmd, []string{"a", "b"}); err != nil {
+		t.Errorf("expected 2 args to be valid, got: %v", err)
+	}
+}
+
+func TestNewTaskNoteCmd_Args(t *testing.T) {
+	t.Parallel()
+
+	cmd := newTaskNoteCmd()
+	if cmd.Use != "note <id> <text>" {
+		t.Errorf("Use = %q, want %q", cmd.Use, "note <id> <text>")
+	}
+	// Requires exactly 2 args
+	if err := cmd.Args(cmd, []string{"id"}); err == nil {
+		t.Error("expected error for 1 arg")
+	}
+	if err := cmd.Args(cmd, []string{"id", "note text"}); err != nil {
+		t.Errorf("expected 2 args to be valid, got: %v", err)
+	}
+}
+
+func TestNewTaskSearchCmd_Args(t *testing.T) {
+	t.Parallel()
+
+	cmd := newTaskSearchCmd()
+	if cmd.Use != "search <query>" {
+		t.Errorf("Use = %q, want %q", cmd.Use, "search <query>")
+	}
+	if err := cmd.Args(cmd, []string{}); err == nil {
+		t.Error("expected error for 0 args")
+	}
+}
+
+// fakeProviderWithDeleteErr simulates provider delete failures.
+type fakeProviderWithDeleteErr struct {
+	fakeProvider
+	err error
+}
+
+func (f *fakeProviderWithDeleteErr) DeleteTask(_ string) error { return f.err }
 
 // fakeProvider implements core.TaskProvider for testing.
 type fakeProvider struct {
