@@ -60,8 +60,8 @@ func TestToolsListPopulated(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	if len(result.Tools) != 5 {
-		t.Errorf("expected 5 tools, got %d", len(result.Tools))
+	if len(result.Tools) != 9 {
+		t.Errorf("expected 9 tools, got %d", len(result.Tools))
 	}
 
 	names := make(map[string]bool)

@@ -155,6 +155,24 @@ type PromptsListResult struct {
 	Prompts []PromptItem `json:"prompts"`
 }
 
+// PromptContent holds the content of a prompt message.
+type PromptContent struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+// PromptMessage is a single message in a prompt response.
+type PromptMessage struct {
+	Role    string        `json:"role"`
+	Content PromptContent `json:"content"`
+}
+
+// PromptGetResult is the response to prompts/get.
+type PromptGetResult struct {
+	Description string          `json:"description,omitempty"`
+	Messages    []PromptMessage `json:"messages"`
+}
+
 // NewResponse creates a successful JSON-RPC response.
 func NewResponse(id json.RawMessage, result any) *Response {
 	return &Response{

@@ -116,6 +116,8 @@ func (s *MCPServer) dispatch(req *Request) *Response {
 		return s.handleToolCall(req)
 	case "prompts/list":
 		return s.handlePromptsList(req)
+	case "prompts/get":
+		return s.handlePromptsGet(req)
 	default:
 		return NewErrorResponse(req.ID, CodeMethodNotFound,
 			fmt.Sprintf("method not found: %s", req.Method))
@@ -159,7 +161,37 @@ func (s *MCPServer) handleToolsList(req *Request) *Response {
 }
 
 func (s *MCPServer) handlePromptsList(req *Request) *Response {
-	// Placeholder — subsequent stories will populate with actual prompts.
-	result := PromptsListResult{Prompts: []PromptItem{}}
+	result := PromptsListResult{Prompts: promptDefinitions()}
+	return NewResponse(req.ID, result)
+}
+
+func (s *MCPServer) handlePromptsGet(req *Request) *Response {
+	var params struct {
+		Name      string            `json:"name"`
+		Arguments map[string]string `json:"arguments,omitempty"`
+	}
+	if req.Params != nil {
+		if err := json.Unmarshal(req.Params, &params); err != nil {
+			return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("invalid params: %v", err))
+		}
+	}
+
+	template, ok := promptTemplates[params.Name]
+	if !ok {
+		return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("unknown prompt: %s", params.Name))
+	}
+
+	result := PromptGetResult{
+		Description: template.Description,
+		Messages: []PromptMessage{
+			{
+				Role: "user",
+				Content: PromptContent{
+					Type: "text",
+					Text: template.Template,
+				},
+			},
+		},
+	}
 	return NewResponse(req.ID, result)
 }

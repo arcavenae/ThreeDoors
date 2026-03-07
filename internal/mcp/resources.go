@@ -86,6 +86,42 @@ func resourceDefinitions() []ResourceItem {
 			Description: "Historical session metrics",
 			MimeType:    "application/json",
 		},
+		{
+			URI:         "threedoors://analytics/mood-correlation",
+			Name:        "Mood Correlation",
+			Description: "Mood rating vs productivity metrics correlation",
+			MimeType:    "application/json",
+		},
+		{
+			URI:         "threedoors://analytics/time-of-day",
+			Name:        "Time of Day Productivity",
+			Description: "Hourly completion rates with peak and slump hours",
+			MimeType:    "application/json",
+		},
+		{
+			URI:         "threedoors://analytics/streaks",
+			Name:        "Streak Analysis",
+			Description: "Current and historical completion streak data",
+			MimeType:    "application/json",
+		},
+		{
+			URI:         "threedoors://analytics/burnout-risk",
+			Name:        "Burnout Risk",
+			Description: "Composite burnout risk score from multiple behavioral signals",
+			MimeType:    "application/json",
+		},
+		{
+			URI:         "threedoors://analytics/task-preferences",
+			Name:        "Task Preferences",
+			Description: "Task type preferences by mood and time",
+			MimeType:    "application/json",
+		},
+		{
+			URI:         "threedoors://analytics/weekly-summary",
+			Name:        "Weekly Summary",
+			Description: "Weekly productivity summary with patterns and recommendations",
+			MimeType:    "application/json",
+		},
 	}
 }
 
@@ -124,6 +160,18 @@ func (s *MCPServer) handleResourceRead(req *Request) *Response {
 		name := strings.TrimPrefix(uri, "threedoors://providers/")
 		name = strings.TrimSuffix(name, "/status")
 		return s.readProviderStatus(req, name, start)
+	case uri == "threedoors://analytics/mood-correlation":
+		return s.readAnalyticsMoodCorrelation(req, start)
+	case uri == "threedoors://analytics/time-of-day":
+		return s.readAnalyticsTimeOfDay(req, start)
+	case uri == "threedoors://analytics/streaks":
+		return s.readAnalyticsStreaks(req, start)
+	case uri == "threedoors://analytics/burnout-risk":
+		return s.readAnalyticsBurnoutRisk(req, start)
+	case uri == "threedoors://analytics/task-preferences":
+		return s.readAnalyticsTaskPreferences(req, start)
+	case uri == "threedoors://analytics/weekly-summary":
+		return s.readAnalyticsWeeklySummary(req, start)
 	case strings.HasPrefix(uri, "threedoors://tasks/"):
 		id := strings.TrimPrefix(uri, "threedoors://tasks/")
 		return s.readTaskByID(req, id, start)
@@ -408,6 +456,90 @@ func (s *MCPServer) providerNames() []string {
 		return []string{}
 	}
 	return names
+}
+
+func (s *MCPServer) readAnalyticsMoodCorrelation(req *Request, start time.Time) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.resourceJSON(req, "threedoors://analytics/mood-correlation", map[string]any{"error": "analytics not available"})
+	}
+	thirtyDaysAgo := time.Now().UTC().AddDate(0, 0, -30)
+	result, err := pm.MoodCorrelationAnalysis(thirtyDaysAgo, time.Now().UTC())
+	if err != nil {
+		return NewErrorResponse(req.ID, CodeInternalError, fmt.Sprintf("mood correlation: %v", err))
+	}
+	return s.resourceJSON(req, "threedoors://analytics/mood-correlation", result)
+}
+
+func (s *MCPServer) readAnalyticsTimeOfDay(req *Request, start time.Time) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.resourceJSON(req, "threedoors://analytics/time-of-day", map[string]any{"error": "analytics not available"})
+	}
+	thirtyDaysAgo := time.Now().UTC().AddDate(0, 0, -30)
+	result, err := pm.ProductivityProfileAnalysis(thirtyDaysAgo, time.Now().UTC())
+	if err != nil {
+		return NewErrorResponse(req.ID, CodeInternalError, fmt.Sprintf("productivity profile: %v", err))
+	}
+	return s.resourceJSON(req, "threedoors://analytics/time-of-day", result)
+}
+
+func (s *MCPServer) readAnalyticsStreaks(req *Request, start time.Time) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.resourceJSON(req, "threedoors://analytics/streaks", map[string]any{"error": "analytics not available"})
+	}
+	result, err := pm.StreakAnalysis()
+	if err != nil {
+		return NewErrorResponse(req.ID, CodeInternalError, fmt.Sprintf("streak analysis: %v", err))
+	}
+	return s.resourceJSON(req, "threedoors://analytics/streaks", result)
+}
+
+func (s *MCPServer) readAnalyticsBurnoutRisk(req *Request, start time.Time) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.resourceJSON(req, "threedoors://analytics/burnout-risk", map[string]any{"error": "analytics not available"})
+	}
+	result, err := pm.BurnoutRisk()
+	if err != nil {
+		return NewErrorResponse(req.ID, CodeInternalError, fmt.Sprintf("burnout risk: %v", err))
+	}
+	return s.resourceJSON(req, "threedoors://analytics/burnout-risk", result)
+}
+
+func (s *MCPServer) readAnalyticsTaskPreferences(req *Request, start time.Time) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.resourceJSON(req, "threedoors://analytics/task-preferences", map[string]any{"error": "analytics not available"})
+	}
+	// Task preferences reuses mood correlation as it contains task type breakdown per mood.
+	thirtyDaysAgo := time.Now().UTC().AddDate(0, 0, -30)
+	result, err := pm.MoodCorrelationAnalysis(thirtyDaysAgo, time.Now().UTC())
+	if err != nil {
+		return NewErrorResponse(req.ID, CodeInternalError, fmt.Sprintf("task preferences: %v", err))
+	}
+	return s.resourceJSON(req, "threedoors://analytics/task-preferences", result)
+}
+
+func (s *MCPServer) readAnalyticsWeeklySummary(req *Request, start time.Time) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.resourceJSON(req, "threedoors://analytics/weekly-summary", map[string]any{"error": "analytics not available"})
+	}
+	result, err := pm.WeeklySummaryAnalysis(time.Now().UTC())
+	if err != nil {
+		return NewErrorResponse(req.ID, CodeInternalError, fmt.Sprintf("weekly summary: %v", err))
+	}
+	return s.resourceJSON(req, "threedoors://analytics/weekly-summary", result)
+}
+
+// patternMiner creates a PatternMiner from the server's session reader and pool.
+func (s *MCPServer) patternMiner() *PatternMiner {
+	if s.sessionsReader == nil {
+		return nil
+	}
+	return NewPatternMiner(s.sessionsReader, s.pool)
 }
 
 // millisSince returns milliseconds elapsed since t.
