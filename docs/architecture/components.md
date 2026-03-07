@@ -461,6 +461,60 @@ type ChangeEvent struct {
 - `github.com/fsnotify/fsnotify` — filesystem watching
 - Markdown parser for task extraction
 
+#### Component: GitHubAdapter (Epic 26)
+
+**Responsibility:** Read/write tasks from GitHub Issues using the official `go-github` SDK, mapping issues to ThreeDoors tasks with label-based priority conventions.
+
+**Implements:** `TaskProvider`
+
+**Key Interfaces:**
+
+```go
+// GitHubProvider implements core.TaskProvider for GitHub Issues.
+type GitHubProvider struct {
+    client *GitHubClient
+    config *GitHubConfig
+    cache  *TaskCache
+}
+
+func NewGitHubProvider(config *GitHubConfig) *GitHubProvider
+```
+
+**Key Behaviors:**
+- Load issues via `go-github` SDK filtered by assignee and repo list
+- Map fields: `title` -> Text, `body` -> Context, `labels` -> Tags, `state` -> Status
+- Label conventions: `priority:critical/high/medium/low` -> Effort, `in-progress` -> in-progress status
+- `MarkComplete()` closes the issue via GitHub API
+- `HealthCheck()` verifies API connectivity via authenticated user endpoint
+- `Watch()` polls for issue changes at configurable intervals
+- Local cache at `~/.threedoors/github-cache.yaml` with configurable TTL
+- Source badge: `[GH]`
+
+**Dependencies:**
+- `github.com/google/go-github/v68` -- official GitHub SDK
+- `internal/adapters/contract.go` -- contract test suite
+- `internal/sync/` -- WALProvider for offline queuing
+
+**Configuration:**
+
+```yaml
+providers:
+  - name: github
+    settings:
+      token: "ghp_xxx"           # or GITHUB_TOKEN env var
+      repos:
+        - "owner/repo1"
+        - "owner/repo2"
+      assignee: "@me"            # default: authenticated user
+      poll_interval: "5m"        # default: 5 minutes
+      priority_labels:           # optional label-to-effort mapping
+        critical: "priority:critical"
+        high: "priority:high"
+        medium: "priority:medium"
+        low: "priority:low"
+      in_progress_label: "in-progress"  # label indicating active work
+```
+
 #### Component: PluginSDK (Epic 7)
 
 **Responsibility:** Provide developer-facing tools and documentation for third-party adapter development.
@@ -759,6 +813,7 @@ graph TB
         TextAdapter[TextFileAdapter]
         NotesAdapter[AppleNotesAdapter]
         ObsidianAdapter[ObsidianAdapter]
+        GitHubAdapter[GitHubAdapter]
     end
 
     subgraph Sync[Sync Engine - internal/sync]
@@ -799,6 +854,7 @@ graph TB
     Registry --> TextAdapter
     Registry --> NotesAdapter
     Registry --> ObsidianAdapter
+    Registry --> GitHubAdapter
 
     SyncEngine --> Queue
     SyncEngine --> Conflicts

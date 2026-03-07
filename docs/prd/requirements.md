@@ -286,6 +286,16 @@
 
 **FR92:** The system shall support bidirectional Todoist sync by completing tasks via the REST API when tasks are marked complete in ThreeDoors, with offline queuing via WALProvider
 
+**GitHub Issues Integration:**
+
+**FR93:** The system shall integrate with GitHub Issues as a task source using the official go-github SDK, reading issues with structured field mapping (title to Text, body to Context, labels to Tags, state to Status), filtering by assignee and configurable repository scope
+
+**FR94:** The system shall support GitHub authentication via Personal Access Token (PAT) configured in `~/.threedoors/config.yaml` or `GITHUB_TOKEN` environment variable, with a configurable repository list (`repos`) and assignee filter (default: `@me`) for scoping which issues to import
+
+**FR95:** The system shall map GitHub Issues fields to ThreeDoors task model: `open` state maps to `todo`, `closed` state maps to `complete`, labels matching `priority:*` convention map to Effort values, `milestone.due_on` maps to due date, and `in-progress` label maps to `in-progress` status
+
+**FR96:** The system shall support bidirectional GitHub sync by closing issues via the GitHub API when tasks are marked complete in ThreeDoors, with offline queuing via WALProvider
+
 **Sync Protocol Hardening:**
 
 **FR70:** The system shall provide a sync scheduler with per-provider independent sync loops, supporting hybrid push (Watch channel) and polling with adaptive intervals (backoff on failure, reset on success)
