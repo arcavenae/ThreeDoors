@@ -223,6 +223,20 @@ type DuplicateMergedMsg struct {
 	RemovedTask *core.Task
 }
 
+// ShowDevQueueMsg is sent to open the dev queue view.
+type ShowDevQueueMsg struct{}
+
+// DevQueueWorkerCreatedMsg is sent when a worker creation completes (success or failure).
+type DevQueueWorkerCreatedMsg struct {
+	WorkerName string
+	Err        error
+}
+
+// DevQueueWorkerRemovedMsg is sent when a worker removal completes (success or failure).
+type DevQueueWorkerRemovedMsg struct {
+	Err error
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

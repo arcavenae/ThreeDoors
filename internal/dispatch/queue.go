@@ -145,6 +145,22 @@ func (q *DevQueue) List() []QueueItem {
 	return result
 }
 
+// Remove deletes the queue item with the given ID from the queue and persists.
+func (q *DevQueue) Remove(id string) error {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	idx, ok := q.index[id]
+	if !ok {
+		return fmt.Errorf("remove queue item %s: %w", id, ErrQueueItemNotFound)
+	}
+
+	q.items = append(q.items[:idx], q.items[idx+1:]...)
+	q.rebuildIndex()
+
+	return q.Save(q.path)
+}
+
 // rebuildIndex reconstructs the id→index map from items.
 func (q *DevQueue) rebuildIndex() {
 	q.index = make(map[string]int, len(q.items))

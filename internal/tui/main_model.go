@@ -37,6 +37,7 @@ const (
 	ViewConflict
 	ViewSyncLog
 	ViewThemePicker
+	ViewDevQueue
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -59,6 +60,7 @@ type MainModel struct {
 	conflictView        *ConflictView
 	syncLogView         *SyncLogView
 	themePickerView     *ThemePicker
+	devQueueView        *DevQueueView
 	configPath          string
 	pool                *core.TaskPool
 	tracker             *core.SessionTracker
@@ -209,6 +211,7 @@ func (m *MainModel) SetDevQueue(q *dispatch.DevQueue) {
 	m.devQueue = q
 }
 
+
 // Init implements tea.Model.
 func (m *MainModel) Init() tea.Cmd {
 	return nil
@@ -266,6 +269,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.themePickerView != nil {
 			m.themePickerView.SetWidth(msg.Width)
+		}
+		if m.devQueueView != nil {
+			m.devQueueView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -759,6 +765,17 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd := m.handleWorkerStatus(msg)
 		return m, cmd
 
+	case ShowDevQueueMsg:
+		if m.devQueue == nil || m.dispatcher == nil {
+			m.flash = "Dev queue not available"
+			return m, ClearFlashCmd()
+		}
+		m.devQueueView = NewDevQueueView(m.devQueue, m.dispatcher)
+		m.devQueueView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewDevQueue
+		return m, nil
+
 	case SyncStatusUpdateMsg:
 		if m.syncTracker != nil {
 			switch msg.Phase {
@@ -809,6 +826,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSyncLog(msg)
 	case ViewThemePicker:
 		return m.updateThemePicker(msg)
+	case ViewDevQueue:
+		return m.updateDevQueue(msg)
 	}
 
 	return m, nil
@@ -982,6 +1001,14 @@ func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.syncLogView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateDevQueue(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.devQueueView == nil {
+		return m, nil
+	}
+	cmd := m.devQueueView.Update(msg)
 	return m, cmd
 }
 
@@ -1311,6 +1338,10 @@ func (m *MainModel) View() string {
 	case ViewThemePicker:
 		if m.themePickerView != nil {
 			view = m.themePickerView.View()
+		}
+	case ViewDevQueue:
+		if m.devQueueView != nil {
+			view = m.devQueueView.View()
 		}
 	default:
 		view = m.doorsView.View()
