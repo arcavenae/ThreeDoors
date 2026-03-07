@@ -50,22 +50,42 @@ func TestShojiRenderContainsContent(t *testing.T) {
 	}
 }
 
-func TestShojiRenderHasGridPattern(t *testing.T) {
+func TestShojiRenderHasLatticePattern(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
 	output := theme.Render("Task", 30, false)
 
-	// Cross junctions for lattice grid
+	// Single cross junction on mid-cross bar (AC3)
 	if !strings.Contains(output, "┼") {
-		t.Error("shoji theme should have cross junctions (┼)")
+		t.Error("shoji theme should have a cross junction (┼) on the mid-cross bar")
 	}
-	// Horizontal and vertical lines
 	if !strings.Contains(output, "─") {
 		t.Error("shoji theme should have horizontal lines (─)")
 	}
 	if !strings.Contains(output, "│") {
 		t.Error("shoji theme should have vertical lines (│)")
+	}
+}
+
+func TestShojiRenderFewLatticeColumns(t *testing.T) {
+	t.Parallel()
+
+	theme := NewShojiTheme()
+	output := theme.Render("Task", 30, false)
+	lines := strings.Split(output, "\n")
+
+	// AC1: no more than 3-4 columns — with the new design the side frame
+	// is a single │ on each side, no internal vertical subdivisions.
+	// Cell rows should have exactly 2 vertical bars (left + right frame).
+	for i, line := range lines {
+		stripped := stripANSI(line)
+		vCount := strings.Count(stripped, "│")
+		// Lattice bars (├...┤) and top/bottom rails (┬/┴) have 0 │ chars
+		// Content/empty rows have exactly 2
+		if vCount != 0 && vCount != 2 {
+			t.Errorf("line %d has %d vertical bars, expected 0 or 2: %q", i, vCount, stripped)
+		}
 	}
 }
 
@@ -80,11 +100,9 @@ func TestShojiRenderHasTopBottomRails(t *testing.T) {
 		t.Fatal("expected at least 3 lines")
 	}
 
-	// Top rail should have ┬ characters (unselected)
 	if !strings.Contains(lines[0], "┬") {
 		t.Errorf("top rail should contain ┬, got: %q", lines[0])
 	}
-	// Bottom rail should have ┴ characters (unselected)
 	lastLine := lines[len(lines)-1]
 	if !strings.Contains(lastLine, "┴") {
 		t.Errorf("bottom rail should contain ┴, got: %q", lastLine)
@@ -97,11 +115,9 @@ func TestShojiRenderHasEdgeConnectors(t *testing.T) {
 	theme := NewShojiTheme()
 	output := theme.Render("Task", 30, false)
 
-	// Left edge connectors
 	if !strings.Contains(output, "├") {
 		t.Error("shoji theme should have left edge connectors (├)")
 	}
-	// Right edge connectors
 	if !strings.Contains(output, "┤") {
 		t.Error("shoji theme should have right edge connectors (┤)")
 	}
@@ -119,6 +135,30 @@ func TestShojiRenderSelectedDiffers(t *testing.T) {
 	}
 	if !strings.Contains(selected, "Task") {
 		t.Error("selected output should contain content text")
+	}
+}
+
+func TestShojiRenderSelectedHasHeavyChars(t *testing.T) {
+	t.Parallel()
+
+	theme := NewShojiTheme()
+	selected := theme.Render("Task", 30, true)
+
+	// AC4: selected state uses heavy characters
+	if !strings.Contains(selected, "━") {
+		t.Error("selected shoji should use heavy horizontal (━)")
+	}
+	if !strings.Contains(selected, "┃") {
+		t.Error("selected shoji should use heavy vertical (┃)")
+	}
+	if !strings.Contains(selected, "╋") {
+		t.Error("selected shoji should use heavy cross (╋)")
+	}
+	if !strings.Contains(selected, "┳") {
+		t.Error("selected shoji should use heavy top T (┳)")
+	}
+	if !strings.Contains(selected, "┻") {
+		t.Error("selected shoji should use heavy bottom T (┻)")
 	}
 }
 
@@ -201,4 +241,60 @@ func TestShojiRenderConsistentLineWidths(t *testing.T) {
 			t.Errorf("line %d width %d != first line width %d\nline: %q", i, w, firstWidth, line)
 		}
 	}
+}
+
+func TestShojiRenderContentWidth(t *testing.T) {
+	t.Parallel()
+
+	theme := NewShojiTheme()
+
+	// AC5: minimum 15 chars of usable text width at MinWidth
+	output := theme.Render("exactly15charss", theme.MinWidth, false)
+	if !strings.Contains(output, "exactly15charss") {
+		t.Errorf("at MinWidth %d, should fit 15+ chars of text, got:\n%s", theme.MinWidth, output)
+	}
+}
+
+func TestShojiRenderContentDominates(t *testing.T) {
+	t.Parallel()
+
+	theme := NewShojiTheme()
+	output := theme.Render("Task", 28, false)
+	lines := strings.Split(output, "\n")
+
+	// AC2: content-to-decoration ratio favors content
+	// Count content rows (│ ... │ with spaces) vs decoration rows (├─┤, ┬─┬, etc.)
+	contentRows := 0
+	decoRows := 0
+	for _, line := range lines {
+		stripped := stripANSI(line)
+		if strings.Contains(stripped, "├") || strings.Contains(stripped, "┬") || strings.Contains(stripped, "┴") {
+			decoRows++
+		} else if strings.Contains(stripped, "│") {
+			contentRows++
+		}
+	}
+	if decoRows >= contentRows {
+		t.Errorf("decoration rows (%d) should be fewer than content rows (%d)", decoRows, contentRows)
+	}
+}
+
+// stripANSI removes ANSI escape sequences for testing character counts.
+func stripANSI(s string) string {
+	var b strings.Builder
+	inEscape := false
+	for _, r := range s {
+		if r == '\x1b' {
+			inEscape = true
+			continue
+		}
+		if inEscape {
+			if (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z') {
+				inEscape = false
+			}
+			continue
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
 }

@@ -1,27 +1,20 @@
-┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬
-│  │  │  │  │  │  │  │  │  │  │  │  │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │  │  │  │  │  │  │  │  │  │  │  │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ This is a very long task       │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ description that should wrap   │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ across multiple lines to verify│  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ that each theme handles content│  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ wrapping gracefully without    │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ visual artifacts or broken     │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ borders. The text keeps going to│  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ ensure at least five lines of  │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ wrapped content appear in the  │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │ rendered output.               │  │
-├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤
-│  │  │  │  │  │  │  │  │  │  │  │  │  │
-┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴
+┬──────────────────────────────────────┬
+│                                      │
+├──────────────────────────────────────┤
+│                                      │
+│ This is a very long task description │
+│ that should wrap across multiple     │
+│ lines to verify that each theme      │
+│ handles content wrapping gracefully  │
+│ without visual artifacts or broken   │
+│ borders. The text keeps going to     │
+│ ensure at least five lines of        │
+│ wrapped content appear in the        │
+│ rendered output.                     │
+│                                      │
+├───────────────────┼──────────────────┤
+│                                      │
+│                                      │
+├──────────────────────────────────────┤
+│                                      │
+┴──────────────────────────────────────┴

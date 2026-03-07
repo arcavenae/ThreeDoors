@@ -8,8 +8,9 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// NewShojiTheme creates the Japanese Shoji theme: a lattice grid pattern
-// using cross junctions (┼) with task text overlaid on central cells.
+// NewShojiTheme creates the Japanese Shoji theme: thin wooden frame with large
+// paper panes. The lattice feel comes from a few horizontal bars and a single
+// mid-cross junction, not from many small cells.
 // When selected, uses heavy grid characters (╋━┃) instead of light (┼─│).
 func NewShojiTheme() *DoorTheme {
 	frameColor := lipgloss.Color("180")
@@ -25,11 +26,11 @@ func NewShojiTheme() *DoorTheme {
 			Accent:   lipgloss.Color("137"),
 			Selected: selectedColor,
 		},
-		MinWidth: 15,
+		MinWidth: 19,
 	}
 }
 
-// shojiChars holds the box-drawing characters for a shoji grid.
+// shojiChars holds the box-drawing characters for a shoji frame.
 type shojiChars struct {
 	h     string // horizontal line segment
 	v     string // vertical line
@@ -56,132 +57,111 @@ func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, boo
 		}
 		style := lipgloss.NewStyle().Foreground(color)
 
-		// Grid cell width is 3 runes: 2 horizontal chars + 1 junction
-		cellW := 3
-		numCols := (width - 1) / cellW
-		if numCols < 3 {
-			numCols = 3
+		// Interior width between the two frame verticals
+		innerW := width - 2
+		if innerW < 1 {
+			innerW = 1
 		}
-		// Actual rendered width in runes
-		totalW := numCols*cellW + 1
 
-		// Content area: skip 1 col on each side for margin
-		contentCols := numCols - 2
-		if contentCols < 1 {
-			contentCols = 1
-		}
-		// Content char width = (contentCols * cellW) - 1 for the leading space
-		// Each content cell is cellW-1 spaces + junction, but text overlays them
-		contentCharW := contentCols*cellW - 1
-		if contentCharW < 1 {
-			contentCharW = 1
+		// Content text area: interior minus 2 padding spaces
+		contentW := innerW - 2
+		if contentW < 1 {
+			contentW = 1
 		}
 
 		// Word-wrap content
-		wrapped := ansi.Wordwrap(content, contentCharW, "")
+		wrapped := ansi.Wordwrap(content, contentW, "")
 		contentLines := strings.Split(wrapped, "\n")
 
-		// Grid layout: we want enough rows for content
-		numGridRows := 5
-		contentStartRow := 2
-		minNeeded := contentStartRow + len(contentLines) + 1
-		if numGridRows < minNeeded {
-			numGridRows = minNeeded
-		}
+		// Layout rows (excluding top/bottom rails which are separate):
+		//   row 0: empty pane
+		//   row 1: ├───┤ lattice bar
+		//   row 2: empty pane
+		//   rows 3..3+N-1: content lines
+		//   row 3+N: empty pane
+		//   row 3+N+1: ├─────┼─────┤ mid-cross bar
+		//   row 3+N+2: empty pane
+		//   row 3+N+3: empty pane
+		//   row 3+N+4: ├───┤ lattice bar
+		//   row 3+N+5: empty pane
+		//
+		// Total rendered width = width (frame v + innerW + frame v)
+
+		totalW := innerW + 2
+
+		// Position of the single cross junction on the mid-cross bar
+		crossPos := innerW / 2
+
+		hBar := shojiHBar(ch, innerW, style)
+		crossBar := shojiCrossBar(ch, innerW, crossPos, style)
+		emptyRow := shojiEmptyRow(ch, innerW, totalW, style)
 
 		var b strings.Builder
 
-		// Top rail: ┬──┬──┬──┬
-		fmt.Fprintf(&b, "%s\n", style.Render(buildHLine(ch, numCols, ch.tTop, ch.tTop, ch.tTop)))
-
-		contentIdx := 0
-		for row := 0; row < numGridRows; row++ {
-			// Cell row
-			if row >= contentStartRow && contentIdx < len(contentLines) {
-				fmt.Fprintf(&b, "%s\n", buildContentRow(style, ch, numCols, cellW, totalW, contentLines[contentIdx]))
-				contentIdx++
-			} else {
-				fmt.Fprintf(&b, "%s\n", buildEmptyRow(style, ch, numCols, cellW, totalW))
-			}
-
-			// Grid separator line (except after last row)
-			if row < numGridRows-1 {
-				fmt.Fprintf(&b, "%s\n", style.Render(buildHLine(ch, numCols, ch.tLeft, ch.cross, ch.tRght)))
-			}
+		// Top rail
+		fmt.Fprintf(&b, "%s\n", style.Render(ch.tTop+strings.Repeat(ch.h, innerW)+ch.tTop))
+		// Row 0: empty
+		fmt.Fprintf(&b, "%s\n", emptyRow)
+		// Lattice bar 1
+		fmt.Fprintf(&b, "%s\n", hBar)
+		// Row 2: empty
+		fmt.Fprintf(&b, "%s\n", emptyRow)
+		// Content lines
+		for _, line := range contentLines {
+			fmt.Fprintf(&b, "%s\n", shojiContentRow(ch, innerW, totalW, line, style))
 		}
-
-		// Bottom rail: ┴──┴──┴──┴
-		fmt.Fprintf(&b, "%s", style.Render(buildHLine(ch, numCols, ch.tBot, ch.tBot, ch.tBot)))
+		// Row after content: empty
+		fmt.Fprintf(&b, "%s\n", emptyRow)
+		// Mid-cross bar
+		fmt.Fprintf(&b, "%s\n", crossBar)
+		// Two empty rows
+		fmt.Fprintf(&b, "%s\n", emptyRow)
+		fmt.Fprintf(&b, "%s\n", emptyRow)
+		// Lattice bar 2
+		fmt.Fprintf(&b, "%s\n", hBar)
+		// Bottom empty row
+		fmt.Fprintf(&b, "%s\n", emptyRow)
+		// Bottom rail
+		fmt.Fprintf(&b, "%s", style.Render(ch.tBot+strings.Repeat(ch.h, innerW)+ch.tBot))
 
 		return b.String()
 	}
 }
 
-// buildHLine builds a horizontal grid line like ├──┼──┼──┤.
-func buildHLine(ch shojiChars, numCols int, left, mid, right string) string {
-	var b strings.Builder
-	b.WriteString(left)
-	for col := 0; col < numCols; col++ {
-		b.WriteString(strings.Repeat(ch.h, 2))
-		if col < numCols-1 {
-			b.WriteString(mid)
-		} else {
-			b.WriteString(right)
-		}
-	}
-	return b.String()
+// shojiHBar builds a horizontal lattice bar: ├────────────────────────┤
+func shojiHBar(ch shojiChars, innerW int, style lipgloss.Style) string {
+	return style.Render(ch.tLeft + strings.Repeat(ch.h, innerW) + ch.tRght)
 }
 
-// buildEmptyRow renders a row of empty cells: │  │  │  │
-func buildEmptyRow(style lipgloss.Style, ch shojiChars, numCols, cellW, totalW int) string {
-	var b strings.Builder
-	b.WriteString(style.Render(ch.v))
-	for col := 0; col < numCols; col++ {
-		b.WriteString(strings.Repeat(" ", cellW-1))
-		b.WriteString(style.Render(ch.v))
+// shojiCrossBar builds a mid-cross bar: ├──────────┼─────────────┤
+func shojiCrossBar(ch shojiChars, innerW, crossPos int, style lipgloss.Style) string {
+	left := crossPos
+	right := innerW - crossPos - 1
+	if right < 0 {
+		right = 0
 	}
-	return b.String()
+	return style.Render(ch.tLeft + strings.Repeat(ch.h, left) + ch.cross + strings.Repeat(ch.h, right) + ch.tRght)
 }
 
-// buildContentRow renders a cell row with text overlaid on the central columns.
-// The total rune width must match totalW exactly.
-func buildContentRow(style lipgloss.Style, ch shojiChars, numCols, cellW, totalW int, text string) string {
-	var b strings.Builder
+// shojiEmptyRow renders an empty pane row: │                        │
+func shojiEmptyRow(ch shojiChars, innerW, _ int, style lipgloss.Style) string {
+	return style.Render(ch.v) + strings.Repeat(" ", innerW) + style.Render(ch.v)
+}
 
-	// First margin column: │  │
-	b.WriteString(style.Render(ch.v))
-	b.WriteString(strings.Repeat(" ", cellW-1))
-	b.WriteString(style.Render(ch.v))
-
-	// Central area: overlay text on the middle columns
-	centralCols := numCols - 2
-	if centralCols < 1 {
-		centralCols = 1
-	}
-	// Central char width between the two margin │ chars
-	// = centralCols cells worth of space minus 1 for the leading space
-	// Actually: centralCols * cellW - 1 chars (cellW-1 spaces per cell + junction, minus trailing junction which is the margin │)
-	centralCharW := centralCols*cellW - 1
-
+// shojiContentRow renders a content row with padded text: │   Fix login bug        │
+func shojiContentRow(ch shojiChars, innerW, _ int, text string, style lipgloss.Style) string {
 	textWidth := ansi.StringWidth(text)
-	if textWidth > centralCharW {
-		text = ansi.Truncate(text, centralCharW, "")
+	contentW := innerW - 2
+	if contentW < 1 {
+		contentW = 1
+	}
+	if textWidth > contentW {
+		text = ansi.Truncate(text, contentW, "")
 		textWidth = ansi.StringWidth(text)
 	}
-
-	// Write: space + text + padding to fill centralCharW
-	rightPad := centralCharW - 1 - textWidth
+	rightPad := contentW - textWidth
 	if rightPad < 0 {
 		rightPad = 0
 	}
-	b.WriteString(" ")
-	b.WriteString(text)
-	b.WriteString(strings.Repeat(" ", rightPad))
-
-	// Last margin column: │  │
-	b.WriteString(style.Render(ch.v))
-	b.WriteString(strings.Repeat(" ", cellW-1))
-	b.WriteString(style.Render(ch.v))
-
-	return b.String()
+	return style.Render(ch.v) + " " + text + strings.Repeat(" ", rightPad) + " " + style.Render(ch.v)
 }
