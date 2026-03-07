@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epics 16, 23, and 24 are NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
+**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epics 16, 23, 24, and 25 are NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
 
 ## Requirements Inventory
 
@@ -220,6 +220,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR70-FR72 | Epic 21 ✅ | Sync Protocol Hardening (COMPLETE) |
 | FR73-FR80 | Epic 22 ✅ | Self-Driving Development Pipeline (COMPLETE) |
 | FR81-FR88 | Epic 24 | MCP/LLM Integration Server (NOT STARTED) |
+| FR89-FR92 | Epic 25 | Todoist Integration (NOT STARTED) |
 
 ## Epic List
 
@@ -2830,3 +2831,115 @@ So that I can use the CLI efficiently with tab completion.
 **Phase 2 — Extended CLI (Stories 23.6–23.9):** Full task lifecycle (block/unblock/status/edit/delete/note/search), mood tracking, stats, config management, and stdin/pipe support. Complete parity with TUI task operations.
 
 **Phase 3 — Polish (Story 23.10):** Shell completions and interactive doors mode. Quality-of-life improvements for power users.
+
+---
+
+## Epic 25: Todoist Integration
+
+**Priority:** P1 — High value, all infrastructure in place
+**Status:** Not Started (0/4 stories)
+**Dependencies:** Epic 7 (Adapter SDK) COMPLETE, Epic 13 (Multi-Source Aggregation) COMPLETE, Epic 21 (Sync Protocol Hardening) COMPLETE
+
+### Epic Goal
+
+Integrate Todoist as a task source adapter using the REST API v1, enabling ThreeDoors users to view and manage their Todoist tasks through the Three Doors decision-friction interface.
+
+### Requirements Coverage
+
+| Requirement | Story | Description |
+|------------|-------|-------------|
+| FR89 | 25.1, 25.2 | Todoist REST API v1 integration with field mapping |
+| FR90 | 25.1 | API token auth with project/filter config |
+| FR91 | 25.2 | Priority-to-Effort scale inversion mapping |
+| FR92 | 25.3 | Bidirectional sync with WAL queuing |
+
+### Stories
+
+#### Story 25.1: Todoist HTTP Client & Auth Configuration
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** Epic 7 (done)
+
+As a developer, I want a thin HTTP client for the Todoist REST API v1, so that the TodoistProvider can read and complete tasks without a third-party SDK dependency.
+
+**Acceptance Criteria:**
+- AC1: `Client` struct with `NewClient(config AuthConfig) *Client`
+- AC2: Bearer token authentication via personal API token
+- AC3: `GetTasks(ctx, projectID, filter)` method for task retrieval
+- AC4: `CloseTask(ctx, taskID)` method for task completion
+- AC5: `GetProjects(ctx)` method for health check
+- AC6: HTTP 429 handling with `Retry-After` header parsing
+- AC7: Config struct with mutually exclusive `project_ids` and `filter` validation
+- AC8: Unit tests with `httptest.NewServer`
+- AC9: No third-party dependencies beyond stdlib
+
+**File:** `docs/stories/25.1.story.md`
+
+---
+
+#### Story 25.2: Read-Only Todoist Adapter with Field Mapping
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** 25.1
+
+As a ThreeDoors user who uses Todoist, I want my Todoist tasks to appear as doors in the Three Doors TUI.
+
+**Acceptance Criteria:**
+- AC1: `TodoistProvider` implementing full `TaskProvider` interface
+- AC2: Field mapping: content->Text, description->Context, is_completed->Status
+- AC3: Priority-to-Effort inversion: 0->quick-win, 1->quick-win, 2->medium, 3->deep-work, 4->deep-work
+- AC4: Deleted tasks (`is_deleted == true`) filtered from results
+- AC5: Write methods return `core.ErrReadOnly`
+- AC6: `HealthCheck()` verifies API connectivity via `GetProjects()`
+- AC7: `[TDT]` source badge in TUI
+- AC8: Local cache at `~/.threedoors/todoist-cache.yaml`
+- AC9: Factory function for adapter registry registration
+
+**File:** `docs/stories/25.2.story.md`
+
+---
+
+#### Story 25.3: Bidirectional Sync & WAL Integration
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** 25.2
+
+As a ThreeDoors user, I want completing a Todoist task in ThreeDoors to mark it complete in Todoist.
+
+**Acceptance Criteria:**
+- AC1: `MarkComplete(taskID)` calls `CloseTask` via Todoist API
+- AC2: On API failure, change queued via `WALProvider`
+- AC3: WAL replay on connectivity restoration
+- AC4: Rate limit handling with exponential backoff
+- AC5: Circuit breaker integration (5 failures / 2min window)
+- AC6: Unit tests for success, WAL fallback, and rate limit flows
+
+**File:** `docs/stories/25.3.story.md`
+
+---
+
+#### Story 25.4: Contract Tests & Integration Testing
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** 25.2
+
+As a developer, I want the Todoist adapter to pass the contract test suite with comprehensive edge case coverage.
+
+**Acceptance Criteria:**
+- AC1: `adapters.RunContractTests` passes with mock HTTP server
+- AC2: Table-driven priority mapping tests (all 5 values: 0-4)
+- AC3: Deleted task filtering tests
+- AC4: Config validation tests (mutually exclusive options)
+- AC5: Rate limit handling tests
+- AC6: Empty response edge case test
+- AC7: Special character handling tests
+- AC8: Test coverage >= 80% for todoist package
+
+**File:** `docs/stories/25.4.story.md`
+
+---
+
+### Implementation Notes
+
+- **Architecture:** Follows the exact same adapter pattern as Jira (Epic 19) and Apple Reminders (Epic 20)
+- **Package:** `internal/adapters/todoist/` — thin HTTP client, provider, field mapping, config
+- **No SDK:** Build raw HTTP client against REST API v1 (go-todoist library targets deprecated v2)
+- **Priority inversion:** Todoist 4 (critical) maps to highest effort; Todoist 0/1 maps to lowest
+- **Read-only first:** Story 25.2 delivers 80% of user value; 25.3 completes the loop
+- **Config:** Mutually exclusive `project_ids` and `filter` options for task scoping

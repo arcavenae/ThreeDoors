@@ -276,6 +276,16 @@
 
 **FR69:** The system shall allow users to configure which Apple Reminders lists to include as task sources via `~/.threedoors/config.yaml`, defaulting to all lists
 
+**Todoist Integration:**
+
+**FR89:** The system shall integrate with Todoist as a task source using the REST API v1, reading tasks with structured field mapping (content to Text, description to Context, labels to Tags, priority to Effort with scale inversion), filtering out deleted tasks (is_deleted == true)
+
+**FR90:** The system shall support Todoist authentication via personal API token configured in `~/.threedoors/config.yaml`, with optional project ID filtering (`project_ids`) or Todoist filter expressions (`filter`) for scoping which tasks to import — these two options are mutually exclusive
+
+**FR91:** The system shall map Todoist priority values (1=normal, 2=high, 3=urgent, 4=critical) to ThreeDoors Effort values with appropriate scale inversion (Todoist 4 maps to highest effort), with priority 0 (no priority) mapping to lowest effort
+
+**FR92:** The system shall support bidirectional Todoist sync by completing tasks via the REST API when tasks are marked complete in ThreeDoors, with offline queuing via WALProvider
+
 **Sync Protocol Hardening:**
 
 **FR70:** The system shall provide a sync scheduler with per-provider independent sync loops, supporting hybrid push (Watch channel) and polling with adaptive intervals (backoff on failure, reset on success)

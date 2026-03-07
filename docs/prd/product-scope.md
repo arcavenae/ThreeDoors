@@ -84,9 +84,10 @@
 - Apple Reminders integration: JXA-based adapter with full CRUD (read, create, update, complete, delete), configurable list filtering
 - Sync protocol hardening: per-provider sync scheduler with adaptive intervals, circuit breaker per provider, canonical ID mapping via SourceRef
 - Generic adapter patterns: rate limit handling, local cache with TTL, credential management via config.yaml/env vars
+- Todoist integration: read-only adapter (REST API v1, API token auth, priority-to-effort mapping, project filtering), then bidirectional sync (complete tasks via API, WAL queuing)
 
 **Out of Scope for Phase 4:**
-- Todoist, Linear, GitHub Issues, ClickUp integrations (deferred to Phase 5+)
+- Linear, GitHub Issues, ClickUp integrations (deferred to Phase 5+)
 - OAuth 2.0 flows (API token/PAT auth only for initial integrations)
 - EventKit/cgo-based Apple Reminders (future optimization behind build tag)
 - Property-level conflict resolution (deferred to Phase 5)
@@ -99,7 +100,7 @@
 **In Scope:**
 - iPhone mobile app (SwiftUI) with Apple Notes sync and Three Doors card carousel
 - Self-driving development pipeline (multiclaude worker dispatch from TUI)
-- Additional integrations (Todoist, Linear, GitHub Issues, ClickUp)
+- Additional integrations (Linear, GitHub Issues, ClickUp)
 - Cross-computer sync
 
 **Out of Scope (Deferred Indefinitely):**

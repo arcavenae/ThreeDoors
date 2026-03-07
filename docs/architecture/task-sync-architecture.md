@@ -240,7 +240,146 @@ First `osascript` call targeting Reminders triggers a macOS consent dialog. The 
 
 ---
 
-## 3. Sync Protocol Architecture
+## 3. Todoist Adapter
+
+### Package Structure
+
+```
+internal/adapters/todoist/
+├── todoist_client.go           # Thin HTTP client for Todoist REST API v1
+├── todoist_client_test.go      # HTTP test server-based unit tests
+├── todoist_provider.go         # TaskProvider implementation
+├── todoist_provider_test.go    # Unit tests with mock client
+├── field_mapping.go            # Todoist task → core.Task mapping
+├── field_mapping_test.go       # Field mapping unit tests
+└── config.go                   # Todoist-specific config types
+```
+
+### HTTP Client
+
+A thin client using `net/http` + `encoding/json` targeting Todoist REST API v1. No third-party SDK (the go-todoist library targets the deprecated v2 API).
+
+**Endpoints used:**
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/rest/v1/tasks` | List active (non-completed) tasks |
+| POST | `/rest/v1/tasks/{id}/close` | Mark task as complete |
+| GET | `/rest/v1/projects` | List projects (for config validation) |
+
+**Authentication:**
+
+```go
+type AuthConfig struct {
+    APIToken string // Personal API token
+}
+```
+
+- All requests: `Authorization: Bearer <api_token>`
+- Token sourced from env var (`TODOIST_API_TOKEN`) or config.yaml settings
+
+**Rate Limit Handling:**
+
+Todoist enforces 450 requests per 15 minutes. The adapter reuses the same `RateLimitError` pattern from the Jira adapter:
+
+```go
+if resp.StatusCode == http.StatusTooManyRequests {
+    retryAfter := parseRetryAfter(resp.Header.Get("Retry-After"))
+    return nil, &RateLimitError{RetryAfter: retryAfter}
+}
+```
+
+### TodoistProvider
+
+```go
+type TodoistProvider struct {
+    client     *Client
+    projectIDs []string     // filter by project IDs (optional)
+    filter     string       // Todoist filter expression (optional, mutually exclusive with projectIDs)
+    mapping    *FieldMapper
+    cache      *TaskCache
+}
+```
+
+**Phase 1 (Read-Only):**
+
+| Method | Behavior |
+|--------|----------|
+| `Name()` | Returns `"todoist"` |
+| `LoadTasks()` | GET tasks, filter deleted, map to `[]*core.Task`, update local cache |
+| `SaveTask()` | Returns `core.ErrReadOnly` |
+| `SaveTasks()` | Returns `core.ErrReadOnly` |
+| `DeleteTask()` | Returns `core.ErrReadOnly` |
+| `MarkComplete()` | Returns `core.ErrReadOnly` |
+| `Watch()` | Returns `nil` (Todoist has no webhook/push support for personal tokens) |
+| `HealthCheck()` | GET projects to verify API connectivity |
+
+**Phase 2 (Bidirectional):**
+
+| Method | Behavior |
+|--------|----------|
+| `MarkComplete(taskID)` | POST `/rest/v1/tasks/{id}/close` |
+| WAL wrapping | `core.NewWALProvider(todoistProvider)` for offline queuing |
+
+### Field Mapping
+
+```go
+type FieldMapper struct {
+    // No configurable mappings needed — Todoist model is fixed
+}
+```
+
+**Default field mapping:**
+
+| Todoist Field | Task Field | Mapping |
+|--------------|-----------|---------|
+| `id` | `ID` | Direct (string) |
+| `content` | `Text` | Direct |
+| `description` | `Context` | Direct |
+| `is_completed` | `Status` | `true` → `complete`, `false` → `todo` |
+| `priority` | `Effort` | Inverted scale (see table below) |
+| `labels` | (future) | Direct string array |
+| `due.date` / `due.datetime` | (future) | ISO date parse |
+| `project_id` | `SourceProvider` | `"todoist:<project_name>"` |
+| `is_deleted` | (filtered) | `true` → excluded from results |
+
+**Priority-to-Effort mapping (inverted scale):**
+
+| Todoist Priority | Todoist Meaning | ThreeDoors Effort |
+|-----------------|----------------|------------------|
+| 0 | No priority | `quick-win` (lowest) |
+| 1 | Normal | `quick-win` |
+| 2 | High | `medium` |
+| 3 | Urgent | `deep-work` |
+| 4 | Critical | `deep-work` (highest) |
+
+### Configuration
+
+```yaml
+providers:
+  - name: todoist
+    settings:
+      api_token: "${TODOIST_API_TOKEN}"  # or literal token
+      project_ids: "project-id-1,project-id-2"  # optional, comma-separated
+      filter: "today | overdue"  # optional, mutually exclusive with project_ids
+      poll_interval: "60s"
+```
+
+Note: `project_ids` and `filter` are mutually exclusive. If both are specified, the adapter returns a configuration error at initialization.
+
+### Testing Strategy
+
+- **Unit tests:** `httptest.NewServer` returning canned Todoist REST API v1 responses
+- **Field mapping tests:** Table-driven tests covering all 5 priority values (0-4) mapping to correct Effort values
+- **Contract tests:** `adapters.RunContractTests` with mock HTTP server backing
+- **Rate limit tests:** Verify 429 handling with Retry-After header (reuse Jira pattern)
+- **Deleted task tests:** Verify `is_deleted == true` tasks are filtered from results
+- **Config validation tests:** Verify mutual exclusivity of `project_ids` and `filter`
+- **Integration tests:** `//go:build integration` — require real Todoist account (manual only)
+
+---
+
+## 4. Sync Protocol Architecture
 
 ### 3.1 Sync Scheduler
 
@@ -375,6 +514,7 @@ func RegisterBuiltinAdapters(reg *core.Registry) {
     // New adapters
     reg.Register("jira", jira.Factory)
     reg.Register("reminders", reminders.Factory)
+    reg.Register("todoist", todoist.Factory)
 }
 ```
 
@@ -392,6 +532,10 @@ providers:
   - name: reminders
     settings:
       lists: "Work"
+  - name: todoist
+    settings:
+      api_token: "${TODOIST_API_TOKEN}"
+      filter: "today | overdue"
 ```
 
 ---
@@ -428,6 +572,8 @@ providers:
 | Jira HTTP client | `net/http`, `encoding/json` | Nothing (zero external deps) |
 | JiraProvider | Jira HTTP client, `core.TaskProvider` | HTTP client |
 | RemindersProvider | `CommandExecutor`, `core.TaskProvider` | Nothing |
+| Todoist HTTP client | `net/http`, `encoding/json` | Nothing (zero external deps) |
+| TodoistProvider | Todoist HTTP client, `core.TaskProvider` | HTTP client |
 | SyncScheduler | `TaskProvider.Watch()`, `SyncEngine` | Epic 11 (sync observability) |
 | CircuitBreaker | `SyncStatusTracker` | Nothing (self-contained) |
 | SourceRef (canonical ID) | `core.Task` model change | Nothing |
