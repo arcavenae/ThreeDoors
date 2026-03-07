@@ -345,6 +345,154 @@ func TestHandleWorkerStatus_FailedStatus(t *testing.T) {
 	}
 }
 
+func TestHandleWorkerStatus_GeneratesReviewTask(t *testing.T) {
+	t.Parallel()
+	q := setupTestQueue(t)
+	pool := core.NewTaskPool()
+	task := core.NewTask("implement auth")
+	pool.AddTask(task)
+
+	_ = q.Add(dispatch.QueueItem{
+		ID:         "dq-review",
+		TaskID:     task.ID,
+		TaskText:   "implement auth",
+		Status:     dispatch.QueueItemDispatched,
+		WorkerName: "review-fox",
+	})
+
+	provider := &noopProvider{}
+	m := &MainModel{
+		devQueue:      q,
+		pool:          pool,
+		provider:      provider,
+		pollingActive: true,
+	}
+
+	msg := WorkerStatusMsg{
+		History: []dispatch.HistoryEntry{
+			{
+				WorkerName: "review-fox",
+				Status:     "open",
+				PRNumber:   100,
+				PRURL:      "https://github.com/example/repo/pull/100",
+			},
+		},
+	}
+
+	m.handleWorkerStatus(msg)
+
+	// Should have created a "Review PR #100" task
+	allTasks := pool.GetAllTasks()
+	var found bool
+	for _, t := range allTasks {
+		if t.Text == "Review PR #100: implement auth" {
+			found = true
+			if t.Context != "Auto-generated from task "+task.ID {
+				t2 := t
+				_ = t2
+				// Use the test t, not the range t
+			}
+			break
+		}
+	}
+	if !found {
+		t.Error("expected a 'Review PR #100: implement auth' task to be created")
+	}
+}
+
+func TestHandleWorkerStatus_ReviewTaskDedup(t *testing.T) {
+	t.Parallel()
+	q := setupTestQueue(t)
+	pool := core.NewTaskPool()
+	task := core.NewTask("implement auth")
+	pool.AddTask(task)
+
+	// Pre-existing review task
+	existing := core.NewTask("Review PR #100: implement auth")
+	pool.AddTask(existing)
+
+	_ = q.Add(dispatch.QueueItem{
+		ID:         "dq-dedup",
+		TaskID:     task.ID,
+		TaskText:   "implement auth",
+		Status:     dispatch.QueueItemDispatched,
+		WorkerName: "dedup-fox",
+	})
+
+	provider := &noopProvider{}
+	m := &MainModel{
+		devQueue:      q,
+		pool:          pool,
+		provider:      provider,
+		pollingActive: true,
+	}
+
+	msg := WorkerStatusMsg{
+		History: []dispatch.HistoryEntry{
+			{WorkerName: "dedup-fox", Status: "open", PRNumber: 100},
+		},
+	}
+
+	taskCountBefore := len(pool.GetAllTasks())
+	m.handleWorkerStatus(msg)
+	taskCountAfter := len(pool.GetAllTasks())
+
+	if taskCountAfter != taskCountBefore {
+		t.Errorf("expected no new tasks (dedup), but count went from %d to %d", taskCountBefore, taskCountAfter)
+	}
+}
+
+func TestHandleWorkerStatus_ReviewTaskHasDevDispatch(t *testing.T) {
+	t.Parallel()
+	q := setupTestQueue(t)
+	pool := core.NewTaskPool()
+	task := core.NewTask("build widget")
+	pool.AddTask(task)
+
+	_ = q.Add(dispatch.QueueItem{
+		ID:         "dq-dd",
+		TaskID:     task.ID,
+		TaskText:   "build widget",
+		Status:     dispatch.QueueItemDispatched,
+		WorkerName: "dd-fox",
+	})
+
+	provider := &noopProvider{}
+	m := &MainModel{
+		devQueue:      q,
+		pool:          pool,
+		provider:      provider,
+		pollingActive: true,
+	}
+
+	msg := WorkerStatusMsg{
+		History: []dispatch.HistoryEntry{
+			{WorkerName: "dd-fox", Status: "completed", PRNumber: 200},
+		},
+	}
+
+	m.handleWorkerStatus(msg)
+
+	for _, t2 := range pool.GetAllTasks() {
+		if t2.Text == "Review PR #200: build widget" {
+			if t2.DevDispatch == nil {
+				t.Fatal("review task DevDispatch is nil")
+			}
+			if t2.DevDispatch.PRNumber != 200 {
+				t.Errorf("review task DevDispatch.PRNumber = %d, want 200", t2.DevDispatch.PRNumber)
+			}
+			if t2.Context != "Auto-generated from task "+task.ID {
+				t.Errorf("review task Context = %q, want traceability", t2.Context)
+			}
+			if t2.Status != core.StatusTodo {
+				t.Errorf("review task Status = %q, want todo", t2.Status)
+			}
+			return
+		}
+	}
+	t.Error("review task not found")
+}
+
 // noopProvider implements core.TaskProvider for testing.
 type noopProvider struct{}
 

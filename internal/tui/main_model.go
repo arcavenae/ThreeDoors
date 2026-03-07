@@ -1129,6 +1129,12 @@ func (m *MainModel) handleWorkerStatus(msg WorkerStatusMsg) tea.Cmd {
 
 		m.updateQueueItemFromHistory(item.ID, entry)
 		m.updateTaskFromHistory(item.TaskID, entry)
+
+		// Generate follow-up tasks for completed/failed items
+		updatedItem, err := m.devQueue.Get(item.ID)
+		if err == nil {
+			m.generateFollowUpTasks(updatedItem)
+		}
 	}
 
 	// Continue or stop polling
@@ -1172,6 +1178,32 @@ func (m *MainModel) updateTaskFromHistory(taskID string, entry dispatch.HistoryE
 	m.pool.UpdateTask(task)
 	if err := m.saveTasks(); err != nil {
 		log.Printf("save tasks after worker status update: %v", err)
+	}
+}
+
+// generateFollowUpTasks creates review and CI-fix tasks for a completed queue item.
+func (m *MainModel) generateFollowUpTasks(item dispatch.QueueItem) {
+	if item.Status != dispatch.QueueItemCompleted && item.Status != dispatch.QueueItemFailed {
+		return
+	}
+
+	// Build existing task text set for deduplication
+	existingTexts := make(map[string]bool)
+	for _, t := range m.pool.GetAllTasks() {
+		existingTexts[t.Text] = true
+	}
+
+	followUps := dispatch.GenerateFollowUpTasks(item, existingTexts)
+	for _, fu := range followUps {
+		task := core.NewTaskWithContext(fu.Text, fu.Context)
+		task.DevDispatch = fu.DevDispatch
+		m.pool.AddTask(task)
+	}
+
+	if len(followUps) > 0 {
+		if err := m.saveTasks(); err != nil {
+			log.Printf("save follow-up tasks: %v", err)
+		}
 	}
 }
 
