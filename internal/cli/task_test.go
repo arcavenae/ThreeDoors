@@ -273,11 +273,10 @@ func TestNewTaskCmd_Structure(t *testing.T) {
 		names[sub.Name()] = true
 	}
 
-	if !names["add"] {
-		t.Error("missing 'add' subcommand")
-	}
-	if !names["complete"] {
-		t.Error("missing 'complete' subcommand")
+	for _, want := range []string{"add", "complete", "list", "show"} {
+		if !names[want] {
+			t.Errorf("missing %q subcommand", want)
+		}
 	}
 }
 
@@ -291,6 +290,91 @@ func TestNewTaskAddCmd_Flags(t *testing.T) {
 		if cmd.Flags().Lookup(name) == nil {
 			t.Errorf("missing flag %q", name)
 		}
+	}
+}
+
+func TestFilterTasks(t *testing.T) {
+	t.Parallel()
+
+	tasks := []*core.Task{
+		{ID: "1", Text: "A", Status: core.StatusTodo, Type: core.TypeTechnical, Effort: core.EffortQuickWin},
+		{ID: "2", Text: "B", Status: core.StatusInProgress, Type: core.TypeCreative, Effort: core.EffortMedium},
+		{ID: "3", Text: "C", Status: core.StatusTodo, Type: core.TypeTechnical, Effort: core.EffortDeepWork},
+		{ID: "4", Text: "D", Status: core.StatusComplete, Type: core.TypeAdministrative, Effort: core.EffortQuickWin},
+	}
+
+	tests := []struct {
+		name      string
+		status    string
+		taskType  string
+		effort    string
+		wantCount int
+	}{
+		{"no filters", "", "", "", 4},
+		{"filter by status todo", "todo", "", "", 2},
+		{"filter by type technical", "", "technical", "", 2},
+		{"filter by effort quick-win", "", "", "quick-win", 2},
+		{"composable: status+type", "todo", "technical", "", 2},
+		{"composable: status+type+effort", "todo", "technical", "quick-win", 1},
+		{"no matches", "done", "", "", 0},
+		{"in-progress", "in-progress", "", "", 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := filterTasks(tasks, tt.status, tt.taskType, tt.effort)
+			if len(got) != tt.wantCount {
+				t.Errorf("filterTasks() returned %d, want %d", len(got), tt.wantCount)
+			}
+		})
+	}
+}
+
+func TestNewTaskListCmd_Flags(t *testing.T) {
+	t.Parallel()
+
+	cmd := newTaskListCmd()
+	for _, name := range []string{"status", "type", "effort"} {
+		if cmd.Flags().Lookup(name) == nil {
+			t.Errorf("missing flag %q", name)
+		}
+	}
+}
+
+func TestNewTaskShowCmd_Args(t *testing.T) {
+	t.Parallel()
+
+	cmd := newTaskShowCmd()
+	if cmd.Use != "show <id>" {
+		t.Errorf("Use = %q, want %q", cmd.Use, "show <id>")
+	}
+}
+
+func TestListMetadata_JSON(t *testing.T) {
+	t.Parallel()
+
+	meta := listMetadata{
+		Total:    10,
+		Filtered: 3,
+		Filters:  map[string]string{"status": "todo"},
+	}
+
+	data, err := json.Marshal(meta)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	var decoded map[string]interface{}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	if decoded["total"] != float64(10) {
+		t.Errorf("total = %v, want 10", decoded["total"])
+	}
+	if decoded["filtered"] != float64(3) {
+		t.Errorf("filtered = %v, want 3", decoded["filtered"])
 	}
 }
 
