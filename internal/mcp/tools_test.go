@@ -60,15 +60,20 @@ func TestToolsListPopulated(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	if len(result.Tools) != 9 {
-		t.Errorf("expected 9 tools, got %d", len(result.Tools))
+	if len(result.Tools) != 17 {
+		t.Errorf("expected 17 tools, got %d", len(result.Tools))
 	}
 
 	names := make(map[string]bool)
 	for _, tool := range result.Tools {
 		names[tool.Name] = true
 	}
-	expected := []string{"query_tasks", "get_task", "list_providers", "get_session", "search_tasks"}
+	expected := []string{
+		"query_tasks", "get_task", "list_providers", "get_session", "search_tasks",
+		"get_mood_correlation", "get_productivity_profile", "burnout_risk", "get_completions",
+		"walk_graph", "find_paths", "get_critical_path", "get_orphans", "get_clusters",
+		"get_provider_overlap", "get_unified_view", "suggest_cross_links",
+	}
 	for _, name := range expected {
 		if !names[name] {
 			t.Errorf("missing tool: %s", name)

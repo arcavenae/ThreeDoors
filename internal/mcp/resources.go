@@ -122,6 +122,18 @@ func resourceDefinitions() []ResourceItem {
 			Description: "Weekly productivity summary with patterns and recommendations",
 			MimeType:    "application/json",
 		},
+		{
+			URI:         "threedoors://graph/dependencies",
+			Name:        "Dependency Graph",
+			Description: "Full task dependency graph with inferred relationships",
+			MimeType:    "application/json",
+		},
+		{
+			URI:         "threedoors://graph/cross-provider",
+			Name:        "Cross-Provider Graph",
+			Description: "Cross-provider task relationships and suggestions",
+			MimeType:    "application/json",
+		},
 	}
 }
 
@@ -174,6 +186,10 @@ func (s *MCPServer) handleResourceRead(req *Request) *Response {
 		return s.readAnalyticsTaskPreferences(req, start)
 	case uri == "threedoors://analytics/weekly-summary":
 		return s.readAnalyticsWeeklySummary(req, start)
+	case uri == "threedoors://graph/dependencies":
+		return s.readGraphDependencies(req, start)
+	case uri == "threedoors://graph/cross-provider":
+		return s.readGraphCrossProvider(req, start)
 	case strings.HasPrefix(uri, "threedoors://tasks/"):
 		id := strings.TrimPrefix(uri, "threedoors://tasks/")
 		return s.readTaskByID(req, id, start)
@@ -461,6 +477,85 @@ func (s *MCPServer) readPendingProposals(req *Request, start time.Time) *Respons
 	}
 
 	return s.resourceJSON(req, "threedoors://proposals/pending", resp)
+}
+
+func (s *MCPServer) readGraphDependencies(req *Request, start time.Time) *Response {
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+	if edges == nil {
+		edges = []TaskEdge{}
+	}
+
+	tasks := s.pool.GetAllTasks()
+	nodes := make(map[string]*TaskNode, len(tasks))
+	for _, t := range tasks {
+		nodes[t.ID] = &TaskNode{
+			Task:     t,
+			Provider: t.EffectiveSourceProvider(),
+			Depth:    0,
+		}
+	}
+
+	graph := TaskGraph{Nodes: nodes, Edges: edges}
+	clusters := GetClusters(s.pool, edges)
+	if clusters == nil {
+		clusters = []Cluster{}
+	}
+	orphans := GetOrphans(s.pool, edges)
+	orphanIDs := make([]string, len(orphans))
+	for i, o := range orphans {
+		orphanIDs[i] = o.ID
+	}
+
+	type graphResponse struct {
+		Graph    TaskGraph        `json:"graph"`
+		Clusters []Cluster        `json:"clusters"`
+		Orphans  []string         `json:"orphans"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+
+	resp := graphResponse{
+		Graph:    graph,
+		Clusters: clusters,
+		Orphans:  orphanIDs,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(tasks),
+			ReturnedCount:    len(tasks),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+
+	return s.resourceJSON(req, "threedoors://graph/dependencies", resp)
+}
+
+func (s *MCPServer) readGraphCrossProvider(req *Request, start time.Time) *Response {
+	linker := NewCrossProviderLinker(s.pool)
+	suggestions := linker.SuggestCrossLinks()
+	if suggestions == nil {
+		suggestions = []CrossLinkSuggestion{}
+	}
+
+	type crossProviderResponse struct {
+		Suggestions []CrossLinkSuggestion `json:"suggestions"`
+		Providers   []string              `json:"providers"`
+		Metadata    ResponseMetadata      `json:"_metadata"`
+	}
+
+	resp := crossProviderResponse{
+		Suggestions: suggestions,
+		Providers:   s.providerNames(),
+		Metadata: ResponseMetadata{
+			TotalCount:       len(suggestions),
+			ReturnedCount:    len(suggestions),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+
+	return s.resourceJSON(req, "threedoors://graph/cross-provider", resp)
 }
 
 // resourceJSON marshals data as JSON text and wraps in a ResourceReadResult.

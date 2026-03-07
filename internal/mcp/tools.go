@@ -121,6 +121,52 @@ func toolDefinitions() []ToolItem {
 			},
 		},
 		{
+			Name:        "walk_graph",
+			Description: "Traverse the task relationship graph from a root task using BFS. Returns a subgraph of nodes and edges within the specified depth.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"task_id":    map[string]any{"type": "string", "description": "Root task ID to start traversal from"},
+					"depth":      map[string]any{"type": "integer", "description": "Max traversal depth (default 2)"},
+					"direction":  map[string]any{"type": "string", "description": "Traversal direction: outgoing, incoming, or both (default both)"},
+					"edge_types": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Filter by edge types: blocks, related-to, subtask-of, duplicate-of, sequential, cross-ref"},
+				},
+				"required": []string{"task_id"},
+			},
+		},
+		{
+			Name:        "find_paths",
+			Description: "Find all simple paths between two tasks up to a maximum depth.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"from_id":   map[string]any{"type": "string", "description": "Starting task ID"},
+					"to_id":     map[string]any{"type": "string", "description": "Destination task ID"},
+					"max_depth": map[string]any{"type": "integer", "description": "Max path length (default 5)"},
+				},
+				"required": []string{"from_id", "to_id"},
+			},
+		},
+		{
+			Name:        "get_critical_path",
+			Description: "Get the longest dependency chain from a root task, following only 'blocks' edges.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"root_id": map[string]any{"type": "string", "description": "Root task ID"},
+				},
+				"required": []string{"root_id"},
+			},
+		},
+		{
+			Name:        "get_orphans",
+			Description: "Get tasks with no relationships to any other tasks.",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+		{
 			Name:        "get_completions",
 			Description: "Get completion data with optional grouping and enrichment.",
 			InputSchema: map[string]any{
@@ -132,6 +178,45 @@ func toolDefinitions() []ToolItem {
 					"include_mood":     map[string]any{"type": "boolean", "description": "Include mood data in results"},
 					"include_patterns": map[string]any{"type": "boolean", "description": "Include pattern analysis"},
 				},
+			},
+		},
+		{
+			Name:        "get_clusters",
+			Description: "Get groups of related tasks using connected-component detection.",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+		{
+			Name:        "get_provider_overlap",
+			Description: "Find shared or similar tasks between two providers.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"provider_a": map[string]any{"type": "string", "description": "First provider name"},
+					"provider_b": map[string]any{"type": "string", "description": "Second provider name"},
+				},
+				"required": []string{"provider_a", "provider_b"},
+			},
+		},
+		{
+			Name:        "get_unified_view",
+			Description: "Get tasks matching a topic across all providers with their relationships.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"topic": map[string]any{"type": "string", "description": "Topic or keyword to search for"},
+				},
+				"required": []string{"topic"},
+			},
+		},
+		{
+			Name:        "suggest_cross_links",
+			Description: "Suggest cross-provider relationships based on text similarity, shared references, and temporal proximity.",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
 			},
 		},
 	}
@@ -180,6 +265,22 @@ func (s *MCPServer) handleToolCall(req *Request) *Response {
 			return s.toolError(req, "proposal store not configured")
 		}
 		return s.toolSuggestRelationship(req, params.Arguments)
+	case "walk_graph":
+		return s.toolWalkGraph(req, params.Arguments)
+	case "find_paths":
+		return s.toolFindPaths(req, params.Arguments)
+	case "get_critical_path":
+		return s.toolGetCriticalPath(req, params.Arguments)
+	case "get_orphans":
+		return s.toolGetOrphans(req)
+	case "get_clusters":
+		return s.toolGetClusters(req)
+	case "get_provider_overlap":
+		return s.toolGetProviderOverlap(req, params.Arguments)
+	case "get_unified_view":
+		return s.toolGetUnifiedView(req, params.Arguments)
+	case "suggest_cross_links":
+		return s.toolSuggestCrossLinks(req)
 	default:
 		return NewErrorResponse(req.ID, CodeMethodNotFound, fmt.Sprintf("unknown tool: %s", params.Name))
 	}
@@ -383,6 +484,305 @@ func (s *MCPServer) toolSearchTasks(req *Request, args json.RawMessage) *Respons
 	}
 
 	return s.toolJSON(req, resp)
+}
+
+func (s *MCPServer) toolWalkGraph(req *Request, args json.RawMessage) *Response {
+	start := time.Now().UTC()
+
+	var params struct {
+		TaskID    string   `json:"task_id"`
+		Depth     int      `json:"depth"`
+		Direction string   `json:"direction"`
+		EdgeTypes []string `json:"edge_types"`
+	}
+	if args != nil {
+		if err := json.Unmarshal(args, &params); err != nil {
+			return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("invalid arguments: %v", err))
+		}
+	}
+	if params.TaskID == "" {
+		return NewErrorResponse(req.ID, CodeInvalidParams, "task_id is required")
+	}
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+
+	var edgeTypes []EdgeType
+	for _, et := range params.EdgeTypes {
+		edgeTypes = append(edgeTypes, EdgeType(et))
+	}
+
+	graph, err := WalkGraph(s.pool, edges, WalkGraphOptions{
+		TaskID:    params.TaskID,
+		Depth:     params.Depth,
+		Direction: params.Direction,
+		EdgeTypes: edgeTypes,
+	})
+	if err != nil {
+		return s.toolError(req, err.Error())
+	}
+
+	type walkResult struct {
+		Graph    *TaskGraph       `json:"graph"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	result := walkResult{
+		Graph: graph,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(graph.Nodes),
+			ReturnedCount:    len(graph.Nodes),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolFindPaths(req *Request, args json.RawMessage) *Response {
+	start := time.Now().UTC()
+
+	var params struct {
+		FromID   string `json:"from_id"`
+		ToID     string `json:"to_id"`
+		MaxDepth int    `json:"max_depth"`
+	}
+	if args != nil {
+		if err := json.Unmarshal(args, &params); err != nil {
+			return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("invalid arguments: %v", err))
+		}
+	}
+	if params.FromID == "" || params.ToID == "" {
+		return NewErrorResponse(req.ID, CodeInvalidParams, "from_id and to_id are required")
+	}
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+
+	paths, err := FindPaths(s.pool, edges, params.FromID, params.ToID, params.MaxDepth)
+	if err != nil {
+		return s.toolError(req, err.Error())
+	}
+	if paths == nil {
+		paths = [][]string{}
+	}
+
+	type pathsResult struct {
+		Paths    [][]string       `json:"paths"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	result := pathsResult{
+		Paths: paths,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(paths),
+			ReturnedCount:    len(paths),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetCriticalPath(req *Request, args json.RawMessage) *Response {
+	start := time.Now().UTC()
+
+	var params struct {
+		RootID string `json:"root_id"`
+	}
+	if args != nil {
+		if err := json.Unmarshal(args, &params); err != nil {
+			return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("invalid arguments: %v", err))
+		}
+	}
+	if params.RootID == "" {
+		return NewErrorResponse(req.ID, CodeInvalidParams, "root_id is required")
+	}
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+
+	path, err := GetCriticalPath(s.pool, edges, params.RootID)
+	if err != nil {
+		return s.toolError(req, err.Error())
+	}
+	if path == nil {
+		path = []string{}
+	}
+
+	type criticalPathResult struct {
+		Path     []string         `json:"path"`
+		Length   int              `json:"length"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	result := criticalPathResult{
+		Path:   path,
+		Length: len(path),
+		Metadata: ResponseMetadata{
+			TotalCount:       1,
+			ReturnedCount:    1,
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetOrphans(req *Request) *Response {
+	start := time.Now().UTC()
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+	orphans := GetOrphans(s.pool, edges)
+	if orphans == nil {
+		orphans = []*core.Task{}
+	}
+
+	type orphansResult struct {
+		Tasks    []*core.Task     `json:"tasks"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	allTasks := s.pool.GetAllTasks()
+	result := orphansResult{
+		Tasks: orphans,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(allTasks),
+			ReturnedCount:    len(orphans),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetClusters(req *Request) *Response {
+	start := time.Now().UTC()
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+	clusters := GetClusters(s.pool, edges)
+	if clusters == nil {
+		clusters = []Cluster{}
+	}
+
+	type clustersResult struct {
+		Clusters []Cluster        `json:"clusters"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	result := clustersResult{
+		Clusters: clusters,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(clusters),
+			ReturnedCount:    len(clusters),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetProviderOverlap(req *Request, args json.RawMessage) *Response {
+	start := time.Now().UTC()
+
+	var params struct {
+		ProviderA string `json:"provider_a"`
+		ProviderB string `json:"provider_b"`
+	}
+	if args != nil {
+		if err := json.Unmarshal(args, &params); err != nil {
+			return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("invalid arguments: %v", err))
+		}
+	}
+	if params.ProviderA == "" || params.ProviderB == "" {
+		return NewErrorResponse(req.ID, CodeInvalidParams, "provider_a and provider_b are required")
+	}
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+	linker := NewCrossProviderLinker(s.pool)
+	overlap := linker.GetProviderOverlap(params.ProviderA, params.ProviderB, edges)
+
+	type overlapResult struct {
+		Overlap  ProviderOverlap  `json:"overlap"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	result := overlapResult{
+		Overlap: overlap,
+		Metadata: ResponseMetadata{
+			TotalCount:       1,
+			ReturnedCount:    1,
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetUnifiedView(req *Request, args json.RawMessage) *Response {
+	start := time.Now().UTC()
+
+	var params struct {
+		Topic string `json:"topic"`
+	}
+	if args != nil {
+		if err := json.Unmarshal(args, &params); err != nil {
+			return NewErrorResponse(req.ID, CodeInvalidParams, fmt.Sprintf("invalid arguments: %v", err))
+		}
+	}
+	if params.Topic == "" {
+		return NewErrorResponse(req.ID, CodeInvalidParams, "topic is required")
+	}
+
+	inferencer := NewRelationshipInferencer(s.pool)
+	edges := inferencer.InferAll()
+	linker := NewCrossProviderLinker(s.pool)
+	view := linker.GetUnifiedView(params.Topic, edges)
+
+	type viewResult struct {
+		View     UnifiedView      `json:"view"`
+		Metadata ResponseMetadata `json:"_metadata"`
+	}
+	result := viewResult{
+		View: view,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(view.Tasks),
+			ReturnedCount:    len(view.Tasks),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolSuggestCrossLinks(req *Request) *Response {
+	start := time.Now().UTC()
+
+	linker := NewCrossProviderLinker(s.pool)
+	suggestions := linker.SuggestCrossLinks()
+	if suggestions == nil {
+		suggestions = []CrossLinkSuggestion{}
+	}
+
+	type suggestResult struct {
+		Suggestions []CrossLinkSuggestion `json:"suggestions"`
+		Metadata    ResponseMetadata      `json:"_metadata"`
+	}
+	result := suggestResult{
+		Suggestions: suggestions,
+		Metadata: ResponseMetadata{
+			TotalCount:       len(suggestions),
+			ReturnedCount:    len(suggestions),
+			QueryTimeMs:      millisSince(start),
+			ProvidersQueried: s.providerNames(),
+			DataFreshness:    "live",
+		},
+	}
+	return s.toolJSON(req, result)
 }
 
 // toolJSON marshals data as JSON and wraps in a ToolCallResult.

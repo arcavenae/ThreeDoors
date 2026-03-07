@@ -49,8 +49,8 @@ func TestResourcesListPopulated(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	if len(result.Resources) != 14 {
-		t.Errorf("expected 14 resources, got %d", len(result.Resources))
+	if len(result.Resources) != 16 {
+		t.Errorf("expected 16 resources, got %d", len(result.Resources))
 	}
 
 	// Check that expected URIs are present.
