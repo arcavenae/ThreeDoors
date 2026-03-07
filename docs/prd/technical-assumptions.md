@@ -150,7 +150,7 @@ ThreeDoors/
 - **Validation goal**: Prove that having 3 options reduces friction vs. scrolling a full list
 
 **File I/O:**
-- **Go standard library**: Use `os`, `bufio`, `io/ioutil` - no external dependencies for file operations
+- **Go standard library**: Use `os`, `bufio`, `io` - no external dependencies for file operations
 - **Error handling**: Create files with defaults if missing; graceful degradation if corrupted
 - **Concurrency**: Not a concern for single-user local files
 

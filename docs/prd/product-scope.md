@@ -94,17 +94,20 @@
 
 ---
 
-## Phase 4: Future Expansion (12+ months out)
+## Phase 5: Future Expansion (12+ months out)
 
 **In Scope:**
-- LLM-powered task decomposition and agent action queue
-- Psychology research and validation
 - iPhone mobile app (SwiftUI) with Apple Notes sync and Three Doors card carousel
+- Self-driving development pipeline (multiclaude worker dispatch from TUI)
+- Additional integrations (Todoist, Linear, GitHub Issues, ClickUp)
+- Cross-computer sync
 
 **Out of Scope (Deferred Indefinitely):**
 - iPad app
 - Apple Watch app
 - Android app
 - Multi-user support
+- Web interface
+- Voice interface
 
 ---

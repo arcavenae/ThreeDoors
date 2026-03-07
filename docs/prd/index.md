@@ -8,6 +8,7 @@
     - [Key Differentiator](./executive-summary.md#key-differentiator)
     - [Target Users](./executive-summary.md#target-users)
     - [Core Philosophy](./executive-summary.md#core-philosophy)
+    - [Success Criteria](./executive-summary.md#success-criteria)
   - [Goals and Background Context](./goals-and-background-context.md)
     - [Goals](./goals-and-background-context.md#goals)
     - [Background Context](./goals-and-background-context.md#background-context)

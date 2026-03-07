@@ -1,91 +1,51 @@
 # Next Steps
 
-## For Developer: Begin Technical Demo Implementation
+## Current Focus: Complete In-Progress Epics
 
-**Objective:** Implement Epic 1 (Three Doors Technical Demo) following the user stories in sequence.
+**Objective:** Finish partially complete work before starting new epics.
 
-**Starting Point:** Story 1.1 - Project Setup & Basic Bubbletea App
+**In Progress:**
+- **Epic 17: Door Theme System** -- Stories 17.1-17.6 being implemented. Adds user-selectable themed door frames with ASCII/ANSI art.
 
-**Recommended Approach:**
-
-1. **Review the PRD thoroughly**, especially:
-   - Technical Demo Requirements (TD1-TD9)
-   - Epic 1 Stories (1.1 through 1.7)
-   - Technical Assumptions for Tech Demo Phase
-   - Acceptance Criteria for each story
-
-2. **Set up development environment:**
-   - Ensure Go 1.25.4+ is installed
-   - Choose your preferred editor/IDE with Go support
-   - Prepare terminal emulator (iTerm2 or similar)
-
-3. **Execute stories sequentially:**
-   - Complete Story 1.1 fully (all acceptance criteria met) before moving to 1.2
-   - Each story builds on the previous one
-   - Time-box each story to ~30-60 minutes; if significantly over, reassess approach
-
-4. **Track progress:**
-   - Note actual time spent per story (validates estimates)
-   - Document any challenges encountered (especially Bubbletea learning curve)
-   - Capture UX insights during daily use
-
-5. **Validation phase:**
-   - After completing Story 1.7, use the app daily for 1 week
-   - Observe: Does Three Doors reduce friction vs. scrolling a list?
-   - Document decision criteria results (proceed to Epic 2 or pivot?)
-
-**Quick Start Prompt for Story 1.1:**
-
-```bash
-# Navigate to project directory
-cd ~/work/simple-todo
-
-# Initialize Go module (if not already done)
-go mod init github.com/arcaven/ThreeDoors
-
-# Add Bubbletea and Lipgloss dependencies
-go get github.com/charmbracelet/bubbletea@latest
-go get github.com/charmbracelet/lipgloss@latest
-
-# Create initial structure
-mkdir -p cmd/threedoors
-mkdir -p internal/tui
-
-# Create basic main.go following Bubbletea "Hello World" pattern
-# Target: App renders "ThreeDoors - Technical Demo" header and responds to 'q' to quit
-```
-
-**Reference Resources:**
-- Bubbletea Tutorial: https://github.com/charmbracelet/bubbletea/tree/master/tutorials
-- Lipgloss Examples: https://github.com/charmbracelet/lipgloss/tree/master/examples
-- Go 1.25 Release Notes: https://go.dev/doc/go1.25
+**Partially Complete (need remaining stories):**
+- **Epic 9: Testing Strategy & Quality Gates** -- 2/5 stories done (PRs #83, #89). Stories 9.3-9.5 pending: performance benchmarks, functional E2E tests, CI coverage gates.
+- **Epic 13: Multi-Source Task Aggregation** -- 1/2 stories done (PR #84). Story 13.2 (duplicate detection) pending.
 
 ---
 
-## Post-Validation: Next PRD Iteration
+## Next Epics in Priority Order
 
-**If Technical Demo Succeeds (Decision Gate Passed):**
+**After current in-progress work:**
 
-Create Epic 2 detailed stories for Apple Notes Integration:
-- Run Apple Notes integration spike (evaluate 4 identified options with Context7 MCP)
-- Define specific success criteria based on Epic 1 learnings
-- Refine requirements based on actual usage patterns from validation week
-- Update PRD version to 2.0 with Epic 2 details
+1. **Epic 19: Jira Integration** -- Read-only adapter with JQL search, then bidirectional sync. Prerequisites met (Epic 7, 11, 13).
+2. **Epic 20: Apple Reminders Integration** -- Full CRUD via JXA scripts. Prerequisites met (Epic 7).
+3. **Epic 21: Sync Protocol Hardening** -- Per-provider sync scheduler, circuit breaker, canonical ID mapping. Prerequisites met (Epic 11, 13).
 
-**If Technical Demo Fails (Pivot Needed):**
+**Longer-term (prerequisites may not yet be met):**
 
-Retrospective and reassessment:
-- Document what didn't work about Three Doors concept
-- Identify alternative approaches to the original problem (reduce todo app friction)
-- Consider: Was the problem statement correct? Was the solution wrong? Both?
-- Decide: Iterate on Three Doors design or pursue different solution entirely
+4. **Epic 16: iPhone Mobile App** -- SwiftUI app with Apple Notes sync, Three Doors card carousel, TestFlight distribution.
+5. **Epic 22: Self-Driving Development Pipeline** -- Dispatch multiclaude workers from TUI. Depends on Epic 14 (complete).
 
 ---
 
-*This PRD embodies "progress over perfection" - it's comprehensive enough to start building, flexible enough to adapt based on learnings, and structured to prevent premature investment in unvalidated concepts.*
+## Decision Points
+
+**Epic 9 scope review:** Assess whether remaining stories (9.3-9.5) are still needed given Epic 18 (Docker E2E testing) is complete. May overlap.
+
+**Epic 16 timing:** iPhone app depends on stable Apple Notes integration. Evaluate whether current integration is mature enough before starting.
+
+**Epic 22 feasibility:** Self-driving pipeline depends on multiclaude stability. Evaluate CLI availability before committing resources.
 
 ---
 
-**Document Complete**
+## Completed Milestones
+
+- Phase 1 (Technical Demo): COMPLETE -- Concept validated through daily use
+- Phase 2 (Post-Validation): COMPLETE -- Apple Notes, enhanced interaction, platform readiness, learning, macOS distribution, data layer all shipped
+- Phase 3 (Platform Expansion): MOSTLY COMPLETE -- Plugin SDK, Obsidian, onboarding, sync, calendar, LLM decomposition, psychology research, Docker E2E all shipped
+
+---
+
+*This PRD embodies "progress over perfection" -- comprehensive enough to guide development, flexible enough to adapt based on learnings, and structured to prevent premature investment in unvalidated concepts.*
 
 ---
