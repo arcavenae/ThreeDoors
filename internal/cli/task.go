@@ -20,6 +20,7 @@ func newTaskCmd() *cobra.Command {
 		Short: "Manage tasks",
 	}
 	cmd.AddCommand(newTaskAddCmd())
+	cmd.AddCommand(newTaskBlockCmd())
 	cmd.AddCommand(newTaskCompleteCmd())
 	cmd.AddCommand(newTaskListCmd())
 	cmd.AddCommand(newTaskShowCmd())
@@ -27,6 +28,8 @@ func newTaskCmd() *cobra.Command {
 	cmd.AddCommand(newTaskDeleteCmd())
 	cmd.AddCommand(newTaskNoteCmd())
 	cmd.AddCommand(newTaskSearchCmd())
+	cmd.AddCommand(newTaskStatusCmd())
+	cmd.AddCommand(newTaskUnblockCmd())
 	return cmd
 }
 
