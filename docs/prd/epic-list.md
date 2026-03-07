@@ -310,9 +310,26 @@
 - **NFRs covered:** NFR24, NFR25, NFR26, NFR27
 - **Research:** See `docs/research/self-driving-development-pipeline.md`
 
-**Epic 23+: Additional Integrations** (Todoist, Linear, GitHub Issues, ClickUp, etc.)
-**Epic 24+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 25+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 27: Daily Planning Mode** (P1)
+- **Goal:** Add a guided daily planning ritual that transforms ThreeDoors from a reactive task picker into a proactive morning engagement tool, driving long-term retention through structured planning sessions
+- **Prerequisites:** Epic 1 (session tracking), Epic 3 (mood capture, values/goals flow patterns), Epic 4 (task categorization)
+- **Status:** Not Started
+- **Deliverables:**
+  - Planning data model with session-scoped `+focus` tag and energy level constants
+  - Review incomplete tasks flow (continue/defer/drop quick triage)
+  - Focus selection flow (pick 3-5 tasks from pool, filtered by energy)
+  - Energy level matching with time-of-day inference and user override
+  - Planning session metrics (JSONL `planning_session` event type)
+  - Focus-aware door selection scoring boost
+  - CLI `threedoors plan` subcommand and TUI `:plan` command
+- **Stories:** 27.1-27.5 (5 stories)
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **FRs covered:** FR97, FR98, FR99, FR100, FR101, FR102, FR103
+- **Research:** See `docs/research/ux-workflow-improvements-research.md` (Improvement #2: Daily Planning Mode)
+
+**Epic 28+: Additional UX Improvements** (Quick Capture CLI, Snooze/Defer, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
+**Epic 29+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 30+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -346,6 +363,7 @@
 | Epic 20: Apple Reminders Integration | 4 | Partial (1/4) |
 | Epic 21: Sync Protocol Hardening | 4 | Partial (3/4) |
 | Epic 22: Self-Driving Dev Pipeline | 8 | Not Started |
-| **Total** | **119** | **97 complete, 3 partial, 19 remaining** |
+| Epic 27: Daily Planning Mode | 5 | Not Started |
+| **Total** | **124** | **97 complete, 3 partial, 24 remaining** |
 
 ---

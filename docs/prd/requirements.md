@@ -380,6 +380,28 @@ These non-functional requirements establish code quality gates that all contribu
 
 ---
 
+## Phase 6+ - Daily Planning Mode (Accepted)
+
+*The following requirements add a guided daily planning ritual to ThreeDoors, creating a proactive morning engagement loop that drives long-term retention.*
+
+**Daily Planning Mode:**
+
+**FR97:** The system shall provide a daily planning mode accessible via `threedoors plan` CLI command or `:plan` TUI command that guides users through a structured morning planning ritual with three sequential steps: review, select, and confirm
+
+**FR98:** The planning mode shall present yesterday's incomplete tasks with options to continue (leave in pool with focus priority), defer (leave in pool without priority), or drop (mark as deferred status) each task — this is a quick triage step, not a snooze-with-date mechanism
+
+**FR99:** The planning mode shall allow users to select up to 5 tasks as "today's focus" from the full task pool, defaulting to 3 focus tasks (consistent with the Three Doors brand), using the session-scoped `+focus` tag convention so focus state resets on the next planning session
+
+**FR100:** The planning mode shall infer current energy level from time of day as a default (morning = high, afternoon = medium, evening = low) and display it with an option to override, using the energy level to filter and sort focus task suggestions by matching effort level
+
+**FR101:** The planning session shall display a soft progress indicator (step counter and elapsed time) without enforcing a hard time limit — showing a gentle nudge message after 10 minutes but never forcibly ending the session
+
+**FR102:** Today's focus tasks (tagged `+focus`) shall receive an elevated scoring boost in door selection, appearing more frequently as doors until completed or until the focus session expires (planning session timestamp + 16 hours, or next planning session, whichever comes first)
+
+**FR103:** The system shall track planning session completion, duration, number of tasks reviewed, and number of focus tasks selected as a `planning_session` event type in the JSONL session metrics log
+
+---
+
 ## Task Source Integration NFRs
 
 > Requirements specific to API-based and IPC-based task source adapters.
