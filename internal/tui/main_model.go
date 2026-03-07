@@ -13,6 +13,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
+	"github.com/arcaven/ThreeDoors/internal/mcp"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -38,6 +39,7 @@ const (
 	ViewSyncLog
 	ViewThemePicker
 	ViewDevQueue
+	ViewProposals
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -61,6 +63,7 @@ type MainModel struct {
 	syncLogView         *SyncLogView
 	themePickerView     *ThemePicker
 	devQueueView        *DevQueueView
+	proposalsView       *ProposalsView
 	configPath          string
 	pool                *core.TaskPool
 	tracker             *core.SessionTracker
@@ -81,6 +84,7 @@ type MainModel struct {
 	devDispatchEnabled  bool
 	dispatcher          dispatch.Dispatcher
 	devQueue            *dispatch.DevQueue
+	proposalStore       *mcp.ProposalStore
 	pollingActive       bool
 	flash               string
 	width               int
@@ -209,6 +213,15 @@ func (m *MainModel) SetAgentService(svc *intelligence.AgentService) {
 	m.agentService = svc
 }
 
+// SetProposalStore sets the proposal store for the proposal review view.
+func (m *MainModel) SetProposalStore(store *mcp.ProposalStore) {
+	m.proposalStore = store
+	if store != nil {
+		count := PendingProposalCount(store)
+		m.doorsView.SetPendingProposals(count)
+	}
+}
+
 // SetDispatcher sets the Dispatcher used for worker status polling.
 func (m *MainModel) SetDispatcher(d dispatch.Dispatcher) {
 	m.dispatcher = d
@@ -279,6 +292,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.devQueueView != nil {
 			m.devQueueView.SetWidth(msg.Width)
+		}
+		if m.proposalsView != nil {
+			m.proposalsView.SetWidth(msg.Width)
+			m.proposalsView.SetHeight(msg.Height)
 		}
 		return m, nil
 
@@ -772,6 +789,33 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd := m.handleWorkerStatus(msg)
 		return m, cmd
 
+	case ShowProposalsMsg:
+		if m.proposalStore == nil {
+			m.flash = "No proposal store available"
+			return m, ClearFlashCmd()
+		}
+		m.proposalsView = NewProposalsView(m.proposalStore, m.pool, m.provider)
+		m.proposalsView.SetWidth(m.width)
+		m.proposalsView.SetHeight(m.height)
+		m.previousView = m.viewMode
+		m.viewMode = ViewProposals
+		return m, nil
+
+	case ProposalApprovedMsg:
+		m.flash = fmt.Sprintf("Approved proposal for task %s", msg.TaskID)
+		m.doorsView.SetPendingProposals(PendingProposalCount(m.proposalStore))
+		return m, ClearFlashCmd()
+
+	case ProposalRejectedMsg:
+		m.flash = "Proposal rejected"
+		m.doorsView.SetPendingProposals(PendingProposalCount(m.proposalStore))
+		return m, ClearFlashCmd()
+
+	case ProposalBatchApprovedMsg:
+		m.flash = fmt.Sprintf("Approved %d proposals", msg.Count)
+		m.doorsView.SetPendingProposals(PendingProposalCount(m.proposalStore))
+		return m, ClearFlashCmd()
+
 	case ShowDevQueueMsg:
 		if m.devQueue == nil || m.dispatcher == nil {
 			m.flash = "Dev queue not available"
@@ -849,6 +893,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateThemePicker(msg)
 	case ViewDevQueue:
 		return m.updateDevQueue(msg)
+	case ViewProposals:
+		return m.updateProposals(msg)
 	}
 
 	return m, nil
@@ -900,6 +946,8 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
 				return m, func() tea.Msg { return ShowFeedbackMsg{Task: task} }
 			}
+		case "S":
+			return m, func() tea.Msg { return ShowProposalsMsg{} }
 		case "m", "M":
 			return m, func() tea.Msg { return ShowMoodMsg{} }
 		case "/":
@@ -1030,6 +1078,14 @@ func (m *MainModel) updateDevQueue(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.devQueueView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateProposals(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.proposalsView == nil {
+		return m, nil
+	}
+	cmd := m.proposalsView.Update(msg)
 	return m, cmd
 }
 
@@ -1436,6 +1492,10 @@ func (m *MainModel) View() string {
 	case ViewDevQueue:
 		if m.devQueueView != nil {
 			view = m.devQueueView.View()
+		}
+	case ViewProposals:
+		if m.proposalsView != nil {
+			view = m.proposalsView.View()
 		}
 	default:
 		view = m.doorsView.View()

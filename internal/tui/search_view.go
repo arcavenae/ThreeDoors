@@ -209,6 +209,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "devqueue":
 		return func() tea.Msg { return ShowDevQueueMsg{} }
 
+	case "suggestions":
+		return func() tea.Msg { return ShowProposalsMsg{} }
+
 	case "dispatch":
 		if !sv.devDispatchEnabled {
 			return func() tea.Msg {
@@ -221,7 +224,7 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 
 	case "help":
 		return func() tea.Msg {
-			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :theme, :dispatch, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :synclog, :devqueue, :help, :quit | Keys: / search, a/w/d select, s re-roll, Enter open, m mood, L link, X xrefs, q quit"}
+			return FlashMsg{Text: "Commands: :add <text>, :add-ctx, :add --why, :tag, :theme, :dispatch, :suggestions, :goals [edit], :mood [mood], :stats, :dashboard, :insights [mood|avoidance], :health, :synclog, :devqueue, :help, :quit | Keys: / search, a/w/d select, s re-roll, S suggestions, Enter open, m mood, L link, X xrefs, q quit"}
 		}
 
 	case "quit", "exit":

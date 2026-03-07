@@ -223,6 +223,25 @@ type DuplicateMergedMsg struct {
 	RemovedTask *core.Task
 }
 
+// ShowProposalsMsg is sent to open the proposal review view.
+type ShowProposalsMsg struct{}
+
+// ProposalApprovedMsg is sent when a proposal is approved and applied.
+type ProposalApprovedMsg struct {
+	ProposalID string
+	TaskID     string
+}
+
+// ProposalRejectedMsg is sent when a proposal is rejected.
+type ProposalRejectedMsg struct {
+	ProposalID string
+}
+
+// ProposalBatchApprovedMsg is sent when multiple proposals are approved at once.
+type ProposalBatchApprovedMsg struct {
+	Count int
+}
+
 // ShowDevQueueMsg is sent to open the dev queue view.
 type ShowDevQueueMsg struct{}
 
