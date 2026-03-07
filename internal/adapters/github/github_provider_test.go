@@ -15,10 +15,18 @@ import (
 
 // mockIssueLister implements IssueLister for testing.
 type mockIssueLister struct {
-	issues  map[string][]*GitHubIssue // keyed by "owner/repo"
-	user    string
-	listErr error
-	userErr error
+	issues     map[string][]*GitHubIssue // keyed by "owner/repo"
+	user       string
+	listErr    error
+	userErr    error
+	closeErr   error
+	closeCalls []closeCall
+}
+
+type closeCall struct {
+	owner  string
+	repo   string
+	number int
 }
 
 func (m *mockIssueLister) ListIssues(_ context.Context, owner, repo, _ string) ([]*GitHubIssue, error) {
@@ -34,6 +42,11 @@ func (m *mockIssueLister) GetAuthenticatedUser(_ context.Context) (string, error
 		return "", m.userErr
 	}
 	return m.user, nil
+}
+
+func (m *mockIssueLister) CloseIssue(_ context.Context, owner, repo string, issueNumber int) error {
+	m.closeCalls = append(m.closeCalls, closeCall{owner, repo, issueNumber})
+	return m.closeErr
 }
 
 func newTestConfig(repos ...string) *GitHubConfig {
@@ -97,7 +110,7 @@ func TestName(t *testing.T) {
 	}
 }
 
-// --- Read-only methods (AC6) ---
+// --- Read-only methods (AC7: Save/Delete remain ErrReadOnly) ---
 
 func TestReadOnlyMethods(t *testing.T) {
 	t.Parallel()
@@ -110,7 +123,6 @@ func TestReadOnlyMethods(t *testing.T) {
 		{"SaveTask", func() error { return p.SaveTask(core.NewTask("test")) }},
 		{"SaveTasks", func() error { return p.SaveTasks([]*core.Task{core.NewTask("test")}) }},
 		{"DeleteTask", func() error { return p.DeleteTask("test-id") }},
-		{"MarkComplete", func() error { return p.MarkComplete("test-id") }},
 	}
 
 	for _, tt := range tests {
@@ -122,6 +134,266 @@ func TestReadOnlyMethods(t *testing.T) {
 			}
 		})
 	}
+}
+
+// --- MarkComplete (AC1, AC2) ---
+
+func TestMarkComplete_Success(t *testing.T) {
+	t.Parallel()
+	lister := &mockIssueLister{user: "testuser"}
+	p := newTestProvider(lister, "owner/repo")
+
+	err := p.MarkComplete("github:owner/repo#42")
+	if err != nil {
+		t.Fatalf("MarkComplete() error: %v", err)
+	}
+
+	if len(lister.closeCalls) != 1 {
+		t.Fatalf("expected 1 CloseIssue call, got %d", len(lister.closeCalls))
+	}
+	call := lister.closeCalls[0]
+	if call.owner != "owner" || call.repo != "repo" || call.number != 42 {
+		t.Errorf("CloseIssue called with (%q, %q, %d), want (owner, repo, 42)", call.owner, call.repo, call.number)
+	}
+}
+
+func TestMarkComplete_InvalidTaskID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		taskID string
+	}{
+		{"missing prefix", "owner/repo#42"},
+		{"missing hash", "github:owner/repo42"},
+		{"missing owner", "github:/repo#42"},
+		{"missing repo", "github:owner/#42"},
+		{"bad number", "github:owner/repo#abc"},
+		{"empty", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			p := newTestProvider(&mockIssueLister{user: "testuser"}, "owner/repo")
+			err := p.MarkComplete(tt.taskID)
+			if err == nil {
+				t.Errorf("MarkComplete(%q) expected error, got nil", tt.taskID)
+			}
+		})
+	}
+}
+
+func TestMarkComplete_APIError(t *testing.T) {
+	t.Parallel()
+	lister := &mockIssueLister{
+		user:     "testuser",
+		closeErr: errors.New("not found"),
+	}
+	p := newTestProvider(lister, "owner/repo")
+
+	err := p.MarkComplete("github:owner/repo#42")
+	if err == nil {
+		t.Fatal("MarkComplete() expected error, got nil")
+	}
+}
+
+// --- Rate limit handling (AC5) ---
+
+func TestMarkComplete_RateLimitRetry(t *testing.T) {
+	t.Parallel()
+
+	callCount := 0
+	lister := &rateLimitIssueLister{
+		inner:        &mockIssueLister{user: "testuser"},
+		failCount:    2, // fail twice with rate limit, then succeed
+		callCountPtr: &callCount,
+	}
+
+	p := NewGitHubProvider(lister, newTestConfig("owner/repo"))
+	p.sleepFn = func(_ time.Duration) {} // no-op sleep for tests
+
+	err := p.MarkComplete("github:owner/repo#42")
+	if err != nil {
+		t.Fatalf("MarkComplete() error: %v (expected success after retry)", err)
+	}
+
+	if callCount != 3 {
+		t.Errorf("expected 3 CloseIssue calls (2 rate-limited + 1 success), got %d", callCount)
+	}
+}
+
+func TestMarkComplete_RateLimitExhausted(t *testing.T) {
+	t.Parallel()
+
+	callCount := 0
+	lister := &rateLimitIssueLister{
+		inner:        &mockIssueLister{user: "testuser"},
+		failCount:    10, // always fail
+		callCountPtr: &callCount,
+	}
+
+	p := NewGitHubProvider(lister, newTestConfig("owner/repo"))
+	p.sleepFn = func(_ time.Duration) {}
+
+	err := p.MarkComplete("github:owner/repo#42")
+	if err == nil {
+		t.Fatal("MarkComplete() expected error after exhausted retries, got nil")
+	}
+
+	if callCount != maxRateLimitRetries {
+		t.Errorf("expected %d CloseIssue calls, got %d", maxRateLimitRetries, callCount)
+	}
+}
+
+// --- Circuit breaker (AC6) ---
+
+func TestMarkComplete_CircuitBreakerTrips(t *testing.T) {
+	t.Parallel()
+	lister := &mockIssueLister{
+		user:     "testuser",
+		closeErr: errors.New("server error"),
+	}
+
+	p := newTestProvider(lister, "owner/repo")
+
+	// Trip the circuit breaker with 5 consecutive failures
+	for range 5 {
+		_ = p.MarkComplete("github:owner/repo#1")
+	}
+
+	// Next call should be fast-failed by circuit breaker
+	err := p.MarkComplete("github:owner/repo#1")
+	if !errors.Is(err, core.ErrCircuitOpen) {
+		t.Errorf("expected ErrCircuitOpen after 5 failures, got: %v", err)
+	}
+}
+
+// --- WAL integration (AC3, AC4) ---
+
+func TestMarkComplete_WALFallback(t *testing.T) {
+	t.Parallel()
+	tmpDir := t.TempDir()
+
+	lister := &mockIssueLister{
+		user:     "testuser",
+		closeErr: errors.New("network error"),
+	}
+
+	inner := newTestProvider(lister, "owner/repo")
+	walProvider := core.NewWALProvider(inner, tmpDir)
+
+	// MarkComplete should queue in WAL when API fails
+	err := walProvider.MarkComplete("github:owner/repo#42")
+	if err != nil {
+		t.Fatalf("WAL MarkComplete() error: %v (should queue, not fail)", err)
+	}
+
+	if walProvider.PendingCount() != 1 {
+		t.Errorf("PendingCount() = %d, want 1", walProvider.PendingCount())
+	}
+}
+
+func TestMarkComplete_WALReplay(t *testing.T) {
+	t.Parallel()
+	tmpDir := t.TempDir()
+
+	lister := &mockIssueLister{user: "testuser"}
+
+	// Start with failing API to queue in WAL
+	lister.closeErr = errors.New("network error")
+	inner := newTestProvider(lister, "owner/repo")
+	walProvider := core.NewWALProvider(inner, tmpDir)
+
+	_ = walProvider.MarkComplete("github:owner/repo#42")
+	if walProvider.PendingCount() != 1 {
+		t.Fatalf("PendingCount() = %d, want 1", walProvider.PendingCount())
+	}
+
+	// Fix the API, reset call tracking, and replay
+	lister.closeErr = nil
+	lister.closeCalls = nil
+	errs := walProvider.ReplayPending()
+	if len(errs) > 0 {
+		t.Fatalf("ReplayPending() errors: %v", errs)
+	}
+
+	if walProvider.PendingCount() != 0 {
+		t.Errorf("PendingCount() after replay = %d, want 0", walProvider.PendingCount())
+	}
+
+	if len(lister.closeCalls) != 1 {
+		t.Errorf("expected 1 CloseIssue call after replay, got %d", len(lister.closeCalls))
+	}
+}
+
+// --- parseTaskID ---
+
+func TestParseTaskID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		taskID     string
+		wantOwner  string
+		wantRepo   string
+		wantNumber int
+		wantErr    bool
+	}{
+		{"valid", "github:owner/repo#42", "owner", "repo", 42, false},
+		{"org with dash", "github:my-org/my-repo#1", "my-org", "my-repo", 1, false},
+		{"missing prefix", "owner/repo#42", "", "", 0, true},
+		{"missing hash", "github:owner/repo", "", "", 0, true},
+		{"bad number", "github:owner/repo#abc", "", "", 0, true},
+		{"empty owner", "github:/repo#42", "", "", 0, true},
+		{"empty repo", "github:owner/#42", "", "", 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			owner, repo, number, err := parseTaskID(tt.taskID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseTaskID(%q) error = %v, wantErr %v", tt.taskID, err, tt.wantErr)
+				return
+			}
+			if owner != tt.wantOwner {
+				t.Errorf("owner = %q, want %q", owner, tt.wantOwner)
+			}
+			if repo != tt.wantRepo {
+				t.Errorf("repo = %q, want %q", repo, tt.wantRepo)
+			}
+			if number != tt.wantNumber {
+				t.Errorf("number = %d, want %d", number, tt.wantNumber)
+			}
+		})
+	}
+}
+
+// --- Helpers ---
+
+// rateLimitIssueLister wraps a mockIssueLister and returns rate limit errors
+// for the first N calls to CloseIssue, then delegates to the inner mock.
+type rateLimitIssueLister struct {
+	inner        *mockIssueLister
+	failCount    int
+	callCountPtr *int
+}
+
+func (r *rateLimitIssueLister) ListIssues(ctx context.Context, owner, repo, assignee string) ([]*GitHubIssue, error) {
+	return r.inner.ListIssues(ctx, owner, repo, assignee)
+}
+
+func (r *rateLimitIssueLister) GetAuthenticatedUser(ctx context.Context) (string, error) {
+	return r.inner.GetAuthenticatedUser(ctx)
+}
+
+func (r *rateLimitIssueLister) CloseIssue(ctx context.Context, owner, repo string, issueNumber int) error {
+	*r.callCountPtr++
+	if *r.callCountPtr <= r.failCount {
+		return &RateLimitError{RetryAfter: 1 * time.Second}
+	}
+	return r.inner.CloseIssue(ctx, owner, repo, issueNumber)
 }
 
 // --- LoadTasks ---
@@ -744,4 +1016,8 @@ func (c *countingIssueLister) ListIssues(ctx context.Context, owner, repo, assig
 
 func (c *countingIssueLister) GetAuthenticatedUser(ctx context.Context) (string, error) {
 	return c.inner.GetAuthenticatedUser(ctx)
+}
+
+func (c *countingIssueLister) CloseIssue(ctx context.Context, owner, repo string, issueNumber int) error {
+	return c.inner.CloseIssue(ctx, owner, repo, issueNumber)
 }
