@@ -23,6 +23,7 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output in JSON format")
 
 	cmd.AddCommand(newTaskCmd())
+	cmd.AddCommand(NewDoorsCmd())
 
 	return cmd
 }
