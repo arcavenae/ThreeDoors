@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epic 16 is NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
+**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epic 16 is NOT STARTED. Epic 23 is NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
 
 ## Requirements Inventory
 
@@ -2374,3 +2374,251 @@ So that I can use the self-driving pipeline without risk of excessive cost or un
 **MVP-2 (Stories 22.4, 22.5):** Dev queue view + polling. Full TUI-integrated dispatch with automatic status tracking.
 
 **MVP-3 (Stories 22.6, 22.7, 22.8):** Auto-generated tasks + story generation + safety guardrails. Complete closed-loop self-driving pipeline.
+
+## Epic 23: CLI Interface
+
+**Epic Goal:** Provide a complete non-TUI CLI interface for ThreeDoors that serves both human power users (scriptable task management) and LLM agents (structured JSON output). The CLI shares `internal/core` with the TUI — no domain logic duplication. `threedoors` with no args launches the TUI (backward compatible); any subcommand routes to the Cobra-based CLI.
+
+**Prerequisites:** None (core domain layer is already CLI-ready with JSON struct tags)
+**Framework:** Cobra (`github.com/spf13/cobra`) for subcommand routing, shell completions, and help generation
+**Origin:** CLI interface design research (`docs/research/cli-interface-design.md`)
+**Architecture:** Layered CLI/TUI coexistence — `internal/cli/` imports `internal/core/`, never `internal/tui/`
+**Status:** Not Started
+
+**Key Design Decisions:**
+- Noun-verb command taxonomy: `threedoors task <verb>` (modeled after `gh` CLI)
+- `--json` persistent flag switches all output from human-readable to structured JSON
+- JSON envelope with `schema_version: 1` for forward compatibility
+- Exit codes 0-5 for machine-parseable error handling
+- ID prefix matching for human-friendly task references (like git short SHAs)
+- Non-interactive by default — CLI prints and exits, `--interactive` opt-in
+- `threedoors doors` is the signature CLI command (equivalent of TUI launch)
+
+### Story 23.1: Cobra Scaffolding, Root Command, and Output Formatter
+
+**Status:** Draft
+
+As a developer,
+I want a Cobra-based CLI scaffold with a root command, `--json` persistent flag, and a shared output formatter,
+So that all subsequent CLI commands have a consistent foundation for routing, output formatting, and error handling.
+
+**Acceptance Criteria:**
+
+**Given** the need for a CLI interface alongside the existing TUI
+**When** the scaffolding is implemented
+**Then:**
+- AC1: `internal/cli/root.go` defines the Cobra root command with `--json` persistent flag
+- AC2: `internal/cli/output.go` defines an `OutputFormatter` supporting human-readable (tabwriter) and JSON modes
+- AC3: JSON output uses envelope: `{"schema_version": 1, "command": "<cmd>", "data": ..., "metadata": {...}}`
+- AC4: `cmd/threedoors/main.go` updated with subcommand detection — backward compatible TUI launch
+- AC5: `go.mod` updated with Cobra dependency
+- AC6: Exit code constants defined (0-5)
+- AC7: Unit tests for output formatter
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.2: Task List and Task Show Commands with Prefix Matching
+
+**Status:** Draft
+
+As a CLI user,
+I want to list tasks with filters and view task details by ID prefix,
+So that I can browse and inspect my tasks without launching the TUI.
+
+**Acceptance Criteria:**
+
+**Given** the CLI scaffold from Story 23.1 is in place
+**When** task list and show commands are implemented
+**Then:**
+- AC1: `threedoors task list` displays all active tasks in a table
+- AC2: `--status`, `--type`, `--effort` filter flags, composable
+- AC3: `threedoors task list --json` with metadata (total, filtered, filters)
+- AC4: `threedoors task show <id>` with ID prefix matching
+- AC5: `FindByPrefix()` method added to `TaskPool`
+- AC6: Exit code 2 (not found), 5 (ambiguous prefix)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.3: Task Add and Task Complete Commands
+
+**Status:** Draft
+
+As a CLI user,
+I want to add new tasks and mark tasks complete from the command line,
+So that I can manage my task lifecycle without the TUI.
+
+**Acceptance Criteria:**
+
+**Given** the CLI scaffold from Story 23.1 is in place
+**When** task add and complete commands are implemented
+**Then:**
+- AC1: `threedoors task add "text"` with optional `--context`, `--type`, `--effort`
+- AC2: `threedoors task complete <id>` with prefix matching
+- AC3: Batch complete: `threedoors task complete <id1> <id2> <id3>`
+- AC4: `--json` support for both commands
+- AC5: Exit code 2 (not found), 3 (invalid transition)
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.4: Doors Command — CLI Three Doors Experience
+
+**Status:** Draft
+
+As a CLI user or LLM agent,
+I want a `threedoors doors` command that presents three randomly selected tasks,
+So that I can experience the core Three Doors mechanic without the TUI.
+
+**Acceptance Criteria:**
+
+**Given** the CLI scaffold from Story 23.1 is in place
+**When** the doors command is implemented
+**Then:**
+- AC1: `threedoors doors` displays 3 randomly selected tasks (human-readable)
+- AC2: `threedoors doors --json` with door numbers, task data, and metadata
+- AC3: Selection uses existing `SelectDoors()` — no logic duplication
+- AC4: `threedoors doors --pick N` selects door N and marks task in-progress
+- AC5: Non-interactive by default
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.5: Health, Version Commands and Exit Code Enforcement
+
+**Status:** Draft
+
+As a CLI user or LLM agent,
+I want `threedoors health` and `threedoors version` commands,
+So that I can verify system status and integrate ThreeDoors into health-check scripts.
+
+**Acceptance Criteria:**
+
+**Given** the CLI scaffold from Story 23.1 is in place
+**When** health and version commands are implemented
+**Then:**
+- AC1: `threedoors health` runs `HealthChecker.RunAll()` with table output
+- AC2: `threedoors health --json` with overall, duration, checks array
+- AC3: Exit code 4 if any health check fails
+- AC4: `threedoors version` with version, commit, build date via ldflags
+- AC5: Makefile updated for ldflags injection
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.6: Task Block, Unblock, and Status Commands
+
+**Status:** Draft
+
+As a CLI user,
+I want to block, unblock, and change task status from the command line,
+So that I can manage task state transitions without the TUI.
+
+**Acceptance Criteria:**
+
+**Given** the task list/show commands from Story 23.2 are in place
+**When** status management commands are implemented
+**Then:**
+- AC1: `threedoors task block <id> --reason "..."` with prefix matching
+- AC2: `threedoors task unblock <id>` transitions blocked -> todo
+- AC3: `threedoors task status <id> <new-status>` for any valid transition
+- AC4: Invalid transitions return exit code 3
+- AC5: `--json` support for all commands
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.7: Task Edit, Delete, Note, and Search Commands
+
+**Status:** Draft
+
+As a CLI user,
+I want to edit, delete, annotate, and search tasks from the command line,
+So that I have full task management capability without the TUI.
+
+**Acceptance Criteria:**
+
+**Given** the task list/show commands from Story 23.2 are in place
+**When** edit, delete, note, and search commands are implemented
+**Then:**
+- AC1: `threedoors task edit <id> --text/--context` with prefix matching
+- AC2: `threedoors task delete <id>` with batch support
+- AC3: `threedoors task note <id> "text"` adds a note
+- AC4: `threedoors task search "query"` searches text and context
+- AC5: `--json` support for all commands
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.8: Mood and Stats Commands
+
+**Status:** Draft
+
+As a CLI user,
+I want to record mood and view productivity statistics from the command line,
+So that I can track patterns without the TUI.
+
+**Acceptance Criteria:**
+
+**Given** the CLI scaffold from Story 23.1 is in place
+**When** mood and stats commands are implemented
+**Then:**
+- AC1: `threedoors mood set <mood>` records mood via SessionTracker
+- AC2: `threedoors mood history` shows mood entries
+- AC3: `threedoors stats` with `--daily`, `--weekly`, `--patterns` flags
+- AC4: `--json` support for all commands
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.9: Config Commands and Stdin/Pipe Support
+
+**Status:** Draft
+
+As a CLI user or LLM agent,
+I want to view/modify config and pipe task text via stdin,
+So that I can script task creation and configure ThreeDoors without editing files.
+
+**Acceptance Criteria:**
+
+**Given** the CLI scaffold and task add command are in place
+**When** config commands and stdin support are implemented
+**Then:**
+- AC1: `threedoors config show/get/set` commands
+- AC2: `echo "text" | threedoors task add` reads from stdin
+- AC3: `--stdin` flag for multi-line input (one task per line)
+- AC4: Config key validation with exit code 3 for unknown keys
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Story 23.10: Shell Completions and Interactive Doors Mode
+
+**Status:** Draft
+
+As a CLI power user,
+I want shell completions and an interactive doors selection mode,
+So that I can use the CLI efficiently with tab completion.
+
+**Acceptance Criteria:**
+
+**Given** all CLI commands from previous stories are in place
+**When** shell completions and interactive mode are implemented
+**Then:**
+- AC1: `threedoors completion bash/zsh/fish` outputs completion scripts
+- AC2: Completions cover all subcommands, flags, and enum values
+- AC3: `threedoors doors --interactive` prompts for door selection
+- AC4: Interactive mode auto-disabled when stdout is not a TTY
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
+### Epic 23 Story Dependencies
+
+```
+23.1 (Scaffolding) ──┬──> 23.2 (List/Show) ──┬──> 23.6 (Block/Status)
+                      │                        └──> 23.7 (Edit/Delete/Note/Search)
+                      ├──> 23.3 (Add/Complete) ──> 23.9 (Config/Stdin)
+                      ├──> 23.4 (Doors) ──────────> 23.10 (Completions/Interactive)
+                      ├──> 23.5 (Health/Version)
+                      └──> 23.8 (Mood/Stats)
+```
+
+### MVP Phasing
+
+**Phase 1 — Minimum Viable CLI (Stories 23.1–23.5):** Cobra scaffold + output formatter + core commands (task list/show/add/complete, doors, health, version). Enables both human and LLM usage of ThreeDoors from the command line.
+
+**Phase 2 — Extended CLI (Stories 23.6–23.9):** Full task lifecycle (block/unblock/status/edit/delete/note/search), mood tracking, stats, config management, and stdin/pipe support. Complete parity with TUI task operations.
+
+**Phase 3 — Polish (Story 23.10):** Shell completions and interactive doors mode. Quality-of-life improvements for power users.
