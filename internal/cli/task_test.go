@@ -278,7 +278,7 @@ func TestNewTaskCmd_Structure(t *testing.T) {
 		names[sub.Name()] = true
 	}
 
-	for _, want := range []string{"add", "complete", "list", "show", "edit", "delete", "note", "search"} {
+	for _, want := range []string{"add", "block", "complete", "delete", "edit", "list", "note", "search", "show", "status", "unblock"} {
 		if !names[want] {
 			t.Errorf("missing %q subcommand", want)
 		}
