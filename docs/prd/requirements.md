@@ -92,7 +92,7 @@
 
 ---
 
-## Phase 6+ - Party Mode Recommendations (Accepted)
+## Phase 3+ - Party Mode Recommendations (Accepted)
 
 *The following requirements were accepted through party mode consensus review and extend the product roadmap.*
 
@@ -163,6 +163,14 @@
 **FR50:** The system shall include contract tests validating adapter compliance with the TaskProvider interface
 
 **FR51:** The system shall include functional E2E tests covering full user workflows
+
+**Docker E2E & Headless TUI Testing:**
+
+**FR52:** The system shall provide a headless TUI test harness using Bubbletea's `teatest` package for automated interaction testing with programmatic key input and model assertions
+
+**FR53:** The system shall include golden file snapshot tests for TUI visual regression detection, comparing rendered output against stored reference files
+
+**FR54:** The system shall provide a Docker-based reproducible test environment (`Dockerfile.test` + `docker-compose.test.yml`) for E2E test execution in CI
 
 **Door Theme System:**
 
@@ -246,7 +254,7 @@
 
 ---
 
-## Phase 7+ - Task Source Sync Integration (Accepted)
+## Phase 4+ - Task Source Sync Integration (Accepted)
 
 *The following requirements extend the product with external task source integrations and sync protocol improvements.*
 
@@ -278,7 +286,7 @@
 
 ---
 
-## Phase 8+ - Self-Driving Development Pipeline (Accepted)
+## Phase 5+ - Self-Driving Development Pipeline (Accepted)
 
 *The following requirements enable ThreeDoors to dispatch its own development tasks to multiclaude worker agents, creating a closed loop where the app manages its own development.*
 

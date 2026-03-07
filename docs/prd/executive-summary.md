@@ -20,6 +20,21 @@ ThreeDoors is built first for a single developer user, with potential to serve a
 - **The Overwhelmed Juggler** - Balancing multiple demand sources, needs trust that nothing falls through cracks while maintaining flexibility
 - **The Stuck Starter** - Struggles with inertia, needs low barriers to re-engagement and gentle encouragement without guilt
 
+## Success Criteria
+
+**Technical Demo (Phase 1) -- VALIDATED:**
+- Built and running within 4-8 hours of development time
+- Developer uses it daily for 1+ week to validate UX concept
+- Three Doors selection results in faster time-to-first-action compared to scanning a full task list (measured via session metrics)
+- Decision to proceed to Full MVP based on real usage: PASSED
+
+**Full Product:**
+- User completes at least one task per session via Three Doors selection
+- Three Doors decision time under 5 seconds (measured by door_selected event timestamps)
+- Mood-task correlation data accumulates to enable adaptive door selection within 2 weeks of regular use
+- Sync latency under 2 seconds for all configured providers
+- Zero data loss during offline operation and sync replay
+
 ## Core Philosophy
 
 **Progress over perfection.** Any improvement in what you work on, what you track, or how you align actions with values matters. Better today than yesterday.
