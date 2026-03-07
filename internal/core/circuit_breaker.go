@@ -132,6 +132,22 @@ func (cb *CircuitBreaker) Execute(fn func() error) error {
 	}
 }
 
+// RetryIn returns the duration until the next probe attempt when the circuit is open.
+// Returns zero if the circuit is not open.
+func (cb *CircuitBreaker) RetryIn() time.Duration {
+	cb.mu.Lock()
+	defer cb.mu.Unlock()
+	if cb.state != CircuitOpen {
+		return 0
+	}
+	elapsed := cb.now().Sub(cb.lastTripped)
+	remaining := cb.probeInterval - elapsed
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
 // Reset forces the circuit breaker back to Closed state.
 func (cb *CircuitBreaker) Reset() {
 	cb.mu.Lock()

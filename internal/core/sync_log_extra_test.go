@@ -175,3 +175,58 @@ func TestSyncLog_ReadRecentEntries_LessThanN(t *testing.T) {
 		t.Errorf("expected 1 entry, got %d", len(entries))
 	}
 }
+
+func TestSyncLog_EntriesSince(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	sl := NewSyncLog(dir)
+
+	now := time.Now().UTC()
+	old := SyncLogEntry{
+		Timestamp: now.Add(-2 * time.Hour),
+		Provider:  "Old",
+		Operation: "sync",
+		Summary:   "old entry",
+	}
+	recent := SyncLogEntry{
+		Timestamp: now.Add(-30 * time.Minute),
+		Provider:  "Recent",
+		Operation: "sync",
+		Summary:   "recent entry",
+	}
+	newest := SyncLogEntry{
+		Timestamp: now.Add(-5 * time.Minute),
+		Provider:  "Newest",
+		Operation: "error",
+		Summary:   "newest entry",
+	}
+
+	for _, e := range []SyncLogEntry{old, recent, newest} {
+		if err := sl.Append(e); err != nil {
+			t.Fatalf("Append: %v", err)
+		}
+	}
+
+	// Get entries from last hour
+	entries, err := sl.EntriesSince(now.Add(-1 * time.Hour))
+	if err != nil {
+		t.Fatalf("EntriesSince: %v", err)
+	}
+	if len(entries) != 2 {
+		t.Errorf("expected 2 entries within last hour, got %d", len(entries))
+	}
+}
+
+func TestSyncLog_EntriesSince_Empty(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	sl := NewSyncLog(dir)
+
+	entries, err := sl.EntriesSince(time.Now().UTC().Add(-1 * time.Hour))
+	if err != nil {
+		t.Fatalf("EntriesSince: %v", err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("expected 0 entries for empty log, got %d", len(entries))
+	}
+}

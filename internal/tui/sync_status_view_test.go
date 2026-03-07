@@ -158,3 +158,122 @@ func TestRenderSyncStatusBarDeterministicOrder(t *testing.T) {
 		t.Errorf("providers should be sorted alphabetically: Alpha before Zebra, got Alpha@%d Zebra@%d", alphaIdx, zebraIdx)
 	}
 }
+
+func TestRenderProviderStatusCircuitOpen(t *testing.T) {
+	t.Parallel()
+
+	s := core.ProviderSyncStatus{
+		Name:         "jira",
+		Phase:        core.SyncPhaseError,
+		CircuitState: core.CircuitOpen,
+		RetryIn:      2 * time.Minute,
+	}
+	got := renderProviderStatus(s)
+	if !strings.Contains(got, "✗") {
+		t.Errorf("circuit open should show ✗, got %q", got)
+	}
+	if !strings.Contains(got, "jira") {
+		t.Errorf("should contain provider name, got %q", got)
+	}
+	if !strings.Contains(got, "retry in 2m") {
+		t.Errorf("should contain retry info, got %q", got)
+	}
+}
+
+func TestRenderProviderStatusCircuitHalfOpen(t *testing.T) {
+	t.Parallel()
+
+	s := core.ProviderSyncStatus{
+		Name:         "reminders",
+		CircuitState: core.CircuitHalfOpen,
+	}
+	got := renderProviderStatus(s)
+	if !strings.Contains(got, "↻") {
+		t.Errorf("half-open should show ↻, got %q", got)
+	}
+	if !strings.Contains(got, "probing") {
+		t.Errorf("half-open should show probing, got %q", got)
+	}
+}
+
+func TestRenderProviderStatusStale(t *testing.T) {
+	t.Parallel()
+
+	s := core.ProviderSyncStatus{
+		Name:         "textfile",
+		Phase:        core.SyncPhaseSynced,
+		CircuitState: core.CircuitClosed,
+		StaleSince:   time.Now().UTC().Add(-10 * time.Minute),
+		LastSyncTime: time.Now().UTC().Add(-10 * time.Minute),
+	}
+	got := renderProviderStatus(s)
+	if !strings.Contains(got, "stale") {
+		t.Errorf("stale provider should show staleness, got %q", got)
+	}
+}
+
+func TestRenderWALPendingNoItems(t *testing.T) {
+	t.Parallel()
+
+	statuses := []core.ProviderSyncStatus{
+		{Name: "Local", PendingCount: 0},
+	}
+	got := renderWALPending(statuses)
+	if got != "" {
+		t.Errorf("expected empty string for no pending, got %q", got)
+	}
+}
+
+func TestRenderWALPendingWithItems(t *testing.T) {
+	t.Parallel()
+
+	statuses := []core.ProviderSyncStatus{
+		{Name: "Local", PendingCount: 3, OldestPending: time.Now().UTC().Add(-5 * time.Minute)},
+		{Name: "Remote", PendingCount: 2},
+	}
+	got := renderWALPending(statuses)
+	if !strings.Contains(got, "WAL pending") {
+		t.Errorf("should contain 'WAL pending', got %q", got)
+	}
+	if !strings.Contains(got, "5 items") {
+		t.Errorf("should aggregate pending count to 5, got %q", got)
+	}
+}
+
+func TestRenderSyncStatusBarWithWALPending(t *testing.T) {
+	t.Parallel()
+
+	tracker := core.NewSyncStatusTracker()
+	tracker.Register("WAL")
+	tracker.SetPending("WAL", 4)
+
+	got := RenderSyncStatusBar(tracker)
+	if !strings.Contains(got, "WAL pending") {
+		t.Errorf("should show WAL pending line, got %q", got)
+	}
+}
+
+func TestStyleIconCircuitStates(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		status core.ProviderSyncStatus
+	}{
+		{"circuit open", core.ProviderSyncStatus{CircuitState: core.CircuitOpen}},
+		{"circuit half-open", core.ProviderSyncStatus{CircuitState: core.CircuitHalfOpen}},
+		{"circuit closed synced", core.ProviderSyncStatus{CircuitState: core.CircuitClosed, Phase: core.SyncPhaseSynced}},
+		{"circuit closed error", core.ProviderSyncStatus{CircuitState: core.CircuitClosed, Phase: core.SyncPhaseError}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			icon := tt.status.Icon()
+			got := styleIcon(icon, tt.status)
+			if got == "" {
+				t.Error("styleIcon returned empty string")
+			}
+		})
+	}
+}

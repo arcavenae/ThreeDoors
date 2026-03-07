@@ -2,6 +2,7 @@ package core
 
 import (
 	"testing"
+	"time"
 )
 
 func TestProviderSyncStatusIcon(t *testing.T) {
@@ -234,5 +235,173 @@ func TestSyncStatusTrackerClearErrorOnSync(t *testing.T) {
 	got := tracker.Get("Local")
 	if got.ErrorMsg != "" {
 		t.Errorf("ErrorMsg should be cleared after SetSynced, got %q", got.ErrorMsg)
+	}
+}
+
+func TestIconCircuitStateOverridesPhase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		circuitState CircuitState
+		phase        SyncPhase
+		wantIcon     string
+	}{
+		{"circuit open overrides synced", CircuitOpen, SyncPhaseSynced, "✗"},
+		{"circuit open overrides syncing", CircuitOpen, SyncPhaseSyncing, "✗"},
+		{"circuit half-open overrides synced", CircuitHalfOpen, SyncPhaseSynced, "↻"},
+		{"circuit half-open overrides error", CircuitHalfOpen, SyncPhaseError, "↻"},
+		{"circuit closed uses synced", CircuitClosed, SyncPhaseSynced, "✓"},
+		{"circuit closed uses syncing", CircuitClosed, SyncPhaseSyncing, "↻"},
+		{"circuit closed uses pending", CircuitClosed, SyncPhasePending, "⏳"},
+		{"circuit closed uses error", CircuitClosed, SyncPhaseError, "✗"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			s := ProviderSyncStatus{
+				CircuitState: tt.circuitState,
+				Phase:        tt.phase,
+			}
+			got := s.Icon()
+			if got != tt.wantIcon {
+				t.Errorf("Icon() = %q, want %q", got, tt.wantIcon)
+			}
+		})
+	}
+}
+
+func TestStatusTextCircuitStates(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		status       ProviderSyncStatus
+		wantContains string
+	}{
+		{
+			"circuit open with retry",
+			ProviderSyncStatus{Name: "jira", CircuitState: CircuitOpen, RetryIn: 2 * time.Minute},
+			"✗ jira error (retry in 2m)",
+		},
+		{
+			"circuit open no retry",
+			ProviderSyncStatus{Name: "jira", CircuitState: CircuitOpen},
+			"✗ jira error",
+		},
+		{
+			"circuit half-open probing",
+			ProviderSyncStatus{Name: "reminders", CircuitState: CircuitHalfOpen},
+			"↻ reminders probing...",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := tt.status.StatusText()
+			if got != tt.wantContains {
+				t.Errorf("StatusText() = %q, want %q", got, tt.wantContains)
+			}
+		})
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		d    time.Duration
+		want string
+	}{
+		{"5 seconds", 5 * time.Second, "5s"},
+		{"sub-second rounds to 1s", 500 * time.Millisecond, "1s"},
+		{"30 seconds", 30 * time.Second, "30s"},
+		{"2 minutes", 2 * time.Minute, "2m"},
+		{"59 minutes", 59 * time.Minute, "59m"},
+		{"1 hour", time.Hour, "1h"},
+		{"1 hour 30 min", 90 * time.Minute, "1h 30m"},
+		{"2 hours", 2 * time.Hour, "2h"},
+		{"2h 15m", 2*time.Hour + 15*time.Minute, "2h 15m"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := FormatDuration(tt.d)
+			if got != tt.want {
+				t.Errorf("FormatDuration(%v) = %q, want %q", tt.d, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWALPendingText(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		s    ProviderSyncStatus
+		want string
+	}{
+		{
+			"no pending",
+			ProviderSyncStatus{PendingCount: 0},
+			"",
+		},
+		{
+			"pending without oldest",
+			ProviderSyncStatus{PendingCount: 5},
+			"WAL pending (5 items)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := tt.s.WALPendingText()
+			if got != tt.want {
+				t.Errorf("WALPendingText() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWALPendingTextWithOldest(t *testing.T) {
+	t.Parallel()
+
+	s := ProviderSyncStatus{
+		PendingCount:  3,
+		OldestPending: time.Now().UTC().Add(-5 * time.Minute),
+	}
+	got := s.WALPendingText()
+	if got == "" {
+		t.Fatal("expected non-empty WALPendingText")
+	}
+	if got == "WAL pending (3 items)" {
+		t.Error("expected oldest timestamp in output")
+	}
+}
+
+func TestProviderSyncStatusNewFields(t *testing.T) {
+	t.Parallel()
+
+	s := ProviderSyncStatus{
+		Name:          "textfile",
+		Phase:         SyncPhaseSynced,
+		CircuitState:  CircuitClosed,
+		RetryIn:       0,
+		StaleSince:    time.Time{},
+		SyncCount24h:  42,
+		ErrorCount24h: 3,
+	}
+
+	if s.SyncCount24h != 42 {
+		t.Errorf("SyncCount24h = %d, want 42", s.SyncCount24h)
+	}
+	if s.ErrorCount24h != 3 {
+		t.Errorf("ErrorCount24h = %d, want 3", s.ErrorCount24h)
 	}
 }

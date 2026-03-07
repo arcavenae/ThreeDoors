@@ -320,6 +320,60 @@ func TestCircuitBreakerExecuteReturnsNilOnSuccess(t *testing.T) {
 }
 
 // fakeClock provides a deterministic clock for testing.
+func TestCircuitBreakerRetryIn(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns zero when closed", func(t *testing.T) {
+		t.Parallel()
+		cb := NewCircuitBreaker(DefaultCircuitBreakerConfig())
+		if got := cb.RetryIn(); got != 0 {
+			t.Errorf("RetryIn() = %v, want 0 for closed circuit", got)
+		}
+	})
+
+	t.Run("returns remaining time when open", func(t *testing.T) {
+		t.Parallel()
+		clock := newFakeClock()
+		config := DefaultCircuitBreakerConfig()
+		cb := NewCircuitBreaker(config)
+		cb.now = clock.now
+
+		errTest := errors.New("fail")
+		for i := 0; i < config.FailureThreshold; i++ {
+			_ = cb.Execute(func() error { return errTest })
+		}
+
+		if cb.State() != CircuitOpen {
+			t.Fatalf("expected CircuitOpen, got %v", cb.State())
+		}
+
+		clock.advance(10 * time.Second)
+		remaining := cb.RetryIn()
+		expected := config.ProbeInterval - 10*time.Second
+		if remaining != expected {
+			t.Errorf("RetryIn() = %v, want %v", remaining, expected)
+		}
+	})
+
+	t.Run("returns zero when probe interval elapsed", func(t *testing.T) {
+		t.Parallel()
+		clock := newFakeClock()
+		config := DefaultCircuitBreakerConfig()
+		cb := NewCircuitBreaker(config)
+		cb.now = clock.now
+
+		errTest := errors.New("fail")
+		for i := 0; i < config.FailureThreshold; i++ {
+			_ = cb.Execute(func() error { return errTest })
+		}
+
+		clock.advance(config.ProbeInterval + time.Second)
+		if got := cb.RetryIn(); got != 0 {
+			t.Errorf("RetryIn() = %v, want 0 after interval elapsed", got)
+		}
+	})
+}
+
 type fakeClock struct {
 	mu      sync.Mutex
 	current time.Time

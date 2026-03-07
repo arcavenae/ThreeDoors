@@ -156,6 +156,21 @@ func (sl *SyncLog) ReadRecentEntries(n int) ([]SyncLogEntry, error) {
 	return entries[len(entries)-n:], nil
 }
 
+// EntriesSince returns all entries with timestamps at or after the given time.
+func (sl *SyncLog) EntriesSince(since time.Time) ([]SyncLogEntry, error) {
+	entries, err := sl.ReadEntries()
+	if err != nil {
+		return nil, err
+	}
+	var filtered []SyncLogEntry
+	for _, e := range entries {
+		if !e.Timestamp.Before(since) {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered, nil
+}
+
 // rotateIfNeeded checks if the log file exceeds maxSyncLogSize and truncates it.
 func (sl *SyncLog) rotateIfNeeded() error {
 	info, err := os.Stat(sl.logPath)

@@ -176,6 +176,17 @@ func (wp *WALProvider) PendingCount() int {
 	return len(wp.pending)
 }
 
+// OldestPending returns the timestamp of the oldest pending WAL entry.
+// Returns the zero time if there are no pending entries.
+func (wp *WALProvider) OldestPending() time.Time {
+	wp.mu.Lock()
+	defer wp.mu.Unlock()
+	if len(wp.pending) == 0 {
+		return time.Time{}
+	}
+	return wp.pending[0].Timestamp
+}
+
 // ReplayPending attempts to replay all pending WAL entries against the inner provider.
 // Entries that succeed are removed. Entries that fail are kept with incremented retry
 // counts and exponential backoff is applied. Entries exceeding maxReplayRetries are dropped.

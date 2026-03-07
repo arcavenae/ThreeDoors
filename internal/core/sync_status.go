@@ -18,43 +18,120 @@ const (
 
 // ProviderSyncStatus holds the sync state for a single provider.
 type ProviderSyncStatus struct {
-	Name         string
-	Phase        SyncPhase
-	LastSyncTime time.Time
-	PendingCount int
-	ErrorMsg     string
+	Name          string
+	Phase         SyncPhase
+	LastSyncTime  time.Time
+	PendingCount  int
+	ErrorMsg      string
+	CircuitState  CircuitState
+	RetryIn       time.Duration
+	StaleSince    time.Time
+	SyncCount24h  int
+	ErrorCount24h int
+	OldestPending time.Time
 }
 
-// Icon returns the unicode icon for the current sync phase.
+// Icon returns the unicode icon based on circuit state.
+// Circuit state takes priority: ✓ (closed/healthy), ✗ (open/error), ↻ (half-open/probing).
 func (s ProviderSyncStatus) Icon() string {
-	switch s.Phase {
-	case SyncPhaseSynced:
-		return "✓"
-	case SyncPhaseSyncing:
-		return "↻"
-	case SyncPhasePending:
-		return "⏳"
-	case SyncPhaseError:
+	switch s.CircuitState {
+	case CircuitOpen:
 		return "✗"
+	case CircuitHalfOpen:
+		return "↻"
 	default:
-		return "?"
+		// CircuitClosed — use phase-based icon
+		switch s.Phase {
+		case SyncPhaseSynced:
+			return "✓"
+		case SyncPhaseSyncing:
+			return "↻"
+		case SyncPhasePending:
+			return "⏳"
+		case SyncPhaseError:
+			return "✗"
+		default:
+			return "?"
+		}
 	}
 }
 
 // StatusText returns a compact display string for the provider status.
+// Format: `✓ textfile 5s ago | ✗ jira error (retry in 2m) | ↻ reminders probing...`
 func (s ProviderSyncStatus) StatusText() string {
+	icon := s.Icon()
+
+	// Circuit open: show error with retry info
+	if s.CircuitState == CircuitOpen {
+		if s.RetryIn > 0 {
+			return fmt.Sprintf("%s %s error (retry in %s)", icon, s.Name, FormatDuration(s.RetryIn))
+		}
+		return fmt.Sprintf("%s %s error", icon, s.Name)
+	}
+
+	// Circuit half-open: probing
+	if s.CircuitState == CircuitHalfOpen {
+		return fmt.Sprintf("%s %s probing...", icon, s.Name)
+	}
+
+	// Circuit closed — phase-based display
 	switch s.Phase {
 	case SyncPhaseSynced:
-		return fmt.Sprintf("%s %s synced", s.Icon(), s.Name)
+		if !s.LastSyncTime.IsZero() {
+			return fmt.Sprintf("%s %s %s ago", icon, s.Name, FormatDuration(time.Since(s.LastSyncTime)))
+		}
+		return fmt.Sprintf("%s %s synced", icon, s.Name)
 	case SyncPhaseSyncing:
-		return fmt.Sprintf("%s %s syncing", s.Icon(), s.Name)
+		return fmt.Sprintf("%s %s syncing", icon, s.Name)
 	case SyncPhasePending:
-		return fmt.Sprintf("%s %s pending (%d items)", s.Icon(), s.Name, s.PendingCount)
+		return fmt.Sprintf("%s %s pending (%d items)", icon, s.Name, s.PendingCount)
 	case SyncPhaseError:
-		return fmt.Sprintf("%s %s error", s.Icon(), s.Name)
+		return fmt.Sprintf("%s %s error", icon, s.Name)
 	default:
 		return fmt.Sprintf("? %s unknown", s.Name)
 	}
+}
+
+// FormatDuration returns a human-friendly duration string: "5s", "2m", "1h 30m".
+func FormatDuration(d time.Duration) string {
+	if d < time.Minute {
+		s := int(d.Seconds())
+		if s <= 0 {
+			s = 1
+		}
+		return fmt.Sprintf("%ds", s)
+	}
+	if d < time.Hour {
+		return fmt.Sprintf("%dm", int(d.Minutes()))
+	}
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	if m == 0 {
+		return fmt.Sprintf("%dh", h)
+	}
+	return fmt.Sprintf("%dh %dm", h, m)
+}
+
+// IsStaleSince returns the staleness duration if the provider exceeds its threshold.
+// Returns zero if the provider is not stale.
+func (s ProviderSyncStatus) IsStaleSince(fileThreshold, networkThreshold time.Duration) time.Duration {
+	if s.StaleSince.IsZero() || s.LastSyncTime.IsZero() {
+		return 0
+	}
+	return time.Since(s.StaleSince)
+}
+
+// WALPendingText returns a display string for WAL pending items.
+// Returns empty string if no items are pending.
+func (s ProviderSyncStatus) WALPendingText() string {
+	if s.PendingCount == 0 {
+		return ""
+	}
+	if !s.OldestPending.IsZero() {
+		age := time.Since(s.OldestPending)
+		return fmt.Sprintf("WAL pending (%d items, oldest %s)", s.PendingCount, FormatDuration(age))
+	}
+	return fmt.Sprintf("WAL pending (%d items)", s.PendingCount)
 }
 
 // SyncStatusTracker manages sync status for multiple providers.

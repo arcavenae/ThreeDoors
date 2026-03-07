@@ -29,27 +29,20 @@ func RenderSyncStatusBar(tracker *core.SyncStatusTracker) string {
 	}
 
 	bar := strings.Join(parts, syncStatusSeparator)
+
+	// Append WAL pending summary if any provider has pending items
+	walLine := renderWALPending(statuses)
+	if walLine != "" {
+		bar += "\n" + walLine
+	}
+
 	return syncStatusBarStyle.Render(bar)
 }
 
 // renderProviderStatus renders a single provider's status with appropriate styling.
 func renderProviderStatus(s core.ProviderSyncStatus) string {
 	icon := s.Icon()
-	var styledIcon string
-
-	switch s.Phase {
-	case core.SyncPhaseSynced:
-		styledIcon = syncStatusSyncedStyle.Render(icon)
-	case core.SyncPhaseSyncing:
-		styledIcon = syncStatusSyncingStyle.Render(icon)
-	case core.SyncPhasePending:
-		styledIcon = syncStatusPendingStyle.Render(icon)
-	case core.SyncPhaseError:
-		styledIcon = syncStatusErrorStyle.Render(icon)
-	default:
-		styledIcon = icon
-	}
-
+	styledIcon := styleIcon(icon, s)
 	label := syncStatusLabelStyle.Render(s.Name)
 	detail := renderDetail(s)
 
@@ -59,8 +52,48 @@ func renderProviderStatus(s core.ProviderSyncStatus) string {
 	return fmt.Sprintf("%s %s", styledIcon, label)
 }
 
-// renderDetail renders extra information based on sync phase.
+// styleIcon applies the appropriate color to the icon based on circuit and phase state.
+func styleIcon(icon string, s core.ProviderSyncStatus) string {
+	switch s.CircuitState {
+	case core.CircuitOpen:
+		return syncStatusErrorStyle.Render(icon)
+	case core.CircuitHalfOpen:
+		return syncStatusHalfOpenStyle.Render(icon)
+	default:
+		switch s.Phase {
+		case core.SyncPhaseSynced:
+			return syncStatusSyncedStyle.Render(icon)
+		case core.SyncPhaseSyncing:
+			return syncStatusSyncingStyle.Render(icon)
+		case core.SyncPhasePending:
+			return syncStatusPendingStyle.Render(icon)
+		case core.SyncPhaseError:
+			return syncStatusErrorStyle.Render(icon)
+		default:
+			return icon
+		}
+	}
+}
+
+// renderDetail renders extra information based on circuit and sync phase.
 func renderDetail(s core.ProviderSyncStatus) string {
+	// Circuit state takes priority
+	switch s.CircuitState {
+	case core.CircuitOpen:
+		if s.RetryIn > 0 {
+			return syncStatusDetailStyle.Render(fmt.Sprintf("error (retry in %s)", core.FormatDuration(s.RetryIn)))
+		}
+		return syncStatusDetailStyle.Render("error")
+	case core.CircuitHalfOpen:
+		return syncStatusDetailStyle.Render("probing...")
+	}
+
+	// Staleness indicator
+	if !s.StaleSince.IsZero() {
+		age := time.Since(s.StaleSince)
+		return syncStatusStaleStyle.Render(fmt.Sprintf("stale %s", core.FormatDuration(age)))
+	}
+
 	switch s.Phase {
 	case core.SyncPhasePending:
 		return syncStatusDetailStyle.Render(fmt.Sprintf("(%d)", s.PendingCount))
@@ -68,8 +101,6 @@ func renderDetail(s core.ProviderSyncStatus) string {
 		if !s.LastSyncTime.IsZero() {
 			return syncStatusDetailStyle.Render(formatSyncAge(s.LastSyncTime))
 		}
-	case core.SyncPhaseError:
-		// Don't show error details in the compact bar
 	}
 	return ""
 }
@@ -101,6 +132,30 @@ func formatSyncAge(t time.Time) string {
 	}
 }
 
+// renderWALPending returns a WAL pending line if any provider has pending items.
+func renderWALPending(statuses []core.ProviderSyncStatus) string {
+	totalPending := 0
+	var oldestTime time.Time
+	for _, s := range statuses {
+		totalPending += s.PendingCount
+		if !s.OldestPending.IsZero() && (oldestTime.IsZero() || s.OldestPending.Before(oldestTime)) {
+			oldestTime = s.OldestPending
+		}
+	}
+	if totalPending == 0 {
+		return ""
+	}
+	if !oldestTime.IsZero() {
+		age := time.Since(oldestTime)
+		return syncStatusPendingStyle.Render(
+			fmt.Sprintf("WAL pending (%d items, oldest %s)", totalPending, core.FormatDuration(age)),
+		)
+	}
+	return syncStatusPendingStyle.Render(
+		fmt.Sprintf("WAL pending (%d items)", totalPending),
+	)
+}
+
 // Sync status styles
 var (
 	syncStatusBarStyle = lipgloss.NewStyle().
@@ -122,8 +177,15 @@ var (
 	syncStatusLabelStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("250"))
 
+	syncStatusHalfOpenStyle = lipgloss.NewStyle().
+				Foreground(colorInProgress)
+
 	syncStatusDetailStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("243"))
+
+	syncStatusStaleStyle = lipgloss.NewStyle().
+				Foreground(colorInProgress).
+				Bold(true)
 
 	syncStatusSeparator = "  "
 )
