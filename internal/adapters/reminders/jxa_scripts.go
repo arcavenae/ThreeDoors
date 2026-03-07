@@ -90,6 +90,27 @@ func scriptCreateReminder(name, body string, priority int, listName string) stri
 })()`, escapeJXA(listName), escapeJXA(name), escapeJXA(body), priority)
 }
 
+// scriptUpdateReminder returns a JXA script that updates an existing reminder's
+// name, body, and priority by its ID.
+func scriptUpdateReminder(reminderID, name, body string, priority int) string {
+	return fmt.Sprintf(`(function() {
+  var app = Application("Reminders");
+  var lists = app.lists();
+  for (var i = 0; i < lists.length; i++) {
+    var reminders = lists[i].reminders();
+    for (var j = 0; j < reminders.length; j++) {
+      if (reminders[j].id() === "%s") {
+        reminders[j].name = "%s";
+        reminders[j].body = "%s";
+        reminders[j].priority = %d;
+        return JSON.stringify({success: true});
+      }
+    }
+  }
+  return JSON.stringify({success: false, error: "reminder not found"});
+})()`, escapeJXA(reminderID), escapeJXA(name), escapeJXA(body), priority)
+}
+
 // scriptDeleteReminder returns a JXA script that deletes a reminder by its ID.
 func scriptDeleteReminder(reminderID string) string {
 	return fmt.Sprintf(`(function() {
