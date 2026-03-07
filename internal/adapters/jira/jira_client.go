@@ -32,6 +32,16 @@ type AuthConfig struct {
 	APIToken string // Cloud: API token, Server: PAT
 }
 
+// ConflictError is returned when the Jira API responds with 409 Conflict,
+// indicating a concurrent transition is in progress.
+type ConflictError struct {
+	IssueKey string
+}
+
+func (e *ConflictError) Error() string {
+	return fmt.Sprintf("jira transition %s: conflict (concurrent transition in progress)", e.IssueKey)
+}
+
 // RateLimitError is returned when the Jira API responds with 429 Too Many Requests.
 type RateLimitError struct {
 	RetryAfter time.Duration
@@ -222,7 +232,7 @@ func (c *Client) DoTransition(ctx context.Context, issueKey, transitionID string
 	case http.StatusNoContent:
 		return nil
 	case http.StatusConflict:
-		return fmt.Errorf("jira transition %s: conflict (concurrent transition in progress)", issueKey)
+		return &ConflictError{IssueKey: issueKey}
 	default:
 		return fmt.Errorf("jira transition %s: unexpected status %d", issueKey, resp.StatusCode)
 	}
@@ -271,4 +281,10 @@ func parseRetryAfter(value string) time.Duration {
 func IsRateLimitError(err error) bool {
 	var rle *RateLimitError
 	return errors.As(err, &rle)
+}
+
+// IsConflictError returns true if err is a ConflictError.
+func IsConflictError(err error) bool {
+	var ce *ConflictError
+	return errors.As(err, &ce)
 }
