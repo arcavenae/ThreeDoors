@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -201,6 +202,15 @@ type ThemeSelectedMsg struct {
 
 // ThemeCancelledMsg is sent when the user cancels the theme picker.
 type ThemeCancelledMsg struct{}
+
+// WorkerStatusMsg carries polling results from Dispatcher.GetHistory through the Update chain.
+type WorkerStatusMsg struct {
+	History []dispatch.HistoryEntry
+	Err     error
+}
+
+// workerPollTickMsg is an internal tick message that triggers worker status polling.
+type workerPollTickMsg struct{}
 
 // DuplicateDismissedMsg is sent when the user dismisses a duplicate flag (marks as distinct).
 type DuplicateDismissedMsg struct {

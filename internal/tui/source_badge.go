@@ -1,8 +1,10 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -51,6 +53,28 @@ func SourceBadge(provider string) string {
 
 	style := lipgloss.NewStyle().Foreground(color)
 	return style.Render("[" + label + "]")
+}
+
+// DevDispatchBadge returns a styled badge showing PR status for a dispatched task.
+// Returns empty string if the task has no DevDispatch or no PR number.
+func DevDispatchBadge(task *core.Task) string {
+	if task.DevDispatch == nil {
+		return ""
+	}
+	dd := task.DevDispatch
+	if dd.PRNumber > 0 {
+		if dd.PRStatus == "merged" {
+			style := lipgloss.NewStyle().Foreground(lipgloss.Color("82")).Bold(true)
+			return style.Render("[MERGED]")
+		}
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
+		return style.Render(fmt.Sprintf("[PR #%d]", dd.PRNumber))
+	}
+	if dd.Queued {
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
+		return style.Render("[QUEUED]")
+	}
+	return ""
 }
 
 // DuplicateIndicator returns a styled indicator for potential duplicates.

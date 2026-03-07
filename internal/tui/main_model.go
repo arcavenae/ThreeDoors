@@ -3,12 +3,14 @@ package tui
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
@@ -74,6 +76,9 @@ type MainModel struct {
 	dedupStore          *core.DedupStore
 	duplicateTaskIDs    map[string]bool
 	duplicatePairs      []core.DuplicatePair
+	dispatcher          dispatch.Dispatcher
+	devQueue            *dispatch.DevQueue
+	pollingActive       bool
 	flash               string
 	width               int
 	height              int
@@ -192,6 +197,16 @@ func (m *MainModel) SetConfigPath(path string) {
 // SetAgentService sets the agent service for LLM task decomposition.
 func (m *MainModel) SetAgentService(svc *intelligence.AgentService) {
 	m.agentService = svc
+}
+
+// SetDispatcher sets the Dispatcher used for worker status polling.
+func (m *MainModel) SetDispatcher(d dispatch.Dispatcher) {
+	m.dispatcher = d
+}
+
+// SetDevQueue sets the DevQueue used for tracking dispatched items.
+func (m *MainModel) SetDevQueue(q *dispatch.DevQueue) {
+	m.devQueue = q
 }
 
 // Init implements tea.Model.
@@ -733,6 +748,17 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewDoors
 		return m, nil
 
+	case workerPollTickMsg:
+		if m.dispatcher == nil || !m.hasDispatchedItems() {
+			m.pollingActive = false
+			return m, nil
+		}
+		return m, m.pollWorkerStatusCmd()
+
+	case WorkerStatusMsg:
+		cmd := m.handleWorkerStatus(msg)
+		return m, cmd
+
 	case SyncStatusUpdateMsg:
 		if m.syncTracker != nil {
 			switch msg.Phase {
@@ -1027,6 +1053,152 @@ func (m *MainModel) refreshDuplicates() {
 		m.duplicateTaskIDs[p.TaskB.ID] = true
 	}
 	m.doorsView.SetDuplicateTaskIDs(m.duplicateTaskIDs)
+}
+
+// workerPollInterval is the interval between worker status polling ticks.
+const workerPollInterval = 30 * time.Second
+
+// hasDispatchedItems returns true if any queue items are in dispatched status.
+func (m *MainModel) hasDispatchedItems() bool {
+	if m.devQueue == nil {
+		return false
+	}
+	for _, item := range m.devQueue.List() {
+		if item.Status == dispatch.QueueItemDispatched {
+			return true
+		}
+	}
+	return false
+}
+
+// startPollingIfNeeded starts the polling tick if there are dispatched items and polling is not active.
+func (m *MainModel) startPollingIfNeeded() tea.Cmd {
+	if m.pollingActive || !m.hasDispatchedItems() {
+		return nil
+	}
+	m.pollingActive = true
+	return workerPollTickCmd()
+}
+
+// workerPollTickCmd returns a tea.Cmd that fires a workerPollTickMsg after the poll interval.
+func workerPollTickCmd() tea.Cmd {
+	return tea.Tick(workerPollInterval, func(_ time.Time) tea.Msg {
+		return workerPollTickMsg{}
+	})
+}
+
+// pollWorkerStatusCmd returns a tea.Cmd that calls GetHistory and returns a WorkerStatusMsg.
+func (m *MainModel) pollWorkerStatusCmd() tea.Cmd {
+	d := m.dispatcher
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		history, err := d.GetHistory(ctx, 10)
+		return WorkerStatusMsg{History: history, Err: err}
+	}
+}
+
+// handleWorkerStatus matches history entries to dispatched queue items and updates statuses.
+func (m *MainModel) handleWorkerStatus(msg WorkerStatusMsg) tea.Cmd {
+	if msg.Err != nil {
+		log.Printf("worker status poll error: %v", msg.Err)
+		if m.hasDispatchedItems() {
+			return workerPollTickCmd()
+		}
+		m.pollingActive = false
+		return nil
+	}
+
+	// Build lookup from worker name to history entry
+	historyByWorker := make(map[string]dispatch.HistoryEntry, len(msg.History))
+	for _, entry := range msg.History {
+		historyByWorker[entry.WorkerName] = entry
+	}
+
+	// Match dispatched queue items to history entries
+	items := m.devQueue.List()
+	for _, item := range items {
+		if item.Status != dispatch.QueueItemDispatched || item.WorkerName == "" {
+			continue
+		}
+
+		entry, found := historyByWorker[item.WorkerName]
+		if !found {
+			continue
+		}
+
+		m.updateQueueItemFromHistory(item.ID, entry)
+		m.updateTaskFromHistory(item.TaskID, entry)
+	}
+
+	// Continue or stop polling
+	if m.hasDispatchedItems() {
+		return workerPollTickCmd()
+	}
+	m.pollingActive = false
+	return nil
+}
+
+// updateQueueItemFromHistory updates a queue item based on a history entry.
+func (m *MainModel) updateQueueItemFromHistory(itemID string, entry dispatch.HistoryEntry) {
+	newStatus := mapHistoryStatus(entry.Status)
+	if err := m.devQueue.Update(itemID, func(qi *dispatch.QueueItem) {
+		qi.Status = newStatus
+		qi.PRNumber = entry.PRNumber
+		qi.PRURL = entry.PRURL
+		if newStatus == dispatch.QueueItemCompleted || newStatus == dispatch.QueueItemFailed {
+			now := time.Now().UTC()
+			qi.CompletedAt = &now
+		}
+	}); err != nil {
+		log.Printf("update queue item %s: %v", itemID, err)
+	}
+}
+
+// updateTaskFromHistory updates a task's DevDispatch fields from a history entry.
+func (m *MainModel) updateTaskFromHistory(taskID string, entry dispatch.HistoryEntry) {
+	if taskID == "" {
+		return
+	}
+	task := m.pool.GetTask(taskID)
+	if task == nil {
+		return
+	}
+	if task.DevDispatch == nil {
+		task.DevDispatch = &dispatch.DevDispatch{}
+	}
+	task.DevDispatch.PRNumber = entry.PRNumber
+	task.DevDispatch.PRStatus = mapPRStatus(entry.Status)
+	m.pool.UpdateTask(task)
+	if err := m.saveTasks(); err != nil {
+		log.Printf("save tasks after worker status update: %v", err)
+	}
+}
+
+// mapHistoryStatus maps a multiclaude history status to a QueueItemStatus.
+func mapHistoryStatus(status string) dispatch.QueueItemStatus {
+	switch status {
+	case "completed", "open", "merged":
+		return dispatch.QueueItemCompleted
+	case "failed", "no-pr":
+		return dispatch.QueueItemFailed
+	default:
+		return dispatch.QueueItemDispatched
+	}
+}
+
+// mapPRStatus maps a multiclaude history status to a PR status string for display.
+func mapPRStatus(status string) string {
+	switch status {
+	case "open":
+		return "open"
+	case "merged":
+		return "merged"
+	case "completed":
+		return "open"
+	default:
+		return status
+	}
 }
 
 // saveThemeCmd returns a tea.Cmd that persists the theme to config.yaml.

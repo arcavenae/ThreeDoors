@@ -294,6 +294,11 @@ func (dv *DoorsView) View() string {
 			content = content + "\n" + DuplicateIndicator()
 		}
 
+		// PR status badge
+		if prBadge := DevDispatchBadge(task); prBadge != "" {
+			content = content + "\n" + prBadge
+		}
+
 		// Category badges
 		badge := categoryBadge(task)
 		if badge != "" {
