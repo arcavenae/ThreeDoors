@@ -175,8 +175,8 @@ func TestDetailView_DevBadge_ShownWhenDispatched(t *testing.T) {
 	dv.SetWidth(80)
 
 	view := dv.View()
-	if !strings.Contains(view, "DEV") {
-		t.Error("detail view should show [DEV] badge for dispatched task")
+	if !strings.Contains(view, "QUEUED") {
+		t.Error("detail view should show [QUEUED] badge for dispatched task")
 	}
 }
 
