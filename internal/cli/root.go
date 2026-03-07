@@ -24,6 +24,8 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 
 	cmd.AddCommand(newTaskCmd())
 	cmd.AddCommand(NewDoorsCmd())
+	cmd.AddCommand(newHealthCmd())
+	cmd.AddCommand(newVersionCmd())
 
 	return cmd
 }
