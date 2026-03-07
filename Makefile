@@ -1,13 +1,19 @@
 THREEDOORS_DIR ?= $(HOME)/.threedoors
 VERSION ?= dev
+COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_DATE ?= $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+LDFLAGS := -X main.version=$(VERSION) \
+           -X github.com/arcaven/ThreeDoors/internal/cli.Version=$(VERSION) \
+           -X github.com/arcaven/ThreeDoors/internal/cli.Commit=$(COMMIT) \
+           -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=$(BUILD_DATE)
 
 .PHONY: build build-mcp run clean fmt lint test test-docker bench analyze test-scripts sign pkg release-local test-dist
 
 build:
-	go build -ldflags "-X main.version=$(VERSION)" -o bin/threedoors ./cmd/threedoors
+	go build -ldflags "$(LDFLAGS)" -o bin/threedoors ./cmd/threedoors
 
 build-mcp:
-	go build -ldflags "-X main.version=$(VERSION)" -o bin/threedoors-mcp ./cmd/threedoors-mcp
+	go build -ldflags "$(LDFLAGS)" -o bin/threedoors-mcp ./cmd/threedoors-mcp
 
 run: build
 	./bin/threedoors
