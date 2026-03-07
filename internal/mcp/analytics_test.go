@@ -437,8 +437,8 @@ func TestPromptsRegistered(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	if len(result.Prompts) != 2 {
-		t.Errorf("expected 2 prompts, got %d", len(result.Prompts))
+	if len(result.Prompts) != 4 {
+		t.Errorf("expected 4 prompts, got %d", len(result.Prompts))
 	}
 
 	names := make(map[string]bool)

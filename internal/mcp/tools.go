@@ -281,6 +281,16 @@ func (s *MCPServer) handleToolCall(req *Request) *Response {
 		return s.toolGetUnifiedView(req, params.Arguments)
 	case "suggest_cross_links":
 		return s.toolSuggestCrossLinks(req)
+	case "prioritize_tasks":
+		return s.toolPrioritizeTasks(req, params.Arguments)
+	case "analyze_workload":
+		return s.toolAnalyzeWorkload(req)
+	case "focus_recommendation":
+		return s.toolFocusRecommendation(req, params.Arguments)
+	case "what_if":
+		return s.toolWhatIf(req, params.Arguments)
+	case "context_switch_analysis":
+		return s.toolContextSwitchAnalysis(req, params.Arguments)
 	default:
 		return NewErrorResponse(req.ID, CodeMethodNotFound, fmt.Sprintf("unknown tool: %s", params.Name))
 	}

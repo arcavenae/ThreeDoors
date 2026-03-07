@@ -60,8 +60,8 @@ func TestToolsListPopulated(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	if len(result.Tools) != 17 {
-		t.Errorf("expected 17 tools, got %d", len(result.Tools))
+	if len(result.Tools) != 22 {
+		t.Errorf("expected 22 tools, got %d", len(result.Tools))
 	}
 
 	names := make(map[string]bool)
@@ -73,6 +73,7 @@ func TestToolsListPopulated(t *testing.T) {
 		"get_mood_correlation", "get_productivity_profile", "burnout_risk", "get_completions",
 		"walk_graph", "find_paths", "get_critical_path", "get_orphans", "get_clusters",
 		"get_provider_overlap", "get_unified_view", "suggest_cross_links",
+		"prioritize_tasks", "analyze_workload", "focus_recommendation", "what_if", "context_switch_analysis",
 	}
 	for _, name := range expected {
 		if !names[name] {

@@ -175,6 +175,7 @@ func (s *MCPServer) handleResourcesList(req *Request) *Response {
 
 func (s *MCPServer) handleToolsList(req *Request) *Response {
 	tools := toolDefinitions()
+	tools = append(tools, advancedToolDefinitions()...)
 	if s.proposalStore != nil {
 		tools = append(tools, proposalToolDefinitions()...)
 	}
