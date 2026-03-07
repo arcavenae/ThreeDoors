@@ -379,3 +379,143 @@ func TestMultiSourceAggregator_LoadErrors(t *testing.T) {
 		t.Errorf("expected ErrAllProvidersFailed, got: %v", err)
 	}
 }
+
+func TestMultiSourceAggregator_LoadTasks_MigratesSourceRefs(t *testing.T) {
+	t.Parallel()
+
+	// Task with legacy SourceProvider, no SourceRefs
+	task := NewTask("legacy task")
+	task.SourceProvider = "textfile"
+
+	provider := &aggMockProvider{name: "textfile", tasks: []*Task{task}}
+
+	agg := NewMultiSourceAggregator(map[string]TaskProvider{"textfile": provider})
+	tasks, err := agg.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() unexpected error: %v", err)
+	}
+
+	if len(tasks) != 1 {
+		t.Fatalf("expected 1 task, got %d", len(tasks))
+	}
+	loaded := tasks[0]
+
+	if len(loaded.SourceRefs) == 0 {
+		t.Fatal("expected SourceRefs to be populated after load")
+	}
+	if !loaded.HasSourceRef("textfile", loaded.ID) {
+		t.Errorf("expected SourceRef with provider %q and native ID %q", "textfile", loaded.ID)
+	}
+}
+
+func TestMultiSourceAggregator_LoadTasks_AddsSourceRefForProvider(t *testing.T) {
+	t.Parallel()
+
+	// Task with no SourceProvider or SourceRefs at all
+	task := NewTask("new task")
+
+	provider := &aggMockProvider{name: "obsidian", tasks: []*Task{task}}
+
+	agg := NewMultiSourceAggregator(map[string]TaskProvider{"obsidian": provider})
+	tasks, err := agg.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() unexpected error: %v", err)
+	}
+
+	loaded := tasks[0]
+	if !loaded.HasSourceRef("obsidian", loaded.ID) {
+		t.Error("expected SourceRef added for the loading provider")
+	}
+}
+
+func TestMultiSourceAggregator_SaveTask_MultiProviderWriteRouting(t *testing.T) {
+	t.Parallel()
+
+	textProvider := newAggMockProvider("textfile")
+	obsidianProvider := newAggMockProvider("obsidian")
+
+	providers := map[string]TaskProvider{
+		"textfile": textProvider,
+		"obsidian": obsidianProvider,
+	}
+
+	agg := NewMultiSourceAggregatorWithDefault(providers, "textfile")
+
+	task := NewTask("multi-provider task")
+	task.AddSourceRef("textfile", task.ID)
+	task.AddSourceRef("obsidian", "obs-note-123")
+
+	if err := agg.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() unexpected error: %v", err)
+	}
+
+	if len(textProvider.savedTasks) != 1 {
+		t.Errorf("textfile should get 1 save, got %d", len(textProvider.savedTasks))
+	}
+	if len(obsidianProvider.savedTasks) != 1 {
+		t.Errorf("obsidian should get 1 save, got %d", len(obsidianProvider.savedTasks))
+	}
+}
+
+func TestMultiSourceAggregator_SaveTask_FallsBackWithNoRefs(t *testing.T) {
+	t.Parallel()
+
+	textProvider := newAggMockProvider("textfile")
+	providers := map[string]TaskProvider{"textfile": textProvider}
+
+	agg := NewMultiSourceAggregatorWithDefault(providers, "textfile")
+
+	task := NewTask("no refs task")
+	// No SourceRefs, no SourceProvider
+
+	if err := agg.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() unexpected error: %v", err)
+	}
+
+	if len(textProvider.savedTasks) != 1 {
+		t.Errorf("default provider should get save, got %d saves", len(textProvider.savedTasks))
+	}
+}
+
+func TestMultiSourceAggregator_SaveTask_SkipsUnknownProviderInRefs(t *testing.T) {
+	t.Parallel()
+
+	textProvider := newAggMockProvider("textfile")
+	providers := map[string]TaskProvider{"textfile": textProvider}
+
+	agg := NewMultiSourceAggregatorWithDefault(providers, "textfile")
+
+	task := NewTask("task with unknown provider ref")
+	task.AddSourceRef("textfile", task.ID)
+	task.AddSourceRef("nonexistent", "xyz")
+
+	if err := agg.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() unexpected error: %v", err)
+	}
+
+	if len(textProvider.savedTasks) != 1 {
+		t.Errorf("known provider should get save, got %d", len(textProvider.savedTasks))
+	}
+}
+
+func TestMultiSourceAggregator_SaveTask_DeduplicatesSameProvider(t *testing.T) {
+	t.Parallel()
+
+	textProvider := newAggMockProvider("textfile")
+	providers := map[string]TaskProvider{"textfile": textProvider}
+
+	agg := NewMultiSourceAggregatorWithDefault(providers, "textfile")
+
+	task := NewTask("task")
+	task.AddSourceRef("textfile", "id-1")
+	task.AddSourceRef("textfile", "id-2") // same provider, different native ID
+
+	if err := agg.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() unexpected error: %v", err)
+	}
+
+	// Should only save once to the same provider
+	if len(textProvider.savedTasks) != 1 {
+		t.Errorf("same provider should only get 1 save, got %d", len(textProvider.savedTasks))
+	}
+}

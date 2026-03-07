@@ -73,6 +73,10 @@ func (a *MultiSourceAggregator) LoadTasks() ([]*Task, error) {
 
 		for _, t := range tasks {
 			t.SourceProvider = name
+			t.MigrateSourceProvider()
+			if !t.HasSourceRef(name, t.ID) {
+				t.AddSourceRef(name, t.ID)
+			}
 			a.trackTaskOrigin(t.ID, name)
 		}
 		allTasks = append(allTasks, tasks...)
@@ -86,11 +90,36 @@ func (a *MultiSourceAggregator) LoadTasks() ([]*Task, error) {
 	return allTasks, nil
 }
 
-// SaveTask routes the save to the task's originating provider based on
-// SourceProvider. If SourceProvider is empty or unknown, the default provider is used.
+// SaveTask routes the save to all providers referenced by the task's SourceRefs.
+// If SourceRefs is empty, falls back to SourceProvider or the default provider.
 func (a *MultiSourceAggregator) SaveTask(task *Task) error {
-	provider, _ := a.resolveProvider(task.SourceProvider)
-	return provider.SaveTask(task)
+	if len(task.SourceRefs) == 0 {
+		provider, _ := a.resolveProvider(task.SourceProvider)
+		return provider.SaveTask(task)
+	}
+
+	var errs []error
+	saved := make(map[string]bool)
+	for _, ref := range task.SourceRefs {
+		if saved[ref.Provider] {
+			continue
+		}
+		provider, ok := a.providers[ref.Provider]
+		if !ok {
+			continue
+		}
+		if err := provider.SaveTask(task); err != nil {
+			errs = append(errs, fmt.Errorf("save to provider %q: %w", ref.Provider, err))
+		}
+		saved[ref.Provider] = true
+	}
+
+	if len(saved) == 0 {
+		provider, _ := a.resolveProvider(task.SourceProvider)
+		return provider.SaveTask(task)
+	}
+
+	return errors.Join(errs...)
 }
 
 // SaveTasks groups tasks by their SourceProvider and saves each group to

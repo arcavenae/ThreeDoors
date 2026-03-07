@@ -268,3 +268,64 @@ func TestSourceRefOmittedWhenEmpty(t *testing.T) {
 		t.Error("expected source_refs to be omitted from YAML when empty")
 	}
 }
+
+func TestMigrateTasks_Batch(t *testing.T) {
+	t.Parallel()
+
+	tasks := []*Task{
+		{ID: "t1", SourceProvider: "textfile"},
+		{ID: "t2", SourceProvider: "obsidian"},
+		{ID: "t3", SourceProvider: ""}, // no source provider
+		{ID: "t4", SourceProvider: "jira", SourceRefs: []SourceRef{{Provider: "jira", NativeID: "PROJ-1"}}},
+	}
+
+	MigrateTasks(tasks)
+
+	// t1: should gain a SourceRef
+	if len(tasks[0].SourceRefs) != 1 || tasks[0].SourceRefs[0].Provider != "textfile" {
+		t.Errorf("t1: expected migration to textfile ref, got %+v", tasks[0].SourceRefs)
+	}
+
+	// t2: should gain a SourceRef
+	if len(tasks[1].SourceRefs) != 1 || tasks[1].SourceRefs[0].Provider != "obsidian" {
+		t.Errorf("t2: expected migration to obsidian ref, got %+v", tasks[1].SourceRefs)
+	}
+
+	// t3: no source provider, should remain empty
+	if len(tasks[2].SourceRefs) != 0 {
+		t.Errorf("t3: expected no refs for empty source provider, got %+v", tasks[2].SourceRefs)
+	}
+
+	// t4: already has refs, should not be modified
+	if len(tasks[3].SourceRefs) != 1 || tasks[3].SourceRefs[0].NativeID != "PROJ-1" {
+		t.Errorf("t4: existing refs should be preserved, got %+v", tasks[3].SourceRefs)
+	}
+}
+
+func TestSourceRefBackwardCompatibility_EmptySourceRefs(t *testing.T) {
+	t.Parallel()
+
+	// Task with no SourceRefs should behave identically to pre-SourceRef behavior
+	task := &Task{
+		ID:             "t1",
+		Text:           "legacy task",
+		SourceProvider: "textfile",
+	}
+
+	// EffectiveSourceProvider falls back to legacy field
+	if got := task.EffectiveSourceProvider(); got != "textfile" {
+		t.Errorf("EffectiveSourceProvider() = %q, want %q", got, "textfile")
+	}
+
+	// HasSourceRef returns false
+	if task.HasSourceRef("textfile", "t1") {
+		t.Error("HasSourceRef() should return false for empty refs")
+	}
+
+	// FindBySourceRef on pool returns nil
+	pool := NewTaskPool()
+	pool.AddTask(task)
+	if pool.FindBySourceRef("textfile", "t1") != nil {
+		t.Error("FindBySourceRef() should return nil for task with no SourceRefs")
+	}
+}

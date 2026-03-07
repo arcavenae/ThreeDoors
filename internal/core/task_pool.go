@@ -1,8 +1,15 @@
 package core
 
+// sourceRefKey is the composite key for the SourceRef index.
+type sourceRefKey struct {
+	Provider string
+	NativeID string
+}
+
 // TaskPool manages an in-memory collection of tasks.
 type TaskPool struct {
 	tasks            map[string]*Task
+	sourceRefIndex   map[sourceRefKey]string // sourceRefKey → task ID
 	recentlyShown    []string
 	recentlyShownIdx int
 	maxRecentlyShown int
@@ -12,15 +19,17 @@ type TaskPool struct {
 func NewTaskPool() *TaskPool {
 	return &TaskPool{
 		tasks:            make(map[string]*Task),
+		sourceRefIndex:   make(map[sourceRefKey]string),
 		recentlyShown:    make([]string, 10),
 		recentlyShownIdx: 0,
 		maxRecentlyShown: 10,
 	}
 }
 
-// AddTask adds a task to the pool.
+// AddTask adds a task to the pool and indexes its SourceRefs.
 func (tp *TaskPool) AddTask(task *Task) {
 	tp.tasks[task.ID] = task
+	tp.indexSourceRefs(task)
 }
 
 // GetTask retrieves a task by ID.
@@ -28,13 +37,19 @@ func (tp *TaskPool) GetTask(id string) *Task {
 	return tp.tasks[id]
 }
 
-// UpdateTask updates an existing task in the pool.
+// UpdateTask updates an existing task in the pool and re-indexes its SourceRefs.
 func (tp *TaskPool) UpdateTask(task *Task) {
+	// Remove old index entries by iterating stored keys (handles same-pointer mutation).
+	tp.removeSourceRefIndexByID(task.ID)
 	tp.tasks[task.ID] = task
+	tp.indexSourceRefs(task)
 }
 
-// RemoveTask removes a task from the pool by ID.
+// RemoveTask removes a task from the pool by ID and cleans up its SourceRef index.
 func (tp *TaskPool) RemoveTask(id string) {
+	if task, ok := tp.tasks[id]; ok {
+		tp.removeSourceRefIndex(task)
+	}
 	delete(tp.tasks, id)
 }
 
@@ -100,4 +115,40 @@ func (tp *TaskPool) IsRecentlyShown(taskID string) bool {
 // Count returns the total number of tasks.
 func (tp *TaskPool) Count() int {
 	return len(tp.tasks)
+}
+
+// FindBySourceRef returns the task matching the given provider and native ID,
+// or nil if no match is found. Uses an internal index for O(1) lookup.
+func (tp *TaskPool) FindBySourceRef(provider, nativeID string) *Task {
+	key := sourceRefKey{Provider: provider, NativeID: nativeID}
+	if id, ok := tp.sourceRefIndex[key]; ok {
+		return tp.tasks[id]
+	}
+	return nil
+}
+
+// indexSourceRefs adds all SourceRefs of a task to the index.
+func (tp *TaskPool) indexSourceRefs(task *Task) {
+	for _, ref := range task.SourceRefs {
+		key := sourceRefKey(ref)
+		tp.sourceRefIndex[key] = task.ID
+	}
+}
+
+// removeSourceRefIndex removes all SourceRefs of a task from the index.
+func (tp *TaskPool) removeSourceRefIndex(task *Task) {
+	for _, ref := range task.SourceRefs {
+		key := sourceRefKey(ref)
+		delete(tp.sourceRefIndex, key)
+	}
+}
+
+// removeSourceRefIndexByID removes all index entries pointing to the given task ID.
+// This is safe even when the task's SourceRefs have already been mutated in place.
+func (tp *TaskPool) removeSourceRefIndexByID(taskID string) {
+	for key, id := range tp.sourceRefIndex {
+		if id == taskID {
+			delete(tp.sourceRefIndex, key)
+		}
+	}
 }
