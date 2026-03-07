@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/spf13/cobra"
@@ -16,6 +17,8 @@ func newTaskCmd() *cobra.Command {
 	}
 	cmd.AddCommand(newTaskAddCmd())
 	cmd.AddCommand(newTaskCompleteCmd())
+	cmd.AddCommand(newTaskListCmd())
+	cmd.AddCommand(newTaskShowCmd())
 	return cmd
 }
 
@@ -210,4 +213,192 @@ func completeOneTask(ctx *cliContext, idPrefix string) completeResult {
 		Success:  true,
 		ExitCode: ExitSuccess,
 	}
+}
+
+// listMetadata holds metadata for JSON list output.
+type listMetadata struct {
+	Total    int               `json:"total"`
+	Filtered int               `json:"filtered"`
+	Filters  map[string]string `json:"filters"`
+}
+
+// newTaskListCmd creates the "task list" subcommand.
+func newTaskListCmd() *cobra.Command {
+	var (
+		statusFilter string
+		typeFilter   string
+		effortFilter string
+	)
+
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List tasks",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runTaskList(cmd, statusFilter, typeFilter, effortFilter)
+		},
+	}
+
+	cmd.Flags().StringVar(&statusFilter, "status", "", "filter by status (todo, in-progress, blocked, etc.)")
+	cmd.Flags().StringVar(&typeFilter, "type", "", "filter by type (creative, administrative, technical, physical)")
+	cmd.Flags().StringVar(&effortFilter, "effort", "", "filter by effort (quick-win, medium, deep-work)")
+
+	return cmd
+}
+
+func runTaskList(_ *cobra.Command, statusFilter, typeFilter, effortFilter string) error {
+	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if jsonOutput {
+			_ = formatter.WriteJSONError("task list", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	allTasks := ctx.pool.GetAllTasks()
+	sort.Slice(allTasks, func(i, j int) bool {
+		return allTasks[i].CreatedAt.Before(allTasks[j].CreatedAt)
+	})
+
+	filtered := filterTasks(allTasks, statusFilter, typeFilter, effortFilter)
+
+	if jsonOutput {
+		filters := make(map[string]string)
+		if statusFilter != "" {
+			filters["status"] = statusFilter
+		}
+		if typeFilter != "" {
+			filters["type"] = typeFilter
+		}
+		if effortFilter != "" {
+			filters["effort"] = effortFilter
+		}
+		meta := listMetadata{
+			Total:    len(allTasks),
+			Filtered: len(filtered),
+			Filters:  filters,
+		}
+		return formatter.WriteJSON("task list", filtered, meta)
+	}
+
+	tw := formatter.TableWriter()
+	_, _ = fmt.Fprintf(tw, "ID\tSTATUS\tTYPE\tEFFORT\tTEXT\n")
+	for _, t := range filtered {
+		_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n",
+			shortID(t.ID),
+			t.Status,
+			t.Type,
+			t.Effort,
+			t.Text,
+		)
+	}
+	_ = tw.Flush()
+	return formatter.Writef("%d tasks found\n", len(filtered))
+}
+
+func filterTasks(tasks []*core.Task, status, taskType, effort string) []*core.Task {
+	result := make([]*core.Task, 0, len(tasks))
+	for _, t := range tasks {
+		if status != "" && string(t.Status) != status {
+			continue
+		}
+		if taskType != "" && string(t.Type) != taskType {
+			continue
+		}
+		if effort != "" && string(t.Effort) != effort {
+			continue
+		}
+		result = append(result, t)
+	}
+	return result
+}
+
+// newTaskShowCmd creates the "task show" subcommand.
+func newTaskShowCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "show <id>",
+		Short: "Show task details",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runTaskShow(cmd, args[0])
+		},
+	}
+	return cmd
+}
+
+func runTaskShow(_ *cobra.Command, idPrefix string) error {
+	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if jsonOutput {
+			_ = formatter.WriteJSONError("task show", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	matches := ctx.pool.FindByPrefix(idPrefix)
+
+	if len(matches) == 0 {
+		if jsonOutput {
+			_ = formatter.WriteJSONError("task show", ExitNotFound, "task not found", idPrefix)
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: no task found with prefix %q\n", idPrefix)
+		}
+		os.Exit(ExitNotFound)
+	}
+
+	if len(matches) > 1 {
+		msg := fmt.Sprintf("ambiguous prefix %q matches %d tasks", idPrefix, len(matches))
+		if jsonOutput {
+			_ = formatter.WriteJSONError("task show", ExitAmbiguousInput, msg, "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", msg)
+		}
+		os.Exit(ExitAmbiguousInput)
+	}
+
+	task := matches[0]
+
+	if jsonOutput {
+		return formatter.WriteJSON("task show", task, nil)
+	}
+
+	_ = formatter.Writef("ID:        %s\n", task.ID)
+	_ = formatter.Writef("Text:      %s\n", task.Text)
+	_ = formatter.Writef("Status:    %s\n", task.Status)
+	if task.Context != "" {
+		_ = formatter.Writef("Context:   %s\n", task.Context)
+	}
+	if task.Type != "" {
+		_ = formatter.Writef("Type:      %s\n", task.Type)
+	}
+	if task.Effort != "" {
+		_ = formatter.Writef("Effort:    %s\n", task.Effort)
+	}
+	if task.Location != "" {
+		_ = formatter.Writef("Location:  %s\n", task.Location)
+	}
+	if task.Blocker != "" {
+		_ = formatter.Writef("Blocker:   %s\n", task.Blocker)
+	}
+	_ = formatter.Writef("Created:   %s\n", task.CreatedAt.Format("2006-01-02 15:04:05"))
+	_ = formatter.Writef("Updated:   %s\n", task.UpdatedAt.Format("2006-01-02 15:04:05"))
+	if task.CompletedAt != nil {
+		_ = formatter.Writef("Completed: %s\n", task.CompletedAt.Format("2006-01-02 15:04:05"))
+	}
+	if len(task.Notes) > 0 {
+		_ = formatter.Writef("Notes:\n")
+		for _, n := range task.Notes {
+			_ = formatter.Writef("  [%s] %s\n", n.Timestamp.Format("2006-01-02 15:04"), n.Text)
+		}
+	}
+
+	return nil
 }
