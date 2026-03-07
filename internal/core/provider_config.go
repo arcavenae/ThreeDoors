@@ -46,7 +46,8 @@ type ProviderConfig struct {
 }
 
 // CurrentSchemaVersion is the current config.yaml schema version.
-const CurrentSchemaVersion = 1
+// Version 2 introduced SourceRefs for multi-provider task identity.
+const CurrentSchemaVersion = 2
 
 // defaultProviderConfig returns the default configuration.
 func defaultProviderConfig() *ProviderConfig {
@@ -85,7 +86,17 @@ func LoadProviderConfig(path string) (*ProviderConfig, error) {
 		cfg.NoteTitle = "ThreeDoors Tasks"
 	}
 
+	MigrateConfig(cfg)
+
 	return cfg, nil
+}
+
+// MigrateConfig updates a config to the current schema version.
+// Version 1 → 2: no config-level changes needed (SourceRef migration happens at task load time).
+func MigrateConfig(cfg *ProviderConfig) {
+	if cfg.SchemaVersion < CurrentSchemaVersion {
+		cfg.SchemaVersion = CurrentSchemaVersion
+	}
 }
 
 // ResolveActiveProvider creates a TaskProvider based on the configuration and registry.

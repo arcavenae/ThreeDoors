@@ -83,6 +83,14 @@ func (t *Task) MigrateSourceProvider() {
 	}}
 }
 
+// MigrateTasks runs MigrateSourceProvider on each task in the slice.
+// This converts legacy SourceProvider fields to SourceRefs entries.
+func MigrateTasks(tasks []*Task) {
+	for _, t := range tasks {
+		t.MigrateSourceProvider()
+	}
+}
+
 // NewTask creates a new task with a UUID and default "todo" status.
 func NewTask(text string) *Task {
 	now := time.Now().UTC()

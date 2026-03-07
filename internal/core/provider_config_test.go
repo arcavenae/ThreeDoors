@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -558,8 +559,8 @@ func TestLoadProviderConfig_SchemaVersionParsed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
 	}
-	if cfg.SchemaVersion != 1 {
-		t.Errorf("SchemaVersion = %d, want 1", cfg.SchemaVersion)
+	if cfg.SchemaVersion != CurrentSchemaVersion {
+		t.Errorf("SchemaVersion = %d, want %d (migrated from 1)", cfg.SchemaVersion, CurrentSchemaVersion)
 	}
 }
 
@@ -623,8 +624,8 @@ func TestGenerateSampleConfig_IncludesSchemaVersion(t *testing.T) {
 	}
 
 	content := string(data)
-	if !strings.Contains(content, "schema_version: 1") {
-		t.Error("sample config should include schema_version: 1")
+	if !strings.Contains(content, fmt.Sprintf("schema_version: %d", CurrentSchemaVersion)) {
+		t.Errorf("sample config should include schema_version: %d", CurrentSchemaVersion)
 	}
 }
 
@@ -662,9 +663,9 @@ llm:
 		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
 	}
 
-	// Provider config sections should be parsed
-	if cfg.SchemaVersion != 1 {
-		t.Errorf("SchemaVersion = %d, want 1", cfg.SchemaVersion)
+	// Provider config sections should be parsed (v1 migrated to current)
+	if cfg.SchemaVersion != CurrentSchemaVersion {
+		t.Errorf("SchemaVersion = %d, want %d (migrated)", cfg.SchemaVersion, CurrentSchemaVersion)
 	}
 	if len(cfg.Providers) != 2 {
 		t.Errorf("expected 2 providers, got %d", len(cfg.Providers))
