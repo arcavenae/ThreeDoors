@@ -221,6 +221,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR73-FR80 | Epic 22 ✅ | Self-Driving Development Pipeline (COMPLETE) |
 | FR81-FR88 | Epic 24 | MCP/LLM Integration Server (NOT STARTED) |
 | FR89-FR92 | Epic 25 | Todoist Integration (NOT STARTED) |
+| FR93-FR96 | Epic 26 | GitHub Issues Integration (NOT STARTED) |
 
 ## Epic List
 
@@ -355,6 +356,18 @@ Expose ThreeDoors task management to LLMs via Model Context Protocol. Read-only 
 **FRs covered:** FR81-FR88
 **Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
 **Status:** Not Started. 8 stories planned (24.1-24.8). Research at `docs/research/llm-integration-mcp.md`.
+
+### Epic 25: Todoist Integration — NOT STARTED
+Todoist as a task source with thin HTTP client against REST API v1, read-only adapter, bidirectional sync.
+**FRs covered:** FR89-FR92
+**Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
+**Status:** Not Started. 4 stories planned (25.1-25.4). Research at `docs/research/task-source-expansion-research.md`.
+
+### Epic 26: GitHub Issues Integration — NOT STARTED
+GitHub Issues as a task source for developer workflows using the official go-github SDK. Label-based priority/status conventions.
+**FRs covered:** FR93-FR96
+**Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
+**Status:** Not Started. 4 stories planned (26.1-26.4). Research at `docs/research/task-source-expansion-research.md`.
 
 ---
 
@@ -2943,3 +2956,118 @@ As a developer, I want the Todoist adapter to pass the contract test suite with 
 - **Priority inversion:** Todoist 4 (critical) maps to highest effort; Todoist 0/1 maps to lowest
 - **Read-only first:** Story 25.2 delivers 80% of user value; 25.3 completes the loop
 - **Config:** Mutually exclusive `project_ids` and `filter` options for task scoping
+
+---
+
+## Epic 26: GitHub Issues Integration
+
+**Priority:** P1 — High value, all infrastructure in place
+**Status:** Not Started (0/4 stories)
+**Dependencies:** Epic 7 (Adapter SDK) COMPLETE, Epic 13 (Multi-Source Aggregation) COMPLETE, Epic 21 (Sync Protocol Hardening) COMPLETE
+
+### Epic Goal
+
+Integrate GitHub Issues as a task source adapter using the official `go-github` SDK, enabling ThreeDoors users to view and manage their GitHub issues through the Three Doors decision-friction interface. Target audience overlap is maximum — developers already track work in GitHub Issues.
+
+### Requirements Coverage
+
+| Requirement | Story | Description |
+|------------|-------|-------------|
+| FR93 | 26.1, 26.2 | GitHub Issues integration with field mapping via go-github SDK |
+| FR94 | 26.1 | PAT auth with repo list and assignee filter config |
+| FR95 | 26.2 | Label-based priority/status mapping conventions |
+| FR96 | 26.3 | Bidirectional sync with WAL queuing |
+
+### Stories
+
+#### Story 26.1: GitHub SDK Client & Auth Configuration
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** Epic 7 (done)
+
+As a developer, I want a GitHub API client using the official go-github SDK, so that the GitHubProvider can read and close issues with proper authentication and rate limit handling.
+
+**Acceptance Criteria:**
+- AC1: `GitHubClient` struct in `internal/adapters/github/github_client.go` wrapping `go-github` SDK
+- AC2: PAT authentication via `GITHUB_TOKEN` env var or config.yaml settings
+- AC3: `ListIssues(ctx, repo, assignee) ([]GitHubIssue, error)` method using go-github SDK
+- AC4: `CloseIssue(ctx, repo, issueNumber) error` method for issue completion
+- AC5: `GetAuthenticatedUser(ctx) (string, error)` method for health check
+- AC6: Rate limit handling wrapping go-github's native `*github.RateLimitError` into adapter `RateLimitError` pattern
+- AC7: `GitHubConfig` struct with `Token`, `Repos`, `Assignee`, `PollInterval`, `PriorityLabels`, `InProgressLabel` fields
+- AC8: Config validation: `repos` list required, `assignee` defaults to `@me`
+- AC9: Unit tests using `httptest.NewServer` with canned GitHub API responses
+
+**File:** `docs/stories/26.1.story.md`
+
+---
+
+#### Story 26.2: Read-Only GitHub Provider with Field Mapping
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** 26.1
+
+As a ThreeDoors user who tracks work in GitHub Issues, I want my assigned issues to appear as doors in the Three Doors TUI.
+
+**Acceptance Criteria:**
+- AC1: `GitHubProvider` implementing full `TaskProvider` interface
+- AC2: Field mapping: title->Text, body->Context, state->Status, labels->Tags
+- AC3: Status mapping: `open`->`todo`, `closed`->`complete`, `in-progress` label->`in-progress`
+- AC4: Label-to-Effort mapping: `priority:critical`->deep-work, `priority:high`->deep-work, `priority:medium`->medium, `priority:low`->quick-win
+- AC5: Write methods return `core.ErrReadOnly`
+- AC6: `HealthCheck()` verifies API connectivity via `GetAuthenticatedUser()`
+- AC7: `[GH]` source badge in TUI
+- AC8: Local cache at `~/.threedoors/github-cache.yaml` with configurable TTL
+- AC9: Factory function for adapter registry registration
+- AC10: Multi-repo aggregation — issues from all configured repos merged into single result
+
+**File:** `docs/stories/26.2.story.md`
+
+---
+
+#### Story 26.3: Bidirectional Sync & WAL Integration
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** 26.2
+
+As a ThreeDoors user, I want completing a GitHub issue in ThreeDoors to close it on GitHub.
+
+**Acceptance Criteria:**
+- AC1: `MarkComplete(taskID)` calls `CloseIssue` via GitHub API
+- AC2: On API failure, change queued via `WALProvider`
+- AC3: WAL replay on connectivity restoration
+- AC4: Rate limit handling with exponential backoff
+- AC5: Circuit breaker integration (5 failures / 2min window)
+- AC6: Unit tests for success, WAL fallback, and rate limit flows
+
+**File:** `docs/stories/26.3.story.md`
+
+---
+
+#### Story 26.4: Contract Tests & Integration Testing
+
+**Status:** Not Started | **Priority:** P1 | **Depends On:** 26.2
+
+As a developer, I want the GitHub adapter to pass the contract test suite with comprehensive edge case coverage.
+
+**Acceptance Criteria:**
+- AC1: `adapters.RunContractTests` passes with mock HTTP server
+- AC2: Table-driven label-to-priority mapping tests (all combinations)
+- AC3: Status mapping tests (open, closed, in-progress label)
+- AC4: Multi-repo aggregation tests
+- AC5: Rate limit handling tests
+- AC6: Empty repo (no issues) edge case test
+- AC7: Special character handling tests (issue titles with unicode, markdown bodies)
+- AC8: Assignee filtering tests
+- AC9: Test coverage >= 80% for github package
+
+**File:** `docs/stories/26.4.story.md`
+
+---
+
+### Implementation Notes
+
+- **Architecture:** Follows the exact same adapter pattern as Jira (Epic 19), Apple Reminders (Epic 20), and Todoist (Epic 25)
+- **Package:** `internal/adapters/github/` — SDK client wrapper, provider, field mapping, config
+- **SDK:** Use official `google/go-github` (unlike Todoist which uses raw HTTP due to deprecated SDK)
+- **Label conventions:** `priority:critical/high/medium/low` for effort mapping; `in-progress` for status enrichment
+- **Read-only first:** Story 26.2 delivers 80% of user value; 26.3 completes the loop
+- **Config:** Explicit repo list required; org-level queries deferred to future enhancement
+- **Schedule:** Recommended after Epic 25 (Todoist) to leverage learnings

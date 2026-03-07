@@ -30,6 +30,28 @@ Expose task management to LLMs via Model Context Protocol.
 | 24.5 | TUI Proposal Review View | Not Started | P1 | 24.4 (done) |
 | 24.8 | MCP Prompt Templates & Advanced Interaction Patterns | Not Started | P1 | 24.6 (done), 24.7 (done) |
 
+### Epic 25: Todoist Integration (P1) — 0/4 stories done
+
+Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 25.1 | Todoist HTTP Client & Auth Configuration | Not Started | P1 | Epic 7 (done) |
+| 25.2 | Read-Only Todoist Adapter with Field Mapping | Not Started | P1 | 25.1 |
+| 25.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 25.2 |
+| 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
+
+### Epic 26: GitHub Issues Integration (P1) — 0/4 stories done
+
+GitHub Issues as task source for developer workflows. Official go-github SDK.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 26.1 | GitHub SDK Client & Auth Configuration | Not Started | P1 | Epic 7 (done) |
+| 26.2 | Read-Only GitHub Provider with Field Mapping | Not Started | P1 | 26.1 |
+| 26.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 26.2 |
+| 26.4 | Contract Tests & Integration Testing | Not Started | P1 | 26.2 |
+
 ## Completed Epics
 
 | Epic | Title | Stories |
