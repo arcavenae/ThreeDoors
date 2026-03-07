@@ -3,6 +3,7 @@ package mcp
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
@@ -89,6 +90,50 @@ func toolDefinitions() []ToolItem {
 				"required": []string{"query"},
 			},
 		},
+		{
+			Name:        "get_mood_correlation",
+			Description: "Get mood vs productivity correlation data for a time range.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"from": map[string]any{"type": "string", "description": "ISO 8601 start datetime (default 30 days ago)"},
+					"to":   map[string]any{"type": "string", "description": "ISO 8601 end datetime (default now)"},
+				},
+			},
+		},
+		{
+			Name:        "get_productivity_profile",
+			Description: "Get time-of-day productivity analysis with peak and slump hours.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"from": map[string]any{"type": "string", "description": "ISO 8601 start datetime (default 30 days ago)"},
+					"to":   map[string]any{"type": "string", "description": "ISO 8601 end datetime (default now)"},
+				},
+			},
+		},
+		{
+			Name:        "burnout_risk",
+			Description: "Assess burnout risk from behavioral signals. Returns composite score 0-1 with level (low/moderate/warning).",
+			InputSchema: map[string]any{
+				"type":       "object",
+				"properties": map[string]any{},
+			},
+		},
+		{
+			Name:        "get_completions",
+			Description: "Get completion data with optional grouping and enrichment.",
+			InputSchema: map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"from":             map[string]any{"type": "string", "description": "ISO 8601 start datetime (default 30 days ago)"},
+					"to":               map[string]any{"type": "string", "description": "ISO 8601 end datetime (default now)"},
+					"group_by":         map[string]any{"type": "string", "description": "Group results by: day, hour, week (default day)"},
+					"include_mood":     map[string]any{"type": "boolean", "description": "Include mood data in results"},
+					"include_patterns": map[string]any{"type": "boolean", "description": "Include pattern analysis"},
+				},
+			},
+		},
 	}
 }
 
@@ -112,6 +157,14 @@ func (s *MCPServer) handleToolCall(req *Request) *Response {
 		return s.toolGetSession(req, params.Arguments)
 	case "search_tasks":
 		return s.toolSearchTasks(req, params.Arguments)
+	case "get_mood_correlation":
+		return s.toolGetMoodCorrelation(req, params.Arguments)
+	case "get_productivity_profile":
+		return s.toolGetProductivityProfile(req, params.Arguments)
+	case "burnout_risk":
+		return s.toolBurnoutRisk(req)
+	case "get_completions":
+		return s.toolGetCompletions(req, params.Arguments)
 	default:
 		return NewErrorResponse(req.ID, CodeMethodNotFound, fmt.Sprintf("unknown tool: %s", params.Name))
 	}
@@ -378,6 +431,140 @@ type taskDetail struct {
 	Context string          `json:"context,omitempty"`
 	Notes   []core.TaskNote `json:"notes,omitempty"`
 	Blocker string          `json:"blocker,omitempty"`
+}
+
+func (s *MCPServer) parseTimeRange(args json.RawMessage) (time.Time, time.Time) {
+	now := time.Now().UTC()
+	from := now.AddDate(0, 0, -30)
+	to := now
+
+	if args != nil {
+		var params struct {
+			From string `json:"from"`
+			To   string `json:"to"`
+		}
+		if err := json.Unmarshal(args, &params); err == nil {
+			if params.From != "" {
+				if t, err := time.Parse(time.RFC3339, params.From); err == nil {
+					from = t
+				}
+			}
+			if params.To != "" {
+				if t, err := time.Parse(time.RFC3339, params.To); err == nil {
+					to = t
+				}
+			}
+		}
+	}
+	return from, to
+}
+
+func (s *MCPServer) toolGetMoodCorrelation(req *Request, args json.RawMessage) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.toolError(req, "analytics not available: no session reader configured")
+	}
+	from, to := s.parseTimeRange(args)
+	result, err := pm.MoodCorrelationAnalysis(from, to)
+	if err != nil {
+		return s.toolError(req, fmt.Sprintf("mood correlation: %v", err))
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetProductivityProfile(req *Request, args json.RawMessage) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.toolError(req, "analytics not available: no session reader configured")
+	}
+	from, to := s.parseTimeRange(args)
+	result, err := pm.ProductivityProfileAnalysis(from, to)
+	if err != nil {
+		return s.toolError(req, fmt.Sprintf("productivity profile: %v", err))
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolBurnoutRisk(req *Request) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.toolError(req, "analytics not available: no session reader configured")
+	}
+	result, err := pm.BurnoutRisk()
+	if err != nil {
+		return s.toolError(req, fmt.Sprintf("burnout risk: %v", err))
+	}
+	return s.toolJSON(req, result)
+}
+
+func (s *MCPServer) toolGetCompletions(req *Request, args json.RawMessage) *Response {
+	pm := s.patternMiner()
+	if pm == nil {
+		return s.toolError(req, "analytics not available: no session reader configured")
+	}
+	from, to := s.parseTimeRange(args)
+
+	var params struct {
+		GroupBy         string `json:"group_by"`
+		IncludeMood     bool   `json:"include_mood"`
+		IncludePatterns bool   `json:"include_patterns"`
+	}
+	if args != nil {
+		_ = json.Unmarshal(args, &params)
+	}
+	if params.GroupBy == "" {
+		params.GroupBy = "day"
+	}
+
+	sessions, err := pm.sessionsInRange(from, to)
+	if err != nil {
+		return s.toolError(req, fmt.Sprintf("get completions: %v", err))
+	}
+
+	type completionGroup struct {
+		Key         string   `json:"key"`
+		Completions int      `json:"completions"`
+		Sessions    int      `json:"sessions"`
+		AvgMood     string   `json:"avg_mood,omitempty"`
+		Patterns    []string `json:"patterns,omitempty"`
+	}
+
+	groups := make(map[string]*completionGroup)
+	for _, s := range sessions {
+		var key string
+		switch params.GroupBy {
+		case "hour":
+			key = fmt.Sprintf("%02d:00", s.StartTime.Hour())
+		case "week":
+			year, week := s.StartTime.ISOWeek()
+			key = fmt.Sprintf("%d-W%02d", year, week)
+		default:
+			key = s.StartTime.Format("2006-01-02")
+		}
+
+		g, ok := groups[key]
+		if !ok {
+			g = &completionGroup{Key: key}
+			groups[key] = g
+		}
+		g.Completions += s.TasksCompleted
+		g.Sessions++
+	}
+
+	var result []completionGroup
+	for _, g := range groups {
+		result = append(result, *g)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Key < result[j].Key
+	})
+
+	return s.toolJSON(req, map[string]any{
+		"from":        from,
+		"to":          to,
+		"group_by":    params.GroupBy,
+		"completions": result,
+	})
 }
 
 func newTaskDetail(t *core.Task) *taskDetail {
