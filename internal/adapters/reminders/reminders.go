@@ -87,6 +87,27 @@ func CreateReminder(ctx context.Context, exec CommandExecutor, name, body string
 	return result.ID, nil
 }
 
+// UpdateReminder executes the JXA script to update an existing reminder's
+// name, body, and priority.
+func UpdateReminder(ctx context.Context, exec CommandExecutor, reminderID, name, body string, priority int) error {
+	script := scriptUpdateReminder(reminderID, name, body, priority)
+	output, err := exec.Execute(ctx, script)
+	if err != nil {
+		return fmt.Errorf("update reminder %q: %w", reminderID, err)
+	}
+
+	var result operationResult
+	if err := json.Unmarshal([]byte(output), &result); err != nil {
+		return fmt.Errorf("parse update result: %w", err)
+	}
+
+	if !result.Success {
+		return fmt.Errorf("update reminder %q: %s", reminderID, result.Error)
+	}
+
+	return nil
+}
+
 // DeleteReminder executes the JXA script to delete a reminder by ID.
 func DeleteReminder(ctx context.Context, exec CommandExecutor, reminderID string) error {
 	script := scriptDeleteReminder(reminderID)

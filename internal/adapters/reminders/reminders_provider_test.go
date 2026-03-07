@@ -3,6 +3,7 @@ package reminders
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,26 +18,129 @@ func TestRemindersProvider_Name(t *testing.T) {
 	}
 }
 
-func TestRemindersProvider_ReadOnlyMethods(t *testing.T) {
+func TestRemindersProvider_SaveTask_Create(t *testing.T) {
 	t.Parallel()
-	p := NewRemindersProvider(&mockExecutor{output: "[]"}, nil)
+
+	mock := &scriptDispatcher{
+		dispatch: func(script string) (string, error) {
+			if strings.Contains(script, "app.Reminder") {
+				return `{"success":true,"id":"x-apple-reminder://NEW1"}`, nil
+			}
+			return `[]`, nil
+		},
+	}
+	p := NewRemindersProvider(mock, []string{"Work"})
+
+	task := &core.Task{Text: "New task", Effort: core.EffortDeepWork}
+	if err := p.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() error: %v", err)
+	}
+	if task.ID != "x-apple-reminder://NEW1" {
+		t.Errorf("task.ID = %q, want %q", task.ID, "x-apple-reminder://NEW1")
+	}
+}
+
+func TestRemindersProvider_SaveTask_Update(t *testing.T) {
+	t.Parallel()
+
+	mock := &scriptDispatcher{
+		dispatch: func(script string) (string, error) {
+			if strings.Contains(script, ".name = ") {
+				return `{"success":true}`, nil
+			}
+			return `[]`, nil
+		},
+	}
+	p := NewRemindersProvider(mock, []string{"Work"})
+
+	task := &core.Task{ID: "x-apple-reminder://EXIST", Text: "Updated"}
+	if err := p.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() error: %v", err)
+	}
+}
+
+func TestRemindersProvider_SaveTask_UpdateNotFound_FallsBackToCreate(t *testing.T) {
+	t.Parallel()
+
+	callCount := 0
+	mock := &scriptDispatcher{
+		dispatch: func(script string) (string, error) {
+			callCount++
+			if strings.Contains(script, ".name = ") {
+				return `{"success":false,"error":"reminder not found"}`, nil
+			}
+			if strings.Contains(script, "app.Reminder") {
+				return `{"success":true,"id":"x-apple-reminder://CREATED"}`, nil
+			}
+			return `[]`, nil
+		},
+	}
+	p := NewRemindersProvider(mock, []string{"Work"})
+
+	task := &core.Task{ID: "nonexistent-uuid", Text: "New task"}
+	if err := p.SaveTask(task); err != nil {
+		t.Fatalf("SaveTask() error: %v", err)
+	}
+	if task.ID != "x-apple-reminder://CREATED" {
+		t.Errorf("task.ID = %q, want x-apple-reminder://CREATED", task.ID)
+	}
+}
+
+func TestRemindersProvider_DeleteTask(t *testing.T) {
+	t.Parallel()
+
+	mock := &scriptDispatcher{
+		dispatch: func(script string) (string, error) {
+			if strings.Contains(script, "app.delete") {
+				return `{"success":true}`, nil
+			}
+			return `[]`, nil
+		},
+	}
+	p := NewRemindersProvider(mock, []string{"Work"})
+
+	if err := p.DeleteTask("x-apple-reminder://ABC"); err != nil {
+		t.Fatalf("DeleteTask() error: %v", err)
+	}
+}
+
+func TestRemindersProvider_MarkComplete(t *testing.T) {
+	t.Parallel()
+
+	mock := &scriptDispatcher{
+		dispatch: func(script string) (string, error) {
+			if strings.Contains(script, "completed = true") {
+				return `{"success":true}`, nil
+			}
+			return `[]`, nil
+		},
+	}
+	p := NewRemindersProvider(mock, []string{"Work"})
+
+	if err := p.MarkComplete("x-apple-reminder://ABC"); err != nil {
+		t.Fatalf("MarkComplete() error: %v", err)
+	}
+}
+
+func TestRemindersProvider_DefaultList(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
-		name string
-		fn   func() error
+		name        string
+		lists       []string
+		wantDefault string
 	}{
-		{"SaveTask", func() error { return p.SaveTask(core.NewTask("test")) }},
-		{"SaveTasks", func() error { return p.SaveTasks([]*core.Task{core.NewTask("test")}) }},
-		{"DeleteTask", func() error { return p.DeleteTask("id") }},
-		{"MarkComplete", func() error { return p.MarkComplete("id") }},
+		{"no lists defaults to Reminders", nil, "Reminders"},
+		{"empty slice defaults to Reminders", []string{}, "Reminders"},
+		{"uses first configured list", []string{"Work", "Personal"}, "Work"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.fn()
-			if !errors.Is(err, core.ErrReadOnly) {
-				t.Errorf("%s() error = %v, want ErrReadOnly", tt.name, err)
+			p := NewRemindersProvider(&mockExecutor{output: "[]"}, tt.lists)
+			if p.defaultList != tt.wantDefault {
+				t.Errorf("defaultList = %q, want %q", p.defaultList, tt.wantDefault)
 			}
 		})
 	}
@@ -393,6 +497,115 @@ func TestParseISOTime(t *testing.T) {
 			got := parseISOTime(tt.input)
 			if !got.Equal(tt.wantUTC) {
 				t.Errorf("parseISOTime(%q) = %v, want %v", tt.input, got, tt.wantUTC)
+			}
+		})
+	}
+}
+
+func TestMapEffortToPriority(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		effort core.TaskEffort
+		want   int
+	}{
+		{"deep-work maps to 1", core.EffortDeepWork, 1},
+		{"medium maps to 5", core.EffortMedium, 5},
+		{"quick-win maps to 9", core.EffortQuickWin, 9},
+		{"empty maps to 0", "", 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := mapEffortToPriority(tt.effort)
+			if got != tt.want {
+				t.Errorf("mapEffortToPriority(%q) = %d, want %d", tt.effort, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMapTaskToReminderFields(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		task         *core.Task
+		wantName     string
+		wantBody     string
+		wantPriority int
+	}{
+		{
+			name:         "full mapping",
+			task:         &core.Task{Text: "Buy milk", Notes: []core.TaskNote{{Text: "2% organic"}}, Effort: core.EffortDeepWork},
+			wantName:     "Buy milk",
+			wantBody:     "2% organic",
+			wantPriority: 1,
+		},
+		{
+			name:         "no notes produces empty body",
+			task:         &core.Task{Text: "Simple task", Effort: core.EffortMedium},
+			wantName:     "Simple task",
+			wantBody:     "",
+			wantPriority: 5,
+		},
+		{
+			name:         "no effort produces priority 0",
+			task:         &core.Task{Text: "No effort"},
+			wantName:     "No effort",
+			wantBody:     "",
+			wantPriority: 0,
+		},
+		{
+			name:         "quick-win maps to priority 9",
+			task:         &core.Task{Text: "Quick", Effort: core.EffortQuickWin},
+			wantName:     "Quick",
+			wantBody:     "",
+			wantPriority: 9,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			name, body, priority := mapTaskToReminderFields(tt.task)
+			if name != tt.wantName {
+				t.Errorf("name = %q, want %q", name, tt.wantName)
+			}
+			if body != tt.wantBody {
+				t.Errorf("body = %q, want %q", body, tt.wantBody)
+			}
+			if priority != tt.wantPriority {
+				t.Errorf("priority = %d, want %d", priority, tt.wantPriority)
+			}
+		})
+	}
+}
+
+func TestPriorityEffortRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		effort   core.TaskEffort
+		priority int
+	}{
+		{core.EffortDeepWork, 1},
+		{core.EffortMedium, 5},
+		{core.EffortQuickWin, 9},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.effort), func(t *testing.T) {
+			t.Parallel()
+			gotPriority := mapEffortToPriority(tt.effort)
+			if gotPriority != tt.priority {
+				t.Errorf("effort→priority: %q → %d, want %d", tt.effort, gotPriority, tt.priority)
+			}
+			gotEffort := mapPriorityToEffort(tt.priority)
+			if gotEffort != tt.effort {
+				t.Errorf("priority→effort: %d → %q, want %q", tt.priority, gotEffort, tt.effort)
 			}
 		})
 	}

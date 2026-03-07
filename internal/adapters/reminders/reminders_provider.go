@@ -2,6 +2,7 @@ package reminders
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,19 +10,28 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
-// RemindersProvider implements core.TaskProvider as a read-only adapter
-// for Apple Reminders. Write operations return core.ErrReadOnly.
+// RemindersProvider implements core.TaskProvider for Apple Reminders,
+// supporting both read and write operations via JXA scripts.
 type RemindersProvider struct {
-	executor CommandExecutor
-	lists    []string
+	executor    CommandExecutor
+	lists       []string
+	defaultList string
+	retry       RetryConfig
 }
 
 // NewRemindersProvider creates a RemindersProvider that reads from the given
-// lists. An empty lists slice means all lists will be read.
+// lists. An empty lists slice means all lists will be read. New reminders
+// are created in the first configured list, or "Reminders" if none specified.
 func NewRemindersProvider(executor CommandExecutor, lists []string) *RemindersProvider {
+	defaultList := "Reminders"
+	if len(lists) > 0 {
+		defaultList = lists[0]
+	}
 	return &RemindersProvider{
-		executor: executor,
-		lists:    lists,
+		executor:    executor,
+		lists:       lists,
+		defaultList: defaultList,
+		retry:       DefaultRetryConfig(),
 	}
 }
 
@@ -53,24 +63,63 @@ func (p *RemindersProvider) LoadTasks() ([]*core.Task, error) {
 	return tasks, nil
 }
 
-// SaveTask returns ErrReadOnly.
-func (p *RemindersProvider) SaveTask(_ *core.Task) error {
-	return core.ErrReadOnly
+// SaveTask persists a single task to Apple Reminders. If the task ID is empty
+// or does not match an existing reminder, a new reminder is created and the
+// task's ID is updated. Otherwise the existing reminder is updated in place.
+func (p *RemindersProvider) SaveTask(task *core.Task) error {
+	ctx := context.Background()
+	name, body, priority := mapTaskToReminderFields(task)
+
+	if task.ID == "" {
+		return p.createReminder(ctx, task, name, body, priority)
+	}
+
+	// Try updating first; if the ID isn't found, create instead.
+	err := withRetry(ctx, p.retry, func() error {
+		return categorizeError(UpdateReminder(ctx, p.executor, task.ID, name, body, priority))
+	})
+	if errors.Is(err, ErrReminderNotFound) {
+		return p.createReminder(ctx, task, name, body, priority)
+	}
+	return err
 }
 
-// SaveTasks returns ErrReadOnly.
-func (p *RemindersProvider) SaveTasks(_ []*core.Task) error {
-	return core.ErrReadOnly
+// SaveTasks persists a batch of tasks by saving each individually.
+func (p *RemindersProvider) SaveTasks(tasks []*core.Task) error {
+	for _, task := range tasks {
+		if err := p.SaveTask(task); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-// DeleteTask returns ErrReadOnly.
-func (p *RemindersProvider) DeleteTask(_ string) error {
-	return core.ErrReadOnly
+// DeleteTask removes a reminder by its ID.
+func (p *RemindersProvider) DeleteTask(taskID string) error {
+	ctx := context.Background()
+	return withRetry(ctx, p.retry, func() error {
+		return categorizeError(DeleteReminder(ctx, p.executor, taskID))
+	})
 }
 
-// MarkComplete returns ErrReadOnly.
-func (p *RemindersProvider) MarkComplete(_ string) error {
-	return core.ErrReadOnly
+// MarkComplete marks a reminder as completed by its ID.
+func (p *RemindersProvider) MarkComplete(taskID string) error {
+	ctx := context.Background()
+	return withRetry(ctx, p.retry, func() error {
+		return categorizeError(CompleteReminder(ctx, p.executor, taskID))
+	})
+}
+
+// createReminder creates a new reminder and updates task.ID with the new ID.
+func (p *RemindersProvider) createReminder(ctx context.Context, task *core.Task, name, body string, priority int) error {
+	return withRetry(ctx, p.retry, func() error {
+		id, err := CreateReminder(ctx, p.executor, name, body, priority, p.defaultList)
+		if err != nil {
+			return categorizeError(err)
+		}
+		task.ID = id
+		return nil
+	})
 }
 
 // Watch returns nil — the reminders provider does not support watching.
@@ -181,6 +230,32 @@ func mapReminderToTask(r ReminderJSON, listName string) *core.Task {
 	}
 
 	return task
+}
+
+// mapTaskToReminderFields extracts reminder-compatible fields from a core.Task.
+// Text maps to name, first note's text maps to body, effort maps to priority.
+func mapTaskToReminderFields(task *core.Task) (name, body string, priority int) {
+	name = task.Text
+	if len(task.Notes) > 0 {
+		body = task.Notes[0].Text
+	}
+	priority = mapEffortToPriority(task.Effort)
+	return
+}
+
+// mapEffortToPriority converts core.TaskEffort to Apple Reminders priority.
+// deep-work = 1 (highest), medium = 5, quick-win = 9 (lowest), none = 0.
+func mapEffortToPriority(effort core.TaskEffort) int {
+	switch effort {
+	case core.EffortDeepWork:
+		return 1
+	case core.EffortMedium:
+		return 5
+	case core.EffortQuickWin:
+		return 9
+	default:
+		return 0
+	}
 }
 
 // parseISOTime parses an ISO 8601 timestamp, returning zero time on failure.

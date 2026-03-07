@@ -263,6 +263,59 @@ func TestCreateReminder(t *testing.T) {
 	}
 }
 
+func TestUpdateReminder(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		reminderID string
+		rName      string
+		body       string
+		priority   int
+		output     string
+		execErr    error
+		wantErr    bool
+	}{
+		{
+			name:       "successful update",
+			reminderID: "x-apple-reminder://ABC123",
+			rName:      "Updated task",
+			body:       "New details",
+			priority:   5,
+			output:     `{"success":true}`,
+		},
+		{
+			name:       "reminder not found",
+			reminderID: "x-apple-reminder://GONE",
+			rName:      "Updated task",
+			body:       "",
+			priority:   0,
+			output:     `{"success":false,"error":"reminder not found"}`,
+			wantErr:    true,
+		},
+		{
+			name:       "executor error propagates",
+			reminderID: "x-apple-reminder://ABC123",
+			rName:      "Updated task",
+			body:       "",
+			priority:   0,
+			execErr:    errors.New("timeout"),
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mock := &mockExecutor{output: tt.output, err: tt.execErr}
+			err := UpdateReminder(context.Background(), mock, tt.reminderID, tt.rName, tt.body, tt.priority)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UpdateReminder() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestDeleteReminder(t *testing.T) {
 	t.Parallel()
 
@@ -418,6 +471,55 @@ func TestScriptCreateReminder_EscapesInput(t *testing.T) {
 	}
 	if !strings.Contains(script, `\"special\"`) {
 		t.Error("script does not properly escape quotes in name")
+	}
+}
+
+func TestScriptUpdateReminder_ContainsFields(t *testing.T) {
+	t.Parallel()
+	script := scriptUpdateReminder("x-apple-reminder://ABC", "Buy milk", "2% organic", 5)
+	if !strings.Contains(script, "x-apple-reminder://ABC") {
+		t.Error("script does not contain reminder ID")
+	}
+	if !strings.Contains(script, "Buy milk") {
+		t.Error("script does not contain updated name")
+	}
+	if !strings.Contains(script, "2% organic") {
+		t.Error("script does not contain updated body")
+	}
+	if !strings.Contains(script, ".name = ") {
+		t.Error("script does not assign name")
+	}
+	if !strings.Contains(script, ".body = ") {
+		t.Error("script does not assign body")
+	}
+	if !strings.Contains(script, ".priority = 5") {
+		t.Error("script does not assign priority")
+	}
+}
+
+func TestScriptUpdateReminder_EscapesInput(t *testing.T) {
+	t.Parallel()
+	script := scriptUpdateReminder("x-apple-reminder://X", `Say "hello"`, "body\nline2", 0)
+	if !strings.Contains(script, `\"hello\"`) {
+		t.Error("script does not escape quotes in name")
+	}
+	if !strings.Contains(script, `body\nline2`) {
+		t.Error("script does not escape newlines in body")
+	}
+}
+
+func TestUpdateReminder_ErrorContextWrapped(t *testing.T) {
+	t.Parallel()
+	mock := &mockExecutor{err: errors.New("timeout")}
+	err := UpdateReminder(context.Background(), mock, "x-apple-reminder://ABC", "name", "body", 0)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "x-apple-reminder://ABC") {
+		t.Errorf("error does not contain reminder ID: %v", err)
+	}
+	if !errors.Is(err, mock.err) {
+		t.Errorf("error chain broken: %v does not wrap %v", err, mock.err)
 	}
 }
 
