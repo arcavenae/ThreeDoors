@@ -1,12 +1,16 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 // newTaskCmd creates the "task" command group.
@@ -22,19 +26,37 @@ func newTaskCmd() *cobra.Command {
 	return cmd
 }
 
+// stdinDetector abstracts TTY detection for testing.
+var stdinDetector = func() bool {
+	return !term.IsTerminal(int(os.Stdin.Fd()))
+}
+
+// stdinReader abstracts stdin reading for testing.
+var stdinReader io.Reader = os.Stdin
+
 // newTaskAddCmd creates the "task add" subcommand.
 func newTaskAddCmd() *cobra.Command {
 	var (
 		context  string
 		taskType string
 		effort   string
+		useStdin bool
 	)
 
 	cmd := &cobra.Command{
-		Use:   "add <text>",
+		Use:   "add [text]",
 		Short: "Add a new task",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if useStdin {
+				return runTaskAddFromStdin(cmd, stdinReader, context, taskType, effort)
+			}
+			if len(args) == 0 && stdinDetector() {
+				return runTaskAddSingleStdin(cmd, stdinReader, context, taskType, effort)
+			}
+			if len(args) == 0 {
+				return fmt.Errorf("requires task text as argument or pipe input via stdin")
+			}
 			return runTaskAdd(cmd, args[0], context, taskType, effort)
 		},
 	}
@@ -42,6 +64,7 @@ func newTaskAddCmd() *cobra.Command {
 	cmd.Flags().StringVar(&context, "context", "", "why this task matters")
 	cmd.Flags().StringVar(&taskType, "type", "", "task type (creative, administrative, technical, physical)")
 	cmd.Flags().StringVar(&effort, "effort", "", "effort level (quick-win, medium, deep-work)")
+	cmd.Flags().BoolVar(&useStdin, "stdin", false, "read multiple tasks from stdin (one per line)")
 
 	return cmd
 }
@@ -97,6 +120,84 @@ func runTaskAdd(cmd *cobra.Command, text, context, taskType, effort string) erro
 		return formatter.WriteJSON("task add", task, nil)
 	}
 	return formatter.Writef("Created task %s: %s\n", shortID, task.Text)
+}
+
+// runTaskAddSingleStdin reads a single task text from stdin (auto-detected, no flag).
+func runTaskAddSingleStdin(_ *cobra.Command, r io.Reader, context, taskType, effort string) error {
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return fmt.Errorf("read stdin: %w", err)
+	}
+	text := strings.TrimSpace(string(data))
+	if text == "" {
+		return fmt.Errorf("no task text provided via stdin")
+	}
+	return runTaskAdd(nil, text, context, taskType, effort)
+}
+
+// runTaskAddFromStdin reads multiple tasks from stdin, one per line (--stdin flag).
+func runTaskAddFromStdin(cmd *cobra.Command, r io.Reader, context, taskType, effort string) error {
+	isJSON := isJSONOutput(cmd)
+	formatter := NewOutputFormatter(os.Stdout, isJSON)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		if isJSON {
+			_ = formatter.WriteJSONError("task add", ExitGeneralError, err.Error(), "")
+		} else {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
+		os.Exit(ExitGeneralError)
+	}
+
+	scanner := bufio.NewScanner(r)
+	var created []*core.Task
+	for scanner.Scan() {
+		text := strings.TrimSpace(scanner.Text())
+		if text == "" {
+			continue
+		}
+
+		var task *core.Task
+		if context != "" {
+			task = core.NewTaskWithContext(text, context)
+		} else {
+			task = core.NewTask(text)
+		}
+
+		if taskType != "" {
+			task.Type = core.TaskType(taskType)
+		}
+		if effort != "" {
+			task.Effort = core.TaskEffort(effort)
+		}
+
+		if err := task.Validate(); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: skipping invalid task %q: %v\n", text, err)
+			continue
+		}
+
+		ctx.pool.AddTask(task)
+		if err := ctx.provider.SaveTask(task); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to save task %q: %v\n", text, err)
+			continue
+		}
+
+		created = append(created, task)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("read stdin: %w", err)
+	}
+
+	if isJSON {
+		return formatter.WriteJSON("task add", created, map[string]int{"count": len(created)})
+	}
+
+	for _, t := range created {
+		_, _ = fmt.Fprintf(os.Stdout, "%s\n", t.ID[:8])
+	}
+	return nil
 }
 
 // completeResult tracks the outcome of completing a single task.
