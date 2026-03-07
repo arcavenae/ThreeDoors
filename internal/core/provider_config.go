@@ -263,6 +263,9 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 			fmt.Fprintf(&b, "#       daily_notes_folder: Daily  # Optional: daily notes folder\n")
 			fmt.Fprintf(&b, "#       daily_notes_heading: \"## Tasks\"  # Optional: heading for tasks\n")
 			fmt.Fprintf(&b, "#       daily_notes_format: \"2006-01-02.md\"  # Optional: Go date format\n")
+		case "reminders":
+			fmt.Fprintf(&b, "#       lists: Work,ThreeDoors  # Optional: comma-separated list names (default: all)\n")
+			fmt.Fprintf(&b, "#       include_completed: false  # Optional: include completed reminders\n")
 		default:
 			fmt.Fprintf(&b, "#       # Add provider-specific settings here\n")
 		}
