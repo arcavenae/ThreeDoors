@@ -7,30 +7,6 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
-func TestShortID(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name string
-		id   string
-		want string
-	}{
-		{"full uuid", "abcdef12-3456-7890-abcd-ef1234567890", "abcdef12"},
-		{"short id", "abc", "abc"},
-		{"exactly 8", "12345678", "12345678"},
-		{"empty", "", ""},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := shortID(tt.id); got != tt.want {
-				t.Errorf("shortID(%q) = %q, want %q", tt.id, got, tt.want)
-			}
-		})
-	}
-}
-
 func TestCompleteOneTask_NotFound(t *testing.T) {
 	t.Parallel()
 

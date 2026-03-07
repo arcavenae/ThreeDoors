@@ -211,10 +211,3 @@ func completeOneTask(ctx *cliContext, idPrefix string) completeResult {
 		ExitCode: ExitSuccess,
 	}
 }
-
-func shortID(id string) string {
-	if len(id) > 8 {
-		return id[:8]
-	}
-	return id
-}
