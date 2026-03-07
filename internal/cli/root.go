@@ -33,6 +33,8 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.AddCommand(newHealthCmd())
 	cmd.AddCommand(newVersionCmd())
 	cmd.AddCommand(newCompletionCmd())
+	cmd.AddCommand(newMoodCmd())
+	cmd.AddCommand(newStatsCmd())
 
 	registerFlagCompletions(cmd)
 

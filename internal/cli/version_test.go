@@ -9,8 +9,6 @@ import (
 )
 
 func TestVersionHumanOutput(t *testing.T) {
-	t.Parallel()
-
 	oldVersion, oldCommit, oldBuildDate := Version, Commit, BuildDate
 	Version, Commit, BuildDate = "1.2.3", "abc1234", "2025-01-15T10:00:00Z"
 	t.Cleanup(func() {
@@ -33,8 +31,6 @@ func TestVersionHumanOutput(t *testing.T) {
 }
 
 func TestVersionJSONOutput(t *testing.T) {
-	t.Parallel()
-
 	oldVersion, oldCommit, oldBuildDate := Version, Commit, BuildDate
 	Version, Commit, BuildDate = "2.0.0", "def5678", "2025-06-01T00:00:00Z"
 	t.Cleanup(func() {
