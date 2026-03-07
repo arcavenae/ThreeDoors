@@ -69,8 +69,8 @@ func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, bo
 
 		// Content lines (left-padded with 3 spaces)
 		for _, line := range contentLines {
-			runeCount := countRunes(line)
-			padding := inner - 3 - runeCount
+			lineWidth := ansi.StringWidth(line)
+			padding := inner - 3 - lineWidth
 			if padding < 0 {
 				padding = 0
 			}
@@ -105,14 +105,4 @@ func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, bo
 
 		return b.String()
 	}
-}
-
-// countRunes returns the number of runes in s (for width calculation of
-// plain text without ANSI escapes).
-func countRunes(s string) int {
-	n := 0
-	for range s {
-		n++
-	}
-	return n
 }

@@ -163,15 +163,14 @@ func buildContentRow(style lipgloss.Style, ch shojiChars, numCols, cellW, totalW
 	// Actually: centralCols * cellW - 1 chars (cellW-1 spaces per cell + junction, minus trailing junction which is the margin │)
 	centralCharW := centralCols*cellW - 1
 
-	textRunes := countRunes(text)
-	if textRunes > centralCharW {
-		runes := []rune(text)
-		text = string(runes[:centralCharW])
-		textRunes = centralCharW
+	textWidth := ansi.StringWidth(text)
+	if textWidth > centralCharW {
+		text = ansi.Truncate(text, centralCharW, "")
+		textWidth = ansi.StringWidth(text)
 	}
 
 	// Write: space + text + padding to fill centralCharW
-	rightPad := centralCharW - 1 - textRunes
+	rightPad := centralCharW - 1 - textWidth
 	if rightPad < 0 {
 		rightPad = 0
 	}

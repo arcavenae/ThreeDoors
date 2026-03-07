@@ -73,8 +73,8 @@ func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, boo
 
 		// Content lines with 2-char padding
 		for _, line := range contentLines {
-			runeCount := countRunes(line)
-			pad := contentW - 2 - runeCount
+			lineWidth := ansi.StringWidth(line)
+			pad := contentW - 2 - lineWidth
 			if pad < 0 {
 				pad = 0
 			}
