@@ -209,6 +209,38 @@ var (
 
 	syncLogErrorStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("196"))
+
+	// Proposal view styles
+	proposalHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("86"))
+
+	proposalSelectedStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(colorSelected).
+				Background(lipgloss.Color("236"))
+
+	proposalStaleStyle = lipgloss.NewStyle().
+				Faint(true).
+				Strikethrough(true)
+
+	proposalBadgeStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("214")).
+				Bold(true)
+
+	proposalTypeStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("39"))
+
+	proposalDiffAddStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("82"))
+
+	proposalDiffRemoveStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("196"))
+
+	proposalPaneStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("63")).
+				Padding(1, 2)
 )
 
 // StatusColor returns the lipgloss color for a given status string.
