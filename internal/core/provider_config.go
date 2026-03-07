@@ -236,6 +236,14 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 			fmt.Fprintf(&b, "#       task_file: ~/.threedoors/tasks.yaml\n")
 		case "applenotes":
 			fmt.Fprintf(&b, "#       note_title: ThreeDoors Tasks\n")
+		case "jira":
+			fmt.Fprintf(&b, "#       url: https://company.atlassian.net\n")
+			fmt.Fprintf(&b, "#       auth_type: basic  # basic or pat\n")
+			fmt.Fprintf(&b, "#       email: user@example.com  # Cloud only (basic auth)\n")
+			fmt.Fprintf(&b, "#       api_token: \"\"  # Or set JIRA_API_TOKEN env var\n")
+			fmt.Fprintf(&b, "#       jql: \"assignee = currentUser() AND statusCategory != Done\"\n")
+			fmt.Fprintf(&b, "#       max_results: \"50\"  # Optional\n")
+			fmt.Fprintf(&b, "#       poll_interval: 30s  # Optional\n")
 		case "obsidian":
 			fmt.Fprintf(&b, "#       vault_path: /path/to/your/vault\n")
 			fmt.Fprintf(&b, "#       tasks_folder: tasks  # Optional: subfolder within vault\n")

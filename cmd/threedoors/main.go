@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
 	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
 	"github.com/arcaven/ThreeDoors/internal/core"
@@ -176,6 +177,9 @@ func registerBuiltinAdapters(reg *core.Registry) {
 		fallback := textfile.NewTextFileProvider()
 		return core.NewFallbackProvider(primary, fallback), nil
 	})
+
+	// Jira provider: reads tasks from Jira via REST API with JQL filtering.
+	_ = reg.Register("jira", jira.Factory)
 
 	// Obsidian vault provider: reads/writes Markdown checkbox tasks.
 	// Validates vault path on startup; falls back to textfile on failure.

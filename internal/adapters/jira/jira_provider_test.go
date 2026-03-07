@@ -398,6 +398,7 @@ func TestFactory(t *testing.T) {
 			name: "valid basic auth",
 			settings: map[string]string{
 				"url":       "https://test.atlassian.net",
+				"auth_type": "basic",
 				"email":     "user@test.com",
 				"api_token": "token123",
 				"jql":       "project = TEST",
@@ -415,18 +416,26 @@ func TestFactory(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "valid with defaults",
+			settings: map[string]string{
+				"url":       "https://test.atlassian.net",
+				"auth_type": "basic",
+			},
+			wantErr: false,
+		},
+		{
 			name:     "missing url",
-			settings: map[string]string{"jql": "project = TEST", "api_token": "token"},
+			settings: map[string]string{"auth_type": "basic", "api_token": "token"},
 			wantErr:  true,
 		},
 		{
-			name:     "missing api_token",
-			settings: map[string]string{"url": "https://test.atlassian.net", "jql": "project = TEST"},
-			wantErr:  true,
-		},
-		{
-			name:     "missing jql",
+			name:     "missing auth_type",
 			settings: map[string]string{"url": "https://test.atlassian.net", "api_token": "token"},
+			wantErr:  true,
+		},
+		{
+			name:     "invalid auth_type",
+			settings: map[string]string{"url": "https://test.atlassian.net", "auth_type": "oauth"},
 			wantErr:  true,
 		},
 		{

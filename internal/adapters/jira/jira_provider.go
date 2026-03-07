@@ -298,43 +298,27 @@ func (p *JiraProvider) HealthCheck() core.HealthCheckResult {
 }
 
 // Factory creates a JiraProvider from a ProviderConfig.
-// Required settings: url, api_token, jql.
-// Optional settings: email (required for basic auth), auth_type (default: "basic").
+// Uses ParseConfig for validation, defaults, and env var fallback.
 func Factory(config *core.ProviderConfig) (core.TaskProvider, error) {
 	settings := findJiraSettings(config)
 	if settings == nil {
 		return nil, fmt.Errorf("jira factory: no jira provider settings found")
 	}
 
-	url := settings["url"]
-	if url == "" {
-		return nil, fmt.Errorf("jira factory: missing required setting 'url'")
-	}
-
-	apiToken := settings["api_token"]
-	if apiToken == "" {
-		return nil, fmt.Errorf("jira factory: missing required setting 'api_token'")
-	}
-
-	jql := settings["jql"]
-	if jql == "" {
-		return nil, fmt.Errorf("jira factory: missing required setting 'jql'")
-	}
-
-	authType := AuthBasic
-	if settings["auth_type"] == "pat" {
-		authType = AuthPAT
+	cfg, err := ParseConfig(settings)
+	if err != nil {
+		return nil, fmt.Errorf("jira factory: %w", err)
 	}
 
 	authConfig := AuthConfig{
-		Type:     authType,
-		URL:      url,
-		Email:    settings["email"],
-		APIToken: apiToken,
+		Type:     cfg.AuthType,
+		URL:      cfg.URL,
+		Email:    cfg.Email,
+		APIToken: cfg.APIToken,
 	}
 
 	client := NewClient(authConfig)
-	return NewJiraProvider(client, jql, DefaultFieldMapper()), nil
+	return NewJiraProvider(client, cfg.JQL, DefaultFieldMapper()), nil
 }
 
 // findJiraSettings locates the jira provider entry in the config.
