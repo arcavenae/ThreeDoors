@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epic 16 is NOT STARTED. Epic 23 is NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
+**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epics 16, 23, and 24 are NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
 
 ## Requirements Inventory
 
@@ -105,6 +105,16 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - FR49: Apple Notes integration E2E tests ⏳ Epic 9
 - FR50: Contract tests for adapter compliance ⏳ Epic 9
 - FR51: Functional E2E tests for user workflows ⏳ Epic 9
+
+*MCP/LLM Integration Server:*
+- FR81: MCP server binary with stdio and SSE transports for LLM client connectivity ⏳ Epic 24
+- FR82: Read-only task resources and structured query tools via MCP protocol ⏳ Epic 24
+- FR83: Security middleware with rate limiting, audit logging, input validation ⏳ Epic 24
+- FR84: Proposal/approval pattern for LLM-suggested task enrichments ⏳ Epic 24
+- FR85: TUI proposal review view for approving/rejecting LLM suggestions ⏳ Epic 24
+- FR86: Pattern mining and mood-execution analytics via MCP ⏳ Epic 24
+- FR87: Task relationship graphs and cross-provider dependency mapping ⏳ Epic 24
+- FR88: MCP prompt templates and advanced interaction tools (prioritization, workload, what-if) ⏳ Epic 24
 
 *Docker E2E & Headless TUI Testing (Party Mode):*
 - FR52: Headless TUI test harness using teatest for automated interaction testing ✅ Epic 18 (Story 18.1, PR #64)
@@ -209,6 +219,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR67-FR69 | Epic 20 ✅ | Apple Reminders Integration (COMPLETE) |
 | FR70-FR72 | Epic 21 ✅ | Sync Protocol Hardening (COMPLETE) |
 | FR73-FR80 | Epic 22 ✅ | Self-Driving Development Pipeline (COMPLETE) |
+| FR81-FR88 | Epic 24 | MCP/LLM Integration Server (NOT STARTED) |
 
 ## Epic List
 
@@ -337,6 +348,12 @@ Background sync scheduling, circuit breakers, and cross-provider identity mappin
 **FRs covered:** FR70-FR72
 **Prerequisites:** Epic 11 ✅, Epic 13 ✅
 **Status:** All 4 stories complete (PRs #139, #132, #151, #157).
+
+### Epic 24: MCP/LLM Integration Server — NOT STARTED
+Expose ThreeDoors task management to LLMs via Model Context Protocol. Read-only queries, controlled enrichment proposals, analytics mining, and relationship graphs.
+**FRs covered:** FR81-FR88
+**Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
+**Status:** Not Started. 8 stories planned (24.1-24.8). Research at `docs/research/llm-integration-mcp.md`.
 
 ---
 
@@ -2372,6 +2389,197 @@ So that I can use the self-driving pipeline without risk of excessive cost or un
 **MVP-1 (Stories 22.1, 22.2, 22.3):** Data model + dispatch engine + TUI binding. User can dispatch tasks from the TUI; approval and execution via manual script or dev queue view.
 
 **MVP-2 (Stories 22.4, 22.5):** Dev queue view + polling. Full TUI-integrated dispatch with automatic status tracking.
+
+---
+
+## Epic 24: MCP/LLM Integration Server
+
+**Epic Goal:** Expose ThreeDoors task management services to LLMs through the Model Context Protocol (MCP). LLMs can query tasks, propose enrichments (with user approval), mine productivity analytics, and traverse task relationship graphs across providers. Core design principle: LLMs propose, users approve — no direct task modification.
+
+**Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
+**FRs covered:** FR81, FR82, FR83, FR84, FR85, FR86, FR87, FR88
+**Origin:** LLM Integration & MCP Server Research (2026-03-06). Research document at `docs/research/llm-integration-mcp.md`.
+**Architecture:** Separate binary (`cmd/threedoors-mcp/`) sharing `internal/` packages. No new storage layer — reads same YAML, JSONL, and SQLite as TUI.
+**Status:** Not Started
+
+**Key Design Decisions:**
+- MCP server is a separate binary from the TUI — independently deployable
+- LLMs NEVER directly edit task data — all modifications flow through proposal/approval pattern
+- No new storage layer — MCP server reads from the same files as the TUI
+- Proposal store is append-only JSONL (`~/.threedoors/proposals.jsonl`)
+- Server supports stdio (Claude Desktop) and SSE (remote) transports
+- Security: rate limiting, audit logging with SHA-256 hash chain, input validation, read-only enforcement
+
+### Story 24.1: MCP Server Binary & Transport Layer
+
+**Status:** draft
+
+As a developer,
+I want a standalone MCP server binary that implements the MCP protocol over stdio and SSE transports,
+So that LLM clients (Claude Desktop, Cursor, etc.) can connect to ThreeDoors and discover available capabilities.
+
+**Acceptance Criteria:**
+- **AC1:** `cmd/threedoors-mcp/main.go` entry point with `MCPServer` wrapping existing core components
+- **AC2:** MCP JSON-RPC protocol handlers: `initialize`, `resources/list`, `tools/list`, `prompts/list`
+- **AC3:** stdio transport (default) for Claude Desktop integration
+- **AC4:** SSE transport (`--transport sse --port 8080`) for remote access
+- **AC5:** `MCPMiddleware` type as `func(Handler) Handler` decorator pattern
+- **AC6:** `Makefile` updated with `build-mcp` target
+- **AC7:** Unit tests for protocol handshake and transport selection
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.2: Read-Only Task Resources & Query Tools
+
+**Status:** draft
+
+As an LLM client connected via MCP,
+I want to read task data, query tasks with filters, and inspect provider health,
+So that I can understand the user's task landscape and answer questions about their work.
+
+**Acceptance Criteria:**
+- **AC1:** MCP Resources: `threedoors://tasks`, `threedoors://tasks/{id}`, `threedoors://tasks/status/{status}`, `threedoors://tasks/provider/{name}`
+- **AC2:** MCP Resources: `threedoors://providers`, `threedoors://session/current`, `threedoors://session/history`
+- **AC3:** MCP Tool `query_tasks` with filters: status, type, effort, provider, text, dates, limit, sort
+- **AC4:** MCP Tools: `get_task`, `list_providers`, `get_session`
+- **AC5:** Response metadata on all queries: `total_count`, `returned_count`, `query_time_ms`, `providers_queried`, `data_freshness`
+- **AC6:** `TaskQueryEngine` with text search, token overlap scoring, field weighting, recency boost
+- **AC7:** Unit tests for all resources, tools, and query engine
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.3: Security Middleware — Rate Limiting & Audit Logging
+
+**Status:** draft
+
+As a system administrator,
+I want the MCP server to enforce rate limits, log all requests, and validate inputs,
+So that the server is protected against abuse and maintains a tamper-evident audit trail.
+
+**Acceptance Criteria:**
+- **AC1:** `RateLimiter`: 100 req/min global, 20 proposals/min, 60 queries/min, 5 pending proposals/task, 10-request burst
+- **AC2:** `AuditLogger`: JSONL to `~/.threedoors/mcp-audit.jsonl` with SHA-256 hash chain
+- **AC3:** `SchemaValidator`: UUID v4 task IDs, 500-char text limit, valid status/timestamps
+- **AC4:** `ReadOnlyEnforcer`: blocks direct `SaveTask()` calls
+- **AC5:** Middleware chain: ReadOnlyEnforcer → RateLimiter → AuditLogger → SchemaValidator → coreHandler
+- **AC6:** Daily log rotation with 30-day retention
+- **AC7:** Unit tests for each middleware and composed chain
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.4: Proposal Store & Controlled Enrichment API
+
+**Status:** draft
+
+As an LLM client,
+I want to propose task enrichments through a controlled API,
+So that I can suggest improvements without directly modifying task data.
+
+**Acceptance Criteria:**
+- **AC1:** `Proposal` struct with ID, Type, TaskID, BaseVersion, Payload, Status, Source, Rationale, timestamps
+- **AC2:** 8 proposal types: enrich-metadata, add-subtasks, add-context, add-note, suggest-blocker, suggest-relationship, suggest-category, update-effort
+- **AC3:** `ProposalStore` with append-only JSONL persistence
+- **AC4:** Optimistic concurrency: BaseVersion vs current UpdatedAt — stale detection
+- **AC5:** MCP Tools: `propose_enrichment`, `suggest_task`, `suggest_relationship`
+- **AC6:** MCP Resource: `threedoors://proposals/pending`
+- **AC7:** Deduplication, per-task caps (5), 7-day expiration
+- **AC8:** `IntakeChannel` interface for extensible intake sources
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.5: TUI Proposal Review View
+
+**Status:** draft
+
+As a user,
+I want to review, approve, and reject LLM-generated proposals from within the TUI,
+So that I maintain full control over what changes are applied to my tasks.
+
+**Acceptance Criteria:**
+- **AC1:** Badge indicator on doors view: `[3 suggestions]`
+- **AC2:** Review view via `S` key or `:suggestions` command — split pane layout
+- **AC3:** Quick actions: Enter=approve, Backspace=reject, Tab=skip, Ctrl+A=approve all
+- **AC4:** On approve: payload applied to task via `SaveTask()`, enrichment DB updated
+- **AC5:** Stale proposals visually distinguished with tooltip
+- **AC6:** Preview mode showing task diff before/after
+- **AC7:** Batch grouping by task, j/k navigation, ESC to exit
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.6: Pattern Mining & Mood-Execution Analytics
+
+**Status:** draft
+
+As an LLM client,
+I want to access productivity analytics including mood-execution correlations, streaks, and burnout risk,
+So that I can provide data-driven productivity insights and coaching.
+
+**Acceptance Criteria:**
+- **AC1:** `PatternMiner` with methods: `MoodCorrelation`, `ProductivityProfile`, `StreakAnalysis`, `BurnoutRisk`, `WeeklySummary`
+- **AC2:** MCP Resources: `threedoors://analytics/mood-correlation`, `/time-of-day`, `/streaks`, `/burnout-risk`, `/task-preferences`, `/weekly-summary`
+- **AC3:** MCP Tools: `get_mood_correlation`, `get_productivity_profile`, `burnout_risk`, `get_completions`
+- **AC4:** MCP Prompts: `daily_summary`, `weekly_retrospective` templates
+- **AC5:** Burnout risk composite score (0-1) from 5+ signals, >0.7 = warning
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.7: Task Relationship Graph & Cross-Provider Linking
+
+**Status:** draft
+
+As an LLM client,
+I want to traverse task relationship graphs and discover cross-provider dependencies,
+So that I can answer questions about task dependencies across systems.
+
+**Acceptance Criteria:**
+- **AC1:** `TaskGraph` with nodes and edges; `EdgeType` constants: blocks, related-to, subtask-of, duplicate-of, sequential, cross-ref
+- **AC2:** `RelationshipInferencer` with 6 strategies: text similarity, temporal, cross-ref, blocker chains, subtask patterns, duplicate detection
+- **AC3:** MCP Tools: `walk_graph`, `find_paths`, `get_critical_path`, `get_orphans`, `get_clusters`
+- **AC4:** `CrossProviderLinker` for cross-provider relationship discovery
+- **AC5:** MCP Tools: `get_provider_overlap`, `get_unified_view`, `suggest_cross_links`
+- **AC6:** MCP Resources: `threedoors://graph/dependencies`, `threedoors://graph/cross-provider`
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Story 24.8: MCP Prompt Templates & Advanced Interaction Patterns
+
+**Status:** draft
+
+As an LLM client,
+I want pre-built prompt templates and advanced tools for prioritization, workload analysis, and what-if modeling,
+So that I can provide high-quality coaching with consistent responses.
+
+**Acceptance Criteria:**
+- **AC1:** MCP Prompts: `blocked_tasks`, `task_deep_dive`, `weekly_retrospective`
+- **AC2:** MCP Tool `prioritize_tasks` with multi-signal scoring (blocking, age, effort fit, mood fit, time-of-day, streak impact)
+- **AC3:** MCP Tool `analyze_workload` — total tasks, estimated hours, overload risk, focus recommendations
+- **AC4:** MCP Tool `focus_recommendation(mood, available_minutes)` — optimal task sequence
+- **AC5:** MCP Tool `what_if(complete_task_ids)` — scenario modeling without mutation
+- **AC6:** MCP Tool `context_switch_analysis` — switches/session, cost, optimal batching
+
+**Quality Gate (QG1-QG6):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
+
+### Epic 24 Story Dependencies
+
+```
+24.1 (MCP Server) ──┬──> 24.2 (Read-Only Resources) ──┬──> 24.4 (Proposals) ──> 24.5 (TUI Review)
+                     │                                  ├──> 24.6 (Analytics)
+                     │                                  └──> 24.7 (Graph)
+                     └──> 24.3 (Security Middleware)
+                                                        24.6 + 24.7 ──> 24.8 (Advanced Interactions)
+```
+
+### MVP Phasing
+
+**Phase 1 (Stories 24.1, 24.2, 24.3):** Read-only MCP server. Claude can see and query tasks. Immediate value — AI-assisted task understanding.
+
+**Phase 2 (Stories 24.4, 24.5):** Proposals + enrichment. LLMs can suggest improvements. Users maintain full control via TUI review.
+
+**Phase 3 (Story 24.6):** Analytics + pattern mining. LLMs provide data-driven productivity insights.
+
+**Phase 4 (Story 24.7):** Relationship graphs + cross-provider linking. LLMs understand task dependencies and cross-system relationships.
+
+**Phase 5 (Story 24.8):** Advanced interactions. LLMs become a personal productivity coach with prioritization, workload analysis, and what-if modeling.
 
 **MVP-3 (Stories 22.6, 22.7, 22.8):** Auto-generated tasks + story generation + safety guardrails. Complete closed-loop self-driving pipeline.
 
