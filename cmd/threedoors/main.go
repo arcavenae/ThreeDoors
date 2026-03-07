@@ -9,6 +9,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
 	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
 	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
+	"github.com/arcaven/ThreeDoors/internal/adapters/reminders"
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/dist"
@@ -227,4 +228,8 @@ func registerBuiltinAdapters(reg *core.Registry) {
 
 		return adapter, nil
 	})
+
+	// Apple Reminders provider: macOS-only via JXA/osascript.
+	// On non-macOS platforms the factory returns a descriptive error.
+	_ = reg.Register("reminders", reminders.NewFactory())
 }
