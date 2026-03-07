@@ -77,6 +77,24 @@
 
 ---
 
+## Phase 3.5: Snooze/Defer as First-Class Action
+
+**In Scope:**
+- Z-key snooze action from doors view and detail view with quick options (Tomorrow, Next Week, Pick Date, Someday)
+- `defer_until` timestamp field on Task model for date-based snooze
+- Auto-return logic: deferred tasks automatically restore to todo when defer date passes (startup check + 1-minute tea.Tick)
+- `:deferred` command showing snoozed tasks with un-snooze and edit-date actions
+- Additional status transitions: in-progress/blocked to deferred
+- Session metrics logging for snooze and auto-return events
+- Integration with Daily Planning Mode (FR98 "snooze" option opens same SnoozeView)
+
+**Out of Scope for this Phase:**
+- Calendar date picker widget (v1 uses text input for Pick Date)
+- CLI `threedoors task defer` command (deferred to Epic 23 extension)
+- MCP `defer_task` tool (deferred to Epic 24 extension)
+
+---
+
 ## Phase 4: Task Source Integration & Sync Hardening
 
 **In Scope:**
