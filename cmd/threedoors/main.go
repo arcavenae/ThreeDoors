@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/github"
 	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
 	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
 	"github.com/arcaven/ThreeDoors/internal/adapters/reminders"
@@ -203,6 +204,9 @@ func registerBuiltinAdapters(reg *core.Registry) {
 
 	// Jira provider: reads tasks from Jira via REST API with JQL filtering.
 	_ = reg.Register("jira", jira.Factory)
+
+	// GitHub Issues provider: reads issues from GitHub repos via go-github SDK.
+	_ = reg.Register("github", github.Factory)
 
 	// Obsidian vault provider: reads/writes Markdown checkbox tasks.
 	// Validates vault path on startup; falls back to textfile on failure.

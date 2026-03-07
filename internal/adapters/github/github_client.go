@@ -28,16 +28,17 @@ func IsRateLimitError(err error) bool {
 
 // GitHubIssue maps relevant go-github Issue fields for internal use.
 type GitHubIssue struct {
-	Number    int
-	Title     string
-	Body      string
-	State     string
-	Labels    []string
-	Assignee  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	HTMLURL   string
-	Repo      string // "owner/repo" for tracking origin
+	Number         int
+	Title          string
+	Body           string
+	State          string
+	Labels         []string
+	Assignee       string
+	MilestoneDueOn *time.Time // from milestone.due_on, nil if no milestone or no due date
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	HTMLURL        string
+	Repo           string // "owner/repo" for tracking origin
 }
 
 // GitHubClient wraps the go-github SDK for issue operations.
@@ -158,6 +159,11 @@ func mapIssue(issue *gogithub.Issue, repo string) *GitHubIssue {
 
 	if issue.Assignee != nil {
 		gi.Assignee = issue.Assignee.GetLogin()
+	}
+
+	if issue.Milestone != nil && issue.Milestone.DueOn != nil {
+		dueOn := issue.Milestone.DueOn.UTC()
+		gi.MilestoneDueOn = &dueOn
 	}
 
 	return gi
