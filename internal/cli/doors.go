@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
@@ -16,12 +17,15 @@ type doorEntry struct {
 
 // NewDoorsCmd creates the "doors" subcommand that presents three randomly selected tasks.
 func NewDoorsCmd() *cobra.Command {
-	var pick int
+	var (
+		pick        int
+		interactive bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "doors",
 		Short: "Present three randomly selected tasks",
-		Long:  "Display three doors — randomly selected tasks from your task pool. Use --pick to select a door and mark it in-progress.",
+		Long:  "Display three doors — randomly selected tasks from your task pool. Use --pick to select a door and mark it in-progress, or --interactive for a prompted selection.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			formatter := NewOutputFormatter(cmd.OutOrStdout(), jsonOutput)
 
@@ -49,11 +53,28 @@ func NewDoorsCmd() *cobra.Command {
 				return handlePick(cmd, formatter, doors, pick, provider)
 			}
 
-			return displayDoors(formatter, doors, totalAvailable)
+			if err := displayDoors(formatter, doors, totalAvailable); err != nil {
+				return err
+			}
+
+			if interactive && !jsonOutput {
+				if !stdoutIsTerminal() {
+					return nil
+				}
+
+				picked, promptErr := promptDoorSelection(os.Stdin, cmd.OutOrStdout(), len(doors))
+				if promptErr != nil {
+					return fmt.Errorf("interactive selection: %w", promptErr)
+				}
+				return handlePick(cmd, formatter, doors, picked, provider)
+			}
+
+			return nil
 		},
 	}
 
 	cmd.Flags().IntVar(&pick, "pick", 0, "select the Nth door (1, 2, or 3) and mark it in-progress")
+	cmd.Flags().BoolVar(&interactive, "interactive", false, "prompt to pick a door interactively")
 
 	return cmd
 }
