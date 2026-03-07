@@ -388,7 +388,7 @@ These non-functional requirements establish code quality gates that all contribu
 
 **FR97:** The system shall provide a daily planning mode accessible via `threedoors plan` CLI command or `:plan` TUI command that guides users through a structured morning planning ritual with three sequential steps: review, select, and confirm
 
-**FR98:** The planning mode shall present yesterday's incomplete tasks with options to continue (leave in pool with focus priority), defer (leave in pool without priority), or drop (mark as deferred status) each task — this is a quick triage step, not a snooze-with-date mechanism
+**FR98:** The planning mode shall present yesterday's incomplete tasks with options to continue (leave in pool with focus priority), skip (leave in pool without priority), or snooze (open SnoozeView to set a defer-until date via the same mechanism as the Z-key snooze action) each task — this is a quick triage step that integrates with the first-class snooze/defer system
 
 **FR99:** The planning mode shall allow users to select up to 5 tasks as "today's focus" from the full task pool, defaulting to 3 focus tasks (consistent with the Three Doors brand), using the session-scoped `+focus` tag convention so focus state resets on the next planning session
 
@@ -399,6 +399,28 @@ These non-functional requirements establish code quality gates that all contribu
 **FR102:** Today's focus tasks (tagged `+focus`) shall receive an elevated scoring boost in door selection, appearing more frequently as doors until completed or until the focus session expires (planning session timestamp + 16 hours, or next planning session, whichever comes first)
 
 **FR103:** The system shall track planning session completion, duration, number of tasks reviewed, and number of focus tasks selected as a `planning_session` event type in the JSONL session metrics log
+
+---
+
+## Phase 6+ - Snooze/Defer as First-Class Action (Accepted)
+
+*The following requirements surface the existing deferred status as a first-class user action with date-based snooze, making the door pool trustworthy by ensuring only actionable tasks appear.*
+
+**Snooze/Defer:**
+
+**FR104:** The system shall provide a snooze action accessible via the `Z` key when a door is selected in the doors view or when viewing a task in the detail view, presenting quick defer options: Tomorrow (next day 9:00 AM local), Next Week (next Monday 9:00 AM local), Pick Date (text input for custom date), and Someday (indefinite deferral with no return date)
+
+**FR105:** When a task is snoozed, the system shall set a `defer_until` timestamp on the task (nil for Someday), transition its status to `deferred`, and immediately remove it from door selection eligibility — the existing `GetAvailableForDoors()` filter already excludes deferred-status tasks, so no filter change is needed
+
+**FR106:** Deferred tasks with a `defer_until` date in the past shall automatically return to `todo` status, checked both on application startup and periodically during sessions via a 1-minute `tea.Tick` interval — tasks deferred as "Someday" (nil `defer_until`) remain deferred until manually un-snoozed
+
+**FR107:** The system shall provide a `:deferred` command in the command palette that displays all currently snoozed tasks sorted by return date (soonest first, Someday tasks last), with actions to un-snooze (`u` key, returns to todo immediately) or edit snooze date (`e` key, reopens SnoozeView)
+
+**FR108:** The system shall log snooze events (task ID, defer-until date, snooze option selected) as a `snooze` event type in the JSONL session metrics log, and log auto-return events as `snooze_return` when deferred tasks are automatically restored to todo
+
+**Snooze/Defer Status Transitions:**
+
+**FR109:** The system shall support status transitions from `in-progress` to `deferred` and from `blocked` to `deferred`, in addition to the existing `todo` to `deferred` transition — enabling users to snooze tasks regardless of their current active state
 
 ---
 
