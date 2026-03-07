@@ -46,8 +46,8 @@ func newTaskAddCmd() *cobra.Command {
 	return cmd
 }
 
-func runTaskAdd(_ *cobra.Command, text, context, taskType, effort string) error {
-	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+func runTaskAdd(cmd *cobra.Command, text, context, taskType, effort string) error {
+	formatter := NewOutputFormatter(os.Stdout, isJSONOutput(cmd))
 
 	var task *core.Task
 	if context != "" {
@@ -64,7 +64,7 @@ func runTaskAdd(_ *cobra.Command, text, context, taskType, effort string) error 
 	}
 
 	if err := task.Validate(); err != nil {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task add", ExitValidation, err.Error(), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -74,7 +74,7 @@ func runTaskAdd(_ *cobra.Command, text, context, taskType, effort string) error 
 
 	ctx, err := bootstrap()
 	if err != nil {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task add", ExitGeneralError, err.Error(), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -84,7 +84,7 @@ func runTaskAdd(_ *cobra.Command, text, context, taskType, effort string) error 
 
 	ctx.pool.AddTask(task)
 	if err := ctx.provider.SaveTask(task); err != nil {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task add", ExitProviderError, fmt.Sprintf("save task: %v", err), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: save task: %v\n", err)
@@ -93,7 +93,7 @@ func runTaskAdd(_ *cobra.Command, text, context, taskType, effort string) error 
 	}
 
 	shortID := task.ID[:8]
-	if jsonOutput {
+	if isJSONOutput(cmd) {
 		return formatter.WriteJSON("task add", task, nil)
 	}
 	return formatter.Writef("Created task %s: %s\n", shortID, task.Text)
@@ -121,12 +121,12 @@ func newTaskCompleteCmd() *cobra.Command {
 	return cmd
 }
 
-func runTaskComplete(_ *cobra.Command, ids []string) error {
-	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+func runTaskComplete(cmd *cobra.Command, ids []string) error {
+	formatter := NewOutputFormatter(os.Stdout, isJSONOutput(cmd))
 
 	ctx, err := bootstrap()
 	if err != nil {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task complete", ExitGeneralError, err.Error(), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -145,7 +145,7 @@ func runTaskComplete(_ *cobra.Command, ids []string) error {
 		}
 	}
 
-	if jsonOutput {
+	if isJSONOutput(cmd) {
 		_ = formatter.WriteJSON("task complete", results, nil)
 	} else {
 		for _, r := range results {
@@ -246,12 +246,12 @@ func newTaskListCmd() *cobra.Command {
 	return cmd
 }
 
-func runTaskList(_ *cobra.Command, statusFilter, typeFilter, effortFilter string) error {
-	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+func runTaskList(cmd *cobra.Command, statusFilter, typeFilter, effortFilter string) error {
+	formatter := NewOutputFormatter(os.Stdout, isJSONOutput(cmd))
 
 	ctx, err := bootstrap()
 	if err != nil {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task list", ExitGeneralError, err.Error(), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -266,7 +266,7 @@ func runTaskList(_ *cobra.Command, statusFilter, typeFilter, effortFilter string
 
 	filtered := filterTasks(allTasks, statusFilter, typeFilter, effortFilter)
 
-	if jsonOutput {
+	if isJSONOutput(cmd) {
 		filters := make(map[string]string)
 		if statusFilter != "" {
 			filters["status"] = statusFilter
@@ -330,12 +330,12 @@ func newTaskShowCmd() *cobra.Command {
 	return cmd
 }
 
-func runTaskShow(_ *cobra.Command, idPrefix string) error {
-	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+func runTaskShow(cmd *cobra.Command, idPrefix string) error {
+	formatter := NewOutputFormatter(os.Stdout, isJSONOutput(cmd))
 
 	ctx, err := bootstrap()
 	if err != nil {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task show", ExitGeneralError, err.Error(), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -346,7 +346,7 @@ func runTaskShow(_ *cobra.Command, idPrefix string) error {
 	matches := ctx.pool.FindByPrefix(idPrefix)
 
 	if len(matches) == 0 {
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task show", ExitNotFound, "task not found", idPrefix)
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: no task found with prefix %q\n", idPrefix)
@@ -356,7 +356,7 @@ func runTaskShow(_ *cobra.Command, idPrefix string) error {
 
 	if len(matches) > 1 {
 		msg := fmt.Sprintf("ambiguous prefix %q matches %d tasks", idPrefix, len(matches))
-		if jsonOutput {
+		if isJSONOutput(cmd) {
 			_ = formatter.WriteJSONError("task show", ExitAmbiguousInput, msg, "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %s\n", msg)
@@ -366,7 +366,7 @@ func runTaskShow(_ *cobra.Command, idPrefix string) error {
 
 	task := matches[0]
 
-	if jsonOutput {
+	if isJSONOutput(cmd) {
 		return formatter.WriteJSON("task show", task, nil)
 	}
 

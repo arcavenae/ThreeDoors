@@ -6,10 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var jsonOutput bool
+// isJSONOutput reads the --json flag from the command's inherited flags.
+func isJSONOutput(cmd *cobra.Command) bool {
+	v, _ := cmd.Flags().GetBool("json")
+	return v
+}
 
 // NewRootCmd creates the top-level Cobra command for ThreeDoors CLI.
 func NewRootCmd() *cobra.Command {
+	var jsonOutput bool
+
 	cmd := &cobra.Command{
 		Use:   "threedoors",
 		Short: "ThreeDoors — reduce decision friction, three tasks at a time",
@@ -26,6 +32,9 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.AddCommand(NewDoorsCmd())
 	cmd.AddCommand(newHealthCmd())
 	cmd.AddCommand(newVersionCmd())
+	cmd.AddCommand(newCompletionCmd())
+
+	registerFlagCompletions(cmd)
 
 	return cmd
 }
@@ -34,8 +43,9 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 func Execute() int {
 	root := NewRootCmd()
 	if err := root.Execute(); err != nil {
-		formatter := NewOutputFormatter(os.Stderr, jsonOutput)
-		if jsonOutput {
+		jsonFlag, _ := root.PersistentFlags().GetBool("json")
+		formatter := NewOutputFormatter(os.Stderr, jsonFlag)
+		if jsonFlag {
 			_ = formatter.WriteJSONError("", ExitGeneralError, err.Error(), "")
 		} else {
 			_ = formatter.Writef("Error: %v\n", err)
@@ -54,5 +64,5 @@ func KnownSubcommands() []string {
 		names = append(names, cmd.Name())
 	}
 	// Include subcommands that will be added in future stories
-	return append(names, "task", "doors", "mood", "stats", "config", "provider", "health", "version", "help")
+	return append(names, "task", "doors", "completion", "mood", "stats", "config", "provider", "health", "version", "help")
 }

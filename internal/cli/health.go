@@ -29,18 +29,19 @@ func newHealthCmd() *cobra.Command {
 		Short: "Run system health checks",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runHealth()
+			return runHealth(cmd)
 		},
 	}
 	return cmd
 }
 
-func runHealth() error {
-	formatter := NewOutputFormatter(os.Stdout, jsonOutput)
+func runHealth(cmd *cobra.Command) error {
+	isJSON := isJSONOutput(cmd)
+	formatter := NewOutputFormatter(os.Stdout, isJSON)
 
 	ctx, err := bootstrap()
 	if err != nil {
-		if jsonOutput {
+		if isJSON {
 			_ = formatter.WriteJSONError("health", ExitProviderError, err.Error(), "")
 		} else {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -51,7 +52,7 @@ func runHealth() error {
 	hc := core.NewHealthChecker(ctx.provider)
 	result := hc.RunAll()
 
-	if jsonOutput {
+	if isJSON {
 		checks := make([]healthCheckJSON, 0, len(result.Items))
 		for _, item := range result.Items {
 			checks = append(checks, healthCheckJSON{

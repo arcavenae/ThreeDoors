@@ -30,14 +30,14 @@ func newVersionCmd() *cobra.Command {
 		Short: "Show version information",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runVersion()
+			return runVersion(cmd)
 		},
 	}
 	return cmd
 }
 
-func runVersion() error {
-	return writeVersion(os.Stdout, jsonOutput)
+func runVersion(cmd *cobra.Command) error {
+	return writeVersion(os.Stdout, isJSONOutput(cmd))
 }
 
 func writeVersion(w io.Writer, isJSON bool) error {
