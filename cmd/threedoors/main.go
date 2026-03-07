@@ -16,6 +16,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/dist"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
+	"github.com/arcaven/ThreeDoors/internal/mcp"
 	"github.com/arcaven/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -142,8 +143,23 @@ func main() {
 		}
 	}
 
+	// Initialize proposal store (optional — non-fatal if it fails)
+	var proposalStore *mcp.ProposalStore
+	if configErr == nil {
+		proposalsPath := filepath.Join(configDir, "proposals.jsonl")
+		ps, psErr := mcp.NewProposalStore(proposalsPath, pool)
+		if psErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: proposal store init failed: %v\n", psErr)
+		} else {
+			proposalStore = ps
+		}
+	}
+
 	isFirstRun := configErr == nil && core.IsFirstRun(configDir)
 	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun, enrichDB)
+	if proposalStore != nil {
+		model.SetProposalStore(proposalStore)
+	}
 	if agentSvc != nil {
 		model.SetAgentService(agentSvc)
 	}

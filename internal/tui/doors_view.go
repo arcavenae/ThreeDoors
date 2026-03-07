@@ -63,6 +63,7 @@ type DoorsView struct {
 	syncTracker       *core.SyncStatusTracker
 	timeContext       *core.TimeContext
 	pendingConflicts  int
+	pendingProposals  int
 	theme             *themes.DoorTheme
 	themeRegistry     *themes.Registry
 	duplicateTaskIDs  map[string]bool
@@ -126,6 +127,11 @@ func (dv *DoorsView) SetDuplicateTaskIDs(ids map[string]bool) {
 // SetPendingConflicts sets the number of unresolved sync conflicts.
 func (dv *DoorsView) SetPendingConflicts(count int) {
 	dv.pendingConflicts = count
+}
+
+// SetPendingProposals sets the number of pending LLM proposals.
+func (dv *DoorsView) SetPendingProposals(count int) {
+	dv.pendingProposals = count
 }
 
 // SetThemeByName looks up the named theme in the registry and sets it as active.
@@ -350,6 +356,12 @@ func (dv *DoorsView) View() string {
 	if dv.pendingConflicts > 0 {
 		s.WriteString("\n\n")
 		s.WriteString(conflictHeaderStyle.Render(fmt.Sprintf("⚠ %d sync conflict(s) detected — press C to resolve", dv.pendingConflicts)))
+	}
+
+	// Proposal suggestions badge
+	if dv.pendingProposals > 0 {
+		s.WriteString("\n\n")
+		s.WriteString(proposalBadgeStyle.Render(fmt.Sprintf("[%d suggestions] — press S to review", dv.pendingProposals)))
 	}
 
 	// Sync status bar
