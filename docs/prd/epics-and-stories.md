@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-18 are COMPLETE. Epics 19-21 are PARTIAL. Epic 16 and Epic 22 are NOT STARTED. 144 merged PRs total. Last audit: 2026-03-06.
+**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epic 16 is NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
 
 ## Requirements Inventory
 
@@ -205,10 +205,10 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR34 | Epic 15 ✅ | Psychology Research & Validation (COMPLETE) |
 | (mobile-specific) | Epic 16 | iPhone Mobile App (NOT STARTED) |
 | FR55-FR62 | Epic 17 ✅ | Door Theme System (COMPLETE) |
-| FR63-FR66 | Epic 19 ◐ | Jira Integration (PARTIAL — 2/4 stories) |
-| FR67-FR69 | Epic 20 ◐ | Apple Reminders Integration (PARTIAL — 1/4 stories) |
-| FR70-FR72 | Epic 21 ◐ | Sync Protocol Hardening (PARTIAL — 3/4 stories) |
-| FR73-FR80 | Epic 22 | Self-Driving Development Pipeline (NOT STARTED) |
+| FR63-FR66 | Epic 19 ✅ | Jira Integration (COMPLETE) |
+| FR67-FR69 | Epic 20 ✅ | Apple Reminders Integration (COMPLETE) |
+| FR70-FR72 | Epic 21 ✅ | Sync Protocol Hardening (COMPLETE) |
+| FR73-FR80 | Epic 22 ✅ | Self-Driving Development Pipeline (COMPLETE) |
 
 ## Epic List
 
@@ -320,23 +320,23 @@ Visually distinct themed doors with user-selectable themes.
 **Prerequisites:** Epic 3 ✅, Epic 10 ✅
 **Status:** All 6 stories complete (PRs #119, #120, #121, #123, #124, #122).
 
-### Epic 19: Jira Integration ◐ PARTIAL
+### Epic 19: Jira Integration ✅ COMPLETE
 Jira as a task source with read-only adapter and bidirectional sync.
 **FRs covered:** FR63-FR66
 **Prerequisites:** Epic 7 ✅, Epic 11 ✅, Epic 13 ✅
-**Status:** 2/4 stories complete (PRs #132, #138). Stories 19.3, 19.4 pending.
+**Status:** All 4 stories complete (PRs #132, #138, #150, #153).
 
-### Epic 20: Apple Reminders Integration ◐ PARTIAL
+### Epic 20: Apple Reminders Integration ✅ COMPLETE
 Apple Reminders as a task source with full CRUD support.
 **FRs covered:** FR67-FR69
 **Prerequisites:** Epic 7 ✅
-**Status:** 1/4 stories complete (PR #137). Stories 20.2-20.4 pending.
+**Status:** All 4 stories complete (PRs #137, #148, #155, #158).
 
-### Epic 21: Sync Protocol Hardening ◐ PARTIAL
+### Epic 21: Sync Protocol Hardening ✅ COMPLETE
 Background sync scheduling, circuit breakers, and cross-provider identity mapping.
 **FRs covered:** FR70-FR72
 **Prerequisites:** Epic 11 ✅, Epic 13 ✅
-**Status:** 3/4 stories complete (PRs #139; 21.2, 21.3 done). Story 21.4 pending.
+**Status:** All 4 stories complete (PRs #139, #132, #151, #157).
 
 ---
 
@@ -1946,13 +1946,13 @@ So that TUI regressions are caught on every PR without relying on manual testing
 
 ---
 
-## Epic 19: Jira Integration ◐ PARTIAL
+## Epic 19: Jira Integration ✅ COMPLETE
 
 **Epic Goal:** Integrate Jira as a task source, enabling developers to see Jira issues as ThreeDoors tasks.
 
 **Prerequisites:** Epic 7 ✅, Epic 11 ✅, Epic 13 ✅
 **FRs covered:** FR63-FR66
-**Status:** PARTIAL — 2/4 stories implemented (PRs #132, #138). Stories 19.3, 19.4 pending.
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #132, #138, #150, #153).
 
 ### Story 19.1: Jira HTTP Client ✅
 
@@ -1962,49 +1962,49 @@ So that TUI regressions are caught on every PR without relying on manual testing
 
 **Status:** Done (PR #138)
 
-### Story 19.3: Jira Bidirectional Sync
+### Story 19.3: Jira Bidirectional Sync ✅
 
-**Status:** Draft
+**Status:** Done (PR #150)
 
-### Story 19.4: Jira Config and Registration
+### Story 19.4: Jira Config and Registration ✅
 
-**Status:** Draft
+**Status:** Done (PR #153)
 
 ---
 
-## Epic 20: Apple Reminders Integration ◐ PARTIAL
+## Epic 20: Apple Reminders Integration ✅ COMPLETE
 
 **Epic Goal:** Add Apple Reminders as a task source with full CRUD support.
 
 **Prerequisites:** Epic 7 ✅
 **FRs covered:** FR67-FR69
-**Status:** PARTIAL — 1/4 stories implemented (PR #137). Stories 20.2-20.4 pending.
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #137, #148, #155, #158).
 
 ### Story 20.1: Reminders JXA Scripts and CommandExecutor ✅
 
 **Status:** Done (PR #137)
 
-### Story 20.2: Reminders Read-Only Provider
+### Story 20.2: Reminders Read-Only Provider ✅
 
-**Status:** Draft
+**Status:** Done (PR #148)
 
-### Story 20.3: Reminders Write Support
+### Story 20.3: Reminders Write Support ✅
 
-**Status:** Draft
+**Status:** Done (PR #155)
 
-### Story 20.4: Reminders Config, Registration, and Health Check
+### Story 20.4: Reminders Config, Registration, and Health Check ✅
 
-**Status:** Draft
+**Status:** Done (PR #158)
 
 ---
 
-## Epic 21: Sync Protocol Hardening ◐ PARTIAL
+## Epic 21: Sync Protocol Hardening ✅ COMPLETE
 
 **Epic Goal:** Harden sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping.
 
 **Prerequisites:** Epic 11 ✅, Epic 13 ✅
 **FRs covered:** FR70-FR72
-**Status:** PARTIAL — 3/4 stories implemented (PRs #139; 21.2, 21.3 done). Story 21.4 pending.
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #139, #132, #151, #157).
 
 ### Story 21.1: Sync Scheduler with Per-Provider Loops ✅
 
@@ -2012,15 +2012,15 @@ So that TUI regressions are caught on every PR without relying on manual testing
 
 ### Story 21.2: Circuit Breaker per Provider ✅
 
-**Status:** Done
+**Status:** Done (PR #132)
 
 ### Story 21.3: Canonical ID Mapping (SourceRef) ✅
 
-**Status:** Done (partial — SourceRef type and Task methods; TaskPool integration deferred)
+**Status:** Done (PR #151)
 
-### Story 21.4: Sync Dashboard Enhancements
+### Story 21.4: Sync Dashboard Enhancements ✅
 
-**Status:** Draft
+**Status:** Done (PR #157)
 
 ---
 
@@ -2151,7 +2151,7 @@ The following maps each affected story to the specific PR issues it produced:
 
 ---
 
-## Epic 22: Self-Driving Development Pipeline 🆕
+## Epic 22: Self-Driving Development Pipeline ✅ COMPLETE
 
 **Epic Goal:** Enable ThreeDoors tasks to directly trigger multiclaude worker agents, creating a closed loop where the app dispatches its own development work and tracks results (PRs, CI status) back in the TUI. This is the "meta" feature: ThreeDoors managing its own development.
 
@@ -2160,7 +2160,7 @@ The following maps each affected story to the specific PR issues it produced:
 **NFRs covered:** NFR24, NFR25, NFR26, NFR27
 **Origin:** Self-driving development pipeline research (2026-03-04). Research document at `docs/research/self-driving-development-pipeline.md`.
 **Architecture:** Option B (TUI-Native Dispatch) — single-process, unified UX, leverages existing multiclaude CLI and Bubbletea patterns.
-**Status:** Not Started
+**Status:** COMPLETE — All 8 stories implemented and merged (PRs #149, #152, #163, #162, #161, #164, #159, #160).
 
 **Key Design Decisions:**
 - Dispatch state (`DevDispatch`) is orthogonal to task lifecycle status — a task can be `in-progress` AND dispatched
@@ -2170,9 +2170,9 @@ The following maps each affected story to the specific PR issues it produced:
 - No auto-dispatch by default — user must explicitly approve each dispatch
 - Max 2 concurrent workers — conservative default to prevent cost runaway
 
-### Story 22.1: Dev Dispatch Data Model and Queue Persistence
+### Story 22.1: Dev Dispatch Data Model and Queue Persistence ✅
 
-**Status:** draft
+**Status:** Done (PR #149)
 
 As a developer,
 I want a `DevDispatch` struct on the `Task` type and a file-based dev queue,
@@ -2193,9 +2193,9 @@ So that dispatch state is tracked independently from task lifecycle and persists
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.2: Dispatch Engine with multiclaude CLI Wrapper
+### Story 22.2: Dispatch Engine with multiclaude CLI Wrapper ✅
 
-**Status:** draft
+**Status:** Done (PR #152)
 
 As a developer,
 I want a dispatch engine that wraps the multiclaude CLI,
@@ -2216,9 +2216,9 @@ So that ThreeDoors can create workers, list workers, get history, and remove wor
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.3: TUI Dispatch Key Binding and Confirmation Flow
+### Story 22.3: TUI Dispatch Key Binding and Confirmation Flow ✅
 
-**Status:** draft
+**Status:** Done (PR #163)
 
 As a user,
 I want to press 'x' in the task detail view or type `:dispatch` to dispatch a task to the dev queue,
@@ -2239,9 +2239,9 @@ So that I can trigger automated development work on a selected task.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.4: Dev Queue View (List, Approve, Kill)
+### Story 22.4: Dev Queue View (List, Approve, Kill) ✅
 
-**Status:** draft
+**Status:** Done (PR #162)
 
 As a user,
 I want a dev queue view where I can see pending dispatches, approve them, and kill running workers,
@@ -2263,9 +2263,9 @@ So that I maintain control over what gets dispatched and can stop runaway agents
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.5: Worker Status Polling and Task Update Loop
+### Story 22.5: Worker Status Polling and Task Update Loop ✅
 
-**Status:** draft
+**Status:** Done (PR #161)
 
 As a user,
 I want ThreeDoors to automatically check on worker status and update tasks with PR results,
@@ -2286,9 +2286,9 @@ So that I can see development progress without leaving the TUI.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.6: Auto-Generated Review and Follow-Up Tasks
+### Story 22.6: Auto-Generated Review and Follow-Up Tasks ✅
 
-**Status:** draft
+**Status:** Done (PR #164)
 
 As a user,
 I want ThreeDoors to automatically create review and follow-up tasks when workers produce results,
@@ -2308,9 +2308,9 @@ So that PR reviews and CI fixes appear naturally in my door rotation.
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.7: Optional Story File Generation via AgentService
+### Story 22.7: Optional Story File Generation via AgentService ✅
 
-**Status:** draft
+**Status:** Done (PR #159)
 
 As a user,
 I want to optionally generate story files before dispatching a task,
@@ -2330,9 +2330,9 @@ So that workers receive structured requirements following the project's story-dr
 
 **Quality Gate (AC-Q1–Q8):** gofumpt ✓ | golangci-lint ✓ | tests pass ✓ | rebased ✓ | scope-checked ✓ | errors handled ✓
 
-### Story 22.8: Safety Guardrails (Rate Limiting, Cost Caps, Audit Log)
+### Story 22.8: Safety Guardrails (Rate Limiting, Cost Caps, Audit Log) ✅
 
-**Status:** draft
+**Status:** Done (PR #160)
 
 As a user,
 I want safety guardrails preventing runaway agent spawning and providing an audit trail,
