@@ -1,6 +1,5 @@
 ────────────────────────────────────────
 │                                      │
-│                                      │
 │   This is a very long task           │
 │   description that should wrap       │
 │   across multiple lines to verify    │
@@ -13,6 +12,5 @@
 │   rendered output.                   │
 │                                      │
 │                                  ●   │
-│                                      │
 │                                      │
 ────────────────────────────────────────
