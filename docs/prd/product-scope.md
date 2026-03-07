@@ -95,6 +95,28 @@
 
 ---
 
+## Phase 3.5+: Task Dependencies & Blocked-Task Filtering
+
+**In Scope:**
+- `depends_on` field on Task model (list of task IDs)
+- Automatic filtering of dependency-blocked tasks from door selection
+- Pessimistic handling of orphaned dependencies (missing dep = still blocked)
+- "Blocked by: [task]" indicator in doors view and detail view
+- Auto-unblock check when dependencies complete, with door refresh
+- Dependency management in detail view (+/- keys, task search/picker)
+- Circular dependency detection and rejection
+- Session metrics logging for dependency and unblock events
+- DependencyResolver as standalone component in internal/core/
+
+**Out of Scope for this Phase:**
+- Cross-provider dependency resolution (deferred — requires enrichment DB extension)
+- CLI `threedoors task deps` commands (deferred to Epic 23 extension)
+- MCP `add_dependency` / `remove_dependency` tools (deferred to Epic 24 extension)
+- Visual dependency graph rendering (text indicators sufficient for v1)
+- Reverse dependency index (iterate pool at current scale)
+
+---
+
 ## Phase 4: Task Source Integration & Sync Hardening
 
 **In Scope:**
