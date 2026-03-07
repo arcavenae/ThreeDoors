@@ -1001,7 +1001,231 @@ func TestSplitOwnerRepo(t *testing.T) {
 	}
 }
 
+// AC3: Custom in-progress label name via config
+func TestMapStatus_CustomInProgressLabel(t *testing.T) {
+	t.Parallel()
+	cfg := newTestConfig("owner/repo")
+	cfg.InProgressLabel = "wip"
+	p := NewGitHubProvider(&mockIssueLister{user: "testuser"}, cfg)
+
+	tests := []struct {
+		name       string
+		state      string
+		labels     []string
+		wantStatus core.TaskStatus
+	}{
+		{"open with custom wip label", "open", []string{"wip"}, core.StatusInProgress},
+		{"open with default in-progress not matched", "open", []string{"in-progress"}, core.StatusTodo},
+		{"closed ignores custom label", "closed", []string{"wip"}, core.StatusComplete},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			issue := &GitHubIssue{State: tt.state, Labels: tt.labels}
+			got := p.mapStatus(issue)
+			if got != tt.wantStatus {
+				t.Errorf("mapStatus() = %q, want %q", got, tt.wantStatus)
+			}
+		})
+	}
+}
+
+// AC7: Special character handling
+func TestMapIssueToTask_SpecialCharacters(t *testing.T) {
+	t.Parallel()
+	p := newTestProvider(&mockIssueLister{user: "testuser"}, "owner/repo")
+
+	tests := []struct {
+		name     string
+		title    string
+		body     string
+		labels   []string
+		wantText string
+		wantCtx  string
+	}{
+		{
+			name:     "unicode title",
+			title:    "Fix 日本語 rendering in übersicht",
+			body:     "Details here",
+			labels:   nil,
+			wantText: "Fix 日本語 rendering in übersicht",
+			wantCtx:  "Details here",
+		},
+		{
+			name:     "emoji in title",
+			title:    "🐛 Bug: crash on startup",
+			body:     "Repro steps",
+			labels:   nil,
+			wantText: "🐛 Bug: crash on startup",
+			wantCtx:  "Repro steps",
+		},
+		{
+			name:     "markdown body with code blocks",
+			title:    "Add feature",
+			body:     "## Steps\n\n```go\nfunc main() {\n\tfmt.Println(\"hello\")\n}\n```\n\n- [x] Done",
+			labels:   nil,
+			wantText: "Add feature",
+			wantCtx:  "## Steps\n\n```go\nfunc main() {\n\tfmt.Println(\"hello\")\n}\n```\n\n- [x] Done",
+		},
+		{
+			name:     "labels with special characters",
+			title:    "Test",
+			body:     "",
+			labels:   []string{"priority:high", "type/bug-fix", "area:日本語"},
+			wantText: "Test",
+			wantCtx:  "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			now := time.Now().UTC()
+			issue := &GitHubIssue{
+				Number:    1,
+				Title:     tt.title,
+				Body:      tt.body,
+				State:     "open",
+				Labels:    tt.labels,
+				Assignee:  "testuser",
+				CreatedAt: now,
+				UpdatedAt: now,
+				HTMLURL:   "https://github.com/owner/repo/issues/1",
+				Repo:      "owner/repo",
+			}
+			task := p.mapIssueToTask(issue)
+			if task.Text != tt.wantText {
+				t.Errorf("Text = %q, want %q", task.Text, tt.wantText)
+			}
+			if task.Context != tt.wantCtx {
+				t.Errorf("Context = %q, want %q", task.Context, tt.wantCtx)
+			}
+		})
+	}
+}
+
+// AC7: Special characters in LoadTasks round-trip
+func TestLoadTasks_SpecialCharacters(t *testing.T) {
+	t.Parallel()
+	lister := &mockIssueLister{
+		user: "testuser",
+		issues: map[string][]*GitHubIssue{
+			"owner/repo": {
+				makeGitHubIssue(1, "🔥 Urgent: café résumé", "open", "owner/repo", []string{"priority:high", "type/日本語"}),
+			},
+		},
+	}
+
+	p := newTestProvider(lister, "owner/repo")
+	tasks, err := p.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error: %v", err)
+	}
+	if len(tasks) != 1 {
+		t.Fatalf("LoadTasks() returned %d tasks, want 1", len(tasks))
+	}
+	if tasks[0].Text != "🔥 Urgent: café résumé" {
+		t.Errorf("task.Text = %q, want unicode text preserved", tasks[0].Text)
+	}
+}
+
+// AC8: Assignee filtering — only configured user's issues returned
+func TestLoadTasks_AssigneeFiltering(t *testing.T) {
+	t.Parallel()
+
+	capturedAssignee := ""
+	lister := &assigneeCapturingLister{
+		inner: &mockIssueLister{
+			user: "testuser",
+			issues: map[string][]*GitHubIssue{
+				"owner/repo": {
+					makeGitHubIssue(1, "My issue", "open", "owner/repo", nil),
+				},
+			},
+		},
+		capturedAssignee: &capturedAssignee,
+	}
+
+	cfg := newTestConfig("owner/repo")
+	cfg.Assignee = "specificuser"
+	p := NewGitHubProvider(lister, cfg)
+
+	_, err := p.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error: %v", err)
+	}
+
+	if capturedAssignee != "specificuser" {
+		t.Errorf("assignee passed to API = %q, want %q", capturedAssignee, "specificuser")
+	}
+}
+
+// AC4: Multi-repo unique ID verification
+func TestLoadTasks_MultiRepo_UniqueIDs(t *testing.T) {
+	t.Parallel()
+	lister := &mockIssueLister{
+		user: "testuser",
+		issues: map[string][]*GitHubIssue{
+			"org/repo-a": {
+				makeGitHubIssue(1, "Issue A-1", "open", "org/repo-a", nil),
+				makeGitHubIssue(2, "Issue A-2", "open", "org/repo-a", nil),
+			},
+			"org/repo-b": {
+				makeGitHubIssue(1, "Issue B-1", "open", "org/repo-b", nil),
+			},
+		},
+	}
+
+	cfg := newTestConfig("org/repo-a", "org/repo-b")
+	p := NewGitHubProvider(lister, cfg)
+	tasks, err := p.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error: %v", err)
+	}
+
+	if len(tasks) != 3 {
+		t.Fatalf("LoadTasks() returned %d tasks, want 3", len(tasks))
+	}
+
+	// Verify all IDs are unique
+	ids := make(map[string]bool)
+	for _, task := range tasks {
+		if ids[task.ID] {
+			t.Errorf("duplicate task ID: %s", task.ID)
+		}
+		ids[task.ID] = true
+	}
+
+	// Same issue number in different repos should produce different IDs
+	if findTaskByID(tasks, "github:org/repo-a#1") == nil {
+		t.Error("missing task github:org/repo-a#1")
+	}
+	if findTaskByID(tasks, "github:org/repo-b#1") == nil {
+		t.Error("missing task github:org/repo-b#1")
+	}
+}
+
 // --- Helpers ---
+
+// assigneeCapturingLister wraps a mockIssueLister and captures the assignee param.
+type assigneeCapturingLister struct {
+	inner            *mockIssueLister
+	capturedAssignee *string
+}
+
+func (a *assigneeCapturingLister) ListIssues(ctx context.Context, owner, repo, assignee string) ([]*GitHubIssue, error) {
+	*a.capturedAssignee = assignee
+	return a.inner.ListIssues(ctx, owner, repo, assignee)
+}
+
+func (a *assigneeCapturingLister) GetAuthenticatedUser(ctx context.Context) (string, error) {
+	return a.inner.GetAuthenticatedUser(ctx)
+}
+
+func (a *assigneeCapturingLister) CloseIssue(ctx context.Context, owner, repo string, issueNumber int) error {
+	return a.inner.CloseIssue(ctx, owner, repo, issueNumber)
+}
 
 // countingIssueLister wraps a mockIssueLister and counts ListIssues calls.
 type countingIssueLister struct {
