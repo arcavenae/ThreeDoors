@@ -9,8 +9,8 @@ import (
 )
 
 // NewSciFiTheme creates the Sci-Fi/Spaceship theme: double-line outer frame,
-// shade-filled side rails, upper content panel, lower control panel with
-// ACCESS label. When selected, uses bright shade (▓) instead of light (░).
+// shade-filled side rails, single content panel with inline ACCESS label.
+// When selected, uses bright shade (▓) instead of light (░).
 func NewSciFiTheme() *DoorTheme {
 	frameColor := lipgloss.Color("39")
 	selectedColor := lipgloss.Color("51")
@@ -25,7 +25,7 @@ func NewSciFiTheme() *DoorTheme {
 			Accent:   lipgloss.Color("45"),
 			Selected: selectedColor,
 		},
-		MinWidth: 18,
+		MinWidth: 16,
 	}
 }
 
@@ -39,11 +39,11 @@ func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, boo
 		}
 		style := lipgloss.NewStyle().Foreground(color)
 
-		// Layout: ║░░│ content │░░║
-		// Rail width: 2 shade chars on each side
-		// Total border overhead: 2 (║) + 4 (░░ x2) + 2 (│) = 8
-		railW := 2
-		innerBorder := 8
+		// Layout: ║░│ content │░║
+		// Rail width: 1 shade char on each side
+		// Total border overhead: 2 (║) + 2 (░ x2) + 2 (│) = 6
+		railW := 1
+		innerBorder := 6
 		contentW := width - innerBorder
 		if contentW < 1 {
 			contentW = 1
@@ -61,7 +61,7 @@ func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, boo
 
 		var b strings.Builder
 
-		// Top border: ╔══╤════════════════╤══╗
+		// Top border: ╔═╤══════════════════════╤═╗
 		fmt.Fprintf(&b, "%s\n", style.Render(
 			"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+"╗"))
 
@@ -84,40 +84,32 @@ func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, boo
 				style.Render("│"), rail, style.Render("║"))
 		}
 
-		// Blank line after content
+		// Blank lines after content
+		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
+			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
 		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
 			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
 
-		// Mid-bar: ╠══╪════════════════╪══╣
-		fmt.Fprintf(&b, "%s\n", style.Render(
-			"╠"+strings.Repeat("═", railW)+"╪"+strings.Repeat("═", contentW)+"╪"+strings.Repeat("═", railW)+"╣"))
-
-		// Lower control panel
-
-		// Shade line
-		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
-			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
-
-		// ACCESS label centered
+		// ACCESS label right-aligned with 2-char padding
 		label := "[ACCESS]"
-		labelPad := (contentW - len(label)) / 2
-		if labelPad < 0 {
-			labelPad = 0
+		leftPad := contentW - len(label) - 2
+		if leftPad < 0 {
+			leftPad = 0
 		}
-		rightPad := contentW - labelPad - len(label)
-		if rightPad < 0 {
-			rightPad = 0
+		labelRight := contentW - leftPad - len(label)
+		if labelRight < 0 {
+			labelRight = 0
 		}
 		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
 			style.Render("║"), rail, style.Render("│"),
-			strings.Repeat(" ", labelPad)+label+strings.Repeat(" ", rightPad),
+			strings.Repeat(" ", leftPad)+label+strings.Repeat(" ", labelRight),
 			style.Render("│"), rail, style.Render("║"))
 
-		// Blank line
+		// Blank line after ACCESS
 		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
 			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
 
-		// Bottom border: ╚══╧════════════════╧══╝
+		// Bottom border: ╚═╧══════════════════════╧═╝
 		fmt.Fprintf(&b, "%s", style.Render(
 			"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+"╝"))
 

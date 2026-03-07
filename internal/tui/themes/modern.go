@@ -12,7 +12,7 @@ import (
 // box-drawing frame, generous whitespace, and a single ● doorknob.
 // When selected, uses heavy box-drawing characters (━┃) instead of thin (─│).
 func NewModernTheme() *DoorTheme {
-	frameColor := lipgloss.Color("245")
+	frameColor := lipgloss.Color("238")
 	selectedColor := lipgloss.Color("255")
 
 	return &DoorTheme{
@@ -62,9 +62,8 @@ func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, bo
 		// Top border
 		fmt.Fprintf(&b, "%s\n", style.Render(hChar+hBar+hChar))
 
-		// Upper padding (2 blank lines)
+		// Upper padding (1 blank line)
 		blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
-		fmt.Fprintf(&b, "%s\n", blankLine)
 		fmt.Fprintf(&b, "%s\n", blankLine)
 
 		// Content lines (left-padded with 3 spaces)
@@ -96,8 +95,7 @@ func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, bo
 			style.Render(vChar),
 		)
 
-		// Lower padding (2 blank lines)
-		fmt.Fprintf(&b, "%s\n", blankLine)
+		// Lower padding (1 blank line)
 		fmt.Fprintf(&b, "%s\n", blankLine)
 
 		// Bottom border

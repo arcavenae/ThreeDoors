@@ -74,15 +74,15 @@ func TestSciFiRenderHasShadeBlocks(t *testing.T) {
 	}
 }
 
-func TestSciFiRenderHasMidBar(t *testing.T) {
+func TestSciFiRenderNoMidBar(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
 	output := theme.Render("Task", 30, false)
 
-	// Mid-bar separator between upper and lower panels
-	if !strings.Contains(output, "╠") || !strings.Contains(output, "╣") {
-		t.Error("sci-fi theme should have mid-bar separator (╠ and ╣)")
+	// Mid-bar separator was removed — single content panel
+	if strings.Contains(output, "╠") || strings.Contains(output, "╣") {
+		t.Error("sci-fi theme should not have mid-bar separator (╠ and ╣)")
 	}
 }
 
