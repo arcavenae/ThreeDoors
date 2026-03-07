@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/google/uuid"
 )
 
@@ -23,20 +24,21 @@ type SourceRef struct {
 
 // Task represents a single task with full lifecycle metadata.
 type Task struct {
-	ID             string       `yaml:"id" json:"id"`
-	Text           string       `yaml:"text" json:"text"`
-	Context        string       `yaml:"context,omitempty" json:"context,omitempty"`
-	Status         TaskStatus   `yaml:"status" json:"status"`
-	Type           TaskType     `yaml:"type,omitempty" json:"type,omitempty"`
-	Effort         TaskEffort   `yaml:"effort,omitempty" json:"effort,omitempty"`
-	Location       TaskLocation `yaml:"location,omitempty" json:"location,omitempty"`
-	Notes          []TaskNote   `yaml:"notes,omitempty" json:"notes,omitempty"`
-	Blocker        string       `yaml:"blocker,omitempty" json:"blocker,omitempty"`
-	CreatedAt      time.Time    `yaml:"created_at" json:"created_at"`
-	UpdatedAt      time.Time    `yaml:"updated_at" json:"updated_at"`
-	CompletedAt    *time.Time   `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
-	SourceProvider string       `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
-	SourceRefs     []SourceRef  `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
+	ID             string                `yaml:"id" json:"id"`
+	Text           string                `yaml:"text" json:"text"`
+	Context        string                `yaml:"context,omitempty" json:"context,omitempty"`
+	Status         TaskStatus            `yaml:"status" json:"status"`
+	Type           TaskType              `yaml:"type,omitempty" json:"type,omitempty"`
+	Effort         TaskEffort            `yaml:"effort,omitempty" json:"effort,omitempty"`
+	Location       TaskLocation          `yaml:"location,omitempty" json:"location,omitempty"`
+	Notes          []TaskNote            `yaml:"notes,omitempty" json:"notes,omitempty"`
+	Blocker        string                `yaml:"blocker,omitempty" json:"blocker,omitempty"`
+	CreatedAt      time.Time             `yaml:"created_at" json:"created_at"`
+	UpdatedAt      time.Time             `yaml:"updated_at" json:"updated_at"`
+	CompletedAt    *time.Time            `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
+	SourceProvider string                `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
+	SourceRefs     []SourceRef           `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
+	DevDispatch    *dispatch.DevDispatch `yaml:"dev_dispatch,omitempty" json:"dev_dispatch,omitempty"`
 }
 
 // HasSourceRef returns true if the task has a SourceRef matching the given provider and native ID.
