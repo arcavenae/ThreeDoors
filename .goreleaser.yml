@@ -83,8 +83,7 @@ release:
     ### Installation
 
     ```bash
-    brew tap arcaven/tap
-    brew install threedoors
+    brew install arcaven/tap/threedoors
     ```
 
 # Homebrew tap formula generation — targets shared arcaven/homebrew-tap
