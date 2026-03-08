@@ -17,6 +17,11 @@ The main interface presents three tasks simultaneously as entry points. These ta
 
 Over time, the system learns: "On Tuesday mornings, user picks Door 1 (focused work). On Friday afternoons, user picks Door 3 (quick wins). User never picks administrative tasks before 10am."
 
+**Door Selection Feedback (Interaction Feel):**
+- **Strong visual response** - Every keypress must produce a visible, satisfying response. The selected door should draw the eye through contrast, scale, or emphasis — not just a minor color shift. Unselected doors should visually recede (dim/fade) to create a focus funnel effect.
+- **Reversibility** - Pressing the same selection key again toggles the door off, returning to neutral state. Users who know they can undo a selection explore more freely.
+- **Consistent escape routes** - 'q' (quit) works from every non-text-input view. Users should never feel trapped in a screen.
+
 **Door Refresh & Feedback (MVP Core):**
 - **Refresh/New Doors** - Simple keystroke ('s' or 'down arrow') to generate a new set of three doors if current options don't appeal. No judgment, no friction—just new options.
 - **Task Management Feedback** - Options to indicate task status or modify tasks:
