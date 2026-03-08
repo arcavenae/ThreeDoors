@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 ✅ | Infrastructure & Process Backfill (COMPLETE) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (19/20 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -229,10 +229,10 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 ## Epic List
 
-### Epic 0: Infrastructure & Process (Backfill) ✅ COMPLETE
-Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs.
+### Epic 0: Infrastructure & Process (Backfill)
+Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** All 19 stories complete (retroactive). See `docs/analysis/pr-story-gap-analysis.md`.
+**Status:** 19 of 20 stories complete. Story 0.20 (CI Churn Reduction) not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -381,11 +381,11 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 ---
 
-## Epic 0: Infrastructure & Process (Backfill) ✅ COMPLETE
+## Epic 0: Infrastructure & Process (Backfill)
 
-**Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story.
+**Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** COMPLETE — All work already shipped. Stories created retroactively for traceability.
+**Status:** 19 of 20 stories complete. Story 0.20 (CI Churn Reduction) not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
 
@@ -642,6 +642,22 @@ So that TUI testing infrastructure has a clear implementation path.
 - **AC1:** Epic 18 added to PRD with 5 stories (18.1–18.5)
 - **AC2:** FR52–FR54 added to functional requirements
 - **AC3:** Distinction from Epic 9 testing scope documented
+
+### Story 0.20: CI Churn Reduction — Branch Protection & Merge Queue Optimization
+
+As a development team running multiple parallel agents,
+I want CI to run efficiently without cascading reruns,
+So that PRs merge quickly without wasting 5-10x CI runs per PR.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** Branch protection "Require branches to be up to date" DISABLED (Phase 1)
+- **AC2:** Branch protection still requires CI green and no force push (Phase 1)
+- **AC3:** ADR documenting rationale written (Phase 1)
+- **AC4:** merge-queue and pr-shepherd agents updated (Phase 1)
+- **AC5:** CI workflows use path-based triggers for docs-only PRs (Phase 2)
+- **AC6:** Evaluate and implement GitHub Native Merge Queue if feasible (Phase 3)
 
 ---
 
