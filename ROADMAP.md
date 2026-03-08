@@ -12,24 +12,6 @@
 
 ## Active Epics
 
-### Epic 23: CLI Interface (P1) — 8/10 stories done
-
-Non-TUI CLI for power users and LLM agents. Cobra-based, `--json` output.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 23.6 | Task Block, Unblock, and Status Commands | Not Started | P1 | 23.2 (done) |
-| 23.7 | Task Edit, Delete, Note, and Search Commands | Not Started | P1 | 23.2 (done) |
-
-### Epic 24: MCP/LLM Integration Server (P1) — 6/8 stories done
-
-Expose task management to LLMs via Model Context Protocol.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 24.5 | TUI Proposal Review View | Not Started | P1 | 24.4 (done) |
-| 24.8 | MCP Prompt Templates & Advanced Interaction Patterns | Not Started | P1 | 24.6 (done), 24.7 (done) |
-
 ### Epic 25: Todoist Integration (P1) — 0/4 stories done
 
 Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
@@ -41,16 +23,59 @@ Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirec
 | 25.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 25.2 |
 | 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
 
-### Epic 26: GitHub Issues Integration (P1) — 0/4 stories done
+### Epic 27: Daily Planning Mode (P1) — 0/5 stories done
 
-GitHub Issues as task source for developer workflows. Official go-github SDK.
+Guided daily planning ritual for task review and focus selection. Transforms ThreeDoors from reactive task picker into proactive morning engagement tool.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 26.1 | GitHub SDK Client & Auth Configuration | Not Started | P1 | Epic 7 (done) |
-| 26.2 | Read-Only GitHub Provider with Field Mapping | Not Started | P1 | 26.1 |
-| 26.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 26.2 |
-| 26.4 | Contract Tests & Integration Testing | Not Started | P1 | 26.2 |
+| 27.1 | Planning Data Model & Focus Tag | Not Started | P1 | Epic 1 (done) |
+| 27.2 | Review Incomplete Tasks Flow | Not Started | P1 | 27.1 |
+| 27.3 | Focus Selection Flow | Not Started | P1 | 27.1 |
+| 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
+| 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
+
+### Epic 28: Snooze/Defer as First-Class Action (P1) — 0/4 stories done
+
+Surfaces existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 28.1 | DeferUntil Field, Status Transitions, and Auto-Return Logic | Not Started | P1 | None |
+| 28.2 | Snooze TUI View and Z-Key Binding | Not Started | P1 | 28.1 |
+| 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
+| 28.4 | Session Metrics Logging for Snooze Events | Not Started | P1 | 28.1 |
+
+### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 0/4 stories done
+
+Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Not Started | P1 | None |
+| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Not Started | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
+| 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
+
+### Epic 32: Undo Task Completion (P1) — 0/3 stories done
+
+Allow reversing accidental task completion via `complete → todo` transition. Validated pain point from Phase 1 gate.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
+| 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
+| 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
+
+### Epic 34: SOUL.md + Custom Development Skills (P1) — 0/3 stories done
+
+Project philosophy document and custom Claude Code slash commands for AI agent alignment and developer workflow.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 34.1 | Create SOUL.md Project Philosophy Document | Not Started | P1 | None |
+| 34.2 | Create Custom Claude Code Slash Commands | Not Started | P1 | 34.1 |
+| 34.3 | Story Template Update and Integration Notes | Not Started | P1 | 34.2 |
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
 
@@ -74,16 +99,6 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.3 | Subtask List Rendering in Detail View | Not Started | P2 | 31.1, 31.2 |
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
-
-### Epic 32: Undo Task Completion (P1) — 0/3 stories done
-
-Allow reversing accidental task completion via `complete → todo` transition. Validated pain point from Phase 1 gate.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
-| 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
-| 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
 
 ### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
 
@@ -118,10 +133,14 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 14 | LLM Task Decomposition | 3/3 |
 | 15 | Psychology Research & Validation | 1/1 |
 | 17 | Door Theme System | 6/6 |
+| 18 | Docker E2E & Headless TUI Testing | 5/5 |
 | 19 | Jira Integration | 4/4 |
 | 20 | Apple Reminders Integration | 4/4 |
 | 21 | Sync Protocol Hardening | 4/4 |
 | 22 | Self-Driving Development Pipeline | 8/8 |
+| 23 | CLI Interface | 10/10 |
+| 24 | MCP/LLM Integration Server | 8/8 |
+| 26 | GitHub Issues Integration | 4/4 |
 
 ## Icebox (Deferred Indefinitely)
 
