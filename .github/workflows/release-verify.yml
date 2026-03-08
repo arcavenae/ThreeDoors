@@ -1,0 +1,105 @@
+name: Release Verify
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify-tap:
+    name: Verify Homebrew Tap CI
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Find GoReleaser tap commit
+        id: find-commit
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          # Wait for GoReleaser's commit to appear in the shared tap repo.
+          # GoReleaser pushes a formula update with a specific commit message
+          # pattern after a successful release.
+          for i in $(seq 1 12); do
+            SHA=$(gh api repos/arcaven/homebrew-tap/commits \
+              --jq 'map(select(.commit.message | startswith("chore(formula): update threedoors"))) | .[0].sha // empty' \
+              2>/dev/null)
+            if [ -n "$SHA" ]; then
+              echo "Found tap commit: $SHA"
+              echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+              break
+            fi
+            echo "Waiting for tap commit... ($i/12)"
+            sleep 30
+          done
+          if [ -z "$SHA" ]; then
+            echo "::error::GoReleaser tap commit not found after 6 minutes"
+            exit 1
+          fi
+
+      - name: Wait for tap CI result
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          SHA="${{ steps.find-commit.outputs.sha }}"
+          echo "Monitoring tap CI for commit $SHA"
+          for i in $(seq 1 30); do
+            STATUS=$(gh api "repos/arcaven/homebrew-tap/commits/$SHA/status" \
+              --jq '.state' 2>/dev/null)
+            case "$STATUS" in
+              success)
+                echo "Tap CI passed"
+                exit 0
+                ;;
+              failure|error)
+                echo "::error::Tap CI failed for commit $SHA"
+                exit 1
+                ;;
+              pending)
+                echo "Tap CI pending... ($i/30)"
+                sleep 60
+                ;;
+              *)
+                echo "Unknown status: $STATUS, treating as pending ($i/30)"
+                sleep 60
+                ;;
+            esac
+          done
+          echo "::error::Tap CI timed out after 30 minutes for commit $SHA"
+          exit 1
+
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAP_SHA="${{ steps.find-commit.outputs.sha }}"
+          RELEASE_RUN_URL="${{ github.event.workflow_run.html_url }}"
+
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Release verification failed: tap CI did not pass" \
+            --label "bug,release" \
+            --body "$(cat <<EOF
+          ## Release Verification Failure
+
+          The homebrew tap CI failed or timed out after the latest release.
+
+          **Release workflow run:** $RELEASE_RUN_URL
+          **Tap commit:** $TAP_SHA
+          **Tap CI:** https://github.com/arcaven/homebrew-tap/actions
+
+          ### Next Steps
+
+          1. Check the [tap CI logs](https://github.com/arcaven/homebrew-tap/actions) for the specific failure
+          2. Identify whether the failure is in \`brew audit\`, \`brew install\`, or \`brew test\`
+          3. Fix the root cause in ThreeDoors (never manually edit the tap formula)
+          4. Tag a patch release to regenerate the formula
+
+          See \`agents/release-manager.md\` for detailed recovery procedures.
+          EOF
+          )"

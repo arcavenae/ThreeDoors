@@ -484,5 +484,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/threedoors.rb
-          git commit -m "Update threedoors to $VERSION"
+          git commit -m "chore(formula): update threedoors to $TAG"
           git push

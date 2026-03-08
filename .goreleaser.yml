@@ -1,0 +1,107 @@
+version: 2
+
+project_name: threedoors
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+
+builds:
+  - id: threedoors
+    main: ./cmd/threedoors
+    binary: threedoors
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X github.com/arcaven/ThreeDoors/internal/cli.Version={{.Version}}
+      - -X github.com/arcaven/ThreeDoors/internal/cli.Commit={{.Commit}}
+      - -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate={{.Date}}
+    # Exclude linux/arm64 for now (no CI testing for it)
+    ignore:
+      - goos: linux
+        goarch: arm64
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - "Merge pull request"
+      - "Merge branch"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))?\!?:.+$'
+      order: 0
+    - title: Bug Fixes
+      regexp: '^.*?fix(\(.+\))?\!?:.+$'
+      order: 1
+    - title: Other
+      order: 999
+
+release:
+  github:
+    owner: arcaven
+    name: ThreeDoors
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+  header: |
+    ## ThreeDoors v{{.Version}}
+
+    TUI task manager that reduces decision friction by showing only three tasks at a time.
+  footer: |
+    **Full Changelog**: https://github.com/arcaven/ThreeDoors/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ### Installation
+
+    ```bash
+    brew tap arcaven/tap
+    brew install threedoors
+    ```
+
+# Homebrew tap formula generation — targets shared arcaven/homebrew-tap
+brews:
+  - repository:
+      owner: arcaven
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "chore(formula): update threedoors to {{ .Tag }}"
+    directory: Formula
+    homepage: "https://github.com/arcaven/ThreeDoors"
+    description: "TUI task manager that reduces decision friction by showing only three tasks"
+    license: "MIT"
+    install: |
+      bin.install "threedoors"
+    test: |
+      assert_match version.to_s, shell_output("#{bin}/threedoors --version 2>&1")
