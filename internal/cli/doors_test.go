@@ -301,6 +301,79 @@ func TestDisplayDoors_EmptyTypeAndEffort(t *testing.T) {
 	}
 }
 
+func TestBuildTaskPool_NilProvider(t *testing.T) {
+	t.Parallel()
+
+	pool, provider, err := buildTaskPool(nil)
+	if err == nil {
+		t.Fatal("expected error when provider is nil, got nil")
+	}
+	if pool != nil {
+		t.Errorf("expected nil pool, got %v", pool)
+	}
+	if provider != nil {
+		t.Errorf("expected nil provider, got %v", provider)
+	}
+
+	wantSubstr := "no task provider available"
+	if !bytes.Contains([]byte(err.Error()), []byte(wantSubstr)) {
+		t.Errorf("error = %q, want substring %q", err.Error(), wantSubstr)
+	}
+}
+
+func TestBuildTaskPool_ValidProvider(t *testing.T) {
+	t.Parallel()
+
+	mock := &mockProviderWithTasks{
+		tasks: []*core.Task{
+			newTestTask("aaa", "Test task", core.StatusTodo),
+		},
+	}
+
+	pool, provider, err := buildTaskPool(mock)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if pool == nil {
+		t.Fatal("expected non-nil pool")
+	}
+	if provider == nil {
+		t.Fatal("expected non-nil provider")
+	}
+	if len(pool.GetAvailableForDoors()) != 1 {
+		t.Errorf("pool has %d available tasks, want 1", len(pool.GetAvailableForDoors()))
+	}
+}
+
+func TestBuildTaskPool_LoadError(t *testing.T) {
+	t.Parallel()
+
+	mock := &mockProviderWithTasks{
+		loadErr: fmt.Errorf("connection refused"),
+	}
+
+	_, _, err := buildTaskPool(mock)
+	if err == nil {
+		t.Fatal("expected error when LoadTasks fails, got nil")
+	}
+
+	wantSubstr := "load tasks"
+	if !bytes.Contains([]byte(err.Error()), []byte(wantSubstr)) {
+		t.Errorf("error = %q, want substring %q", err.Error(), wantSubstr)
+	}
+}
+
+// mockProviderWithTasks extends mockProvider with configurable LoadTasks behavior.
+type mockProviderWithTasks struct {
+	mockProvider
+	tasks   []*core.Task
+	loadErr error
+}
+
+func (m *mockProviderWithTasks) LoadTasks() ([]*core.Task, error) {
+	return m.tasks, m.loadErr
+}
+
 // mockProvider is a minimal TaskProvider for testing.
 type mockProvider struct {
 	saved   bool
