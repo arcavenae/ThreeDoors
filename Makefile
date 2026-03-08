@@ -7,7 +7,7 @@ LDFLAGS := -X main.version=$(VERSION) \
            -X github.com/arcaven/ThreeDoors/internal/cli.Commit=$(COMMIT) \
            -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=$(BUILD_DATE)
 
-.PHONY: build build-mcp run clean fmt lint test test-docker bench analyze test-scripts sign pkg release-local test-dist
+.PHONY: build build-mcp run clean fmt lint test test-docker bench analyze test-scripts sign pkg release-local test-dist release-tag
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/threedoors ./cmd/threedoors
@@ -84,12 +84,24 @@ endif
 
 release-local: build sign pkg
 
+release-tag:
+ifndef TAG
+	@echo "Usage: make release-tag TAG=v0.1.0"
+	@exit 1
+endif
+	@if ! echo "$(TAG)" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+'; then \
+		echo "Error: TAG must be semver (e.g., v0.1.0, v1.0.0)"; \
+		exit 1; \
+	fi
+	git tag -a "$(TAG)" -m "Release $(TAG)"
+	@echo "Tag $(TAG) created. Push with: git push origin $(TAG)"
+
 test-dist: build
 	@echo "=== Distribution Tests ==="
 	@echo "Testing --version flag..."
 	@./bin/threedoors --version | grep -q "ThreeDoors" && echo "  PASS" || (echo "  FAIL" && exit 1)
-	@echo "Testing Homebrew formula syntax..."
-	@ruby -c Formula/threedoors.rb > /dev/null 2>&1 && echo "  PASS" || (echo "  FAIL" && exit 1)
+	@echo "Testing GoReleaser config..."
+	@if command -v goreleaser >/dev/null 2>&1; then goreleaser check && echo "  PASS" || (echo "  FAIL" && exit 1); else echo "  SKIP (goreleaser not installed)"; fi
 	@echo "Testing shell script syntax..."
 	@bash -n scripts/create-pkg.sh && echo "  PASS" || (echo "  FAIL" && exit 1)
 	@echo "Testing make sign dry-run..."
