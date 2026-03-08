@@ -144,20 +144,23 @@ Proceed to Phase 8.
 
 ---
 
-## Phase 8: Create Pull Request
+## Phase 8: Update Docs & Create Pull Request
 
-**Goal:** Package the completed work into a PR.
+**Goal:** Update planning docs and package the completed work into a PR.
 
-1. Stage all changed files (code, tests, story file updates).
-2. Create a descriptive commit with the story identifier and title.
-3. Push the branch and create a PR with:
+1. Update the story file status to `In Review (PR #NNN)` (will be updated to `Done` after merge).
+2. Check if this story completes its epic — if so, update `ROADMAP.md` epic progress.
+3. If the implementation involved any design decisions (adopted or rejected approaches), add entries to `docs/decisions/BOARD.md`.
+4. Stage all changed files (code, tests, story file updates, planning doc updates).
+5. Create a descriptive commit referencing the story: `feat: <description> (Story $ARGUMENTS)`
+6. Push the branch and create a PR with:
    - Title referencing the story (e.g., "feat: Story $ARGUMENTS — {story title}")
    - Body summarizing:
      - What was implemented
      - Tests added
      - Files changed
      - Acceptance criteria satisfied
-4. Report the PR URL to the user.
+7. Report the PR URL to the user.
 
 ---
 

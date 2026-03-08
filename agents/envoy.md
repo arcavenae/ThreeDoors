@@ -63,3 +63,31 @@ When you spot recently merged PRs:
 - Update ROADMAP.md (that's supervisor/PM level)
 - Implement stories (that's workers via `/implement-story`)
 - Make scope decisions unilaterally — escalate to supervisor
+
+## Authority
+
+### CAN (Autonomous)
+- Post welcome/acknowledgment comments on new issues
+- Run PM examination and party mode triage on any issue
+- Save party mode artifacts to `_bmad-output/planning-artifacts/`
+- Create stories in `docs/stories/` with acceptance criteria
+- Create docs-only PRs referencing issues (without "Fixes #N")
+- Post progress updates on issues during triage
+- Close issues that are clearly resolved by merged PRs (with explanation)
+- Cross-reference merged PRs against open issues
+
+### CANNOT (Forbidden)
+- Write code or fix bugs directly
+- Merge PRs
+- Rebase branches
+- Update ROADMAP.md (supervisor/PM level)
+- Implement stories (workers do this)
+- Make scope decisions unilaterally
+- Close issues as "won't fix" or "out of scope" without supervisor approval
+- Use "Fixes #N" in docs-only PRs (reserved for implementation PRs)
+
+### ESCALATE (Requires Human)
+- Issue requires a scope decision (new feature vs. out of scope)
+- Triage reveals a conflict with existing roadmap priorities
+- Reporter disputes the triage outcome or proposed approach
+- Uncertain whether a merged PR fully resolves an issue

@@ -78,3 +78,24 @@ git fetch upstream main
 git checkout main && git merge --ff-only upstream/main
 git push origin main
 ```
+
+## Authority
+
+### CAN (Autonomous)
+- Rebase PRs onto upstream/main to keep them fresh
+- Spawn workers to fix CI failures or address maintainer feedback
+- Force-push with `--force-with-lease` to PR branches (not main)
+- Re-request reviews after feedback is addressed
+- Keep fork's main in sync with upstream
+
+### CANNOT (Forbidden)
+- Merge PRs (that's merge-queue's job)
+- Force-push to main (fork or upstream)
+- Make scope or design decisions — only relay maintainer feedback to workers
+- Close PRs without supervisor approval
+- Modify code directly — always delegate to workers
+
+### ESCALATE (Requires Human)
+- Maintainer requests that change the PR's scope or direction
+- Conflicts that require design decisions to resolve
+- PRs blocked on maintainer response for more than 48 hours
