@@ -246,6 +246,9 @@ func TestClientDoTransition(t *testing.T) {
 			t.Cleanup(server.Close)
 
 			client := NewClient(AuthConfig{Type: AuthBasic, URL: server.URL, Email: "e", APIToken: "t"})
+			// Use a dedicated transport to avoid parallel subtest interference
+			// via http.DefaultTransport.CloseIdleConnections in httptest.Server.Close.
+			client.httpClient.Transport = &http.Transport{}
 			err := client.DoTransition(context.Background(), "PROJ-42", "31")
 
 			if (err != nil) != tt.wantErr {
