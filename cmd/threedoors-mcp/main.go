@@ -59,6 +59,9 @@ func run(transportType string, port int) error {
 		provider = agg
 	} else {
 		baseProvider := core.NewProviderFromConfig(cfg)
+		if baseProvider == nil {
+			return fmt.Errorf("no task provider available: check your configuration in %s", configPath)
+		}
 		provider = core.NewWALProvider(baseProvider, configDir)
 	}
 
