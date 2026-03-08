@@ -3265,6 +3265,27 @@ So that I can use the CLI efficiently with tab completion.
 
 **Phase 3 — Polish (Story 23.10):** Shell completions and interactive doors mode. Quality-of-life improvements for power users.
 
+### Story 23.11: Fix Nil Pointer Panic on Missing Provider
+
+**Status:** Not Started
+
+**GitHub Issue:** #218
+
+As a ThreeDoors user,
+I want the CLI to return a clear error when no provider is available,
+So that I don't experience a panic on first run.
+
+**Bug fix:** `loadTaskPool()` in `doors.go` and MCP server init call `NewProviderFromConfig()` which can return nil. Neither checks for nil before dereferencing. Fix: add nil check and return descriptive error in both locations.
+
+- **AC1:** `loadTaskPool()` returns error (not panic) when provider is nil
+- **AC2:** Error message is actionable — indicates no provider available
+- **AC3:** MCP server handles nil provider without panic
+- **AC4:** All existing tests pass
+- **AC5:** New tests cover nil provider scenario in `loadTaskPool()`
+- **AC6:** New tests cover nil provider scenario in MCP server
+
+**Quality Gate (AC-Q1–Q8):** gofumpt | golangci-lint | tests pass | rebased | scope-checked | errors handled
+
 ---
 
 ## Epic 25: Todoist Integration
