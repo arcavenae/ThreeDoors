@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epics 16, 23, 24, 25, and 36 are NOT STARTED. 164 merged PRs total. Last audit: 2026-03-08.
+**Implementation Status:** Epics 0-15, 3.5, 17-24, 26, 34, 35 are COMPLETE. Epic 16 is ICEBOX. Epics 25, 27-33 are NOT STARTED. 239+ merged PRs total. Last audit: 2026-03-08.
 
 ## Requirements Inventory
 
@@ -232,7 +232,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 19 of 20 stories complete. Story 0.20 (CI Churn Reduction) not started.
+**Status:** 19 of 20 stories complete. Story 0.20 (CI Churn Reduction) not started. Story file created (PR #231).
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -355,11 +355,17 @@ Background sync scheduling, circuit breakers, and cross-provider identity mappin
 **Prerequisites:** Epic 11 ✅, Epic 13 ✅
 **Status:** All 4 stories complete (PRs #139, #132, #151, #157).
 
-### Epic 24: MCP/LLM Integration Server — NOT STARTED
+### Epic 23: CLI Interface ✅ COMPLETE
+Complete non-TUI CLI interface for ThreeDoors serving both human power users and LLM agents.
+**FRs covered:** FR97-FR131
+**Prerequisites:** None
+**Status:** All 11 stories complete (PRs #161-#192, #225). Includes bug fix Story 23.11 (PR #225).
+
+### Epic 24: MCP/LLM Integration Server ✅ COMPLETE
 Expose ThreeDoors task management to LLMs via Model Context Protocol. Read-only queries, controlled enrichment proposals, analytics mining, and relationship graphs.
 **FRs covered:** FR81-FR88
 **Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
-**Status:** Not Started. 8 stories planned (24.1-24.8). Research at `docs/research/llm-integration-mcp.md`.
+**Status:** All 8 stories complete (PRs #164-#196). Research at `docs/research/llm-integration-mcp.md`.
 
 ### Epic 25: Todoist Integration — NOT STARTED
 Todoist as a task source with thin HTTP client against REST API v1, read-only adapter, bidirectional sync.
@@ -367,11 +373,23 @@ Todoist as a task source with thin HTTP client against REST API v1, read-only ad
 **Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
 **Status:** Not Started. 4 stories planned (25.1-25.4). Research at `docs/research/task-source-expansion-research.md`.
 
-### Epic 26: GitHub Issues Integration — NOT STARTED
+### Epic 26: GitHub Issues Integration ✅ COMPLETE
 GitHub Issues as a task source for developer workflows using the official go-github SDK. Label-based priority/status conventions.
 **FRs covered:** FR93-FR96
 **Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
-**Status:** Not Started. 4 stories planned (26.1-26.4). Research at `docs/research/task-source-expansion-research.md`.
+**Status:** All 4 stories complete (PRs #201-#205). Research at `docs/research/task-source-expansion-research.md`.
+
+### Epic 34: SOUL.md + Custom Development Skills ✅ COMPLETE
+Project philosophy document, custom Claude Code slash commands, story template updates, and retroactive spec alignment.
+**FRs covered:** FR148-FR151 (project tooling)
+**Prerequisites:** None
+**Status:** All 4 stories complete (PRs #222, #224, #228, #230).
+
+### Epic 35: Door Visual Appearance — Door-Like Proportions ✅ COMPLETE
+Redesign all door themes to visually read as actual doors with portrait orientation, panel dividers, handles, and thresholds.
+**FRs covered:** FR138-FR147
+**Prerequisites:** Epic 17 ✅ (Door Theme System)
+**Status:** All 7 stories complete (PRs #226, #229, #234, #236, #237, #238, #239).
 
 ### Epic 33: Seasonal Door Theme Variants — NOT STARTED
 Time-based seasonal theme variants that auto-switch based on the current date, extending the Door Theme System with visual variety.
@@ -385,7 +403,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 19 of 20 stories complete. Story 0.20 (CI Churn Reduction) not started.
+**Status:** 19 of 20 stories complete. Story 0.20 (CI Churn Reduction) not started. Story file created (PR #231).
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
 
@@ -2268,13 +2286,13 @@ So that I can see what each seasonal theme looks like and choose my preferred se
 
 ---
 
-## Epic 35: Door Visual Appearance — Door-Like Proportions
+## Epic 35: Door Visual Appearance — Door-Like Proportions ✅ COMPLETE
 
 **Epic Goal:** Redesign all door themes to visually read as actual doors rather than cards/panels, using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines. Addresses user feedback that "none of the door themes look like doors."
 
 **Prerequisites:** Epic 17 ✅ (Door Theme System)
 **FRs covered:** FR138-FR147
-**Status:** Not Started
+**Status:** All 7 stories complete (PRs #226, #229, #234, #236, #237, #238, #239)
 
 ### Story 35.1: Door Anatomy Model and Height-Aware Render Signature
 
@@ -2928,7 +2946,7 @@ So that I can use the self-driving pipeline without risk of excessive cost or un
 
 ---
 
-## Epic 24: MCP/LLM Integration Server
+## Epic 24: MCP/LLM Integration Server ✅ COMPLETE
 
 **Epic Goal:** Expose ThreeDoors task management services to LLMs through the Model Context Protocol (MCP). LLMs can query tasks, propose enrichments (with user approval), mine productivity analytics, and traverse task relationship graphs across providers. Core design principle: LLMs propose, users approve — no direct task modification.
 
@@ -2936,7 +2954,7 @@ So that I can use the self-driving pipeline without risk of excessive cost or un
 **FRs covered:** FR81, FR82, FR83, FR84, FR85, FR86, FR87, FR88
 **Origin:** LLM Integration & MCP Server Research (2026-03-06). Research document at `docs/research/llm-integration-mcp.md`.
 **Architecture:** Separate binary (`cmd/threedoors-mcp/`) sharing `internal/` packages. No new storage layer — reads same YAML, JSONL, and SQLite as TUI.
-**Status:** Not Started
+**Status:** All 8 stories complete (PRs #164-#196)
 
 **Key Design Decisions:**
 - MCP server is a separate binary from the TUI — independently deployable
@@ -3119,7 +3137,7 @@ So that I can provide high-quality coaching with consistent responses.
 
 **MVP-3 (Stories 22.6, 22.7, 22.8):** Auto-generated tasks + story generation + safety guardrails. Complete closed-loop self-driving pipeline.
 
-## Epic 23: CLI Interface
+## Epic 23: CLI Interface ✅ COMPLETE
 
 **Epic Goal:** Provide a complete non-TUI CLI interface for ThreeDoors that serves both human power users (scriptable task management) and LLM agents (structured JSON output). The CLI shares `internal/core` with the TUI — no domain logic duplication. `threedoors` with no args launches the TUI (backward compatible); any subcommand routes to the Cobra-based CLI.
 
@@ -3127,7 +3145,7 @@ So that I can provide high-quality coaching with consistent responses.
 **Framework:** Cobra (`github.com/spf13/cobra`) for subcommand routing, shell completions, and help generation
 **Origin:** CLI interface design research (`docs/research/cli-interface-design.md`)
 **Architecture:** Layered CLI/TUI coexistence — `internal/cli/` imports `internal/core/`, never `internal/tui/`
-**Status:** Not Started
+**Status:** All 11 stories complete (PRs #161-#192, #225)
 
 **Key Design Decisions:**
 - Noun-verb command taxonomy: `threedoors task <verb>` (modeled after `gh` CLI)
@@ -3367,11 +3385,11 @@ So that I can use the CLI efficiently with tab completion.
 
 **Phase 3 — Polish (Story 23.10):** Shell completions and interactive doors mode. Quality-of-life improvements for power users.
 
-### Story 23.11: Fix Nil Pointer Panic on Missing Provider
+### Story 23.11: Fix Nil Pointer Panic on Missing Provider ✅
 
-**Status:** Not Started
+**Status:** Done (PR #225)
 
-**GitHub Issue:** #218
+**GitHub Issue:** #218 (closed)
 
 As a ThreeDoors user,
 I want the CLI to return a clear error when no provider is available,
@@ -3505,7 +3523,7 @@ As a developer, I want the Todoist adapter to pass the contract test suite with 
 ## Epic 26: GitHub Issues Integration
 
 **Priority:** P1 — High value, all infrastructure in place
-**Status:** Not Started (0/4 stories)
+**Status:** All 4 stories complete (PRs #201-#205)
 **Dependencies:** Epic 7 (Adapter SDK) COMPLETE, Epic 13 (Multi-Source Aggregation) COMPLETE, Epic 21 (Sync Protocol Hardening) COMPLETE
 
 ### Epic Goal
@@ -3523,9 +3541,9 @@ Integrate GitHub Issues as a task source adapter using the official `go-github` 
 
 ### Stories
 
-#### Story 26.1: GitHub SDK Client & Auth Configuration
+#### Story 26.1: GitHub SDK Client & Auth Configuration ✅
 
-**Status:** Not Started | **Priority:** P1 | **Depends On:** Epic 7 (done)
+**Status:** Done (PR #201) | **Priority:** P1 | **Depends On:** Epic 7 (done)
 
 As a developer, I want a GitHub API client using the official go-github SDK, so that the GitHubProvider can read and close issues with proper authentication and rate limit handling.
 
@@ -3544,9 +3562,9 @@ As a developer, I want a GitHub API client using the official go-github SDK, so 
 
 ---
 
-#### Story 26.2: Read-Only GitHub Provider with Field Mapping
+#### Story 26.2: Read-Only GitHub Provider with Field Mapping ✅
 
-**Status:** Not Started | **Priority:** P1 | **Depends On:** 26.1
+**Status:** Done (PR #202) | **Priority:** P1 | **Depends On:** 26.1
 
 As a ThreeDoors user who tracks work in GitHub Issues, I want my assigned issues to appear as doors in the Three Doors TUI.
 
@@ -3566,9 +3584,9 @@ As a ThreeDoors user who tracks work in GitHub Issues, I want my assigned issues
 
 ---
 
-#### Story 26.3: Bidirectional Sync & WAL Integration
+#### Story 26.3: Bidirectional Sync & WAL Integration ✅
 
-**Status:** Not Started | **Priority:** P1 | **Depends On:** 26.2
+**Status:** Done (PR #204) | **Priority:** P1 | **Depends On:** 26.2
 
 As a ThreeDoors user, I want completing a GitHub issue in ThreeDoors to close it on GitHub.
 
@@ -3584,9 +3602,9 @@ As a ThreeDoors user, I want completing a GitHub issue in ThreeDoors to close it
 
 ---
 
-#### Story 26.4: Contract Tests & Integration Testing
+#### Story 26.4: Contract Tests & Integration Testing ✅
 
-**Status:** Not Started | **Priority:** P1 | **Depends On:** 26.2
+**Status:** Done (PR #205) | **Priority:** P1 | **Depends On:** 26.2
 
 As a developer, I want the GitHub adapter to pass the contract test suite with comprehensive edge case coverage.
 

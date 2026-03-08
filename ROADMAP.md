@@ -10,17 +10,21 @@
 - **P1** — Should ship. High value, no blockers.
 - **P2** — Nice to have. Lower urgency.
 
-## Bug Fixes (P0)
+## Open Issues
 
-### Story 23.11: Fix Nil Pointer Panic on Missing Provider (P0)
+### Issue #219: Door Selection UX Improvements
 
-**GitHub Issue:** #218 | **Status:** Not Started
+**Status:** Triage complete (PR #221 merged). Implementation not yet started.
 
-`loadTaskPool()` in `doors.go` and MCP server init call `NewProviderFromConfig()` which can return nil. Neither checks for nil before dereferencing, causing a panic on first run with no provider configured.
+Door selection lacks tactile feedback and intuitive interaction patterns.
 
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 23.11 | Fix Nil Pointer Panic on Missing Provider | Not Started | P0 | Epic 23 (done) |
+## Infrastructure Backlog
+
+### Story 0.20: CI Churn Reduction (P1)
+
+**Status:** Story created (PR #231). Research complete (PR #233). Implementation not started.
+
+Branch protection & merge queue optimization to reduce cascading CI reruns.
 
 ## Active Epics
 
@@ -79,17 +83,6 @@ Allow reversing accidental task completion via `complete → todo` transition. V
 | 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
 | 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
 
-### Epic 34: SOUL.md + Custom Development Skills (P1) — 0/4 stories done
-
-Project philosophy document, custom Claude Code slash commands, and retroactive spec alignment. Living documentation policy: specs must always reflect code reality.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 34.1 | Create SOUL.md Project Philosophy Document | Not Started | P1 | None |
-| 34.2 | Create Custom Claude Code Slash Commands | Not Started | P1 | 34.1 |
-| 34.3 | Story Template Update and Integration Notes | Not Started | P1 | 34.2 |
-| 34.4 | Retroactive Story DRY & Spec Alignment | Not Started | P1 | 34.2 |
-
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
 
 Linear as task source via GraphQL API. Best task model alignment of all evaluated services.
@@ -113,20 +106,6 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 35: Door Visual Appearance — Door-Like Proportions (P1) — 0/7 stories done
-
-Redesign all door themes to visually read as actual doors using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines. Addresses user feedback that themes look like cards, not doors.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 35.1 | Door Anatomy Model and Height-Aware Render Signature | Not Started | P1 | Epic 17 (done) |
-| 35.2 | Classic Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
-| 35.3 | Modern Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
-| 35.4 | Sci-Fi Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
-| 35.5 | Shoji Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
-| 35.6 | Golden File Test Regeneration and Accessibility Validation | Not Started | P1 | 35.2-35.5 |
-| 35.7 | Shadow/Depth Effect for 3D Door Appearance | Not Started | P2 | 35.2-35.5 |
-
 ### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
 
 Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
@@ -142,7 +121,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 19/19 |
+| 0 | Infrastructure & Process (Backfill) | 19/20 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
@@ -165,9 +144,11 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 20 | Apple Reminders Integration | 4/4 |
 | 21 | Sync Protocol Hardening | 4/4 |
 | 22 | Self-Driving Development Pipeline | 8/8 |
-| 23 | CLI Interface | 10/10 |
+| 23 | CLI Interface | 11/11 |
 | 24 | MCP/LLM Integration Server | 8/8 |
 | 26 | GitHub Issues Integration | 4/4 |
+| 34 | SOUL.md + Custom Development Skills | 4/4 |
+| 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
 
 ## Icebox (Deferred Indefinitely)
 
