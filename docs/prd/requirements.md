@@ -226,6 +226,16 @@
 
 **FR147:** All door appearance signifiers (proportion, panel divider, handle, threshold) shall work in monochrome mode using structural elements rather than color — ensuring accessibility for users with color vision deficiencies or monochrome terminals
 
+**Door Selection Interaction Feedback (Issue #219):**
+
+**FR148:** When a door is selected, the system shall render the selected door with strong visual emphasis (bold text, bright foreground, enhanced border) and render unselected doors with diminished styling (faint/dimmed text, subdued borders), creating an unmistakable focus funnel effect
+
+**FR149:** The visual contrast between selected and unselected door states shall be distinguishable in monochrome mode using structural emphasis (bold, faint) rather than relying solely on color differentiation
+
+**FR150:** Pressing the same door selection key that selected the currently active door shall toggle the selection off, returning to the neutral state (no door selected) — enabling reversible exploration without re-rolling
+
+**FR151:** The 'q' key shall function as a universal quit command from all non-text-input views, providing a consistent escape route regardless of current screen
+
 ---
 
 ## Non-Functional Requirements

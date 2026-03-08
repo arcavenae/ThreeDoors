@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epics 16, 23, 24, and 25 are NOT STARTED. 164 merged PRs total. Last audit: 2026-03-07.
+**Implementation Status:** Epics 0-15, 3.5, 17-22 are COMPLETE. Epics 16, 23, 24, 25, and 36 are NOT STARTED. 164 merged PRs total. Last audit: 2026-03-08.
 
 ## Requirements Inventory
 
@@ -2472,6 +2472,92 @@ So that doors appear to have dimension and stand out from the background.
        └── 35.6 Golden File Test Regeneration (depends on 35.2-35.5)
        └── 35.7 Shadow/Depth Effect (depends on 35.2-35.5)
 ```
+
+---
+
+## Epic 36: Door Selection Interaction Feedback
+
+**Epic Goal:** Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit. Addresses GitHub Issue #219.
+
+**Prerequisites:** None (complements Epic 35 but does not depend on it)
+**FRs covered:** FR148-FR151
+**Status:** Not Started
+
+### Story 36.1: Enhanced Door Selection Visual Feedback
+
+As a user,
+I want the selected door to be visually unmistakable through strong contrast with unselected doors,
+So that every keypress produces a satisfying, confident "I picked this one" response.
+
+**Acceptance Criteria:**
+
+**Given** the doors view with three doors displayed and no door selected
+**When** the user presses a selection key (a/left, w/up, d/right)
+**Then** the selected door renders with bold text, bright foreground, and enhanced border
+**And** unselected doors render with faint/dimmed text and subdued border color
+
+**Given** no door is selected (selectedDoorIndex == -1)
+**When** all three doors render
+**Then** all doors use their normal (non-dimmed, non-emphasized) styling
+
+**Given** theme-based rendering is active
+**When** a door is selected
+**Then** the contrast difference is apparent even in monochrome mode
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 36.2: Deselect Toggle — Press Same Key to Unselect
+
+As a user,
+I want to press the same selection key again to deselect a door,
+So that I can explore options freely without feeling prematurely committed.
+
+**Acceptance Criteria:**
+
+**Given** door N is currently selected
+**When** the user presses the same key that selected door N
+**Then** selectedDoorIndex is set to -1 (no selection)
+**And** all doors return to their neutral visual state
+
+**Given** door N is currently selected
+**When** the user presses a different selection key
+**Then** selection switches to the new door (normal behavior)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 36.3: Universal Quit — 'q' Works From All Screens
+
+As a user,
+I want 'q' to quit the application from any non-text-input view,
+So that I never feel trapped in a screen.
+
+**Acceptance Criteria:**
+
+**Given** the user is on any non-text-input view
+**When** the user presses 'q'
+**Then** the application exits cleanly
+
+**Given** the user is in a text input mode (search, feedback, quick add)
+**When** the user presses 'q'
+**Then** 'q' is treated as text input, not as quit
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Epic 36 Story Dependencies
+
+```
+36.1 Enhanced Door Selection Visual Feedback (independent)
+36.2 Deselect Toggle (independent)
+36.3 Universal Quit (independent)
+```
+
+All three stories are independent and can be implemented in parallel.
 
 ---
 
