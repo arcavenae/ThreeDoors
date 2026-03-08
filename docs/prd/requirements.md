@@ -434,6 +434,30 @@ These non-functional requirements establish code quality gates that all contribu
 
 ---
 
+## Phase 6+ - Expand/Fork Key Implementations (Accepted)
+
+*The following requirements complete the Expand and Fork key actions in the TUI detail view, based on Design Decision H9.*
+
+**Expand (Manual Sub-Task Creation):**
+
+**FR120:** The system shall provide an Expand action via the `E` key in the detail view that enters a sequential subtask creation mode — after submitting one subtask (Enter), the input stays open for the next subtask until the user presses Esc to exit expand mode
+
+**FR121:** Subtasks created via Expand shall have their `parent_id` field set to the parent task's ID, establishing a native parent-child relationship in the core task model — the `parent_id` field is an optional string pointer (`*string`) stored as `parent_id` in YAML, backward-compatible with existing tasks
+
+**FR122:** The detail view shall display a subtask list below the task text when the viewed task has children, showing each subtask's status icon and text in an indented tree format, with a completion ratio summary (e.g., "Subtasks: 2/5 complete")
+
+**FR123:** Parent tasks that have one or more subtasks shall be excluded from door selection by `GetAvailableForDoors()` — the user has decomposed the task, so only the subtasks should appear as doors
+
+**FR124:** Subtasks shall NOT inherit effort, tags, or context from their parent — each subtask is an independent work item with its own metadata
+
+**Fork (Variant Creation):**
+
+**FR125:** The system shall provide a Fork action via the `F` key in the detail view that creates a variant of the current task by copying Text, Context, Effort, and Tags while resetting Status to `todo`, clearing Blocker and Notes, setting fresh timestamps, and adding a note "Forked from: [truncated original text]"
+
+**FR126:** Fork variants shall be cross-referenced to the original task via the enrichment DB using a `forked-from` relationship type — the core `ForkTask` factory returns a concrete `*Task` and the main model establishes the cross-reference
+
+---
+
 ## Phase 6+ - Task Dependencies & Blocked-Task Filtering (Accepted)
 
 *The following requirements add a native dependency graph for tasks, ensuring the Three Doors only present genuinely actionable tasks by automatically filtering those whose prerequisites are incomplete.*
