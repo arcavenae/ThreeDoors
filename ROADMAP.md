@@ -67,15 +67,16 @@ Allow reversing accidental task completion via `complete → todo` transition. V
 | 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
 | 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
 
-### Epic 34: SOUL.md + Custom Development Skills (P1) — 0/3 stories done
+### Epic 34: SOUL.md + Custom Development Skills (P1) — 0/4 stories done
 
-Project philosophy document and custom Claude Code slash commands for AI agent alignment and developer workflow.
+Project philosophy document, custom Claude Code slash commands, and retroactive spec alignment. Living documentation policy: specs must always reflect code reality.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 34.1 | Create SOUL.md Project Philosophy Document | Not Started | P1 | None |
 | 34.2 | Create Custom Claude Code Slash Commands | Not Started | P1 | 34.1 |
 | 34.3 | Story Template Update and Integration Notes | Not Started | P1 | 34.2 |
+| 34.4 | Retroactive Story DRY & Spec Alignment | Not Started | P1 | 34.2 |
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
 

@@ -46,9 +46,10 @@ Research agent (zealous-rabbit) conducted a comprehensive analysis on 2026-03-02
 
 ### Story Impact
 
-- **Existing stories:** No modifications needed to any existing story files
+- **Existing stories:** Will be retroactively updated to remove duplicated content and align with current project standards (Story 34.5)
 - **Future stories:** All future stories benefit by removing ~40-50 lines of boilerplate (Pre-PR Checklist, coding standards reminders, pattern documentation)
 - **Story file template:** Will be updated via `/new-story` skill to reference CLAUDE.md instead of embedding standards
+- **Living documentation policy:** Completed stories are updated when code improvements diverge from spec descriptions — specs must always reflect reality
 
 ### Artifact Conflicts
 
@@ -221,7 +222,7 @@ This is a documentation and configuration change. No code modifications. Can be 
 | 34.2 | Create /pre-pr Pre-PR Validation Skill | P0 | Small |
 | 34.3 | Create /validate-adapter and /check-patterns Skills | P2 | Small |
 | 34.4 | Create /new-story Story Template Skill | P3 | Small |
-| 34.5 | DRY Existing Story Files (Remove Duplicated Content) | P1 | Medium |
+| 34.5 | DRY Existing Story Files & Retroactive Spec Alignment | P1 | Medium |
 
 ---
 
