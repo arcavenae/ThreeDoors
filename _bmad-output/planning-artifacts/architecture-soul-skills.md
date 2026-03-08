@@ -71,11 +71,17 @@ Epic 34 adds two developer-facing capabilities to ThreeDoors:
 
 **Rationale:** ThreeDoors switched from fork workflow to direct push (2026-03-07). The `/pre-pr` command must use `origin/main` for branch freshness checks, scope review, and rebase validation.
 
-### AD-34.4: Forward-Only Template Changes
+### AD-34.4: Living Documentation — Specs Must Reflect Code Reality
 
-**Decision:** New story template (via `/new-story`) applies to future stories only. Completed story files are not retroactively modified to remove duplicated content.
+**Decision:** Completed story files and specs MUST be updated retroactively when code improvements, architectural changes, or lessons learned diverge from what the specs describe. The `/new-story` template applies to future stories, AND existing completed stories should be updated to remove duplicated content and reflect current project standards.
 
-**Rationale:** Party mode consensus. Completed stories are historical records. Retroactive DRY modifications create git blame noise and risk accidental content removal. The benefit of DRYing old stories (marginal — they're already done) does not justify the risk.
+**Rationale:** Learning and improvements captured only in code — not reflected back into specs — is an anti-pattern. The spec is the authoritative description of what the system does and why. If you deleted all code and rebuilt from specs alone, the result should be a *better* program, not a regression. Forward-only policies create spec drift: over time, completed stories become misleading historical artifacts rather than useful documentation. Git blame noise is a trivial cost compared to specs that no longer describe reality.
+
+**Implications:**
+- When a code improvement changes behavior described in a completed story, update the story
+- When DRYing content (e.g., removing embedded checklists in favor of CLAUDE.md references), update all stories — not just new ones
+- Story status remains "Done (PR #NNN)" — the implementation is complete, the documentation is living
+- Retroactive updates are a separate PR from the original implementation (clean git history)
 
 ### AD-34.5: MCP Prompt Template Integration Point
 
@@ -208,8 +214,9 @@ status: "Draft"
 | `.claude/commands/check-patterns.md` | Create | Pattern violation scanner |
 | `.claude/commands/new-story.md` | Create | Story template generator |
 | `CLAUDE.md` | Edit | Add reference to SOUL.md |
+| `docs/stories/*.story.md` | Edit | Retroactive DRY — remove embedded checklists, align with code reality |
 
-**Total files:** 5 new, 1 edited. All markdown. Zero Go code changes.
+**Total files:** 5 new, ~12 edited (CLAUDE.md + completed stories). All markdown. Zero Go code changes.
 
 ## 6. Risk Assessment
 
@@ -231,6 +238,7 @@ status: "Draft"
 | NFR-DX3 | AD-34.2 (command location) | /validate-adapter |
 | NFR-DX4 | AD-34.2 (command location) | /check-patterns |
 | NFR-DX5 | AD-34.2 (command location) | /new-story |
+| NFR-DX6 | AD-34.4 (living documentation) | Retroactive story updates |
 
 ## 8. Integration Points (Future Epics)
 

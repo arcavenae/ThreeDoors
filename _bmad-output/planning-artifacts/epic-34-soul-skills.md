@@ -32,7 +32,7 @@ This document provides the epic and story breakdown for Epic 34, which adds proj
 - SOUL.md placed at project root, referenced from CLAUDE.md (AD-34.1)
 - All commands in `.claude/commands/` following Claude Code convention (AD-34.2)
 - Use `origin/main` not `upstream/main` in all commands (AD-34.3)
-- Forward-only template changes — do not modify completed stories (AD-34.4)
+- Living documentation — completed stories MUST be updated when code diverges from specs (AD-34.4)
 - Document MCP integration point for Epic 24.8 (AD-34.5)
 
 ### NFR Coverage Map
@@ -44,12 +44,13 @@ This document provides the epic and story breakdown for Epic 34, which adds proj
 | NFR-DX3 | 34.2 | /validate-adapter command |
 | NFR-DX4 | 34.2 | /check-patterns command |
 | NFR-DX5 | 34.2 | /new-story command with DRY template |
+| NFR-DX6 | 34.4 | Retroactive story updates and spec alignment |
 
 ## Epic List
 
 | Epic | Title | Stories | Priority | Prerequisites |
 |------|-------|---------|----------|---------------|
-| 34 | SOUL.md + Custom Development Skills | 3 | P1 | None |
+| 34 | SOUL.md + Custom Development Skills | 4 | P1 | None |
 
 ---
 
@@ -195,16 +196,9 @@ This document provides the epic and story breakdown for Epic 34, which adds proj
 **When** reviewing Epic 34 deliverables,
 **Then** the architecture document (_bmad-output/planning-artifacts/architecture-soul-skills.md) contains an integration note documenting that SOUL.md philosophy should inform MCP prompt template design (AD-34.5)
 
-**AC 34.3.4:**
-**Given** the forward-only policy (AD-34.4),
-**When** reviewing the PR diff,
-**Then** no completed story files (docs/stories/*.story.md with status "Done" or "Complete") have been modified
-
 **Tasks:**
 - [ ] Verify /new-story template from 34.2 meets DRY criteria (AC 34.3.1, 34.3.2)
 - [ ] Verify architecture doc contains MCP integration note (AC 34.3.3)
-- [ ] Verify no completed story files modified (AC 34.3.4)
-- [ ] Document the forward-only policy in architecture doc
 
 **Key Files:**
 | File | Action |
@@ -216,20 +210,71 @@ This document provides the epic and story breakdown for Epic 34, which adds proj
 
 ---
 
+### Story 34.4: Retroactive Story DRY & Spec Alignment
+
+**As a** developer or AI agent reading completed stories for context,
+**I want** completed story files updated to remove duplicated content and reflect current project standards,
+**So that** specs remain an accurate, authoritative description of the system — enabling a "delete all code, rebuild from specs" workflow that produces a better program.
+
+**Acceptance Criteria:**
+
+**AC 34.4.1:**
+**Given** completed story files in `docs/stories/*.story.md`,
+**When** reviewing for embedded Pre-PR Submission Checklists,
+**Then** all embedded checklists are replaced with a reference to CLAUDE.md (e.g., "See CLAUDE.md Pre-PR Checklist")
+
+**AC 34.4.2:**
+**Given** completed story files,
+**When** reviewing for duplicated coding standards content (atomic write pattern descriptions, error wrapping reminders, MVU pattern explanations, "follow existing patterns in X"),
+**Then** duplicated content is removed and replaced with CLAUDE.md references where the content is already covered
+
+**AC 34.4.3:**
+**Given** completed story files,
+**When** comparing story descriptions to the current codebase behavior,
+**Then** any story whose described behavior has been superseded by later improvements is updated to reflect current reality (acceptance criteria, architecture notes, key files)
+
+**AC 34.4.4:**
+**Given** a completed story file that has been updated,
+**When** reviewing its status field,
+**Then** the status still reads "Done (PR #NNN)" — retroactive spec updates do not change completion status
+
+**AC 34.4.5:**
+**Given** the retroactive updates,
+**When** reviewing the git history,
+**Then** retroactive spec updates are in a separate PR from original implementation PRs (clean git history)
+
+**Tasks:**
+- [ ] Audit all completed story files for embedded Pre-PR Checklists (~11 files, ~500 lines)
+- [ ] Replace embedded checklists with CLAUDE.md references
+- [ ] Remove duplicated coding standards content
+- [ ] Review stories for code-reality divergence and update descriptions
+- [ ] Verify story statuses remain unchanged
+- [ ] Create PR with retroactive updates
+
+**Key Files:**
+| File | Action |
+|------|--------|
+| `docs/stories/*.story.md` | Edit (all completed stories with duplicated content) |
+
+**NFRs covered:** NFR-DX6 (living documentation)
+
+---
+
 ## Story Dependencies
 
 ```
 34.1 (SOUL.md) ──────────────── No dependencies
 34.2 (Custom Skills) ────────── No dependencies (can run in parallel with 34.1)
 34.3 (Template Verification) ── Depends on 34.2 (verifies /new-story output)
+34.4 (Retroactive DRY) ──────── Depends on 34.2 (needs /new-story template as reference for target format)
 ```
 
-**Parallelism:** Stories 34.1 and 34.2 can be implemented in parallel. Story 34.3 is a verification gate that runs after 34.2.
+**Parallelism:** Stories 34.1 and 34.2 can be implemented in parallel. Stories 34.3 and 34.4 run after 34.2. Stories 34.3 and 34.4 can run in parallel with each other.
 
 ## Implementation Notes
 
 1. **No code changes** — All deliverables are markdown files
 2. **No test infrastructure** — Slash commands are tested by running them manually
-3. **Forward-only** — Do not modify completed story files
+3. **Living documentation** — Completed stories MUST be updated when code diverges from specs. Specs are the authoritative system description. If you could delete all code and rebuild from specs alone, the result must be a better program, not a regression. Learning captured only in code is an anti-pattern.
 4. **Remote convention** — Use `origin/main` throughout (direct push, not fork)
 5. **MCP integration** — SOUL.md is a documented future input for Epic 24.8 prompt templates
