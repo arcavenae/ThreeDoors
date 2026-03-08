@@ -694,6 +694,22 @@ So that users can install ThreeDoors with a single `brew install` command.
 - **AC6:** Cosign signing and SLSA provenance enabled for releases (Phase 2)
 - **AC7:** Source-build formula submitted and accepted to homebrew-core (Phase 3)
 
+### Story 0.22: Fix Homebrew Strict Audit Failures
+
+As the ThreeDoors maintainer,
+I want the Homebrew tap CI to pass `brew audit --strict` and `brew style` for all formulas,
+So that formula updates don't break CI and we maintain homebrew-core readiness.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** Formula template uses `if Hardware::CPU.arm?` / `else` instead of `on_arm`/`on_intel`
+- **AC2:** Formula `desc` does not start with the formula name
+- **AC3:** Formula `test do` block does not pass redundant `0` to `shell_output`
+- **AC4:** `brew audit --strict` passes for all formulas in tap CI
+- **AC5:** `brew style` passes for all formulas in tap CI
+- **AC6:** Formula update automation generates compliant formulas
+
 ---
 
 ## Epic 1: Three Doors Technical Demo ✅ COMPLETE
