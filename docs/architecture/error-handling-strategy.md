@@ -91,6 +91,29 @@ if err := os.Rename(tempPath, targetPath); err != nil {
 }
 ```
 
+### Provider Initialization Errors
+
+**Strategy:** Check for nil provider before use, return actionable error
+
+Factory functions like `NewProviderFromConfig()` can return `nil` when both
+provider resolution and fallback fail. All callers must nil-check before
+dereferencing. Follow the pattern established in `bootstrap.go`:
+
+```go
+provider := core.NewProviderFromConfig(cfg)
+if provider == nil {
+    return fmt.Errorf("no task provider available; check provider configuration")
+}
+```
+
+**Known call sites requiring nil defense:**
+- `internal/cli/doors.go` — `loadTaskPool()` (fixed in Story 23.11)
+- `cmd/threedoors-mcp/main.go` — MCP server init (fixed in Story 23.11)
+- `internal/cli/bootstrap.go` — already defended
+
+**Future consideration:** Refactor `NewProviderFromConfig()` to return
+`(TaskProvider, error)` to eliminate the nil-return pattern at the source.
+
 ## Error Message Guidelines
 
 **User-Facing Errors (in TUI):**

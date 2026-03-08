@@ -246,6 +246,8 @@
 
 **TD-NFR7:** The system shall gracefully handle missing or corrupted task files by creating defaults
 
+**TD-NFR8:** The system shall never panic due to nil provider initialization — all code paths that obtain a `TaskProvider` from factory functions must check for nil and return a descriptive error before use (ref: Issue #218, Story 23.11)
+
 ---
 
 **Full MVP Phase (Post-Validation - Deferred):**
