@@ -2252,6 +2252,229 @@ So that I can see what each seasonal theme looks like and choose my preferred se
 
 ---
 
+## Epic 35: Door Visual Appearance — Door-Like Proportions
+
+**Epic Goal:** Redesign all door themes to visually read as actual doors rather than cards/panels, using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines. Addresses user feedback that "none of the door themes look like doors."
+
+**Prerequisites:** Epic 17 ✅ (Door Theme System)
+**FRs covered:** FR138-FR147
+**Status:** Not Started
+
+### Story 35.1: Door Anatomy Model and Height-Aware Render Signature
+
+As a developer,
+I want a `DoorAnatomy` helper type and an updated `Render()` signature that accepts height,
+So that all themes can calculate structural row positions for door-like rendering.
+
+**Acceptance Criteria:**
+
+**Given** the `DoorTheme` struct in `internal/tui/themes/theme.go`
+**When** the height-aware changes are applied
+**Then** the `Render` function signature is `func(content string, width int, height int, selected bool) string`
+**And** a `MinHeight int` field is added to `DoorTheme`
+**And** all existing theme constructors set `MinHeight` (Classic: 10, Modern: 12, Sci-Fi: 14, Shoji: 14)
+
+**Given** a new `DoorAnatomy` struct in `internal/tui/themes/anatomy.go`
+**When** `NewDoorAnatomy(height int)` is called
+**Then** it returns structural row positions: `LintelRow` (0), `ContentStart` (2), `PanelDivider` (~45% height), `HandleRow` (~60% height), `ThresholdRow` (height-1)
+**And** all positions are within bounds (0 to height-1)
+
+**Given** the `DoorsView` in `internal/tui/doors_view.go`
+**When** terminal height is available from `WindowSizeMsg`
+**Then** DoorsView calculates door height as available vertical space minus header/footer chrome
+**And** passes the calculated height to `theme.Render()`
+**And** when door height < theme's `MinHeight`, falls back to compact rendering (existing card layout)
+
+**Given** table-driven tests in `internal/tui/themes/anatomy_test.go`
+**When** `NewDoorAnatomy` is tested
+**Then** tests cover: minimum height (10), standard height (16), tall height (24), boundary conditions
+**And** all row positions are monotonically increasing (lintel < content < divider < handle < threshold)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Technical Notes:**
+- All existing theme render functions must be updated to accept the new height parameter
+- Initial implementation can ignore height and render at current fixed size — subsequent stories add height-aware rendering
+- DoorsView currently only distributes horizontal space; this story adds vertical space management
+
+---
+
+### Story 35.2: Classic Theme — Door-Like Proportions
+
+As a user,
+I want the Classic theme to render doors with portrait orientation, panel dividers, handle, and threshold,
+So that Classic doors visually read as actual doors.
+
+**Acceptance Criteria:**
+
+**Given** the Classic theme render function
+**When** rendering a door with height >= MinHeight (10)
+**Then** the door is rendered in portrait orientation (more rows than columns of content)
+**And** a panel divider (`├─────────────┤`) is rendered at ~45% of door height
+**And** a doorknob (`●`) is rendered on the right side at ~60% of door height
+**And** a threshold/shadow line (`▔▔▔▔▔`) is rendered below the bottom border
+**And** the door number is rendered in the lintel area (top border)
+
+**Given** the Classic theme in compact mode (height < MinHeight)
+**When** rendering a door
+**Then** the existing card-style layout is used (backward compatible)
+
+**Given** golden file tests for the Classic theme
+**When** tests run at standard height (16 rows) and wide height (24 rows)
+**Then** golden files match expected door-like output
+**And** both selected and unselected states are tested
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 35.3: Modern Theme — Door-Like Proportions
+
+As a user,
+I want the Modern theme to render doors with minimalist door-like proportions,
+So that Modern doors clearly read as sleek, minimal doors.
+
+**Acceptance Criteria:**
+
+**Given** the Modern theme render function
+**When** rendering a door with height >= MinHeight (12)
+**Then** the door uses portrait orientation with heavy top/bottom bars (`━━━`)
+**And** a minimalist panel line (`─`) divides upper and lower panels at ~45% height
+**And** a minimalist handle (`○`) is rendered on the right side at ~60% height
+**And** the door number is centered in the top bar
+**And** selected state uses heavy frame characters (`┃`) as currently implemented
+
+**Given** golden file tests for the Modern theme
+**When** tests run at minimum, standard, and wide heights
+**Then** golden files match expected door-like output
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 35.4: Sci-Fi Theme — Door-Like Proportions
+
+As a user,
+I want the Sci-Fi theme to render doors as bulkhead/airlock panels with door-like proportions,
+So that Sci-Fi doors clearly read as spaceship doors.
+
+**Acceptance Criteria:**
+
+**Given** the Sci-Fi theme render function
+**When** rendering a door with height >= MinHeight (14)
+**Then** the door uses portrait orientation with double-line outer frame (`╔═╗║╚═╝`)
+**And** a bulkhead divider (`╞═════════╡`) separates upper and lower sections at ~45% height
+**And** an access panel handle (`◈──┤`) is rendered on the right side at ~60% height
+**And** the `[ACCESS]` label is rendered in the lower panel area
+**And** a floor grating line (`▓▓▓`) is rendered below the bottom frame
+**And** shade rails (`░` / `▓`) remain on sides
+
+**Given** golden file tests for the Sci-Fi theme
+**When** tests run at minimum, standard, and wide heights
+**Then** golden files match expected door-like output
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 35.5: Shoji Theme — Door-Like Proportions
+
+As a user,
+I want the Shoji theme to render doors as sliding screen panels with door-like proportions,
+So that Shoji doors clearly read as traditional Japanese sliding doors.
+
+**Acceptance Criteria:**
+
+**Given** the Shoji theme render function
+**When** rendering a door with height >= MinHeight (14)
+**Then** the door uses portrait orientation with lattice grid pattern
+**And** lattice cross-bars create panel divisions at ~45% height and near the bottom
+**And** a recessed sliding handle (`○`) is rendered center-right at ~60% height
+**And** the door number is placed in the top rail
+**And** selected state uses heavy grid characters (`╋━┃`) as currently implemented
+
+**Given** golden file tests for the Shoji theme
+**When** tests run at minimum, standard, and wide heights
+**Then** golden files match expected door-like output
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 35.6: Golden File Test Regeneration and Accessibility Validation
+
+As a QA engineer,
+I want comprehensive golden file tests and accessibility validation for all door-like themes,
+So that door proportions are regression-tested and accessible.
+
+**Acceptance Criteria:**
+
+**Given** all four themes with door-like proportions
+**When** golden file tests are regenerated
+**Then** golden files exist for each theme at 3 heights (minimum, 16-row, 24-row) × 3 widths (minimum, 80-col, 120-col) × 2 states (selected, unselected)
+**And** all golden file comparisons pass
+
+**Given** monochrome rendering mode
+**When** all themes are rendered without color
+**Then** door signifiers (panel divider, handle position, threshold) are still visually distinguishable using structural characters only
+
+**Given** the compact mode fallback
+**When** terminal height is below each theme's MinHeight
+**Then** the system renders using the card-style layout
+**And** all task content remains fully readable
+
+**Given** screen reader compatibility
+**When** door content is extracted as plain text
+**Then** task text is accessible in reading order without interference from decorative frame characters
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+---
+
+### Story 35.7: Shadow/Depth Effect for 3D Door Appearance
+
+As a user,
+I want doors to have subtle shadow/depth effects on the right and bottom edges,
+So that doors appear to have dimension and stand out from the background.
+
+**Acceptance Criteria:**
+
+**Given** any door theme rendering a door
+**When** the door is rendered at sufficient width (>= MinWidth + 2)
+**Then** a shadow column using half-block characters (`▐` or `░`) is rendered on the right edge of the door
+**And** a shadow row using half-block characters (`▄`) is rendered below the threshold line
+**And** the shadow creates a visual impression of depth/3D
+
+**Given** the selected door state
+**When** a door is highlighted as selected
+**Then** the shadow effect is enhanced (brighter or thicker shadow) to lift the selected door visually
+
+**Given** terminal width insufficient for shadow (< MinWidth + 2)
+**When** doors are rendered
+**Then** shadow is omitted gracefully (no layout breakage)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Technical Notes:**
+- Shadow characters are from block elements range (U+2580-U+259F) — safe Unicode
+- Shadow adds 1-2 chars width and 1 row height overhead — account in width/height calculations
+
+---
+
+### Epic 35 Story Dependencies
+
+```
+35.1 Door Anatomy Model and Height-Aware Render Signature
+  ├── 35.2 Classic Theme — Door-Like Proportions (depends on 35.1)
+  ├── 35.3 Modern Theme — Door-Like Proportions (depends on 35.1)
+  ├── 35.4 Sci-Fi Theme — Door-Like Proportions (depends on 35.1)
+  └── 35.5 Shoji Theme — Door-Like Proportions (depends on 35.1)
+       └── 35.6 Golden File Test Regeneration (depends on 35.2-35.5)
+       └── 35.7 Shadow/Depth Effect (depends on 35.2-35.5)
+```
+
+---
+
 ## Appendix: PR-Analysis-Derived Quality Acceptance Criteria
 
 > **Source:** Systematic analysis of all 49 PRs (#1–#49) in arcaven/ThreeDoors, examining every delta between initial PR submission and final merge. These ACs are derived from recurring defect patterns and MUST be included in all future stories.
