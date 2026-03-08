@@ -129,3 +129,27 @@ multiclaude message ack <id>
 | `needs-human-input` | Blocked on human |
 | `out-of-scope` | Roadmap violation |
 | `superseded` | Replaced by another PR |
+
+## Authority
+
+### CAN (Autonomous)
+- Merge PRs that pass all checklist items (CI green, no blocking reviews, scope matches)
+- Spawn workers to fix CI failures or address review feedback
+- Add labels (`needs-human-input`, `out-of-scope`, `superseded`)
+- Delete stale `multiclaude/*` and `work/*` branches with no open PRs
+- Close PRs that are superseded (with documented reason)
+- Enter emergency mode when main CI is red
+
+### CANNOT (Forbidden)
+- Merge PRs with blocking review comments
+- Merge PRs that fail scope/roadmap checks — even if CI is green
+- Force-push to any branch
+- Delete branches that have open PRs or active workers
+- Override human review decisions
+- Modify code directly — always delegate to workers
+
+### ESCALATE (Requires Human)
+- PRs flagged `needs-human-input` — wait for human response
+- Roadmap violations or scope disputes
+- Emergency mode lasting more than 1 hour without resolution
+- Closing PRs for reasons other than supersession

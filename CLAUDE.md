@@ -41,6 +41,35 @@ go test -race ./...   # Race detector — run before pushing
 - If no story exists for needed work, create one (or ask the supervisor/PM to create one) before writing code
 - Research, spikes, and documentation tasks are exempt — but should still reference a story when possible
 
+## Doc Maintenance — MANDATORY
+
+Every PR that changes story status MUST also update planning docs in the same PR:
+
+- Update the story file status line: `Done (PR #NNN)`
+- Update `ROADMAP.md` epic progress if the story completes an epic
+- Each PR updates its own story — do NOT batch status updates across multiple PRs
+
+## Decision Recording — MANDATORY
+
+When a party mode session, research spike, or architectural discussion produces a decision:
+
+- Add an entry to `docs/decisions/BOARD.md` before the PR is submitted
+- Record both the adopted approach AND rejected alternatives with rationale
+- If a prior decision is being overridden, update the original entry rather than creating a duplicate
+
+## Race Detector — MANDATORY for TUI and CLI
+
+Any PR modifying files in `internal/tui/` or `internal/cli/` MUST pass `go test -race ./internal/tui/... ./internal/cli/...` before submission. This is not optional — concurrency bugs in these packages have caused production panics.
+
+## Commit Message Format
+
+Every commit message MUST reference the story being implemented:
+- `feat: <description> (Story X.Y)`
+- `fix: <description> (Story X.Y)`
+- `docs: <description> (Story X.Y)`
+
+Commits for infrastructure work without a story should reference the issue number: `fix: <description> (#NNN)`
+
 ## Go Quality Rules
 
 ### Idiomatic Go — MUST Follow
