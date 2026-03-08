@@ -204,6 +204,28 @@
 
 **FR137:** Seasonal themes shall fall back to the user's configured base theme when the terminal width is below the seasonal variant's declared minimum width, consistent with FR61 fallback behavior
 
+**Door Visual Appearance — Door-Like Proportions:**
+
+**FR138:** The door rendering system shall use portrait-oriented aspect ratios (taller than wide) for all door themes, with a minimum door height of 12 rows, to achieve visual recognition as doors rather than cards or panels
+
+**FR139:** All door themes shall include a panel divider — at least one horizontal line within the door frame creating distinct upper and lower panels — as this is the strongest "door" signifier after proportion
+
+**FR140:** All door themes shall render an asymmetric handle/knob on the right side of the door at approximately 60% of the door height, using theme-appropriate handle characters (e.g., `●` for Classic, `○` for Modern, `◈──┤` for Sci-Fi, `○` recessed for Shoji)
+
+**FR141:** All door themes shall render a threshold or floor line at the bottom edge of the door frame, using theme-appropriate treatment (e.g., shadow characters `▔`, floor grating `▓`, or distinct bottom border) to suggest a ground plane
+
+**FR142:** Door numbers shall be rendered in the lintel/header area of each door frame (top border), styled as room numbers rather than content labels, consistent across all themes per FR62
+
+**FR143:** The `DoorTheme.Render()` function signature shall accept a height parameter in addition to width: `Render(content string, width int, height int, selected bool) string` — enabling height-aware door rendering
+
+**FR144:** A `DoorAnatomy` helper type shall calculate structural row positions from door height, including lintel row, content start row, panel divider row (~45% height), handle row (~60% height), and threshold row
+
+**FR145:** The `DoorTheme` struct shall include a `MinHeight` field alongside the existing `MinWidth`, declaring the minimum terminal height required for door-like rendering
+
+**FR146:** When terminal height is below a theme's `MinHeight`, the system shall fall back to compact rendering mode (current landscape card layout), providing graceful degradation rather than broken proportions
+
+**FR147:** All door appearance signifiers (proportion, panel divider, handle, threshold) shall work in monochrome mode using structural elements rather than color — ensuring accessibility for users with color vision deficiencies or monochrome terminals
+
 ---
 
 ## Non-Functional Requirements

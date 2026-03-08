@@ -356,9 +356,24 @@
 - **NFRs covered:** NFR-DX1, NFR-DX2, NFR-DX3, NFR-DX4, NFR-DX5
 - **Research:** See `docs/research/ai-tooling-findings.md`
 
-**Epic 35+: Additional UX Improvements** (Quick Capture CLI, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
-**Epic 36+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 37+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 35: Door Visual Appearance — Door-Like Proportions** (P1)
+- **Goal:** Redesign all door themes to visually read as actual doors using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines
+- **Prerequisites:** Epic 17 ✅ (Door Theme System)
+- **Status:** Not Started
+- **Deliverables:**
+  - DoorAnatomy helper type and height-aware Render signature
+  - All 4 themes updated with door-like proportions (portrait orientation, panel dividers, handles, thresholds)
+  - Compact mode fallback for short terminals
+  - Shadow/depth effects for 3D appearance
+  - Golden file test regeneration and accessibility validation
+- **Stories:** 35.1-35.7 (7 stories)
+- **Estimated Effort:** 3-4 days
+- **FRs covered:** FR138-FR147
+- **Research:** See `_bmad-output/planning-artifacts/door-appearance-party-mode.md`
+
+**Epic 36+: Additional UX Improvements** (Quick Capture CLI, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
+**Epic 37+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 38+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -395,6 +410,7 @@
 | Epic 27: Daily Planning Mode | 5 | Not Started |
 | Epic 30: Linear Integration | 4 | Not Started |
 | Epic 34: SOUL.md + Custom Dev Skills | 3 | Not Started |
-| **Total** | **131** | **97 complete, 3 partial, 31 remaining** |
+| Epic 35: Door Visual Appearance | 7 | Not Started |
+| **Total** | **138** | **97 complete, 3 partial, 38 remaining** |
 
 ---

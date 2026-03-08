@@ -100,6 +100,20 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
+### Epic 35: Door Visual Appearance — Door-Like Proportions (P1) — 0/7 stories done
+
+Redesign all door themes to visually read as actual doors using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines. Addresses user feedback that themes look like cards, not doors.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 35.1 | Door Anatomy Model and Height-Aware Render Signature | Not Started | P1 | Epic 17 (done) |
+| 35.2 | Classic Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
+| 35.3 | Modern Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
+| 35.4 | Sci-Fi Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
+| 35.5 | Shoji Theme — Door-Like Proportions | Not Started | P1 | 35.1 |
+| 35.6 | Golden File Test Regeneration and Accessibility Validation | Not Started | P1 | 35.2-35.5 |
+| 35.7 | Shadow/Depth Effect for 3D Door Appearance | Not Started | P2 | 35.2-35.5 |
+
 ### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
 
 Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
