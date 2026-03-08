@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-07
+> Last updated: 2026-03-08
 
 ## Priority Legend
 
@@ -84,6 +84,17 @@ Allow reversing accidental task completion via `complete → todo` transition. V
 | 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
 | 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
 | 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
+
+### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
+
+Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Not Started | P2 | Epic 17 (done) |
+| 33.2 | Four Seasonal Theme Implementations | Not Started | P2 | 33.1 |
+| 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
+| 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
 
 ## Completed Epics
 

@@ -222,6 +222,10 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR81-FR88 | Epic 24 | MCP/LLM Integration Server (NOT STARTED) |
 | FR89-FR92 | Epic 25 | Todoist Integration (NOT STARTED) |
 | FR93-FR96 | Epic 26 | GitHub Issues Integration (NOT STARTED) |
+| FR116-FR119 | Epic 30 | Linear Integration (NOT STARTED) |
+| FR120-FR126 | Epic 31 | Expand/Fork Key Implementations (NOT STARTED) |
+| FR127-FR131 | Epic 32 | Undo Task Completion (NOT STARTED) |
+| FR132-FR137 | Epic 33 | Seasonal Door Theme Variants (NOT STARTED) |
 
 ## Epic List
 
@@ -368,6 +372,12 @@ GitHub Issues as a task source for developer workflows using the official go-git
 **FRs covered:** FR93-FR96
 **Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
 **Status:** Not Started. 4 stories planned (26.1-26.4). Research at `docs/research/task-source-expansion-research.md`.
+
+### Epic 33: Seasonal Door Theme Variants — NOT STARTED
+Time-based seasonal theme variants that auto-switch based on the current date, extending the Door Theme System with visual variety.
+**FRs covered:** FR132-FR137
+**Prerequisites:** Epic 17 ✅ (Door Theme System)
+**Status:** Not Started. 4 stories planned (33.1-33.4). Research at `docs/research/door-themes-analyst-review.md`.
 
 ---
 
@@ -2052,6 +2062,193 @@ So that TUI regressions are caught on every PR without relying on manual testing
 ### Story 21.4: Sync Dashboard Enhancements ✅
 
 **Status:** Done (PR #157)
+
+---
+
+## Epic 33: Seasonal Door Theme Variants
+
+**Epic Goal:** Extend the Door Theme System (Epic 17) with time-based seasonal theme variants that auto-switch based on the current date, adding visual variety and delight while maintaining accessibility standards. Each seasonal theme is a standalone `DoorTheme` using only safe Unicode character ranges.
+
+**Prerequisites:** Epic 17 ✅ (Door Theme System)
+**FRs covered:** FR132-FR137
+**NFRs covered:** NFR28-NFR30
+**Status:** Not Started
+
+### Story 33.1: Seasonal Theme Metadata Model and Date-Range Resolver
+
+As a developer,
+I want a pure-function seasonal resolver and metadata extensions on DoorTheme,
+So that the system can determine which seasonal theme to apply based on the current date.
+
+**Acceptance Criteria:**
+
+**Given** the `DoorTheme` struct in `internal/tui/themes/theme.go`
+**When** the seasonal metadata fields are added
+**Then** the struct includes `Season string`, `SeasonStart MonthDay`, and `SeasonEnd MonthDay` fields
+**And** a `MonthDay` struct is defined with `Month int` and `Day int` fields
+**And** zero-value `Season` ("") indicates a non-seasonal theme (backward compatible)
+
+**Given** a `ResolveSeason(now time.Time, ranges []SeasonRange) string` pure function in `internal/tui/themes/seasonal.go`
+**When** called with a date falling within a season's date range
+**Then** it returns the season name (e.g., "winter", "spring", "summer", "autumn")
+**And** when no season matches, it returns an empty string
+
+**Given** `DefaultSeasonRanges` using meteorological seasons
+**When** the default ranges are defined
+**Then** spring starts March 1, summer starts June 1, autumn starts September 1, winter starts December 1
+**And** winter correctly wraps across year boundary (December 1 - February 28/29)
+
+**Given** the `Registry` in `internal/tui/themes/registry.go`
+**When** `GetBySeason(season string)` is called
+**Then** it returns the first theme with a matching `Season` field, or `(nil, false)` if none match
+
+**Given** table-driven tests in `internal/tui/themes/seasonal_test.go`
+**When** `ResolveSeason` is tested
+**Then** tests cover: spring start (March 1), spring end (May 31), summer start (June 1), autumn start (September 1), winter start (December 1), winter wrap (January 15), leap year (February 29), season boundary transitions
+**And** `ResolveSeason` completes in under 1 microsecond per Go benchmark (NFR28)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Technical Notes:**
+- `ResolveSeason` has no I/O dependencies — pure date arithmetic
+- Existing themes (classic, modern, scifi, shoji) remain unchanged — `Season` field is zero-value
+
+---
+
+### Story 33.2: Four Seasonal Theme Implementations
+
+As a user,
+I want visually distinct seasonal door themes for winter, spring, summer, and autumn,
+So that the door presentation reflects the current season with appropriate visual patterns.
+
+**Acceptance Criteria:**
+
+**Given** the theme creation pattern established in `internal/tui/themes/modern.go`
+**When** four seasonal themes are implemented
+**Then** each theme is in its own file: `winter.go`, `spring.go`, `summer.go`, `autumn.go`
+**And** each exports a constructor: `NewWinterTheme()`, `NewSpringTheme()`, `NewSummerTheme()`, `NewAutumnTheme()`
+**And** each returns a `*DoorTheme` with populated `Season`, `SeasonStart`, and `SeasonEnd` fields
+
+**Given** the Unicode character constraint (NFR17)
+**When** seasonal themes render door frames
+**Then** only characters from box-drawing (`U+2500–U+257F`), block elements (`U+2580–U+259F`), and geometric shapes (`U+25A0–U+25FF`) are used
+**And** no emoji or Unicode symbols outside these ranges appear in any theme
+
+**Given** the seasonal theme design patterns
+**When** each theme renders content
+**Then** winter uses crystalline angular frames and dense dot patterns
+**And** spring uses flowing curved lines and light open patterns
+**And** summer uses radiating lines and bold geometric shapes
+**And** autumn uses layered block elements and angular textures
+**And** each theme has a distinct visual identity distinguishable from all other themes
+
+**Given** WCAG AA accessibility requirements (FR136)
+**When** seasonal themes are rendered
+**Then** all text content maintains minimum 4.5:1 contrast ratio against both dark (#000000) and light (#FFFFFF) terminal backgrounds
+**And** contrast ratios are validated programmatically in `internal/tui/themes/accessibility_test.go` (NFR30)
+
+**Given** the golden file testing pattern (NFR19, NFR29)
+**When** golden file tests run for seasonal themes
+**Then** 24 golden files exist: 4 seasons × 3 widths (minimum, 80-column, 120-column) × 2 states (selected, unselected)
+**And** all golden files pass comparison
+
+**Given** the `NewDefaultRegistry()` function
+**When** the registry is created
+**Then** all four seasonal themes are registered alongside existing themes (classic, modern, scifi, shoji)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Technical Notes:**
+- Each seasonal render function follows the same pattern as `modernRender` — pure function, `strings.Builder`, `fmt.Fprintf`
+- Spring theme uses `╭╮╰╯` curves (Tier 2 risk per analyst review) — verify rendering across iTerm2, Terminal.app, Alacritty
+
+---
+
+### Story 33.3: Auto-Switch Integration in DoorsView and Config
+
+As a user,
+I want ThreeDoors to automatically switch to the appropriate seasonal theme based on today's date,
+So that I see seasonally appropriate door styling without manual configuration.
+
+**Acceptance Criteria:**
+
+**Given** `seasonal_themes: true` in `~/.threedoors/config.yaml` (default when not specified)
+**When** the DoorsView is constructed at app startup
+**Then** `ResolveSeason(time.Now().UTC(), DefaultSeasonRanges)` is called
+**And** if a matching seasonal theme exists in the registry, it is used instead of the user's configured base theme
+**And** the resolved theme is stored in DoorsView for the session duration (no per-render rechecks)
+
+**Given** `seasonal_themes: false` in `~/.threedoors/config.yaml`
+**When** the DoorsView is constructed
+**Then** no seasonal resolution occurs
+**And** the user's configured base theme is used directly
+
+**Given** `seasonal_themes` is not present in config (new or upgraded install)
+**When** the config is loaded
+**Then** seasonal themes default to enabled (`true`)
+
+**Given** the terminal width is below the seasonal theme's declared `MinWidth`
+**When** DoorsView renders doors
+**Then** the system falls back to the user's configured base theme (consistent with FR61)
+
+**Given** a planning session starts (FR133)
+**When** the planning mode initializes
+**Then** seasonal theme resolution is re-checked (handles overnight sessions crossing season boundaries)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Technical Notes:**
+- Config schema adds `seasonal_themes` boolean — backward compatible (missing = true)
+- DoorsView seasonal resolution is at construction time, not per-render
+- Integration test: mock time to verify correct seasonal theme selection
+
+---
+
+### Story 33.4: Seasonal Theme Picker and `:seasonal` Command
+
+As a user,
+I want to preview all seasonal themes and manually override the current season,
+So that I can see what each seasonal theme looks like and choose my preferred seasonal style.
+
+**Acceptance Criteria:**
+
+**Given** the existing `:theme` command pattern (FR58, Story 17.5)
+**When** a user enters `:seasonal` in the TUI command palette
+**Then** a seasonal theme picker view opens showing all four seasonal themes in a horizontal preview grid
+**And** each preview renders a sample door at standard width in the seasonal theme's style
+**And** the currently active seasonal theme (if any) is highlighted
+
+**Given** the seasonal theme picker is open
+**When** the user selects a seasonal theme
+**Then** the selected seasonal theme is applied immediately (no restart required)
+**And** the theme change persists for the current session
+
+**Given** the seasonal theme picker is open
+**When** the user presses Esc
+**Then** the picker closes without changing the active theme
+
+**Given** the theme_picker.go already exists for `:theme` command
+**When** the `:seasonal` picker is implemented
+**Then** it reuses the existing theme picker component with a filter for themes where `Season != ""`
+**And** the existing `:theme` command continues to show only non-seasonal themes
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Technical Notes:**
+- Reuse `ThemePicker` component filtered by `Season != ""`
+- Manual season override is session-scoped (not persisted to config — auto-switch resumes on next launch)
+- Add `:seasonal` to command palette registration in MainModel
+
+---
+
+### Epic 33 Story Dependencies
+
+```
+33.1 Seasonal Theme Metadata Model and Date-Range Resolver
+  └── 33.2 Four Seasonal Theme Implementations (depends on 33.1)
+  └── 33.3 Auto-Switch Integration in DoorsView and Config (depends on 33.1)
+       └── 33.4 Seasonal Theme Picker and `:seasonal` Command (depends on 33.2, 33.3)
+```
 
 ---
 

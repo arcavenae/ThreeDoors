@@ -190,6 +190,20 @@
 
 **FR62:** The system shall overlay door number labels separately from the theme frame, maintaining consistent door identification across all themes
 
+**Seasonal Door Theme Variants:**
+
+**FR132:** The system shall provide seasonal door theme variants — self-contained `DoorTheme` implementations with time-appropriate visual patterns (e.g., crystalline patterns for winter, flowing lines for spring, radiating shapes for summer, angular textures for autumn) — using only Unicode characters from the box-drawing (`U+2500–U+257F`), block elements (`U+2580–U+259F`), and geometric shapes (`U+25A0–U+25FF`) ranges per NFR17
+
+**FR133:** The system shall support automatic seasonal theme switching based on the current date, with configurable season date ranges stored in `~/.threedoors/config.yaml` — defaulting to meteorological seasons (spring: March 1, summer: June 1, autumn: September 1, winter: December 1) — checked on application startup and on each planning session start
+
+**FR134:** The system shall allow users to disable automatic seasonal switching via `seasonal_themes: false` in `~/.threedoors/config.yaml` (default: `true`), reverting to the user's manually selected base theme when disabled
+
+**FR135:** The system shall provide a `:seasonal` command in the TUI that displays all seasonal theme variants in a horizontal preview grid (consistent with the `:theme` command from FR58), allowing manual season override for testing or preference
+
+**FR136:** All seasonal theme variants shall maintain WCAG AA contrast ratios (minimum 4.5:1 for text content) in both light and dark terminal color schemes, validated by automated contrast-ratio checks in theme test suites
+
+**FR137:** Seasonal themes shall fall back to the user's configured base theme when the terminal width is below the seasonal variant's declared minimum width, consistent with FR61 fallback behavior
+
 ---
 
 ## Non-Functional Requirements
@@ -251,6 +265,12 @@
 **NFR18:** Door theme render functions shall complete within 1ms for standard terminal widths (40-200 columns), as theme rendering is pure string manipulation with no I/O
 
 **NFR19:** Each door theme shall include golden file tests verifying rendered output at multiple widths (minimum width, standard width, wide terminal) in both selected and unselected states
+
+**NFR28:** The seasonal theme date-range resolver shall be a pure function with no I/O dependencies, completing date-to-season resolution in under 1 microsecond as measured by Go benchmark tests
+
+**NFR29:** Each seasonal theme variant shall include golden file tests at three widths (minimum, 80-column standard, 120-column wide) in both selected and unselected states — totaling 24 golden files minimum (4 seasons x 3 widths x 2 states)
+
+**NFR30:** Seasonal theme contrast ratios shall be validated programmatically in test suites by extracting Lipgloss color values and computing WCAG luminance ratios, not by manual visual inspection alone
 
 ---
 
