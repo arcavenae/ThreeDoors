@@ -11,6 +11,8 @@ import (
 // NewSciFiTheme creates the Sci-Fi/Spaceship theme: double-line outer frame,
 // shade-filled side rails, single content panel with inline ACCESS label.
 // When selected, uses bright shade (▓) instead of light (░).
+// When height >= MinHeight, renders door-like proportions with bulkhead divider,
+// access panel handle, and floor grating.
 func NewSciFiTheme() *DoorTheme {
 	frameColor := lipgloss.Color("39")
 	selectedColor := lipgloss.Color("51")
@@ -31,7 +33,7 @@ func NewSciFiTheme() *DoorTheme {
 }
 
 func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
-	return func(content string, width int, _ int, selected bool) string {
+	return func(content string, width int, height int, selected bool) string {
 		color := frameColor
 		shadeChar := "░"
 		if selected {
@@ -60,60 +62,178 @@ func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int
 
 		rail := strings.Repeat(shadeChar, railW)
 
-		var b strings.Builder
-
-		// Top border: ╔═╤══════════════════════╤═╗
-		fmt.Fprintf(&b, "%s\n", style.Render(
-			"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+"╗"))
-
-		blankContent := strings.Repeat(" ", contentW)
-
-		// Blank line
-		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
-			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
-
-		// Content lines with 2-char padding
-		for _, line := range contentLines {
-			lineWidth := ansi.StringWidth(line)
-			pad := contentW - 2 - lineWidth
-			if pad < 0 {
-				pad = 0
-			}
-			fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
-				style.Render("║"), rail, style.Render("│"),
-				"  "+line+strings.Repeat(" ", pad),
-				style.Render("│"), rail, style.Render("║"))
+		// Compact mode: use existing fixed-layout rendering
+		if height < 14 {
+			return scifiRenderCompact(style, content, contentLines, width, contentW, rail, shadeChar, selected)
 		}
 
-		// Blank lines after content
-		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
-			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
-		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
-			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+		// Door-like proportions using DoorAnatomy
+		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected)
+	}
+}
 
-		// ACCESS label right-aligned with 2-char padding
-		label := "[ACCESS]"
-		leftPad := contentW - len(label) - 2
-		if leftPad < 0 {
-			leftPad = 0
-		}
-		labelRight := contentW - leftPad - len(label)
-		if labelRight < 0 {
-			labelRight = 0
+// scifiRenderCompact renders the original fixed-height Sci-Fi card style.
+func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, width, contentW int, rail, _ string, _ bool) string {
+	railW := 1
+	blankContent := strings.Repeat(" ", contentW)
+
+	var b strings.Builder
+
+	// Top border: ╔═╤══════════════════════╤═╗
+	fmt.Fprintf(&b, "%s\n", style.Render(
+		"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+"╗"))
+
+	// Blank line
+	fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
+		style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+
+	// Content lines with 2-char padding
+	for _, line := range contentLines {
+		lineWidth := ansi.StringWidth(line)
+		pad := contentW - 2 - lineWidth
+		if pad < 0 {
+			pad = 0
 		}
 		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
 			style.Render("║"), rail, style.Render("│"),
-			strings.Repeat(" ", leftPad)+label+strings.Repeat(" ", labelRight),
+			"  "+line+strings.Repeat(" ", pad),
 			style.Render("│"), rail, style.Render("║"))
-
-		// Blank line after ACCESS
-		fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
-			style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
-
-		// Bottom border: ╚═╧══════════════════════╧═╝
-		fmt.Fprintf(&b, "%s", style.Render(
-			"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+"╝"))
-
-		return b.String()
 	}
+
+	// Blank lines after content
+	fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
+		style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+	fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
+		style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+
+	// ACCESS label right-aligned with 2-char padding
+	label := "[ACCESS]"
+	leftPad := contentW - len(label) - 2
+	if leftPad < 0 {
+		leftPad = 0
+	}
+	labelRight := contentW - leftPad - len(label)
+	if labelRight < 0 {
+		labelRight = 0
+	}
+	fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
+		style.Render("║"), rail, style.Render("│"),
+		strings.Repeat(" ", leftPad)+label+strings.Repeat(" ", labelRight),
+		style.Render("│"), rail, style.Render("║"))
+
+	// Blank line after ACCESS
+	fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
+		style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+
+	// Bottom border: ╚═╧══════════════════════╧═╝
+	fmt.Fprintf(&b, "%s", style.Render(
+		"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+"╝"))
+
+	return b.String()
+}
+
+// scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
+func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool) string {
+	anatomy := NewDoorAnatomy(height)
+	blankContent := strings.Repeat(" ", contentW)
+
+	// Find the row for the ACCESS label: midpoint between HandleRow and ThresholdRow
+	accessRow := anatomy.HandleRow + (anatomy.ThresholdRow-anatomy.HandleRow)/2
+	if accessRow <= anatomy.HandleRow {
+		accessRow = anatomy.HandleRow + 1
+	}
+	if accessRow >= anatomy.ThresholdRow {
+		accessRow = anatomy.ThresholdRow - 1
+	}
+
+	var b strings.Builder
+
+	for row := 0; row < height; row++ {
+		switch {
+		case row == anatomy.LintelRow:
+			// Top border: ╔═╤══════════════════════╤═╗
+			fmt.Fprintf(&b, "%s", style.Render(
+				"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+"╗"))
+
+		case row == anatomy.PanelDivider:
+			// Bulkhead divider: ║░╞═════════════════════╡░║
+			fmt.Fprintf(&b, "%s%s%s%s%s%s",
+				style.Render("║"), rail,
+				style.Render("╞"+strings.Repeat("═", contentW)+"╡"),
+				rail, style.Render("║"), "")
+
+		case row == anatomy.HandleRow:
+			// Access panel handle: ◈──┤ on the right side
+			handleStr := "◈──┤"
+			handleWidth := ansi.StringWidth(handleStr)
+			leftPad := contentW - handleWidth - 1
+			if leftPad < 0 {
+				leftPad = 0
+			}
+			rightPad := contentW - leftPad - handleWidth
+			if rightPad < 0 {
+				rightPad = 0
+			}
+			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
+				style.Render("║"), rail, style.Render("│"),
+				strings.Repeat(" ", leftPad)+handleStr+strings.Repeat(" ", rightPad),
+				style.Render("│"), rail, style.Render("║"))
+
+		case row == accessRow:
+			// ACCESS label right-aligned with 2-char padding
+			label := "[ACCESS]"
+			leftPad := contentW - len(label) - 2
+			if leftPad < 0 {
+				leftPad = 0
+			}
+			rightPad := contentW - leftPad - len(label)
+			if rightPad < 0 {
+				rightPad = 0
+			}
+			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
+				style.Render("║"), rail, style.Render("│"),
+				strings.Repeat(" ", leftPad)+label+strings.Repeat(" ", rightPad),
+				style.Render("│"), rail, style.Render("║"))
+
+		case row == anatomy.ThresholdRow:
+			// Bottom border: ╚═╧══════════════════════╧═╝
+			fmt.Fprintf(&b, "%s", style.Render(
+				"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+"╝"))
+
+		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
+			// Content area with 2-char padding
+			lineIdx := row - anatomy.ContentStart
+			if lineIdx < len(contentLines) {
+				line := contentLines[lineIdx]
+				lineWidth := ansi.StringWidth(line)
+				pad := contentW - 2 - lineWidth
+				if pad < 0 {
+					pad = 0
+				}
+				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
+					style.Render("║"), rail, style.Render("│"),
+					"  "+line+strings.Repeat(" ", pad),
+					style.Render("│"), rail, style.Render("║"))
+			} else {
+				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
+					style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+			}
+
+		default:
+			// Blank interior row
+			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
+				style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
+		}
+
+		if row < height-1 {
+			fmt.Fprintf(&b, "\n")
+		}
+	}
+
+	// Floor grating line below the door
+	gratingChar := "▓"
+	grating := strings.Repeat(gratingChar, width)
+	fmt.Fprintf(&b, "\n%s", style.Render(grating))
+
+	return b.String()
 }
