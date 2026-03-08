@@ -554,7 +554,9 @@ These non-functional requirements establish code quality gates that all contribu
 
 **NFR-DX4:** The project shall provide a `/check-patterns` Claude Code slash command that scans the codebase for design pattern violations (direct status mutation without `IsValidTransition()`, direct file writes bypassing atomic pattern, `fmt.Println` in TUI code, panics in user code, provider instantiation outside factory, missing error wrapping with `%w`)
 
-**NFR-DX5:** The project shall provide a `/new-story` Claude Code slash command that generates story files from a standard template, referencing CLAUDE.md for coding standards and pre-PR checklists instead of embedding them — applying to new stories only (existing completed stories are not modified)
+**NFR-DX5:** The project shall provide a `/new-story` Claude Code slash command that generates story files from a standard template, referencing CLAUDE.md for coding standards and pre-PR checklists instead of embedding them
+
+**NFR-DX6:** The project shall treat story files and specs as living documentation — completed stories MUST be updated retroactively when code improvements, architectural changes, or lessons learned diverge from what the specs describe. Specs are the authoritative system description; learning and improvements captured only in code (not reflected back in specs) is an anti-pattern. Deleting all code and rebuilding from specs alone should produce a better program, not a regression.
 
 ---
 
