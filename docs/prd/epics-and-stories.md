@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (19/21 complete) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (19/22 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -232,7 +232,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 19 of 21 stories complete. Stories 0.20 (CI Churn Reduction, PR #231) and 0.21 (Homebrew Public Distribution) not started.
+**Status:** 19 of 22 stories complete. Stories 0.20 (CI Churn Reduction), 0.21 (Homebrew Public Distribution), and 0.24 (Renovate + Dependabot) not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -403,7 +403,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 19 of 21 stories complete. Stories 0.20 (CI Churn Reduction, PR #231) and 0.21 (Homebrew Public Distribution) not started.
+**Status:** 19 of 22 stories complete. Stories 0.20 (CI Churn Reduction), 0.21 (Homebrew Public Distribution), and 0.24 (Renovate + Dependabot) not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
 
@@ -709,6 +709,23 @@ So that formula updates don't break CI and we maintain homebrew-core readiness.
 - **AC4:** `brew audit --strict` passes for all formulas in tap CI
 - **AC5:** `brew style` passes for all formulas in tap CI
 - **AC6:** Formula update automation generates compliant formulas
+
+### Story 0.24: Renovate + Dependabot Automated Dependency Management
+
+As the ThreeDoors maintainer,
+I want automated dependency management via Renovate (Go deps) and Dependabot (GitHub Actions),
+So that dependencies stay up to date with security as the top priority and minimal manual effort.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** `renovate.json` configured for Go module dependency management with OSV vulnerability scanning
+- **AC2:** Renovate groups patch updates weekly, charmbracelet ecosystem together, security updates individually
+- **AC3:** Auto-merge enabled for patches and non-breaking minors; majors require human review
+- **AC4:** `.github/dependabot.yml` configured for GitHub Actions version pinning (monthly grouped)
+- **AC5:** Go modules ecosystem excluded from Dependabot (Renovate handles this)
+- **AC6:** Merge-queue agent accepts `dependencies` labeled PRs as in-scope infrastructure
+- **AC7:** Renovate schedule avoids active development hours (weekdays 6-8 AM UTC)
 
 ---
 
