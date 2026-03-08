@@ -75,6 +75,16 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
+### Epic 32: Undo Task Completion (P1) — 0/3 stories done
+
+Allow reversing accidental task completion via `complete → todo` transition. Validated pain point from Phase 1 gate.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
+| 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
+| 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
+
 ## Completed Epics
 
 | Epic | Title | Stories |

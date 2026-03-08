@@ -478,6 +478,24 @@ These non-functional requirements establish code quality gates that all contribu
 
 ---
 
+## Phase 6+ - Undo Task Completion (Accepted)
+
+*The following requirements allow users to reverse accidental task completion, addressing a validated pain point from the Phase 1 Validation Gate review.*
+
+**Undo Task Completion:**
+
+**FR127:** The system shall support undoing task completion by allowing the `complete → todo` status transition — when a user reverses a completed task, the `CompletedAt` timestamp is cleared, the task status is set to `todo`, and the task immediately becomes eligible for door selection again
+
+**FR128:** The system shall log an `undo_complete` event in the JSONL session metrics when a task completion is reversed, capturing the task ID, original completion timestamp, and time elapsed since completion — enabling behavioral analysis of accidental completions
+
+**FR129:** The system shall NOT modify the append-only completed task log (`completed.txt`) when a task completion is undone — the completed log remains an immutable audit trail; the undo is tracked separately via session metrics
+
+**FR130:** The undo operation shall have no time limit — users can reverse a task completion regardless of how much time has elapsed since the task was originally completed
+
+**FR131:** When a completed task is undone and that task was a dependency for other tasks (per FR113), the system shall re-evaluate dependent tasks — any dependents that were unblocked by the original completion shall have their dependency status rechecked, potentially returning to blocked state if the undone task was their only completed prerequisite
+
+---
+
 ## Task Source Integration NFRs
 
 > Requirements specific to API-based and IPC-based task source adapters.
