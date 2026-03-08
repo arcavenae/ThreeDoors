@@ -26,7 +26,8 @@ func NewShojiTheme() *DoorTheme {
 			Accent:   lipgloss.Color("137"),
 			Selected: selectedColor,
 		},
-		MinWidth: 19,
+		MinWidth:  19,
+		MinHeight: 14,
 	}
 }
 
@@ -41,8 +42,8 @@ type shojiChars struct {
 	tRght string // right T-junction
 }
 
-func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, bool) string {
-	return func(content string, width int, selected bool) string {
+func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
+	return func(content string, width int, _ int, selected bool) string {
 		color := frameColor
 		ch := shojiChars{
 			h: "─", v: "│", cross: "┼",

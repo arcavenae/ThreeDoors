@@ -21,7 +21,7 @@ func NewClassicTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "classic",
 		Description: "Classic rounded border — the original ThreeDoors look",
-		Render: func(content string, width int, selected bool) string {
+		Render: func(content string, width int, _ int, selected bool) string {
 			if selected {
 				return selectedStyle.Width(width).Render(content)
 			}
@@ -33,6 +33,7 @@ func NewClassicTheme() *DoorTheme {
 			Accent:   frameColor,
 			Selected: selectedColor,
 		},
-		MinWidth: 15,
+		MinWidth:  15,
+		MinHeight: 10,
 	}
 }

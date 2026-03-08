@@ -43,7 +43,7 @@ func TestSciFiRenderContainsContent(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Deploy to staging", 30, false)
+	output := theme.Render("Deploy to staging", 30, 0, false)
 
 	if !strings.Contains(output, "Deploy") {
 		t.Errorf("output should contain content text, got:\n%s", output)
@@ -54,7 +54,7 @@ func TestSciFiRenderHasDoubleLineFrame(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Task", 30, false)
+	output := theme.Render("Task", 30, 0, false)
 
 	for _, ch := range []string{"╔", "╗", "╚", "╝", "═", "║"} {
 		if !strings.Contains(output, ch) {
@@ -67,7 +67,7 @@ func TestSciFiRenderHasShadeBlocks(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Task", 30, false)
+	output := theme.Render("Task", 30, 0, false)
 
 	if !strings.Contains(output, "░") {
 		t.Error("sci-fi theme should have light shade blocks (░)")
@@ -78,7 +78,7 @@ func TestSciFiRenderNoMidBar(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Task", 30, false)
+	output := theme.Render("Task", 30, 0, false)
 
 	// Mid-bar separator was removed — single content panel
 	if strings.Contains(output, "╠") || strings.Contains(output, "╣") {
@@ -90,7 +90,7 @@ func TestSciFiRenderHasAccessLabel(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Task", 30, false)
+	output := theme.Render("Task", 30, 0, false)
 
 	if !strings.Contains(output, "ACCESS") {
 		t.Errorf("sci-fi theme should have ACCESS label, got:\n%s", output)
@@ -101,8 +101,8 @@ func TestSciFiRenderSelectedDiffers(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	unselected := theme.Render("Task", 30, false)
-	selected := theme.Render("Task", 30, true)
+	unselected := theme.Render("Task", 30, 0, false)
+	selected := theme.Render("Task", 30, 0, true)
 
 	if selected == unselected {
 		t.Error("selected and unselected output should differ")
@@ -130,7 +130,7 @@ func TestSciFiRenderVaryingWidths(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			output := theme.Render("Task text", tt.width, false)
+			output := theme.Render("Task text", tt.width, 0, false)
 			if output == "" {
 				t.Error("output should not be empty")
 			}
@@ -146,7 +146,7 @@ func TestSciFiRenderWordWraps(t *testing.T) {
 
 	theme := NewSciFiTheme()
 	longText := "This is a very long task description that should definitely be wrapped across multiple lines"
-	output := theme.Render(longText, 30, false)
+	output := theme.Render(longText, 30, 0, false)
 
 	lines := strings.Split(output, "\n")
 	if len(lines) < 7 {
@@ -158,7 +158,7 @@ func TestSciFiRenderUnicodeInAllowedRanges(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Test", 30, false)
+	output := theme.Render("Test", 30, 0, false)
 
 	for _, r := range output {
 		if r <= 0x7F || r == '\n' {
@@ -177,7 +177,7 @@ func TestSciFiRenderConsistentLineWidths(t *testing.T) {
 	t.Parallel()
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Task", 30, false)
+	output := theme.Render("Task", 30, 0, false)
 	lines := strings.Split(output, "\n")
 
 	if len(lines) < 3 {
