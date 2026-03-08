@@ -114,6 +114,14 @@ All party mode artifacts (`_bmad-output/planning-artifacts/`) **must** include a
 
 Research documents (`docs/research/`) should include a **Recommendations** section at the end with clear, actionable conclusions. Use the same Decisions Summary table format when the research produces concrete decisions.
 
+## Board Hygiene Sweep
+
+The board stays current through a periodic hygiene sweep process. The sweep scans for unindexed artifacts, orphaned research, stale entries, and ADR candidates — then reports findings to the supervisor for action. It never auto-creates entries.
+
+See [`SWEEP.md`](SWEEP.md) for the full process definition, report format, and running instructions.
+
+**Schedule:** Weekly or after major milestones. Any agent can run it.
+
 ## Founding Decision
 
 The board itself was created based on research into decision management approaches. See:
