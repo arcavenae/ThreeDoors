@@ -8,7 +8,8 @@
 
 | ID | Question | Date | Owner | Context |
 |----|----------|------|-------|---------|
-| | *No open questions* | | | |
+| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) |
+| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) |
 
 ## Active Research
 
@@ -20,7 +21,7 @@
 
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
-| | *No pending recommendations* | | | | |
+| P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../research/makefile-vs-justfile-analysis.md) | Owner sign-off |
 
 ## Decided
 
@@ -55,6 +56,31 @@
 | D-027 | Multi-provider integration strategy | 2026-02-01 | Three-phase per provider: read-only → bidirectional → advanced; contract tests | [ADR-0027](../ADRs/ADR-0027-multi-provider-integration-strategy.md) |
 | D-028 | CI quality gates and testing strategy | 2025-11-09 | Multi-layer gates; 70% coverage minimum; no bypass allowed | [ADR-0028](../ADRs/ADR-0028-ci-quality-gates.md) |
 | D-029 | Knowledge Decisions Board | 2026-03-08 | Lifecycle-aware kanban; single file dashboard; zero infrastructure | [Research](../research/decision-management-research.md) |
+| D-030 | Nil check guard for nil provider (Issue #218) | 2026-03-08 | Minimal fix for P0 crash; matches existing bootstrap.go pattern | [Artifact](../../_bmad-output/planning-artifacts/issue-218-party-mode-consensus.md) |
+| D-031 | Portrait door proportions with door anatomy model | 2026-03-08 | Door metaphor fidelity; taller-than-wide is #1 "door" signifier | [Artifact](../../_bmad-output/planning-artifacts/door-appearance-party-mode.md) |
+| D-032 | DoorTheme.Render() extended with height parameter | 2026-03-08 | Enables proportional door rendering; DoorsView calculates available height | [Architecture](../../_bmad-output/planning-artifacts/door-appearance-architecture.md) |
+| D-033 | DeferUntil as nullable *time.Time for snooze | 2026-03-07 | Zero-value safe; nil = not deferred; matches existing CompletedAt pattern | [Architecture](../../_bmad-output/planning-artifacts/architecture-snooze-defer.md) |
+| D-034 | Z key binding for snooze action | 2026-03-07 | "Zzz" mnemonic; S already bound; available in DoorsView and DetailView | [Architecture](../../_bmad-output/planning-artifacts/architecture-snooze-defer.md) |
+| D-035 | Dual auto-return for snoozed tasks (startup + tea.Tick) | 2026-03-07 | Covers both app-reopen and always-running scenarios; 1-min interval sufficient | [Architecture](../../_bmad-output/planning-artifacts/architecture-snooze-defer.md) |
+| D-036 | Three-step sequenced CI churn reduction | 2026-03-08 | Path filtering → concurrency limits → caching; risk-ascending order | [Artifact](../../_bmad-output/planning-artifacts/ci-churn-reduction-party-mode.md) |
+| D-037 | gh run list polling for cross-repo CI awareness | 2026-03-08 | Simple, well-understood; sufficient for infrequent release cadence | [Artifact](../../_bmad-output/planning-artifacts/cross-repo-ci-awareness-party-mode.md) |
+| D-038 | Weekly grouped dependency PRs with security as individual | 2026-03-08 | Reduces PR noise; security gets immediate individual attention | [Artifact](../../_bmad-output/planning-artifacts/dependency-management-party-mode.md) |
+| D-039 | OSV vulnerability scanning from day one | 2026-03-08 | Critical security baseline; low effort to enable | [Artifact](../../_bmad-output/planning-artifacts/dependency-management-party-mode.md) |
+| D-040 | Custom Homebrew tap before homebrew-core | 2026-03-08 | Provides real user value now; need users to get stars, not vice versa | [Artifact](../../_bmad-output/planning-artifacts/homebrew-distribution-party-mode.md) |
+| D-041 | Dependency-based door pool filtering | 2026-03-07 | Tasks with unmet dependencies excluded from doors; cleaner task selection | [Architecture](../../_bmad-output/planning-artifacts/architecture-task-dependencies.md) |
+| D-042 | Undo task completion via complete→todo transition | 2026-03-08 | Minimal scope; completed.txt remains immutable audit trail | [Architecture](../../_bmad-output/planning-artifacts/architecture-undo-task-completion.md) |
+| D-043 | Parent-child tasks via parent_id field (expand/fork) | 2026-03-08 | Additive field with omitempty; no schema migration needed | [Architecture](../../_bmad-output/planning-artifacts/architecture-expand-fork.md) |
+| D-044 | PM + Architect as persistent agents | 2026-03-08 | Continuous monitoring needed for PR quality and architecture drift | [Artifact](../../_bmad-output/planning-artifacts/persistent-agent-architecture-round1-role-evaluation.md) |
+| D-045 | SM as 4-hour cron, QA as weekly cron | 2026-03-08 | Sprint health and quality checks don't need continuous monitoring | [Artifact](../../_bmad-output/planning-artifacts/persistent-agent-architecture-round3-mvp.md) |
+| D-046 | Self-directed poll-based envoy patrol rhythm | 2026-03-08 | Envoy monitors autonomously; no external trigger needed | [Artifact](../../_bmad-output/planning-artifacts/envoy-rules-of-behavior-party-mode.md) |
+| D-047 | Slash commands as project skills (Epic 34) | 2026-03-08 | Codifies tribal knowledge; DRY specs as living documentation | [Architecture](../../_bmad-output/planning-artifacts/architecture-soul-skills.md) |
+| D-048 | JXA via osascript for Apple Reminders adapter | 2026-03-03 | Mirrors Apple Notes adapter pattern; native JSON output avoids brittle parsing | [Research](../research/apple-reminders-integration-research.md) |
+| D-049 | JQL-based Jira integration via REST API v3 | 2026-03-03 | Standard API; go-jira library available; WALProvider for offline support | [Research](../research/jira-integration-research.md) |
+| D-050 | Linear integration as read-only GraphQL adapter | 2026-03-08 | Read-only first per multi-provider strategy; GraphQL is Linear's primary API | [Artifact](../../_bmad-output/planning-artifacts/epic-30-linear-integration.md) |
+| D-051 | GitHub Issues as task source via gh CLI / PAT | 2026-03-07 | gh CLI already available; PAT via env var or config.yaml | [Artifact](../../_bmad-output/planning-artifacts/party-mode-github-issues-2026-03-07.md) |
+| D-052 | Three-door count validated by choice architecture research | 2026-03-02 | Hick's Law, jam study, working memory limits all support 3 as optimal | [Research](../research/choice-architecture.md) |
+| D-053 | Standardized Decisions Summary table in artifacts | 2026-03-08 | Makes decision extraction mechanical; consistent format across all artifacts | [Research](../research/decision-management-research.md) |
+| D-054 | DRY spec cleanup for story files | 2026-03-08 | Remove duplicated content from story specs; specs reference architecture docs | [Artifact](../../_bmad-output/planning-artifacts/34.4-party-mode-dry-cleanup.md) |
 
 ## Rejected
 
@@ -66,6 +92,20 @@
 | X-004 | Tag-based decision system | 2026-03-08 | High retrofit cost (135+ files); distributes source of truth | [Research](../research/decision-management-research.md) |
 | X-005 | Automated ADR generation | 2026-03-08 | ADR creation requires significance judgment; auto-generated would be noisy | [Research](../research/decision-management-research.md) |
 | X-006 | iPhone native app (Epic 16) | 2026-03-07 | No validated demand; deferred indefinitely | [ADR-0023](../ADRs/ADR-0023-iphone-app-deferred.md) |
+| X-007 | NewProviderFromConfig() signature refactor | 2026-03-08 | Too large for bug fix scope; separate story needed | [Artifact](../../_bmad-output/planning-artifacts/issue-218-party-mode-consensus.md) |
+| X-008 | Door opening/closing animations | 2026-03-08 | P2 scope; portrait proportions are the prerequisite | [Artifact](../../_bmad-output/planning-artifacts/door-appearance-party-mode.md) |
+| X-009 | Perspective/vanishing point hallway effect | 2026-03-08 | Too complex for initial door redesign; deferred to future epic | [Artifact](../../_bmad-output/planning-artifacts/door-appearance-party-mode.md) |
+| X-010 | GitHub Merge Queue for CI | 2026-03-08 | Deferred pending measurement of path filtering + concurrency quick wins | [Artifact](../../_bmad-output/planning-artifacts/ci-churn-reduction-party-mode.md) |
+| X-011 | repository_dispatch for cross-repo CI monitoring | 2026-03-08 | More complex than polling; requires PAT with cross-repo scope | [Artifact](../../_bmad-output/planning-artifacts/cross-repo-ci-awareness-party-mode.md) |
+| X-012 | GitHub webhooks for CI notification | 2026-03-08 | Requires webhook server infrastructure; massive overengineering for the need | [Artifact](../../_bmad-output/planning-artifacts/cross-repo-ci-awareness-party-mode.md) |
+| X-013 | Wait for homebrew-core before any Homebrew distribution | 2026-03-08 | Circular — need distribution to get users to get stars; custom tap first | [Artifact](../../_bmad-output/planning-artifacts/homebrew-distribution-party-mode.md) |
+| X-014 | Homebrew Cask instead of Formula | 2026-03-08 | Casks are for GUI apps; ThreeDoors is CLI/TUI — formula is correct | [Artifact](../../_bmad-output/planning-artifacts/homebrew-distribution-party-mode.md) |
+| X-015 | General undo system / undo stack | 2026-03-08 | Out of scope; only task completion undo is validated user need | [Architecture](../../_bmad-output/planning-artifacts/architecture-undo-task-completion.md) |
+| X-016 | Time-limited undo with countdown UI | 2026-03-08 | Adds unnecessary complexity; simple status transition suffices | [Artifact](../../_bmad-output/planning-artifacts/party-mode-undo-task-completion-2026-03-08.md) |
+| X-017 | Tech Writer as persistent agent | 2026-03-08 | Doc drift happens over weeks; weekly cron audit achieves same result | [Artifact](../../_bmad-output/planning-artifacts/persistent-agent-architecture-round1-role-evaluation.md) |
+| X-018 | UX Designer as persistent agent | 2026-03-08 | Zero monitoring surface for CLI/TUI; UX decisions made during story planning | [Artifact](../../_bmad-output/planning-artifacts/persistent-agent-architecture-round1-role-evaluation.md) |
+| X-019 | Dense agent mesh (every agent talks to every other) | 2026-03-08 | Combinatorial explosion; hub-and-spoke (PM as hub) is simpler and sufficient | [Artifact](../../_bmad-output/planning-artifacts/persistent-agent-architecture-round2-collaboration.md) |
+| X-020 | SLSA verification for dependencies | 2026-03-08 | Deferred to future story; OSV scanning is sufficient baseline | [Artifact](../../_bmad-output/planning-artifacts/dependency-management-party-mode.md) |
 
 ## Superseded
 

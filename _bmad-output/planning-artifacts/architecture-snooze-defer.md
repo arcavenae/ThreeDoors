@@ -397,3 +397,17 @@ This epic has **no dependencies** on other active epics (23, 24, 25, 26). It bui
 - Bubbletea view patterns (DoorsView, DetailView — established)
 - YAML persistence with atomic writes (FileManager — established)
 - JSONL session metrics logging (established)
+
+## Decisions Summary
+
+| Decision | Status | Rationale | Alternatives Rejected |
+|----------|--------|-----------|----------------------|
+| DeferUntil as nullable *time.Time field | Adopted | Zero-value safe; nil = not deferred; matches existing CompletedAt pattern | Sentinel date value (magic values are error-prone), separate boolean field (redundant) |
+| Z key for snooze action | Adopted | "Zzz" mnemonic; S already bound to re-roll; available in both views | S key (already bound), D key (conflict with delete/done) |
+| Add in-progress→deferred and blocked→deferred transitions | Adopted | Users mid-task or blocked should be able to snooze | Only todo→deferred (too restrictive for real workflow) |
+| No change to GetAvailableForDoors() filter | Adopted | Deferred already excluded; auto-return handles re-entry | Adding date-check logic to filter (unnecessary complexity) |
+| Dual auto-return: startup check + 1-minute tea.Tick | Adopted | Covers both reopened-app and always-running scenarios | Startup-only (misses running sessions), shorter tick interval (wasteful) |
+| Local time calculation, UTC storage | Adopted | "Tomorrow" means user's tomorrow; UTC follows project convention | UTC calculation (user-confusing), local storage (inconsistent) |
+| SnoozeView as centered overlay modal | Adopted | Minimal disruption; 4 quick options + date picker | Full-screen view (heavyweight), inline picker (layout complexity) |
+| DeferredListView via :deferred command | Adopted | Consistent with existing command palette pattern | Always-visible sidebar (wastes space), status bar indicator only (not enough info) |
+| JSONL session logging for snooze events | Adopted | Consistent with existing metrics; enables snooze pattern analysis | No logging (loses analytics), separate log file (fragmented) |
