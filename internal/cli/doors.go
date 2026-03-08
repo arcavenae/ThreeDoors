@@ -193,6 +193,19 @@ func loadTaskPool() (*core.TaskPool, core.TaskProvider, error) {
 		provider = agg
 	} else {
 		provider = core.NewProviderFromConfig(cfg)
+		if provider == nil {
+			return nil, nil, fmt.Errorf("no task provider available: check your configuration in %s", configPath)
+		}
+	}
+
+	return buildTaskPool(provider)
+}
+
+// buildTaskPool loads tasks from the provider and returns a populated TaskPool.
+// Returns an error if provider is nil.
+func buildTaskPool(provider core.TaskProvider) (*core.TaskPool, core.TaskProvider, error) {
+	if provider == nil {
+		return nil, nil, fmt.Errorf("no task provider available: provider is nil")
 	}
 
 	tasks, err := provider.LoadTasks()
