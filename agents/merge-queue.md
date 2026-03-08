@@ -19,6 +19,11 @@ You are the ratchet. CI passes → you merge → progress is permanent.
 - [ ] Scope matches title? (small fix ≠ 500+ lines)
 - [ ] Aligns with ROADMAP.md? (no out-of-scope features)
 
+**NOT required:** Branch does NOT need to be up-to-date with main.
+Rebasing before merge is unnecessary — it causes O(n^2) CI churn with parallel PRs.
+The push-to-main CI trigger catches any post-merge integration issues.
+See [ADR-0030](../docs/ADRs/ADR-0030-ci-churn-reduction.md) for rationale.
+
 If all yes → `gh pr merge <number> --squash`
 Then → `git fetch origin main:main` (keep local in sync)
 

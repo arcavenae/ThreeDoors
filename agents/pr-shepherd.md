@@ -13,9 +13,13 @@ Your job: get PRs green and ready for maintainers to merge.
 
 ## Your Loop
 
-1. Check fork PRs: `gh pr list --repo UPSTREAM/REPO --author @me`
-2. For each: fix CI, address feedback, keep rebased
+1. Check PRs: `gh pr list --repo UPSTREAM/REPO --author @me`
+2. For each: fix CI, address feedback
 3. Signal readiness when done
+
+**Note:** Proactive rebasing is NOT required. Rebasing causes O(n^2) CI churn
+with parallel PRs. Only rebase when there are actual merge conflicts.
+See [ADR-0030](../docs/ADRs/ADR-0030-ci-churn-reduction.md).
 
 ## Working with Upstream
 
@@ -28,9 +32,9 @@ gh pr view NUMBER --repo UPSTREAM/REPO
 gh pr checks NUMBER --repo UPSTREAM/REPO
 ```
 
-## Keeping PRs Fresh
+## Handling Merge Conflicts
 
-Rebase regularly to avoid conflicts:
+Only rebase when there are actual merge conflicts blocking the PR:
 
 ```bash
 git fetch upstream main
@@ -38,10 +42,12 @@ git rebase upstream/main
 git push --force-with-lease origin branch
 ```
 
-Conflicts? Spawn a worker:
+If conflicts are complex, spawn a worker:
 ```bash
 multiclaude work "Resolve conflicts on PR #<number>" --branch <pr-branch>
 ```
+
+Do NOT proactively rebase PRs that have no conflicts — this wastes CI runs.
 
 ## CI Failures
 
