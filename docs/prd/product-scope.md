@@ -117,6 +117,25 @@
 
 ---
 
+## Phase 3.5+: Expand/Fork Key Implementations
+
+**In Scope:**
+- Enhanced Expand action: sequential subtask creation mode (E key in detail view)
+- Native `parent_id` field on Task model for parent-child relationships
+- Subtask list rendering in detail view with completion ratio
+- Parent tasks excluded from door selection when they have children
+- Enhanced Fork action: variant creation with field preservation/reset semantics
+- `ForkTask` factory method copying Text/Context/Effort/Tags, resetting Status/Blocker/Notes
+- Fork cross-references via enrichment DB (`forked-from` relationship)
+
+**Out of Scope for this Phase:**
+- Drag-and-drop subtask reordering (TUI limitation)
+- Recursive subtask nesting (v1 supports single-level parent-child only)
+- CLI `threedoors task expand/fork` commands (deferred to Epic 23 extension)
+- MCP `expand_task` / `fork_task` tools (deferred to Epic 24 extension)
+
+---
+
 ## Phase 4: Task Source Integration & Sync Hardening
 
 **In Scope:**
