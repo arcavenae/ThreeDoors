@@ -351,9 +351,9 @@
   - `/validate-adapter` slash command — TaskProvider compliance checking
   - `/check-patterns` slash command — design pattern violation scanning
   - `/new-story` slash command — story template generator referencing CLAUDE.md
-- **Stories:** 34.1-34.3 (3 stories)
-- **Estimated Effort:** 1-2 days
-- **NFRs covered:** NFR-DX1, NFR-DX2, NFR-DX3, NFR-DX4, NFR-DX5
+- **Stories:** 34.1-34.4 (4 stories)
+- **Estimated Effort:** 2-3 days
+- **NFRs covered:** NFR-DX1, NFR-DX2, NFR-DX3, NFR-DX4, NFR-DX5, NFR-DX6
 - **Research:** See `docs/research/ai-tooling-findings.md`
 
 **Epic 35+: Additional UX Improvements** (Quick Capture CLI, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
@@ -394,7 +394,7 @@
 | Epic 22: Self-Driving Dev Pipeline | 8 | Not Started |
 | Epic 27: Daily Planning Mode | 5 | Not Started |
 | Epic 30: Linear Integration | 4 | Not Started |
-| Epic 34: SOUL.md + Custom Dev Skills | 3 | Not Started |
-| **Total** | **131** | **97 complete, 3 partial, 31 remaining** |
+| Epic 34: SOUL.md + Custom Dev Skills | 4 | Not Started |
+| **Total** | **132** | **97 complete, 3 partial, 32 remaining** |
 
 ---
