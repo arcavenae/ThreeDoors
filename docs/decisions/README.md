@@ -75,6 +75,45 @@ A significant decision typically has both:
 4. **Include a link** to supporting documentation (ADR, research doc, artifact, PR)
 5. **PR description** should explain why the entry is being added
 
+## Artifact Format Requirements
+
+All party mode artifacts (`_bmad-output/planning-artifacts/`) **must** include a standardized **Decisions Summary** table at the end of the document. This ensures decisions are extractable to the board mechanically.
+
+### Canonical Format
+
+```markdown
+## Decisions Summary
+
+| Decision | Status | Rationale | Alternatives Rejected |
+|----------|--------|-----------|----------------------|
+| Use approach X | Adopted | Reason for adopting | Approach Y (reason), Approach Z (reason) |
+| Skip feature F | Rejected | Not needed because... | — |
+```
+
+### Column Definitions
+
+| Column | Content |
+|--------|---------|
+| **Decision** | Short description of what was decided |
+| **Status** | `Adopted` or `Rejected` |
+| **Rationale** | Why this option was chosen/rejected |
+| **Alternatives Rejected** | Other options considered and why they were not chosen; use `—` if none |
+
+### Rules
+
+1. **Placement:** The Decisions Summary table must be the last major section in the artifact
+2. **Completeness:** Every decision made during the discussion must appear in the table
+3. **Both sides:** Include both adopted decisions AND explicitly rejected alternatives
+4. **Linkable:** Decisions in the table should be extractable to `BOARD.md` entries without needing to read the full artifact
+5. **Existing artifacts:** The following exemplars demonstrate the standardized format:
+   - `issue-218-party-mode-consensus.md` (consensus/triage type)
+   - `architecture-snooze-defer.md` (architecture type)
+   - `door-appearance-party-mode.md` (design consensus type)
+
+### Research Docs
+
+Research documents (`docs/research/`) should include a **Recommendations** section at the end with clear, actionable conclusions. Use the same Decisions Summary table format when the research produces concrete decisions.
+
 ## Founding Decision
 
 The board itself was created based on research into decision management approaches. See:

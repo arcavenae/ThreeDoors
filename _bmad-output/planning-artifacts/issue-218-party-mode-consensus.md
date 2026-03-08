@@ -32,14 +32,15 @@ Refactor `NewProviderFromConfig()` to return `(TaskProvider, error)` instead of 
 **In Scope:** Nil checks, error messages, tests for doors.go and MCP server
 **Out of Scope:** Signature refactor, auto-provider creation, first-run UX improvements
 
-## Key Decisions
+## Decisions Summary
 
-| Decision | Rationale |
-|----------|-----------|
-| Nil check, not signature refactor | Bug fix should be minimal; refactor is separate story |
-| Descriptive error, not auto-fix | Auto-creating providers is feature scope, not bug fix |
-| Fix MCP too | Same gap, same risk — fix both in one story |
-| Table-driven tests | Consistent with project testing standards |
+| Decision | Status | Rationale | Alternatives Rejected |
+|----------|--------|-----------|----------------------|
+| Nil check guard in loadTaskPool() and MCP server | Adopted | Minimal fix for P0 crash; matches existing bootstrap.go pattern | Signature refactor (too large for bug fix scope) |
+| Descriptive error message on nil provider | Adopted | Users need actionable guidance; silent failure is worse | Auto-creating default provider (feature scope, not bug fix) |
+| Fix both CLI and MCP server paths | Adopted | Same gap, same risk — inconsistent to fix only one | CLI-only fix (leaves MCP vulnerable) |
+| Table-driven tests for nil scenarios | Adopted | Consistent with project testing standards | Ad-hoc test cases (inconsistent) |
+| Defer NewProviderFromConfig() signature refactor | Rejected | Too large for bug fix scope; separate story | — |
 
 ## Risk Assessment
 
