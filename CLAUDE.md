@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-ThreeDoors is a Go TUI application that reduces task management decision friction by showing only three tasks at a time. Built with Bubbletea (charmbracelet/bubbletea).
+ThreeDoors is a Go TUI application that reduces task management decision friction by showing only three tasks at a time. Built with Bubbletea (charmbracelet/bubbletea). See [SOUL.md](SOUL.md) for project philosophy and design values.
 
 - **Language:** Go 1.25.4+
 - **TUI Framework:** Bubbletea + Lipgloss + Bubbles
