@@ -34,6 +34,7 @@ go test -race ./...   # Race detector — run before pushing
 
 **DO NOT conduct work without a story.** Every implementation task must have a corresponding `docs/stories/X.Y.story.md` file before work begins. If work needs to get done, find or create the appropriate story first.
 
+- Before implementing, check `docs/decisions/BOARD.md` for relevant prior decisions, rejected options, and active research
 - Before implementing, verify the story file exists and read its acceptance criteria
 - **DO NOT check in code without first updating the story file**, verifying that the ACs and tasks were met
 - After implementation, update the story file status to `Done (PR #NNN)`
