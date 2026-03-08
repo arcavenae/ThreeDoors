@@ -172,3 +172,24 @@
 - Voice interface
 
 ---
+
+## Phase 5+: Autonomous Project Governance
+
+**In Scope:**
+- Persistent project-watchdog agent (PM role): merged PR monitoring, story status updates, ROADMAP.md sync, PRD drift detection, monthly research document sweep
+- Persistent arch-watchdog agent (Architect role): code-to-architecture-doc alignment, undocumented pattern detection, architectural drift flagging via GitHub issues
+- Sprint health cron (SM role): 4-hourly sprint status summary, blocked story detection, stale PR alerts, idle worker monitoring
+- Coverage audit cron (QA/TEA role): weekly test coverage trend analysis, regression flagging against stored baseline
+- Agent communication via multiclaude message bus (`multiclaude message send`) — no shared state files
+- Agent authority boundaries: each agent edits only its designated doc domain (PM → story files/ROADMAP, Architect → architecture docs)
+- Idempotent, rate-limited polling with correlation IDs for cascade prevention
+- Restart recovery: agents re-scan last 10 merged PRs on startup to catch gaps
+
+**Out of Scope for this Phase:**
+- Tech Writer persistent agent (fold doc staleness checks into PM's monitoring loop)
+- Analyst persistent agent (fold research sweep into PM's monthly cycle)
+- UX Designer persistent agent (no continuous monitoring surface for CLI/TUI project)
+- Webhook-based event triggers (polling is sufficient at current project scale)
+- Adaptive polling intervals (deferred to tuning phase)
+
+---

@@ -2645,6 +2645,98 @@ All three stories are independent and can be implemented in parallel.
 
 ---
 
+## Epic 37: Persistent BMAD Agent Infrastructure
+
+**Epic Goal:** Enable autonomous project governance by adding persistent BMAD agents (project-watchdog, arch-watchdog) and cron jobs (SM sprint health, QA coverage audit) that automatically maintain story status, ROADMAP accuracy, architecture doc currency, and quality metrics.
+
+**Prerequisites:** None (infrastructure epic, independent of all feature epics)
+**FRs covered:** N/A (development infrastructure, not product features)
+**Status:** Not Started
+
+### Story 37.1: Agent Definitions — project-watchdog and arch-watchdog
+
+As a project supervisor,
+I want persistent project-watchdog and arch-watchdog agents with well-defined monitoring surfaces, authority boundaries, and restart behavior,
+So that project governance happens automatically after every PR merge.
+
+**Acceptance Criteria:**
+
+**Given** the `agents/` directory
+**When** implementation is complete
+**Then** `agents/project-watchdog.md` and `agents/arch-watchdog.md` exist with monitoring surfaces, trigger models, authority boundaries, escalation rules, restart behavior, and correlation ID tracking
+
+**Given** either agent re-processes a previously-seen PR
+**When** the correlation ID matches an already-processed PR
+**Then** no duplicate messages or file edits are produced (idempotency verified)
+
+**Quality Gate:** AC-Q5 (scope)
+
+---
+
+### Story 37.2: Cron Configuration — SM Sprint Health and QA Coverage Audit
+
+As a project supervisor,
+I want automated sprint health checks every 4 hours and weekly QA coverage audits,
+So that blocked stories, stale PRs, and coverage regressions are surfaced without manual intervention.
+
+**Acceptance Criteria:**
+
+**Given** the SM sprint health cron
+**When** running every 4 hours
+**Then** it queries stale PRs, blocked stories, and worker activity, reporting risks to supervisor
+
+**Given** the QA coverage audit cron
+**When** running weekly
+**Then** it compares per-package coverage against a stored baseline at `docs/quality/coverage-baseline.json` and flags regressions >5 percentage points
+
+**Quality Gate:** AC-Q5 (scope)
+
+---
+
+### Story 37.3: Agent Communication Architecture Documentation
+
+As a developer or agent maintainer,
+I want comprehensive architecture documentation for persistent agent communication patterns, authority boundaries, and anti-patterns,
+So that agent behavior is predictable, debuggable, and extensible.
+
+**Acceptance Criteria:**
+
+**Given** the `docs/architecture/` directory
+**When** implementation is complete
+**Then** `docs/architecture/agent-governance.md` exists with: agent interaction architecture, communication protocol, authority boundaries, anti-patterns and safeguards, resource budget and scaling, lifecycle management
+**And** `docs/architecture/index.md` references the new file
+
+**Quality Gate:** AC-Q5 (scope)
+
+---
+
+### Story 37.4: Monitoring, Tuning, and Phase 1 Evaluation
+
+As a project supervisor,
+I want a 2-week evaluation framework with clear success metrics and tuning criteria,
+So that I can objectively assess persistent agent value and adjust accordingly.
+
+**Acceptance Criteria:**
+
+**Given** the evaluation framework
+**When** implementation is complete
+**Then** `docs/operations/agent-evaluation.md` exists with success metrics, tuning guidelines, Phase 1 evaluation checklist, and escalation criteria
+
+**Quality Gate:** AC-Q5 (scope)
+
+---
+
+### Epic 37 Story Dependencies
+
+```
+37.1 Agent Definitions (independent)
+37.2 Cron Configuration (independent)
+37.3 Agent Communication Architecture Documentation (depends on 37.1)
+37.4 Monitoring, Tuning, and Phase 1 Evaluation (depends on 37.1, 37.2)
+```
+
+---
+
 ## Appendix: PR-Analysis-Derived Quality Acceptance Criteria
 
 > **Source:** Systematic analysis of all 49 PRs (#1–#49) in arcaven/ThreeDoors, examining every delta between initial PR submission and final merge. These ACs are derived from recurring defect patterns and MUST be included in all future stories.
