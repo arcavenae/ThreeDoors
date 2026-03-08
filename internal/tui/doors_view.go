@@ -265,7 +265,7 @@ func (dv *DoorsView) View() string {
 		}
 	}
 
-	doorHeight := 10
+	doorHeight := 0
 	if dv.height > 0 {
 		doorHeight = int(float64(dv.height) * 0.6)
 		if doorHeight < 10 {
