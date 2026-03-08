@@ -1207,3 +1207,68 @@ So that Epic 4's learning algorithm is evidence-informed.
 **And** evidence assessment for "progress over perfection"
 **And** actionable recommendations for Epic 4
 **And** bibliography with accessible references
+
+---
+
+## Epic 32: Undo Task Completion (P1 — FR127–FR131)
+
+**Priority:** P1
+**Status:** Backlog
+**Stories:** 3
+
+Enable users to reverse accidental task completion by adding a `complete → todo` status transition. Addresses a validated pain point from the Phase 1 Validation Gate: "No undo for task completion."
+
+**Design Decisions:**
+- DD-32.1: Only `complete → todo` supported (not `complete → in-progress`)
+- DD-32.2: `CompletedAt` cleared to nil on undo
+- DD-32.3: `completed.txt` remains immutable; undo tracked via session metrics
+- DD-32.4: No time limit on undo
+- DD-32.5: Dependency re-evaluation triggers automatically
+
+### Story 32.1: Status Model — Complete-to-Todo Transition
+
+As a user who accidentally completed a task,
+I want the status model to support reversing completion,
+So that I can undo my mistake without manually editing files.
+
+**Acceptance Criteria:**
+
+**Given** a task with status `complete`
+**When** the user requests a status change to `todo`
+**Then** `IsValidTransition(complete, todo)` returns `true`
+**And** `CompletedAt` is cleared to nil
+**And** `UpdatedAt` is set to current UTC time
+**And** `Status` is set to `todo`
+**And** task notes are preserved
+**And** all existing status transition tests pass unchanged
+
+### Story 32.2: Session Metrics — Undo Complete Event Logging
+
+As a product analyst,
+I want undo-complete events logged to session metrics,
+So that I can analyze accidental completion patterns.
+
+**Acceptance Criteria:**
+
+**Given** a task transitions from `complete` to `todo`
+**When** the undo is executed
+**Then** an `undo_complete` event is appended to the JSONL session log
+**And** the event includes task ID, original completion timestamp, and time elapsed
+**And** the `completed.txt` file is NOT modified
+**And** session metrics reader correctly parses the new event type
+
+### Story 32.3: TUI & CLI Undo Experience
+
+As a user viewing a completed task,
+I want to undo the completion from both TUI and CLI,
+So that I have a smooth, friction-free correction experience.
+
+**Acceptance Criteria:**
+
+**Given** a completed task is viewed in the TUI detail view
+**When** the user opens the status menu (`S` key)
+**Then** `todo` appears as a valid transition option
+**And** selecting `todo` returns the task to todo status
+**And** a confirmation message is shown: "Task uncompleted — returned to todo"
+**And** the doors view refreshes to include the uncompleted task
+**And** CLI `threedoors task status <id> todo` succeeds for completed tasks
