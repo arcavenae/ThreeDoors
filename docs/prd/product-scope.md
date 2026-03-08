@@ -140,7 +140,8 @@
 **In Scope:**
 - iPhone mobile app (SwiftUI) with Apple Notes sync and Three Doors card carousel
 - Self-driving development pipeline (multiclaude worker dispatch from TUI)
-- Additional integrations (Linear, GitHub Issues, ClickUp)
+- Linear integration: GraphQL-based adapter with full field mapping, bidirectional sync (Epic 30)
+- Additional integrations (GitHub Issues, ClickUp)
 - Cross-computer sync
 
 **Out of Scope (Deferred Indefinitely):**

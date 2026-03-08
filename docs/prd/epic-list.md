@@ -327,9 +327,23 @@
 - **FRs covered:** FR97, FR98, FR99, FR100, FR101, FR102, FR103
 - **Research:** See `docs/research/ux-workflow-improvements-research.md` (Improvement #2: Daily Planning Mode)
 
-**Epic 28+: Additional UX Improvements** (Quick Capture CLI, Snooze/Defer, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
-**Epic 29+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
-**Epic 30+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 30: Linear Integration** (P2)
+- **Goal:** Integrate Linear as a task source for engineering teams via the Linear GraphQL API, leveraging Linear's excellent task model alignment (rich workflow states, priority, estimates, labels, due dates) for high-fidelity task import
+- **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 13 (Multi-Source Aggregation — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - Linear GraphQL client with typed queries, cursor-based pagination, and API key auth
+  - Read-only LinearProvider with full field mapping (status, priority, effort, labels, due dates)
+  - Bidirectional sync: complete tasks via GraphQL mutation, WAL offline queuing
+  - Contract tests and integration tests with mocked GraphQL server
+- **Stories:** 30.1-30.4 (4 stories)
+- **Estimated Effort:** 4-5 days
+- **FRs covered:** FR116, FR117, FR118, FR119
+- **Research:** See `docs/research/task-source-expansion-research.md` (Linear section)
+
+**Epic 31+: Additional UX Improvements** (Quick Capture CLI, Snooze/Defer, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
+**Epic 32+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 33+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -364,6 +378,7 @@
 | Epic 21: Sync Protocol Hardening | 4 | Partial (3/4) |
 | Epic 22: Self-Driving Dev Pipeline | 8 | Not Started |
 | Epic 27: Daily Planning Mode | 5 | Not Started |
-| **Total** | **124** | **97 complete, 3 partial, 24 remaining** |
+| Epic 30: Linear Integration | 4 | Not Started |
+| **Total** | **128** | **97 complete, 3 partial, 28 remaining** |
 
 ---

@@ -296,6 +296,16 @@
 
 **FR96:** The system shall support bidirectional GitHub sync by closing issues via the GitHub API when tasks are marked complete in ThreeDoors, with offline queuing via WALProvider
 
+**Linear Integration:**
+
+**FR116:** The system shall integrate with Linear as a task source using the Linear GraphQL API, reading issues with structured field mapping (title to Text, description to Context, labels to Tags, state.type to Status with full workflow state mapping, priority to Effort with scale inversion, estimate to Effort as secondary signal, dueDate to due date), filtered by team and assignee
+
+**FR117:** The system shall support Linear authentication via personal API key configured in `~/.threedoors/config.yaml` or `LINEAR_API_KEY` environment variable, with a configurable team ID list (`team_ids`) for scoping which issues to import — supporting multiple teams
+
+**FR118:** The system shall map Linear workflow states to ThreeDoors statuses: `triage`/`backlog`/`unstarted` map to `todo`, `started` maps to `in-progress`, `completed` maps to `complete`, `cancelled` maps to `archived`; and map Linear priority values (0=no priority, 1=urgent, 2=high, 3=medium, 4=low) to ThreeDoors Effort with appropriate inversion, with `estimate` (story points) as a secondary effort signal when priority is absent or zero
+
+**FR119:** The system shall support bidirectional Linear sync by transitioning issues to the team's "Done" workflow state via the Linear GraphQL API when tasks are marked complete in ThreeDoors, with offline queuing via WALProvider
+
 **Sync Protocol Hardening:**
 
 **FR70:** The system shall provide a sync scheduler with per-provider independent sync loops, supporting hybrid push (Watch channel) and polling with adaptive intervals (backoff on failure, reset on success)

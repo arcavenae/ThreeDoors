@@ -52,6 +52,17 @@ GitHub Issues as task source for developer workflows. Official go-github SDK.
 | 26.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 26.2 |
 | 26.4 | Contract Tests & Integration Testing | Not Started | P1 | 26.2 |
 
+### Epic 30: Linear Integration (P2) — 0/4 stories done
+
+Linear as task source via GraphQL API. Best task model alignment of all evaluated services.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 30.1 | Linear GraphQL Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 30.2 | Read-Only Linear Provider with Field Mapping | Not Started | P2 | 30.1 |
+| 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
+| 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
+
 ## Completed Epics
 
 | Epic | Title | Stories |

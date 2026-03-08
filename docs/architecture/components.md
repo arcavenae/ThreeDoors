@@ -515,6 +515,62 @@ providers:
       in_progress_label: "in-progress"  # label indicating active work
 ```
 
+#### Component: LinearAdapter (Epic 30)
+
+**Responsibility:** Read/write tasks from Linear issues using the Linear GraphQL API, mapping issues to ThreeDoors tasks with full workflow state, priority, estimate, and label mapping.
+
+**Implements:** `TaskProvider`
+
+**Key Interfaces:**
+
+```go
+// GraphQLClient abstracts GraphQL operations for testability.
+type GraphQLClient interface {
+    Query(ctx context.Context, q interface{}, variables map[string]interface{}) error
+    Mutate(ctx context.Context, m interface{}, variables map[string]interface{}) error
+}
+
+// LinearProvider implements core.TaskProvider for Linear issues.
+type LinearProvider struct {
+    client GraphQLClient
+    config *LinearConfig
+    cache  *TaskCache
+}
+
+func NewLinearProvider(config *LinearConfig) *LinearProvider
+```
+
+**Key Behaviors:**
+- Load issues via Linear GraphQL API filtered by team IDs and optional assignee
+- Cursor-based pagination for teams with >50 issues
+- Map fields: `title` -> Text, `description` -> Context (Markdown), `labels` -> Tags, `dueDate` -> DueDate
+- Status mapping via `state.type`: triage/backlog/unstarted -> todo, started -> in-progress, completed -> complete, cancelled -> archived
+- Priority mapping with inversion: Linear 1 (urgent) -> Effort 4, 2 (high) -> 3, 3 (medium) -> 2, 4 (low) -> 1; `estimate` as secondary signal when priority is 0
+- `MarkComplete()` transitions issue to team's "completed" workflow state via GraphQL mutation
+- `HealthCheck()` verifies API connectivity via `viewer` query
+- `Watch()` polls for issue changes at configurable intervals
+- Local cache at `~/.threedoors/linear-cache.yaml` with configurable TTL
+- Source badge: `[LN]`
+
+**Dependencies:**
+- `github.com/hasura/go-graphql-client` (or raw HTTP with typed structs) -- GraphQL client
+- `internal/adapters/contract.go` -- contract test suite
+- `internal/sync/` -- WALProvider for offline queuing
+
+**Configuration:**
+
+```yaml
+providers:
+  - name: linear
+    settings:
+      api_key: "lin_api_xxx"     # or LINEAR_API_KEY env var
+      team_ids:
+        - "TEAM-1"
+        - "TEAM-2"
+      assignee: "@me"            # optional: filter by authenticated user
+      poll_interval: "5m"        # default: 5 minutes
+```
+
 #### Component: PluginSDK (Epic 7)
 
 **Responsibility:** Provide developer-facing tools and documentation for third-party adapter development.
@@ -814,6 +870,7 @@ graph TB
         NotesAdapter[AppleNotesAdapter]
         ObsidianAdapter[ObsidianAdapter]
         GitHubAdapter[GitHubAdapter]
+        LinearAdapter[LinearAdapter]
     end
 
     subgraph Sync[Sync Engine - internal/sync]
@@ -855,6 +912,7 @@ graph TB
     Registry --> NotesAdapter
     Registry --> ObsidianAdapter
     Registry --> GitHubAdapter
+    Registry --> LinearAdapter
 
     SyncEngine --> Queue
     SyncEngine --> Conflicts
