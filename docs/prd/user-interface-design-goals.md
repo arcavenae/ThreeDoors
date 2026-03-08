@@ -75,22 +75,29 @@ From a product perspective, these are the critical views necessary to deliver MV
 Leverage Charm Bracelet/Bubbletea's capabilities for styled terminal UI—think clean, readable typography with subtle use of color for status indication (green for progress, yellow for prompts, red sparingly for errors).
 
 **Three Doors Visual Metaphor:**
-The main interface will render three visual "doors" arranged horizontally in ASCII art or styled terminal boxes. Doors dynamically adjust their width based on terminal width and their height to 60% of terminal height (minimum 10 lines), with content vertically centered within each door. This makes the interface feel immersive at any terminal size.
+The main interface will render three visual "doors" arranged horizontally. Doors use **portrait-oriented proportions** (taller than wide) to visually read as actual doors rather than cards or panels. Each door includes door-like signifiers: a lintel/header with door number, panel dividers creating upper/lower sections, an asymmetric handle on the right side at ~60% height, and a threshold/floor line at the bottom. Doors dynamically adjust their width based on terminal width and their height to 60% of terminal height (minimum 12 lines), with content vertically centered within each door. This makes the interface feel immersive and reinforces the door metaphor at any terminal size.
 ```
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│             │  │             │  │             │
+┌──── [1] ────┐  ┌──── [2] ────┐  ┌──── [3] ────┐
 │             │  │             │  │             │
 │  [Task A]   │  │  [Task B]   │  │  [Task C]   │
 │  Quick win  │  │  Deep work  │  │  Creative   │
 │  ~5min      │  │  ~30min     │  │  ~15min     │
 │             │  │             │  │             │
+├─────────────┤  ├─────────────┤  ├─────────────┤
+│             │  │             │  │             │
+│          ●  │  │          ●  │  │          ●  │
+│             │  │             │  │             │
+│             │  │             │  │             │
 │             │  │             │  │             │
 └─────────────┘  └─────────────┘  └─────────────┘
-  (Height: 60% of terminal, min 10 lines, content vertically centered)
+  ▔▔▔▔▔▔▔▔▔▔▔      ▔▔▔▔▔▔▔▔▔▔▔      ▔▔▔▔▔▔▔▔▔▔▔
+  (Portrait orientation, min 12 lines, panel dividers, handles, thresholds)
 
 Press A/Left, W/Up, or D/Right to select  |  S/Down to re-roll  |  Q to quit
 Press C (complete), B (blocked), I (in progress), E (expand), F (fork), P (procrastinate) for task actions
 ```
+
+When terminal height is insufficient for portrait proportions (< 16 rows), doors gracefully degrade to compact card layout while preserving full task readability.
 
 **"Progress Over Perfection" Visual Language:**
 Use asymmetry, incomplete progress bars, and "good enough" indicators. The three doors might be slightly different sizes or styles, reinforcing that perfection isn't required—just pick one and start.
