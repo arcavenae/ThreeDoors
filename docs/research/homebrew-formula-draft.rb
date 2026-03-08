@@ -40,7 +40,7 @@ class Threedoors < Formula
 
     # Verify the binary can initialize without a tasks file
     # (should exit gracefully, not crash)
-    output = shell_output("#{bin}/threedoors --version 2>&1", 0)
+    output = shell_output("#{bin}/threedoors --version 2>&1")
     assert_match(/\d+\.\d+\.\d+/, output)
   end
 end

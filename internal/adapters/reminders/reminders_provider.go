@@ -140,7 +140,7 @@ func (p *RemindersProvider) HealthCheck() core.HealthCheckResult {
 	if err != nil {
 		item.Status = core.HealthFail
 		errMsg := err.Error()
-		if strings.Contains(errMsg, "not allowed") || strings.Contains(errMsg, "denied") || strings.Contains(errMsg, "1002") {
+		if strings.Contains(errMsg, "not allowed") || strings.Contains(errMsg, "denied") || strings.Contains(errMsg, "error 1002") {
 			item.Message = "Reminders access denied by macOS privacy settings"
 			item.Suggestion = "Grant Reminders access in System Settings > Privacy & Security > Reminders"
 		} else {

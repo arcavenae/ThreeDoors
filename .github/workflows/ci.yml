@@ -11,8 +11,44 @@ permissions:
   pull-requests: write
 
 jobs:
+  # Detect which files changed to skip expensive jobs on docs-only PRs.
+  # Push-to-main always runs the full suite (no path filtering).
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      docker: ${{ steps.filter.outputs.docker }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**.go'
+              - 'go.mod'
+              - 'go.sum'
+              - 'Makefile'
+              - '.golangci.yml'
+              - '.github/workflows/**'
+            docker:
+              - 'Dockerfile*'
+              - 'docker-compose*'
+
+  # Lightweight pass for docs-only PRs so required checks aren't stuck pending.
+  docs-pass:
+    name: Docs Only
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.code != 'true' && needs.changes.outputs.docker != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Docs-only PR — code CI skipped."
+
   quality-gate:
     name: Quality Gate
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.docker == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -95,6 +131,8 @@ jobs:
 
   benchmarks:
     name: Performance Benchmarks
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -119,6 +157,8 @@ jobs:
 
   test-docker-e2e:
     name: Docker E2E Tests
+    needs: changes
+    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.docker == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -444,5 +484,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/threedoors.rb
-          git commit -m "Update threedoors to $VERSION"
+          git commit -m "chore(formula): update threedoors to $TAG"
           git push

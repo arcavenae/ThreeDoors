@@ -263,3 +263,19 @@ The fundamental fix is **proportion** — making doors portrait-oriented (taller
 The door "grammar" (proportion + panels + handle + threshold) should be standardized across all themes, with each theme expressing these elements in its own visual language (rounded borders for Classic, heavy lines for Modern, double-line bulkheads for Sci-Fi, lattice grids for Shoji).
 
 *Party mode discussion concluded. All agents in consensus on recommendations.*
+
+## Decisions Summary
+
+| Decision | Status | Rationale | Alternatives Rejected |
+|----------|--------|-----------|----------------------|
+| Portrait aspect ratio (taller than wide, min 12 rows) | Adopted | #1 fix for door recognition; real doors are tall and narrow | Landscape orientation (current — reads as cards, not doors) |
+| Panel divider (horizontal line creating upper/lower panels) | Adopted | Strongest "door" signifier after proportion | Flat single-panel rendering (looks like a card) |
+| Asymmetric handle placement (right side, ~60% height) | Adopted | Asymmetry signals "door" not "button"; matches real-world knob position | Centered handle (reads as button), no handle (loses affordance) |
+| Threshold/floor line at bottom edge | Adopted | Suggests ground plane; completes door silhouette | Same border top and bottom (no spatial grounding) |
+| Door number as room number in lintel | Adopted | Reinforces door metaphor; creates visual hierarchy | Number as content (loses metaphor), no number (loses identification) |
+| Compact mode fallback for terminals < 16 rows | Adopted | Graceful degradation; don't break small terminals | Force minimum terminal size (user-hostile), no fallback (broken rendering) |
+| Extend Render() with height parameter | Adopted | Enables proportional door rendering; DoorsView calculates available height | Fixed height (can't adapt to terminal), width-only (current — no vertical control) |
+| Shadow/depth effect on one side | Adopted | Half-block characters create 3D effect cheaply | Flat rendering only (less immersive), full 3D (impossible in terminal) |
+| Defer door animations to future epic | Rejected | P2 scope; portrait proportions are the prerequisite | — |
+| Defer perspective/vanishing point to future epic | Rejected | P2 scope; too complex for initial door redesign | — |
+| Defer material textures to future epic | Rejected | P2 scope; structural changes are higher priority | — |

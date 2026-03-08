@@ -33,12 +33,12 @@ func categorizeError(err error) error {
 
 	msg := err.Error()
 
-	if strings.Contains(msg, "not allowed") || strings.Contains(msg, "denied") || strings.Contains(msg, "1002") {
-		return fmt.Errorf("%w: %w", ErrPermissionDenied, err)
-	}
-
 	if strings.Contains(msg, "reminder not found") {
 		return fmt.Errorf("%w: %w", ErrReminderNotFound, err)
+	}
+
+	if strings.Contains(msg, "not allowed") || strings.Contains(msg, "denied") || strings.Contains(msg, "error 1002") {
+		return fmt.Errorf("%w: %w", ErrPermissionDenied, err)
 	}
 
 	return err

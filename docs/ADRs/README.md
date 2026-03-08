@@ -103,6 +103,10 @@ ADRs were derived from:
 - `docs/research/` — Research documents informing technology and design choices
 - PR descriptions and commit history
 
+## Decisions Board
+
+For non-ADR decisions (tactical choices, rejected options, active research, pending recommendations), see the [Knowledge Decisions Board](../decisions/BOARD.md). The board is the living dashboard that tracks the full decision lifecycle; ADRs remain the permanent archive for significant architectural decisions.
+
 ## Contributing
 
 When making a significant architectural decision:
