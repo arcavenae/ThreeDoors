@@ -25,12 +25,13 @@ func NewSciFiTheme() *DoorTheme {
 			Accent:   lipgloss.Color("45"),
 			Selected: selectedColor,
 		},
-		MinWidth: 16,
+		MinWidth:  16,
+		MinHeight: 14,
 	}
 }
 
-func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, bool) string {
-	return func(content string, width int, selected bool) string {
+func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
+	return func(content string, width int, _ int, selected bool) string {
 		color := frameColor
 		shadeChar := "░"
 		if selected {
