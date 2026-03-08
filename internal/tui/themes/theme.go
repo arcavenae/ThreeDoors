@@ -14,9 +14,10 @@ type ThemeColors struct {
 type DoorTheme struct {
 	Name        string
 	Description string
-	Render      func(content string, width int, selected bool) string
+	Render      func(content string, width int, height int, selected bool) string
 	Colors      ThemeColors
 	MinWidth    int
+	MinHeight   int
 }
 
 // DefaultThemeName is the theme used when no theme is specified.

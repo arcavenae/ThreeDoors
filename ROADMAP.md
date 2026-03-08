@@ -10,6 +10,18 @@
 - **P1** — Should ship. High value, no blockers.
 - **P2** — Nice to have. Lower urgency.
 
+## Bug Fixes (P0)
+
+### Story 23.11: Fix Nil Pointer Panic on Missing Provider (P0)
+
+**GitHub Issue:** #218 | **Status:** Not Started
+
+`loadTaskPool()` in `doors.go` and MCP server init call `NewProviderFromConfig()` which can return nil. Neither checks for nil before dereferencing, causing a panic on first run with no provider configured.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 23.11 | Fix Nil Pointer Panic on Missing Provider | Not Started | P0 | Epic 23 (done) |
+
 ## Active Epics
 
 ### Epic 25: Todoist Integration (P1) — 0/4 stories done
@@ -145,8 +157,8 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 11 | Sync Observability & Offline-First | 3/3 |
 | 12 | Calendar Awareness | 2/2 |
 | 13 | Multi-Source Aggregation | 2/2 |
-| 14 | LLM Task Decomposition | 3/3 |
-| 15 | Psychology Research & Validation | 1/1 |
+| 14 | LLM Task Decomposition | 2/2 |
+| 15 | Psychology Research & Validation | 2/2 |
 | 17 | Door Theme System | 6/6 |
 | 18 | Docker E2E & Headless TUI Testing | 5/5 |
 | 19 | Jira Integration | 4/4 |

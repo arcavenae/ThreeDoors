@@ -275,8 +275,9 @@ func (dv *DoorsView) View() string {
 
 	// Resolve the active theme for this render cycle.
 	// Width-aware fallback: if per-door width is below the theme's minimum, use Classic.
+	// Height-aware fallback: if door height is below the theme's MinHeight, use Classic (compact mode).
 	activeTheme := dv.theme
-	if activeTheme != nil && doorWidth < activeTheme.MinWidth {
+	if activeTheme != nil && (doorWidth < activeTheme.MinWidth || (activeTheme.MinHeight > 0 && doorHeight < activeTheme.MinHeight)) {
 		if dv.themeRegistry != nil {
 			if classic, ok := dv.themeRegistry.Get("classic"); ok {
 				activeTheme = classic
@@ -332,7 +333,7 @@ func (dv *DoorsView) View() string {
 
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
-			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, i == dv.selectedDoorIndex))
+			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, i == dv.selectedDoorIndex))
 		} else {
 			var style lipgloss.Style
 			if i == dv.selectedDoorIndex {

@@ -25,12 +25,13 @@ func NewModernTheme() *DoorTheme {
 			Accent:   frameColor,
 			Selected: selectedColor,
 		},
-		MinWidth: 15,
+		MinWidth:  15,
+		MinHeight: 12,
 	}
 }
 
-func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, bool) string {
-	return func(content string, width int, selected bool) string {
+func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
+	return func(content string, width int, _ int, selected bool) string {
 		color := frameColor
 		hChar := "─"
 		vChar := "│"
