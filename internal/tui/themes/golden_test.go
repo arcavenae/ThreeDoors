@@ -52,7 +52,7 @@ func TestGolden_ThemeRender(t *testing.T) {
 			}
 			name := theme.Name + "/" + state + "_w" + itoa(tt.width)
 			t.Run(name, func(t *testing.T) {
-				out := theme.Render("Buy groceries for the week", tt.width, tt.selected)
+				out := theme.Render("Buy groceries for the week", tt.width, 0, tt.selected)
 				golden.RequireEqual(t, []byte(out))
 			})
 		}
@@ -66,11 +66,11 @@ func TestGolden_ThemeBoundaryWidth(t *testing.T) {
 
 	for _, theme := range allThemes() {
 		t.Run(theme.Name+"/at_min_width", func(t *testing.T) {
-			out := theme.Render("Task text", theme.MinWidth, false)
+			out := theme.Render("Task text", theme.MinWidth, 0, false)
 			golden.RequireEqual(t, []byte(out))
 		})
 		t.Run(theme.Name+"/below_min_width", func(t *testing.T) {
-			out := theme.Render("Task text", theme.MinWidth-1, false)
+			out := theme.Render("Task text", theme.MinWidth-1, 0, false)
 			golden.RequireEqual(t, []byte(out))
 		})
 	}
@@ -99,7 +99,7 @@ func TestGolden_ThemeContentLength(t *testing.T) {
 	for _, theme := range allThemes() {
 		for _, cc := range contentCases {
 			t.Run(theme.Name+"/"+cc.label, func(t *testing.T) {
-				out := theme.Render(cc.content, 40, false)
+				out := theme.Render(cc.content, 40, 0, false)
 				golden.RequireEqual(t, []byte(out))
 			})
 		}
@@ -123,7 +123,7 @@ func TestVisualWidthConsistency(t *testing.T) {
 				name := theme.Name + "/" + state + "_w" + itoa(w)
 				t.Run(name, func(t *testing.T) {
 					t.Parallel()
-					out := theme.Render("Buy groceries for the week", w, sel)
+					out := theme.Render("Buy groceries for the week", w, 0, sel)
 					lines := strings.Split(out, "\n")
 					if len(lines) == 0 {
 						t.Fatal("expected at least one line of output")
@@ -162,7 +162,7 @@ func TestNoANSIEscapeLeak(t *testing.T) {
 				name := theme.Name + "/" + state + "_w" + itoa(w)
 				t.Run(name, func(t *testing.T) {
 					t.Parallel()
-					out := theme.Render("Buy groceries for the week", w, sel)
+					out := theme.Render("Buy groceries for the week", w, 0, sel)
 					if leakPattern.MatchString(out) {
 						matches := leakPattern.FindAllString(out, -1)
 						t.Errorf("found leaked ANSI escape sequences: %q", matches)

@@ -9,7 +9,7 @@ func TestRegisterAndGet(t *testing.T) {
 	theme := &DoorTheme{
 		Name:        "test-theme",
 		Description: "A test theme",
-		Render: func(content string, width int, selected bool) string {
+		Render: func(content string, width int, height int, selected bool) string {
 			return content
 		},
 		MinWidth: 10,
@@ -49,14 +49,14 @@ func TestRegisterOverwrite(t *testing.T) {
 	theme1 := &DoorTheme{
 		Name:        "dup",
 		Description: "first",
-		Render: func(content string, width int, selected bool) string {
+		Render: func(content string, width int, height int, selected bool) string {
 			return "v1"
 		},
 	}
 	theme2 := &DoorTheme{
 		Name:        "dup",
 		Description: "second",
-		Render: func(content string, width int, selected bool) string {
+		Render: func(content string, width int, height int, selected bool) string {
 			return "v2"
 		},
 	}
@@ -96,7 +96,7 @@ func TestNewDefaultRegistry(t *testing.T) {
 		if !ok {
 			t.Fatalf("theme %q not found", name)
 		}
-		output := theme.Render("Test", 30, false)
+		output := theme.Render("Test", 30, 0, false)
 		if output == "" {
 			t.Errorf("theme %q rendered empty output", name)
 		}
@@ -109,13 +109,13 @@ func TestNames(t *testing.T) {
 	reg := NewRegistry()
 	reg.Register(&DoorTheme{
 		Name: "alpha",
-		Render: func(content string, width int, selected bool) string {
+		Render: func(content string, width int, height int, selected bool) string {
 			return content
 		},
 	})
 	reg.Register(&DoorTheme{
 		Name: "beta",
-		Render: func(content string, width int, selected bool) string {
+		Render: func(content string, width int, height int, selected bool) string {
 			return content
 		},
 	})
