@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
+**Status:** 10 of 14 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32, 0.34 not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
+**Status:** 10 of 14 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32, 0.34 not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -780,6 +780,22 @@ So that I can learn keybindings and commands without content disappearing or run
 - **AC5:** Scrollable via j/k, PgUp/PgDn; dismissed via Esc/q
 - **AC6:** `?` global keybinding opens help from any non-text-input view
 - **AC7:** Unit tests, golden file test, race detector passes
+
+### Story 0.34: Fix 'q' Key in Sub-Views — Go Back Instead of Quit
+
+As a user navigating a sub-view (dashboard, health, synclog, etc.),
+I want pressing 'q' to return me to the doors view,
+So that 'q' means "close what I'm looking at" — quit at root, back in sub-views.
+
+**Status:** Ready
+
+**Acceptance Criteria:**
+- **AC1:** Universal quit handler (main_model.go:910-913) removed
+- **AC2:** Sub-views (ViewInsights, ViewHealth, ViewSyncLog, ViewNextSteps, ViewAvoidancePrompt) treat 'q' as go-back
+- **AC3:** Doors view still quits on 'q' (existing handler unchanged)
+- **AC4:** Text input views unchanged ('q' = text input)
+- **AC5:** Keybindings updated to show 'q: back' in sub-views
+- **AC6:** Tests updated, race detector passes
 
 ---
 
