@@ -142,13 +142,13 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
+### Epic 33: Seasonal Door Theme Variants (P2) — 1/4 stories done
 
 Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Not Started | P2 | Epic 17 (done) |
+| 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Done (PR #403) | P2 | Epic 17 (done) |
 | 33.2 | Four Seasonal Theme Implementations | Not Started | P2 | 33.1 |
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
@@ -216,7 +216,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
 | 41.6 | Adaptive Color Profile Support | Done (PR #373) | P2 | None |
 
-### Epic 36: Door Selection Interaction Feedback (P1) — 3/4 stories done
+### Epic 36: Door Selection Interaction Feedback (P1) — 4/4 stories done — COMPLETE
 
 Make door selection feel responsive and satisfying. Reopened for Story 36.4 (space/enter toggle).
 
@@ -225,7 +225,7 @@ Make door selection feel responsive and satisfying. Reopened for Story 36.4 (spa
 | 36.1 | Enhanced Door Selection Visual Feedback | Done (PR #277) | P1 | None |
 | 36.2 | Deselect Toggle | Done (PR #272) | P1 | None |
 | 36.3 | Universal Quit | Done (PR #276) | P1 | None |
-| 36.4 | Space/Enter Toggle — Close Door by Pressing Same Key | Ready | P1 | 36.2, 39.6 |
+| 36.4 | Space/Enter Toggle — Close Door by Pressing Same Key | Done (PR #405) | P1 | 36.2, 39.6 |
 
 ## Completed Epics
 
@@ -260,7 +260,7 @@ Make door selection feel responsive and satisfying. Reopened for Story 36.4 (spa
 | 26 | GitHub Issues Integration | 4/4 |
 | 34 | SOUL.md + Custom Development Skills | 4/4 |
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
-| 36 | Door Selection Interaction Feedback | 3/4 |
+| 36 | Door Selection Interaction Feedback | 4/4 |
 | 37 | Persistent BMAD Agent Infrastructure | 4/4 |
 | 29 | Task Dependencies & Blocked-Task Filtering | 4/4 |
 | 32 | Undo Task Completion | 3/3 |
