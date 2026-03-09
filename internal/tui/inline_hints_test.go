@@ -3,6 +3,9 @@ package tui
 import (
 	"strings"
 	"testing"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 func TestRenderInlineHint(t *testing.T) {
@@ -72,7 +75,11 @@ func TestRenderInlineHint(t *testing.T) {
 }
 
 func TestRenderInlineHintFadeVsNormalDiffer(t *testing.T) {
-	t.Parallel()
+	// Enable ANSI 256 color profile so the two different color values
+	// (245 vs 240) produce distinct escape sequences in any environment,
+	// including Docker containers without a TTY.
+	lipgloss.SetColorProfile(termenv.ANSI256)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	normal := renderInlineHint("a", true, false)
 	fade := renderInlineHint("a", true, true)
