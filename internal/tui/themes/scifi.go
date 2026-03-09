@@ -32,8 +32,8 @@ func NewSciFiTheme() *DoorTheme {
 	}
 }
 
-func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
-	return func(content string, width int, height int, selected bool) string {
+func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool, string) string {
+	return func(content string, width int, height int, selected bool, hint string) string {
 		color := frameColor
 		shadeChar := "░"
 		if selected {
@@ -64,16 +64,16 @@ func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int
 
 		// Compact mode: use existing fixed-layout rendering
 		if height < 14 {
-			return scifiRenderCompact(style, content, contentLines, width, contentW, rail, shadeChar, selected)
+			return scifiRenderCompact(style, content, contentLines, width, contentW, rail, shadeChar, selected, hint)
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected)
+		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint)
 	}
 }
 
 // scifiRenderCompact renders the original fixed-height Sci-Fi card style.
-func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, width, contentW int, rail, _ string, _ bool) string {
+func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, width, contentW int, rail, _ string, _ bool, hint string) string {
 	railW := 1
 	blankContent := strings.Repeat(" ", contentW)
 
@@ -106,13 +106,16 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 	fmt.Fprintf(&b, "%s%s%s%s%s%s%s\n",
 		style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("║"))
 
-	// ACCESS label right-aligned with 2-char padding
+	// ACCESS label right-aligned with 2-char padding, with optional hint
 	label := "[ACCESS]"
-	leftPad := contentW - len(label) - 2
+	if hint != "" {
+		label = hint + " " + label
+	}
+	leftPad := contentW - ansi.StringWidth(label) - 2
 	if leftPad < 0 {
 		leftPad = 0
 	}
-	labelRight := contentW - leftPad - len(label)
+	labelRight := contentW - leftPad - ansi.StringWidth(label)
 	if labelRight < 0 {
 		labelRight = 0
 	}
@@ -133,7 +136,7 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 }
 
 // scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
-func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool) string {
+func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string) string {
 	anatomy := NewDoorAnatomy(height)
 	blankContent := strings.Repeat(" ", contentW)
 
@@ -180,13 +183,17 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 				style.Render("│"), rail, style.Render("║"))
 
 		case row == accessRow:
-			// ACCESS label right-aligned with 2-char padding
+			// ACCESS label right-aligned with 2-char padding, with optional hint
 			label := "[ACCESS]"
-			leftPad := contentW - len(label) - 2
+			if hint != "" {
+				label = hint + " " + label
+			}
+			labelWidth := ansi.StringWidth(label)
+			leftPad := contentW - labelWidth - 2
 			if leftPad < 0 {
 				leftPad = 0
 			}
-			rightPad := contentW - leftPad - len(label)
+			rightPad := contentW - leftPad - labelWidth
 			if rightPad < 0 {
 				rightPad = 0
 			}

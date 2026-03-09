@@ -44,7 +44,7 @@ func TestClassicRenderUnselected(t *testing.T) {
 	t.Parallel()
 
 	theme := NewClassicTheme()
-	output := theme.Render("Test task", 30, 0, false)
+	output := theme.Render("Test task", 30, 0, false, "")
 
 	if !strings.Contains(output, "Test task") {
 		t.Error("rendered output should contain the content text")
@@ -58,8 +58,8 @@ func TestClassicRenderSelected(t *testing.T) {
 	t.Parallel()
 
 	theme := NewClassicTheme()
-	unselected := theme.Render("Test task", 30, 0, false)
-	selected := theme.Render("Test task", 30, 0, true)
+	unselected := theme.Render("Test task", 30, 0, false, "")
+	selected := theme.Render("Test task", 30, 0, true, "")
 
 	if selected == "" {
 		t.Error("selected output should not be empty")
@@ -97,7 +97,7 @@ func TestClassicRenderMatchesExistingStyle(t *testing.T) {
 	// Compare with ANSI codes stripped — lipgloss color rendering can vary
 	// across environments (CI vs local terminal), but structural content
 	// (box-drawing characters, spacing, text) must match.
-	themeOutput := ansi.Strip(theme.Render(content, width, 0, false))
+	themeOutput := ansi.Strip(theme.Render(content, width, 0, false, ""))
 	existingOutput := ansi.Strip(existingDoorStyle.Width(width).Render(content))
 
 	if themeOutput != existingOutput {
@@ -105,7 +105,7 @@ func TestClassicRenderMatchesExistingStyle(t *testing.T) {
 	}
 
 	// Selected should match existing selectedDoorStyle
-	themeSelectedOutput := ansi.Strip(theme.Render(content, width, 0, true))
+	themeSelectedOutput := ansi.Strip(theme.Render(content, width, 0, true, ""))
 	existingSelectedOutput := ansi.Strip(existingSelectedStyle.Width(width).Render(content))
 
 	if themeSelectedOutput != existingSelectedOutput {
@@ -130,7 +130,7 @@ func TestClassicRenderVaryingWidths(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			output := theme.Render("Task", tt.width, 0, false)
+			output := theme.Render("Task", tt.width, 0, false, "")
 			if output == "" {
 				t.Error("output should not be empty")
 			}
