@@ -570,3 +570,14 @@ jobs:
             git push origin main
           fi
 
+      - name: Clean up old alpha releases
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release list --limit 200 \
+            | grep 'alpha-' \
+            | tail -n +31 \
+            | awk '{print $1}' \
+            | xargs -I{} gh release delete {} --yes --cleanup-tag
+
