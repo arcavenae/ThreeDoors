@@ -99,6 +99,111 @@ func TestTaskPool_GetAvailableForDoors_FewTasks(t *testing.T) {
 	}
 }
 
+func TestTaskPool_GetAvailableForDoors_DependencyBlocked(t *testing.T) {
+	t.Parallel()
+
+	t.Run("blocked tasks excluded from doors", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		b := NewTask("Task B") // no deps, should appear
+		a := NewTask("Task A")
+		a.DependsOn = []string{b.ID} // A depends on B (todo), should be excluded
+		pool.AddTask(a)
+		pool.AddTask(b)
+
+		available := pool.GetAvailableForDoors()
+		if len(available) != 1 {
+			t.Fatalf("expected 1 available task, got %d", len(available))
+		}
+		if available[0].ID != b.ID {
+			t.Errorf("expected task B, got %s", available[0].ID)
+		}
+	})
+
+	t.Run("task with all deps complete appears in doors", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		b := NewTask("Task B")
+		b.Status = StatusComplete
+		a := NewTask("Task A")
+		a.DependsOn = []string{b.ID}
+		pool.AddTask(a)
+		pool.AddTask(b)
+
+		available := pool.GetAvailableForDoors()
+		if len(available) != 1 {
+			t.Fatalf("expected 1 available task (A with met deps), got %d", len(available))
+		}
+		if available[0].ID != a.ID {
+			t.Errorf("expected task A, got %s", available[0].ID)
+		}
+	})
+
+	t.Run("tasks without deps unaffected", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		for i := 0; i < 4; i++ {
+			pool.AddTask(NewTask("Task"))
+		}
+
+		available := pool.GetAvailableForDoors()
+		if len(available) != 4 {
+			t.Errorf("expected 4 available tasks (no deps), got %d", len(available))
+		}
+	})
+
+	t.Run("fallback with few tasks still excludes dep-blocked", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		b := NewTask("Task B") // only non-blocked task
+		a := NewTask("Task A")
+		a.DependsOn = []string{b.ID} // blocked
+		pool.AddTask(a)
+		pool.AddTask(b)
+
+		// Only 1 available (< 3), fallback triggered — but still excludes dep-blocked
+		available := pool.GetAvailableForDoors()
+		if len(available) != 1 {
+			t.Fatalf("expected 1 available task in fallback, got %d", len(available))
+		}
+		if available[0].ID != b.ID {
+			t.Errorf("expected task B in fallback, got %s", available[0].ID)
+		}
+	})
+
+	t.Run("complete dep then clear makes dependent available", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		b := NewTask("Task B")
+		a := NewTask("Task A")
+		a.DependsOn = []string{b.ID}
+		pool.AddTask(a)
+		pool.AddTask(b)
+
+		// Initially A is blocked
+		available := pool.GetAvailableForDoors()
+		for _, t2 := range available {
+			if t2.ID == a.ID {
+				t.Fatal("task A should not be available before dep completes")
+			}
+		}
+
+		// Complete B and clear dep reference (simulating completion flow)
+		b.Status = StatusComplete
+		ClearCompletedDependency(b.ID, pool)
+		pool.RemoveTask(b.ID)
+
+		// Now A should be available
+		available = pool.GetAvailableForDoors()
+		if len(available) != 1 {
+			t.Fatalf("expected 1 available task after dep clears, got %d", len(available))
+		}
+		if available[0].ID != a.ID {
+			t.Errorf("expected task A, got %s", available[0].ID)
+		}
+	})
+}
+
 func TestTaskPool_FindBySourceRef(t *testing.T) {
 	t.Parallel()
 

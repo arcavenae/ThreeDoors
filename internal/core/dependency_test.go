@@ -416,6 +416,117 @@ func TestDependsOnYAMLRoundTrip(t *testing.T) {
 	})
 }
 
+func TestClearCompletedDependency(t *testing.T) {
+	t.Parallel()
+
+	t.Run("removes completed dep from all tasks", func(t *testing.T) {
+		t.Parallel()
+		c := &Task{ID: "c", Text: "C", Status: StatusComplete}
+		a := &Task{ID: "a", Text: "A", Status: StatusTodo, DependsOn: []string{"c", "d"}}
+		b := &Task{ID: "b", Text: "B", Status: StatusTodo, DependsOn: []string{"c"}}
+		d := &Task{ID: "d", Text: "D", Status: StatusTodo}
+		pool := buildTestPool(a, b, c, d)
+
+		ClearCompletedDependency("c", pool)
+
+		gotA := pool.GetTask("a")
+		if len(gotA.DependsOn) != 1 || gotA.DependsOn[0] != "d" {
+			t.Errorf("task A DependsOn = %v, want [d]", gotA.DependsOn)
+		}
+		gotB := pool.GetTask("b")
+		if gotB.DependsOn != nil {
+			t.Errorf("task B DependsOn = %v, want nil", gotB.DependsOn)
+		}
+	})
+
+	t.Run("no-op when no tasks depend on completed", func(t *testing.T) {
+		t.Parallel()
+		a := &Task{ID: "a", Text: "A", Status: StatusTodo, DependsOn: []string{"b"}}
+		b := &Task{ID: "b", Text: "B", Status: StatusTodo}
+		pool := buildTestPool(a, b)
+
+		ClearCompletedDependency("nonexistent", pool)
+
+		gotA := pool.GetTask("a")
+		if len(gotA.DependsOn) != 1 || gotA.DependsOn[0] != "b" {
+			t.Errorf("task A DependsOn = %v, want [b]", gotA.DependsOn)
+		}
+	})
+
+	t.Run("sets DependsOn to nil when last dep cleared", func(t *testing.T) {
+		t.Parallel()
+		a := &Task{ID: "a", Text: "A", Status: StatusTodo, DependsOn: []string{"b"}}
+		b := &Task{ID: "b", Text: "B", Status: StatusComplete}
+		pool := buildTestPool(a, b)
+
+		ClearCompletedDependency("b", pool)
+
+		gotA := pool.GetTask("a")
+		if gotA.DependsOn != nil {
+			t.Errorf("task A DependsOn = %v, want nil", gotA.DependsOn)
+		}
+	})
+}
+
+func TestCascadingUnblock(t *testing.T) {
+	t.Parallel()
+
+	// Chain: A depends on B, B depends on C
+	c := &Task{ID: "c", Text: "C", Status: StatusTodo}
+	b := &Task{ID: "b", Text: "B", Status: StatusTodo, DependsOn: []string{"c"}}
+	a := &Task{ID: "a", Text: "A", Status: StatusTodo, DependsOn: []string{"b"}}
+	pool := buildTestPool(a, b, c)
+
+	// Both A and B should have unmet deps
+	if !HasUnmetDependencies(a, pool) {
+		t.Fatal("A should have unmet deps initially")
+	}
+	if !HasUnmetDependencies(b, pool) {
+		t.Fatal("B should have unmet deps initially")
+	}
+
+	// Complete C
+	c.Status = StatusComplete
+	unblockedByC := GetNewlyUnblockedTasks("c", pool)
+	if len(unblockedByC) != 1 || unblockedByC[0].ID != "b" {
+		t.Fatalf("completing C should unblock B, got %v", unblockedByC)
+	}
+	ClearCompletedDependency("c", pool)
+
+	// A is still blocked (B not complete yet)
+	if !HasUnmetDependencies(a, pool) {
+		t.Error("A should still have unmet deps (B not complete)")
+	}
+
+	// Complete B
+	b.Status = StatusComplete
+	unblockedByB := GetNewlyUnblockedTasks("b", pool)
+	if len(unblockedByB) != 1 || unblockedByB[0].ID != "a" {
+		t.Fatalf("completing B should unblock A, got %v", unblockedByB)
+	}
+	ClearCompletedDependency("b", pool)
+
+	// A is now unblocked
+	if HasUnmetDependencies(a, pool) {
+		t.Error("A should have no unmet deps after B completes")
+	}
+}
+
+func TestAutoUnblockOnlyFiresForNewlyUnblocked(t *testing.T) {
+	t.Parallel()
+
+	// A depends on B and C. B completes but C is still todo.
+	b := &Task{ID: "b", Text: "B", Status: StatusComplete}
+	c := &Task{ID: "c", Text: "C", Status: StatusTodo}
+	a := &Task{ID: "a", Text: "A", Status: StatusTodo, DependsOn: []string{"b", "c"}}
+	pool := buildTestPool(a, b, c)
+
+	unblocked := GetNewlyUnblockedTasks("b", pool)
+	if len(unblocked) != 0 {
+		t.Errorf("A still has unmet dep C, should not be unblocked, got %d", len(unblocked))
+	}
+}
+
 func TestDependencyLargeFanOut(t *testing.T) {
 	t.Parallel()
 

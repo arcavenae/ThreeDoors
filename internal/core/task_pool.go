@@ -74,22 +74,25 @@ func (tp *TaskPool) GetTasksByStatus(status TaskStatus) []*Task {
 }
 
 // GetAvailableForDoors returns tasks eligible for door selection.
-// Eligible: status is todo, blocked, or in-progress, and not recently shown.
+// Eligible: status is todo, blocked, or in-progress, not recently shown,
+// and not blocked by unmet dependencies.
 func (tp *TaskPool) GetAvailableForDoors() []*Task {
 	var result []*Task
 	for _, t := range tp.tasks {
 		if t.Status == StatusTodo || t.Status == StatusBlocked || t.Status == StatusInProgress {
-			if !tp.IsRecentlyShown(t.ID) {
+			if !tp.IsRecentlyShown(t.ID) && !HasUnmetDependencies(t, tp) {
 				result = append(result, t)
 			}
 		}
 	}
-	// If not enough non-recent tasks, include recently shown ones
+	// If not enough non-recent tasks, include recently shown ones (still excluding dependency-blocked)
 	if len(result) < 3 {
 		result = nil
 		for _, t := range tp.tasks {
 			if t.Status == StatusTodo || t.Status == StatusBlocked || t.Status == StatusInProgress {
-				result = append(result, t)
+				if !HasUnmetDependencies(t, tp) {
+					result = append(result, t)
+				}
 			}
 		}
 	}
