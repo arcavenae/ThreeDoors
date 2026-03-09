@@ -87,6 +87,8 @@
 | D-058 | Manual planning doc reconciliation over automation | 2026-03-08 | Automation rejected — drift is infrequent, docs are heterogeneous, CLAUDE.md reminder sufficient | [Artifact](../../_bmad-output/planning-artifacts/planning-docs-reconciliation-triage-party-mode.md) |
 | D-059 | Universal quit via MainModel-level 'q' interception | 2026-03-08 | Centralizes quit logic; views don't need individual 'q' handlers; `isTextInputActive()` guards text input views | [Story 36.3](../stories/36.3.story.md) |
 | D-060 | Content pre-styling for door selection contrast | 2026-03-08 | Style content before theme Render(); avoids modifying each theme; uses Bold/Faint + DoubleBorder for structural emphasis | [Story 36.1](../../docs/stories/36.1.story.md) |
+| D-061 | Replace softprops/action-gh-release with gh CLI | 2026-03-08 | Eliminates third-party supply chain risk; gh CLI is GitHub-maintained and pre-installed on runners | [Story 0.31](../stories/0.31.story.md) |
+| D-062 | Protected GitHub environment for release secrets | 2026-03-08 | Scopes signing/deployment secrets to release jobs only; requires manual environment setup by repo owner | [Story 0.31](../stories/0.31.story.md) |
 
 ## Rejected
 

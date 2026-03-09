@@ -26,6 +26,12 @@ Door selection lacks tactile feedback and intuitive interaction patterns.
 
 Branch protection & merge queue optimization to reduce cascading CI reruns.
 
+### Story 0.31: CI/Security Hardening — Secrets, Supply Chain & Reproducibility (P1)
+
+**Status:** In Review.
+
+Pin golangci-lint version, replace third-party release action with gh CLI, add protected environment for release secrets.
+
 ### Story 0.28: Issue Tracker & Authority Configuration (P1)
 
 **Status:** Story created. Implementation not started.

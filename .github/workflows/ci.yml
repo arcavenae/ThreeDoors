@@ -74,6 +74,8 @@ jobs:
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.10.1
 
       - name: Run tests with coverage and race detector
         run: go test ./... -v -count=1 -race -coverprofile=coverage.out -covermode=atomic
@@ -257,6 +259,7 @@ jobs:
     name: Sign & Notarize
     needs: build-binaries
     if: github.event_name == 'push' && vars.SIGNING_ENABLED == 'true'
+    environment: release
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
@@ -397,8 +400,11 @@ jobs:
     name: Create Release
     needs: [build-binaries, sign-and-notarize]
     if: github.event_name == 'push' && !cancelled() && needs.build-binaries.result == 'success'
+    environment: release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+
       # Try signed binaries first, fall back to unsigned
       - name: Download signed binaries
         if: needs.sign-and-notarize.result == 'success'
@@ -427,23 +433,40 @@ jobs:
         run: ls -la threedoors-* *.pkg *.dmg 2>/dev/null || true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.build-binaries.outputs.tag }}
-          name: Alpha ${{ needs.build-binaries.outputs.tag }}
-          body: |
-            Automated alpha release from merge to main.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.build-binaries.outputs.tag }}
+          VERSION: ${{ needs.build-binaries.outputs.version }}
+          COMMIT: ${{ github.sha }}
+          SIGNED: ${{ needs.sign-and-notarize.result == 'success' && 'Yes (Apple Developer ID)' || 'No (unsigned)' }}
+        run: |
+          BODY="Automated alpha release from merge to main.
 
-            **Version:** ${{ needs.build-binaries.outputs.version }}
-            **Commit:** ${{ github.sha }}
-            **Signed:** ${{ needs.sign-and-notarize.result == 'success' && 'Yes (Apple Developer ID)' || 'No (unsigned)' }}
+          **Version:** ${VERSION}
+          **Commit:** ${COMMIT}
+          **Signed:** ${SIGNED}
 
-            **Binaries:**
-            - `threedoors-darwin-arm64` — macOS Apple Silicon
-            - `threedoors-darwin-amd64` — macOS Intel
-            - `threedoors-linux-amd64` — Linux x86_64
-            ${{ needs.sign-and-notarize.result == 'success' && '- `threedoors-arm64.pkg` — macOS Installer (Apple Silicon)\n- `threedoors-amd64.pkg` — macOS Installer (Intel)\n- `threedoors-arm64.dmg` — macOS Disk Image (Apple Silicon)\n- `threedoors-amd64.dmg` — macOS Disk Image (Intel)' || '' }}
-          prerelease: true
-          files: |
-            threedoors-*
+          **Binaries:**
+          - \`threedoors-darwin-arm64\` — macOS Apple Silicon
+          - \`threedoors-darwin-amd64\` — macOS Intel
+          - \`threedoors-linux-amd64\` — Linux x86_64"
+
+          if [ "$SIGNED" = "Yes (Apple Developer ID)" ]; then
+            BODY="${BODY}
+          - \`threedoors-arm64.pkg\` — macOS Installer (Apple Silicon)
+          - \`threedoors-amd64.pkg\` — macOS Installer (Intel)
+          - \`threedoors-arm64.dmg\` — macOS Disk Image (Apple Silicon)
+          - \`threedoors-amd64.dmg\` — macOS Disk Image (Intel)"
+          fi
+
+          ASSETS=()
+          for f in threedoors-* *.pkg *.dmg; do
+            [ -f "$f" ] && ASSETS+=("$f")
+          done
+
+          gh release create "$TAG" \
+            --title "Alpha ${TAG}" \
+            --notes "$BODY" \
+            --prerelease \
+            "${ASSETS[@]}"
 
