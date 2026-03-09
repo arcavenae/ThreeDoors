@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34-37 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epic 38 is IN PROGRESS (1/5). Epics 25, 27-33, 39 are NOT STARTED. 275+ merged PRs total. Last audit: 2026-03-08.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34-37 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epic 38 is IN PROGRESS (2/5). Epics 25, 27-33, 39 are NOT STARTED. 275+ merged PRs total. Last audit: 2026-03-08.
 
 ## Requirements Inventory
 
@@ -4115,3 +4115,57 @@ Allow reversing accidental task completion via `complete -> todo` transition. Va
 | 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
 
 **FRs covered:** FR127-FR131
+
+---
+
+## Epic 40: Beautiful Stats Display
+
+**Priority:** P1 (Phase 1-2), P2 (Phase 3)
+**Status:** Not Started
+**Dependencies:** None (all data infrastructure exists from Epics 1 and 4)
+
+### Epic Goal
+
+Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity. Three phases: visual polish (Lipgloss panels, gradient sparklines, fun facts), new visualizations (bar charts, heatmap, animated counters, hidden metrics), and thematic integration (theme-matched colors, milestone celebrations).
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 40.1 | Stats Dashboard Shell with Lipgloss Panels | Not Started | P1 | None |
+| 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Not Started | P1 | 40.1 |
+| 40.3 | Fun Facts Engine | Not Started | P1 | 40.1 |
+| 40.4 | Horizontal Bar Charts for Mood Correlation | Not Started | P1 | 40.1 |
+| 40.5 | GitHub-Style Activity Heatmap | Not Started | P2 | 40.1, 40.8 |
+| 40.6 | Surface Hidden Session Metrics | Not Started | P1 | 40.1 |
+| 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
+| 40.8 | Tab Navigation for Detail View | Not Started | P1 | 40.1 |
+| 40.9 | Theme-Matched Stats Color Palettes | Not Started | P2 | 40.1, 40.2, Epic 17 |
+| 40.10 | Milestone Celebrations | Not Started | P2 | 40.1 |
+
+### Phase Breakdown
+
+**Phase 1 — Visual Polish (Stories 40.1-40.3):** Lipgloss bordered panels, responsive 2-column layout, hero number, gradient sparklines with color-blind safe palette, fun facts engine with celebration-oriented session insights.
+
+**Phase 2 — New Visualizations (Stories 40.4-40.8):** Horizontal bar charts for mood correlation, GitHub-style 8-week activity heatmap, surfaced hidden session metrics, animated counter reveals, Tab navigation for Overview/Detail views.
+
+**Phase 3 — Thematic Integration (Stories 40.9-40.10):** Theme-matched stats color palettes extending ThemeColors, milestone celebrations with observation language (4 thresholds, no gamification).
+
+### Design Decisions
+
+- D-096: Custom Lipgloss rendering, no new dependencies in Phase 1
+- D-097: Single view (Phase 1), Tab navigation (Phase 2)
+- D-098: Phase 1 = 3 stories (dashboard shell, sparklines, fun facts)
+- D-099: Fun facts content rules (observe, celebrate, frame gaps, no decline)
+- D-100: Heatmap: 8 weeks, custom Unicode+color, Detail tab
+- D-101: Animated counters: subtle 300-500ms, numbers only, once per entry
+- D-102: Independent palette (Phase 1), theme coupling (Phase 3)
+- D-103: Trophy room deferred; milestones limited to 4 observations
+- D-104: Epic number 40
+
+### Research
+
+- Research: `_bmad-output/planning-artifacts/beautiful-stats-research.md`
+- UX Review: `_bmad-output/planning-artifacts/beautiful-stats-ux-review.md`
+- Party Mode: `_bmad-output/planning-artifacts/beautiful-stats-party-mode.md`
+- Architecture: `_bmad-output/planning-artifacts/architecture-beautiful-stats.md`

@@ -167,6 +167,23 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.5 | View-Specific Keybinding Completeness and Polish | Not Started | P1 | 39.4 |
 | 39.6 | Spacebar as Enter Alias in Doors View | Done (PR #303) | P1 | None |
 
+### Epic 40: Beautiful Stats Display (P1) — 0/10 stories done
+
+Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, and fun facts.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 40.1 | Stats Dashboard Shell with Lipgloss Panels | Not Started | P1 | None |
+| 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Not Started | P1 | 40.1 |
+| 40.3 | Fun Facts Engine | Not Started | P1 | 40.1 |
+| 40.4 | Horizontal Bar Charts for Mood Correlation | Not Started | P1 | 40.1 |
+| 40.5 | GitHub-Style Activity Heatmap | Not Started | P2 | 40.1, 40.8 |
+| 40.6 | Surface Hidden Session Metrics | Not Started | P1 | 40.1 |
+| 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
+| 40.8 | Tab Navigation for Detail View | Not Started | P1 | 40.1 |
+| 40.9 | Theme-Matched Stats Color Palettes | Not Started | P2 | 40.1, 40.2, Epic 17 |
+| 40.10 | Milestone Celebrations | Not Started | P2 | 40.1 |
+
 ## Completed Epics
 
 | Epic | Title | Stories |

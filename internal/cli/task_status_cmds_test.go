@@ -330,17 +330,29 @@ func TestChangeOneTaskStatus(t *testing.T) {
 			wantExit: ExitSuccess,
 		},
 		{
-			name: "invalid transition complete to todo",
+			name: "valid transition complete to todo (undo)",
+			setup: func() *core.Task {
+				task := core.NewTask("Done task")
+				task.ID = "status-undo-id"
+				_ = task.UpdateStatus(core.StatusComplete)
+				return task
+			},
+			target:   core.StatusTodo,
+			wantOK:   true,
+			wantExit: ExitSuccess,
+		},
+		{
+			name: "invalid transition complete to in-progress",
 			setup: func() *core.Task {
 				task := core.NewTask("Done task")
 				task.ID = "status-invalid-id"
 				_ = task.UpdateStatus(core.StatusComplete)
 				return task
 			},
-			target:   core.StatusTodo,
+			target:   core.StatusInProgress,
 			wantOK:   false,
 			wantExit: ExitValidation,
-			wantErr:  `invalid transition from "complete" to "todo"`,
+			wantErr:  `invalid transition from "complete" to "in-progress"`,
 		},
 		{
 			name: "same status is no-op",

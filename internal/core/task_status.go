@@ -21,7 +21,7 @@ var validTransitions = map[TaskStatus][]TaskStatus{
 	StatusBlocked:    {StatusTodo, StatusInProgress, StatusComplete},
 	StatusInProgress: {StatusBlocked, StatusInReview, StatusComplete},
 	StatusInReview:   {StatusInProgress, StatusComplete},
-	StatusComplete:   {},
+	StatusComplete:   {StatusTodo},
 	StatusDeferred:   {StatusTodo},
 	StatusArchived:   {},
 }

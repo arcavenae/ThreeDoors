@@ -125,6 +125,9 @@ func (t *Task) UpdateStatus(newStatus TaskStatus) error {
 	if newStatus == StatusComplete || newStatus == StatusArchived {
 		t.CompletedAt = &now
 	}
+	if t.CompletedAt != nil && newStatus != StatusComplete && newStatus != StatusArchived {
+		t.CompletedAt = nil
+	}
 	if newStatus != StatusBlocked {
 		t.Blocker = ""
 	}

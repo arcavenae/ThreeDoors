@@ -476,7 +476,26 @@
 - **Stories:** 39.1-39.5 (5 stories)
 - **Research:** See `_bmad-output/planning-artifacts/keybinding-display-party-mode.md`, `_bmad-output/planning-artifacts/keybinding-display-ux-review.md`, `_bmad-output/planning-artifacts/keybinding-display-architecture.md`
 
-**Epic 40+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 40: Beautiful Stats Display** (P1)
+- **Goal:** Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, fun facts, heatmaps, and milestone celebrations
+- **Prerequisites:** None (all data infrastructure exists from Epics 1 and 4)
+- **Status:** Not Started
+- **Deliverables:**
+  - Phase 1: Stats dashboard shell with Lipgloss bordered panels and responsive layout
+  - Phase 1: Gradient sparklines with color-blind safe palette (blue-teal-yellow)
+  - Phase 1: Fun facts engine with celebration-oriented session insights
+  - Phase 2: Horizontal bar charts for mood correlation
+  - Phase 2: GitHub-style activity heatmap (8-week range)
+  - Phase 2: Surface hidden session metrics (duration, fastest start, peak hour, etc.)
+  - Phase 2: Animated counter reveals on view entry
+  - Phase 2: Tab navigation for Overview/Detail views
+  - Phase 3: Theme-matched stats color palettes
+  - Phase 3: Milestone celebrations (4 thresholds, observation language only)
+- **Stories:** 40.1-40.10 (10 stories)
+- **Estimated Effort:** 17-23 hours across 3 phases
+- **Research:** See `_bmad-output/planning-artifacts/beautiful-stats-research.md`
+
+**Epic 41+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -526,6 +545,8 @@
 | Epic 36: Door Selection Feedback | 3 | Complete |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
 | Epic 38: Dual Homebrew Distribution | 6 | In Progress (2/6) |
-| Epic 39: Keybinding Display System | 6 | In Progress (1/6) |
-| **Total** | **204** | **154 complete, 1 in progress, 49 not started** |
+| Epic 39: Keybinding Display System | 5 | Not Started |
+| Epic 40: Beautiful Stats Display | 10 | Not Started |
+| Epic 41: Keybinding Display System | 6 | In Progress (1/6) |
+| **Total** | **215** | **154 complete, 2 in progress, 59 not started** |
 ---
