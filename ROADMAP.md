@@ -229,6 +229,69 @@ Transform rectangular card/panel doors into visually convincing doors using side
 
 **Dependency graph:** Stories 42.1 & 42.2 can parallelize. Stories 42.3 & 42.4 can parallelize after 42.1 completes.
 
+### Epic 43: Connection Manager Infrastructure (P1) — 0/6 stories done
+
+Connection lifecycle layer for data source integrations. State machine, credential storage (system keychain), config schema v3 (named connections), CRUD operations, sync event logging, and migration of existing adapters to the new pattern.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 43.1 | Connection State Machine and ConnectionManager Type | Not Started | P1 | None |
+| 43.2 | Keyring Integration with Environment Variable Fallback | Not Started | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
+| 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
+| 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
+| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
+
+### Epic 44: Sources TUI (P1) — 0/7 stories done
+
+TUI interfaces for data source management: setup wizard (`:connect`), sources dashboard (`:sources`), source detail view, sync log view, status bar health alerts, disconnection flow, and re-authentication flow. Uses `charmbracelet/huh` for wizard forms.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 44.1 | Setup Wizard with huh Forms | Not Started | P1 | Epic 43 |
+| 44.2 | Sources Dashboard View | Not Started | P1 | Epic 43 |
+| 44.3 | Source Detail View | Not Started | P1 | 44.2 |
+| 44.4 | Sync Log View | Not Started | P1 | 43.5 |
+| 44.5 | Status Bar Integration for Connection Health Alerts | Not Started | P1 | Epic 43 |
+| 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
+| 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
+
+### Epic 45: Sources CLI (P1) — 0/5 stories done
+
+Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
+| 45.2 | `threedoors sources` List/Status/Test Commands | Not Started | P1 | Epic 43 |
+| 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
+| 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
+| 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
+
+### Epic 46: OAuth Device Code Flow (P2) — 0/4 stories done
+
+Generic OAuth device code flow client for browser-based authentication. Provider-specific integrations for GitHub and Linear. Silent token refresh with explicit re-auth on expiry.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 46.1 | Generic Device Code Flow Client | Not Started | P2 | None |
+| 46.2 | GitHub OAuth Integration | Not Started | P2 | 46.1 |
+| 46.3 | Linear OAuth Integration | Not Started | P2 | 46.1 |
+| 46.4 | Token Refresh Lifecycle | Not Started | P2 | 46.1 |
+
+### Epic 47: Sync Lifecycle & Advanced Features (P2) — 0/4 stories done
+
+Conflict resolution (last-writer-wins with field-level strategy), orphaned task handling, auto-detection of installed tools in setup wizard, and proactive connection health notifications.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 47.1 | Conflict Resolution Strategy with Logging | Not Started | P2 | Epic 43 |
+| 47.2 | Orphaned Task Handling | Not Started | P2 | 47.1 |
+| 47.3 | Auto-Detection of Existing Tools in Setup Wizard | Not Started | P2 | 44.1 |
+| 47.4 | Proactive Connection Health Notifications | Not Started | P2 | 44.5 |
+
+**Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
+
 ### Epic 36: Door Selection Interaction Feedback (P1) — 4/4 stories done — COMPLETE
 
 Make door selection feel responsive and satisfying. Reopened for Story 36.4 (space/enter toggle).

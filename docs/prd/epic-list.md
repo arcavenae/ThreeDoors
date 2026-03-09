@@ -526,7 +526,75 @@
 - **Research:** See `_bmad-output/planning-artifacts/doors-more-doorlike-research.md` (5-round party mode, 7 agents)
 - **Decisions:** D-141 (adopt 5 proposals), X-080 through X-083 (4 rejected alternatives)
 
-**Epic 43+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 43: Connection Manager Infrastructure** (P1)
+- **Goal:** Build the connection lifecycle layer for data source integrations: state machine, credential storage (system keychain via 99designs/keyring), config schema v3 (named connections with ULID IDs), CRUD operations, sync event logging, and migration of existing 8 adapters to the new pattern
+- **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 11 (Sync Observability — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - ConnectionManager type with 7-state machine (Disconnected, Connecting, Connected, Syncing, Error, AuthExpired, Paused)
+  - CredentialStore with keychain + env var + encrypted file fallback chain
+  - Config schema v3 with `connections:` array, auto-migration from v2
+  - Connection CRUD: add, remove, pause, resume, test, force-sync
+  - JSONL sync event logging per connection with rolling retention
+  - All existing adapters wrapped in ConnectionManager pattern
+- **Stories:** 43.1-43.6 (6 stories)
+- **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+- **Decisions:** D-147 (keyring), D-149 (compiled-in providers), D-152 (named connections with ULIDs)
+
+**Epic 44: Sources TUI** (P1)
+- **Goal:** TUI interfaces for data source management: setup wizard (`:connect` command using charmbracelet/huh), sources dashboard (`:sources`), source detail view with health checks, sync log view, status bar health alerts, disconnection flow with task preservation, and re-authentication flow
+- **Prerequisites:** Epic 43 (Connection Manager Infrastructure)
+- **Status:** Not Started
+- **Deliverables:**
+  - 4-step setup wizard with provider-adaptive forms (API token, OAuth device code, local path)
+  - Sources dashboard with status indicators (connected/paused/error/auth expired)
+  - Source detail view with health checks and sync statistics
+  - Sync log view with scrollable event history
+  - Status bar alerts for connections needing attention
+  - Disconnect and re-auth flows
+- **Stories:** 44.1-44.7 (7 stories)
+- **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+- **Decisions:** D-150 (charmbracelet/huh for wizard)
+
+**Epic 45: Sources CLI** (P1)
+- **Goal:** Non-interactive CLI commands for data source management: `threedoors connect <provider>` with flags, `threedoors sources` (list/status/test/manage/log), and consistent `--json` output for scripting and CI/automation
+- **Prerequisites:** Epic 43 (Connection Manager Infrastructure), Epic 23 (CLI Interface — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - `threedoors connect <provider>` with per-provider flag sets
+  - `threedoors sources` list, status, test, pause/resume/sync/disconnect commands
+  - `threedoors sources log` with filtering
+  - JSON output for all commands
+- **Stories:** 45.1-45.5 (5 stories)
+- **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+
+**Epic 46: OAuth Device Code Flow** (P2)
+- **Goal:** Generic OAuth device code flow client (RFC 8628) for browser-based authentication, with provider-specific integrations for GitHub and Linear, and silent token refresh lifecycle
+- **Prerequisites:** None (consumed by Epics 44/45)
+- **Status:** Not Started
+- **Deliverables:**
+  - Reusable device code flow client (request code, display URL, poll for token)
+  - GitHub OAuth integration (device code + PAT fallback)
+  - Linear OAuth/API key integration
+  - Silent token refresh with explicit re-auth on expiry
+- **Stories:** 46.1-46.4 (4 stories)
+- **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+- **Decisions:** D-148 (device code flow over callback server)
+
+**Epic 47: Sync Lifecycle & Advanced Features** (P2)
+- **Goal:** Advanced sync features: conflict resolution (last-writer-wins with field-level strategy), orphaned task handling (mark not delete), auto-detection of installed tools in setup wizard, and proactive connection health notifications
+- **Prerequisites:** Epic 43, Epic 44
+- **Status:** Not Started
+- **Deliverables:**
+  - ConflictResolver with remote-wins for metadata, local-wins for ThreeDoors fields
+  - Orphaned task marking and management UI
+  - Installed tool detection (gh CLI, Todoist config, Obsidian vaults)
+  - Predictive warnings (token expiry, rate limits, error streaks)
+- **Stories:** 47.1-47.4 (4 stories)
+- **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+- **Decisions:** D-151 (conflict resolution strategy)
+
+**Epic 48+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -580,5 +648,10 @@
 | Epic 40: Beautiful Stats Display | 10 | Complete |
 | Epic 41: Charm Ecosystem Adoption | 6 | Not Started |
 | Epic 42: Door-Like Doors | 4 | Not Started |
-| **Total** | **220** | **146 complete, 4 epics in progress, 74 not started** |
+| Epic 43: Connection Manager Infrastructure | 6 | Not Started |
+| Epic 44: Sources TUI | 7 | Not Started |
+| Epic 45: Sources CLI | 5 | Not Started |
+| Epic 46: OAuth Device Code Flow | 4 | Not Started |
+| Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
+| **Total** | **246** | **146 complete, 4 epics in progress, 100 not started** |
 ---

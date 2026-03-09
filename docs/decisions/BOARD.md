@@ -166,6 +166,12 @@
 | D-138 | Keep bar for non-door views; door hints replace bar in doors view | 2026-03-09 | Non-door views lack spatial anchors for inline hints; bar remains useful there; doors have natural hint placement (doorknob metaphor) | [Course Correction](../../_bmad-output/planning-artifacts/door-key-indicators-course-correction.md) |
 | D-139 | Rename config to `show_key_hints` with migration from `show_keybinding_bar` | 2026-03-09 | New name better describes unified behavior; auto-migration reads old field as fallback; backward compatible | [Course Correction](../../_bmad-output/planning-artifacts/door-key-indicators-course-correction.md) |
 | D-140 | Remove auto-fade; `h` is purely manual toggle (overrides D-126) | 2026-03-09 | Auto-fade was designed for onboarding scaffolding; `h` toggle is a power-user feature; users control their own experience | [Course Correction](../../_bmad-output/planning-artifacts/door-key-indicators-course-correction.md) |
+| D-147 | Use `99designs/keyring` for credential storage | 2026-03-09 | More backends than `zalando/go-keyring`, encrypted file fallback for headless Linux, built for aws-vault | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| D-148 | OAuth device code flow (not callback server) for OAuth providers | 2026-03-09 | No port conflicts, no firewall issues, works in SSH/containers, proven pattern (gh, gcloud, railway) | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| D-149 | Compiled-in providers (not pluggable) for data sources | 2026-03-09 | Go `plugin` package is Linux-only and fragile; Registry+Factory pattern is clean, simple, testable | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| D-150 | Use `charmbracelet/huh` for setup wizard forms | 2026-03-09 | Native Bubbletea integration, Group-as-page wizard model, dynamic forms via WithHideFunc | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| D-151 | Last-writer-wins with remote-wins for metadata, local-wins for ThreeDoors fields | 2026-03-09 | Simple and predictable; source system authoritative for metadata; ThreeDoors owns its enrichments | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| D-152 | Named connections with ULID IDs for multi-instance provider support | 2026-03-09 | Supports multiple instances of same provider type; user-friendly labels; globally unique IDs | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 
 ## Rejected
 
@@ -287,6 +293,13 @@
 | X-081 | Wall Context with shade characters (Proposal E, Epic 42) | 2026-03-09 | 4 chars per side too expensive; threshold line achieves grounding at zero width cost; conflicts with some themes | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
 | X-082 | Door Swing perspective animation (Proposal H, Epic 42) | 2026-03-09 | Highest complexity (~200+ LOC), text reflow risk, adds animation latency = friction; SOUL.md prioritizes reducing friction | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
 | X-083 | Light Spill per-cell background colors (Proposal I, Epic 42) | 2026-03-09 | Per-cell background colors require theme-specific tuning; Crack of Light achieves similar effect more simply | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
+| X-087 | OAuth callback server for data source auth | 2026-03-09 | Port conflicts, firewall issues, doesn't work in SSH/containers; device code flow is superior | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-088 | `zalando/go-keyring` for credential storage | 2026-03-09 | Fewer backends, no encrypted file fallback for headless Linux | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-089 | Go plugin architecture for data source providers | 2026-03-09 | Linux-only, fragile, poor debugging, no real ecosystem | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-090 | Store credentials in config.yaml | 2026-03-09 | Security risk; credentials should never be in plain text config files | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-091 | Apple Notes as task integration target | 2026-03-09 | No task model, fragile AppleScript, macOS-only, extremely poor ROI | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-092 | In-app settings editor (like lazygit) for source config | 2026-03-09 | Setup wizard is better UX for initial config; config file editing fine for power users | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-093 | Webhook receiver for change detection | 2026-03-09 | Adds HTTP server complexity; polling is simpler, works universally; revisit as future optimization | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 
 ## Epic Number Registry
 
@@ -296,7 +309,12 @@
 |------|---------|-----------|--------|
 | 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Proposed (pending PM approval) |
 | 42 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Stories created |
-| 43 | *(next available)* | — | — |
+| 43 | Connection Manager Infrastructure | 2026-03-09 | Allocated (6 stories) |
+| 44 | Sources TUI | 2026-03-09 | Allocated (7 stories) |
+| 45 | Sources CLI | 2026-03-09 | Allocated (5 stories) |
+| 46 | OAuth Device Code Flow | 2026-03-09 | Allocated (4 stories) |
+| 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Allocated (4 stories) |
+| 48 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number

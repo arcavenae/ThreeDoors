@@ -4416,6 +4416,331 @@ Highest-scoring proposal (15/15). On selection, replace right border chars with 
 
 1. Door-Opening Transition Animation (perspective shrink on Enter → detail view; ~200+ LOC, separate spike)
 2. Light Spill Enhancement (warm gradient layered on Crack of Light; future polish story)
+
+---
+
+## Epic 43: Connection Manager Infrastructure
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** Epic 7 (Adapter SDK — complete), Epic 11 (Sync Observability — complete)
+
+### Epic Goal
+
+Build the connection lifecycle layer for data source integrations. ThreeDoors has 8 working adapters but no infrastructure for users to set up, monitor, manage, and troubleshoot their data source connections. The ConnectionManager provides state machine lifecycle, secure credential storage, config schema for named multi-instance connections, CRUD operations, sync event logging, and migration of all existing adapters to the new pattern.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 43.1 | Connection State Machine and ConnectionManager Type | Not Started | P1 | None |
+| 43.2 | Keyring Integration with Environment Variable Fallback | Not Started | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
+| 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
+| 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
+| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
+
+**Dependency graph:**
+```
+43.1 (State Machine) ──┐
+43.2 (Keyring)      ───┼──→ 43.4 (CRUD) ──┐
+43.3 (Config v3)    ───┘                    ├──→ 43.6 (Adapter Migration)
+43.5 (Sync Log)     ───────────────────────┘
+```
+
+Stories 43.1, 43.2, 43.3, and 43.5 can parallelize. Story 43.4 depends on 43.1-43.3. Story 43.6 depends on all.
+
+### Story Details
+
+#### Story 43.1: Connection State Machine and ConnectionManager Type
+
+ConnectionState enum with 7 states (Disconnected, Connecting, Connected, Syncing, Error, AuthExpired, Paused) and validated transition table. Connection struct with ULID ID, provider name, label, state, sync metadata. ConnectionManager with thread-safe CRUD.
+
+**AC:** State transitions validated, invalid transitions return error, concurrent access safe with RWMutex, List() returns all connections with current state.
+
+#### Story 43.2: Keyring Integration with Environment Variable Fallback
+
+CredentialStore interface with priority chain: env vars → system keychain → encrypted file fallback. Uses `99designs/keyring`. Credentials never in config.yaml. Env var patterns: `THREEDOORS_<PROVIDER>_TOKEN`, `THREEDOORS_CONN_<LABEL_SLUG>_TOKEN`. Respects `GH_TOKEN`/`GITHUB_TOKEN`.
+
+**AC:** Credentials stored in keychain, env vars override keychain, connection-specific env vars override provider-level, headless fallback works, credentials masked in display.
+
+#### Story 43.3: Config Schema v3 Migration with Connections Support
+
+Config schema v3 adds `connections:` array. Auto-migration from v2 single-provider format. Credentials excluded from config.yaml. Atomic save pattern.
+
+**AC:** v2 configs auto-migrate to v3, multiple connections with same provider supported, no credentials in saved YAML, backward compatible.
+
+#### Story 43.4: Connection CRUD Operations
+
+Complete lifecycle operations: Add (with credential storage + config persistence), Remove (with keepTasks option + credential cleanup), Pause/Resume, TestConnection (health check), ForceSync.
+
+**AC:** All CRUD operations validated, credentials cleaned up on remove, health check returns API/token/rate-limit status.
+
+#### Story 43.5: Sync Event Logging Infrastructure
+
+JSONL sync log per connection. SyncEvent types: sync_complete, sync_error, conflict. Rolling retention of last 1000 events. Queryable by connection, time, severity.
+
+**AC:** Events logged per sync cycle, errors and conflicts captured, reader supports filtering and limit, rolling retention works.
+
+#### Story 43.6: Migrate Existing Adapters to ConnectionManager Pattern
+
+Bridge all 8 existing adapters to ConnectionManager. Wrap sync cycles to emit SyncEvents. Integrate pause/resume with sync scheduler. Preserve backward compatibility for legacy single-provider configs.
+
+**AC:** All adapters work through ConnectionManager, legacy configs work, health checks mapped, pause/resume stops/starts sync.
+
+### Design Decisions
+
+- D-147: Use `99designs/keyring` for credential storage (over `zalando/go-keyring`)
+- D-149: Compiled-in providers (not pluggable) — Registry+Factory pattern
+- D-152: Named connections with ULID IDs for multi-instance support
+
+### Research
+
+- Full lifecycle research: `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+
+---
+
+## Epic 44: Sources TUI
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** Epic 43 (Connection Manager Infrastructure)
+
+### Epic Goal
+
+TUI interfaces for data source management: a 4-step setup wizard (`:connect`), sources dashboard (`:sources`), source detail view with health checks, sync log view, status bar health alerts, disconnection flow with task preservation, and re-authentication flow.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 44.1 | Setup Wizard with huh Forms | Not Started | P1 | Epic 43 |
+| 44.2 | Sources Dashboard View | Not Started | P1 | Epic 43 |
+| 44.3 | Source Detail View | Not Started | P1 | 44.2 |
+| 44.4 | Sync Log View | Not Started | P1 | 43.5 |
+| 44.5 | Status Bar Integration for Connection Health Alerts | Not Started | P1 | Epic 43 |
+| 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
+| 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
+
+### Story Details
+
+#### Story 44.1: Setup Wizard with huh Forms
+
+4-step wizard using `charmbracelet/huh`: (1) Provider selection, (2) Provider-specific config (API token, OAuth, or local path), (3) Sync configuration (mode, filters, poll interval), (4) Test connection and confirm. `:connect` command triggers wizard.
+
+**AC:** All 4 steps render, provider-adaptive forms work, Esc cancels without changes, connection test runs before confirmation.
+
+#### Story 44.2: Sources Dashboard View
+
+`:sources` command opens list view with status indicators (●/○/⚠/✗), labels, sync times, task counts. Keybindings: a (add), d (disconnect), p (pause/resume), r (re-sync), t (test), Enter (detail), Esc (back).
+
+**AC:** All connections listed with status indicators, keybindings dispatch correct actions, empty state handled.
+
+#### Story 44.3: Source Detail View
+
+Full metadata display: status, sync time, task counts, provider settings, health checks (✓/✗ for API, token, rate limit, cache). Actions: edit, re-auth, pause, disconnect, view log.
+
+**AC:** All metadata displayed, health checks shown, keybindings work.
+
+#### Story 44.4: Sync Log View
+
+Scrollable sync event history per connection using bubbles/viewport. Events show timestamp, status indicator (✓/⚠/✗), description.
+
+**AC:** Events displayed in reverse chronological order, viewport scrolls, empty state shows message.
+
+#### Story 44.5: Status Bar Integration for Connection Health Alerts
+
+Non-intrusive alert in doors view when connections need attention (auth expired, persistent errors). Only most critical alert shown with `:sources` hint.
+
+**AC:** No alert when healthy, yellow warning for auth expired, error count for multiple issues.
+
+#### Story 44.6: Disconnection Flow with Task Preservation Options
+
+Confirmation dialog: "Keep tasks locally" vs "Remove synced tasks". Uses huh forms. Cleans up credentials.
+
+**AC:** Confirmation required, keep/remove options work, Esc cancels, credentials deleted.
+
+#### Story 44.7: Re-Authentication Flow
+
+Re-auth for expired tokens without disconnect/reconnect. API token: masked input for new token. OAuth: triggers device code flow (Epic 46). On success, connection transitions back to Connected.
+
+**AC:** API token re-entry works, connection test verifies new token, failure keeps AuthExpired state.
+
+### Design Decisions
+
+- D-150: Use `charmbracelet/huh` for setup wizard forms
+
+### Research
+
+- Full UX research: `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
+
+---
+
+## Epic 45: Sources CLI
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** Epic 43 (Connection Manager Infrastructure), Epic 23 (CLI Interface — complete)
+
+### Epic Goal
+
+Non-interactive CLI commands for data source management. Supports both human power users (table output) and automation (JSON output via `--json` flag). Consistent with existing CLI patterns from Epic 23.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
+| 45.2 | `threedoors sources` List/Status/Test Commands | Not Started | P1 | Epic 43 |
+| 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
+| 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
+| 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
+
+### Story Details
+
+#### Story 45.1: `threedoors connect` Command (Non-Interactive)
+
+`threedoors connect <provider>` with flags: `--label`, `--token`, provider-specific flags (`--repos`, `--server`, `--lists`, `--path`). No flags → launches interactive wizard.
+
+**AC:** Each provider connectable via flags, connection test runs, error for missing flags, no-flag mode launches wizard.
+
+#### Story 45.2: `threedoors sources` List/Status/Test Commands
+
+`sources` (table list), `sources status <name>` (detailed), `sources test <name>` (health check with ✓/✗). All support `--json`.
+
+**AC:** Table output formatted, detailed status includes health checks, test exit code reflects health, JSON output valid.
+
+#### Story 45.3: `threedoors sources` Management Commands
+
+`sources pause/resume/sync/reauth/edit/disconnect <name>`. Disconnect has `--keep-tasks` flag (interactive prompt without it).
+
+**AC:** Each command validates state, disconnect prompts interactively without flag.
+
+#### Story 45.4: `threedoors sources log` Command
+
+`sources log <name>` with `--last N` and `--errors` flags. Shows recent sync events.
+
+**AC:** Events displayed with timestamps, `--last` limits count, `--errors` filters, JSON output works.
+
+#### Story 45.5: JSON Output Support for All Sources Commands
+
+Consistent JSON serialization across all sources subcommands. Error envelope: `{"error":"message"}`.
+
+**AC:** All commands produce valid JSON with `--json`, warnings to stderr, error envelope consistent.
+
+### Research
+
+- CLI design: `_bmad-output/planning-artifacts/data-source-setup-ux-research.md` (Section 4)
+
+---
+
+## Epic 46: OAuth Device Code Flow
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** None (consumed by Epics 44/45 for OAuth-supporting providers)
+
+### Epic Goal
+
+Generic, reusable OAuth device code flow client (RFC 8628) for browser-based authentication. Provider-specific integrations for GitHub and Linear. Silent token refresh with explicit re-auth on expiry.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 46.1 | Generic Device Code Flow Client | Not Started | P2 | None |
+| 46.2 | GitHub OAuth Integration | Not Started | P2 | 46.1 |
+| 46.3 | Linear OAuth Integration | Not Started | P2 | 46.1 |
+| 46.4 | Token Refresh Lifecycle | Not Started | P2 | 46.1 |
+
+### Story Details
+
+#### Story 46.1: Generic Device Code Flow Client
+
+Provider-agnostic device code flow: request device code, display user code + URL, open browser, poll for token with backoff, exchange for access/refresh tokens. Uses `context.Context` for cancellation.
+
+**AC:** Successful flow returns tokens, timeout handled, slow_down backoff works, cancellation stops polling.
+
+#### Story 46.2: GitHub OAuth Integration
+
+Wire device code client to GitHub endpoints. Scope: `repo`. Fallback: `GH_TOKEN`/`GITHUB_TOKEN` env vars, PAT entry.
+
+**AC:** Device code flow works with GitHub, env var fallback offered, PAT fallback for Enterprise.
+
+#### Story 46.3: Linear OAuth Integration
+
+API key as primary auth (simpler). OAuth 2.0 authorization code as secondary if available. Validates via Linear viewer endpoint.
+
+**AC:** API key auth works, connection test verifies via viewer endpoint.
+
+#### Story 46.4: Token Refresh Lifecycle
+
+Pre-emptive refresh when token within 5 min of expiry. Refresh failure → AuthExpired state. 401 detection for API key connections.
+
+**AC:** Silent refresh before expiry, AuthExpired on refresh failure, 401 triggers AuthExpired, events logged.
+
+### Design Decisions
+
+- D-148: OAuth device code flow (not callback server) — no port conflicts, works in SSH/containers
+
+### Research
+
+- OAuth patterns: `_bmad-output/planning-artifacts/data-source-setup-ux-research.md` (Section 5.5)
+
+---
+
+## Epic 47: Sync Lifecycle & Advanced Features
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** Epic 43 (Connection Manager Infrastructure), Epic 44 (Sources TUI)
+
+### Epic Goal
+
+Advanced sync features: field-level conflict resolution with logging, orphaned task handling (mark not auto-delete), auto-detection of installed tools in setup wizard, and proactive connection health notifications.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 47.1 | Conflict Resolution Strategy with Logging | Not Started | P2 | Epic 43 |
+| 47.2 | Orphaned Task Handling | Not Started | P2 | 47.1 |
+| 47.3 | Auto-Detection of Existing Tools in Setup Wizard | Not Started | P2 | 44.1 |
+| 47.4 | Proactive Connection Health Notifications | Not Started | P2 | 44.5 |
+
+### Story Details
+
+#### Story 47.1: Conflict Resolution Strategy with Logging
+
+Last-writer-wins with field-level strategy: remote-wins for metadata (status, priority), local-wins for ThreeDoors fields (effort category, door assignment). All conflicts logged. Never auto-delete.
+
+**AC:** Metadata conflicts resolved with remote-wins, ThreeDoors fields local-wins, conflicts logged with both values, remote deletions mark tasks as orphaned.
+
+#### Story 47.2: Orphaned Task Handling
+
+Tasks deleted remotely are flagged as orphaned (not auto-deleted). Excluded from door selection. `:orphaned` command lets users keep (convert to local) or delete.
+
+**AC:** Orphaned tasks flagged, excluded from doors, keep/delete actions work.
+
+#### Story 47.3: Auto-Detection of Existing Tools in Setup Wizard
+
+Detect `gh` CLI, `TODOIST_API_TOKEN`, `.obsidian/` directories, Jira configs. Detected tools appear at top of provider list with badges and pre-filled settings.
+
+**AC:** Detected tools shown at top with badges, pre-fill works, no detections shows default order.
+
+#### Story 47.4: Proactive Connection Health Notifications
+
+Predictive warnings: token expiring within 7 days, rate limit >80%, 3+ consecutive sync errors. Non-intrusive status bar alerts.
+
+**AC:** Token expiry warning, rate limit warning, error streak warning, no warnings when healthy.
+
+### Design Decisions
+
+- D-151: Last-writer-wins conflict resolution with field-level strategy
+
+### Research
+
+- Sync patterns: `_bmad-output/planning-artifacts/data-source-setup-ux-research.md` (Section 5.3)
 3. Nested Frame for Wide Terminals (frame-within-frame when width > 30; width-adaptive)
 4. Wall Context for Wide Terminals (shade characters flanking doors)
 
