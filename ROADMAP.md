@@ -70,7 +70,7 @@ Guided daily planning ritual for task review and focus selection. Transforms Thr
 | 27.4 | Energy Level Matching & Time-of-Day Inference | Done (PR #354) | P1 | 27.1 |
 | 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
 
-### Epic 28: Snooze/Defer as First-Class Action (P1) — 2/4 stories done
+### Epic 28: Snooze/Defer as First-Class Action (P1) — 3/4 stories done
 
 Surfaces existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return.
 
@@ -79,7 +79,7 @@ Surfaces existing `StatusDeferred` as a first-class user action with date-based 
 | 28.1 | DeferUntil Field, Status Transitions, and Auto-Return Logic | Done (PR #310) | P1 | None |
 | 28.2 | Snooze TUI View and Z-Key Binding | Done (PR #338) | P1 | 28.1 |
 | 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
-| 28.4 | Session Metrics Logging for Snooze Events | In Review | P1 | 28.1 |
+| 28.4 | Session Metrics Logging for Snooze Events | Done (PR #355) | P1 | 28.1 |
 
 ### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 4/4 stories done — COMPLETE
 
@@ -168,7 +168,7 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.11 | Non-Door View Inline Hints | Not Started | P1 | 39.9 |
 | 39.12 | Auto-Fade After N Sessions | Not Started | P2 | 39.9, 39.10 |
 
-### Epic 40: Beautiful Stats Display (P1) — 2/10 stories done
+### Epic 40: Beautiful Stats Display (P1) — 3/10 stories done
 
 Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, and fun facts.
 
@@ -177,7 +177,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 40.1 | Stats Dashboard Shell with Lipgloss Panels | Done (PR #343) | P1 | None |
 | 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Done (PR #366) | P1 | 40.1 |
 | 40.3 | Fun Facts Engine | Not Started | P1 | 40.1 |
-| 40.4 | Horizontal Bar Charts for Mood Correlation | Not Started | P1 | 40.1 |
+| 40.4 | Horizontal Bar Charts for Mood Correlation | Done (PR #362) | P1 | 40.1 |
 | 40.5 | GitHub-Style Activity Heatmap | Not Started | P2 | 40.1, 40.8 |
 | 40.6 | Surface Hidden Session Metrics | Not Started | P1 | 40.1 |
 | 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
