@@ -672,6 +672,95 @@ func TestBlendHexColors(t *testing.T) {
 	}
 }
 
+// --- Tab Navigation Tests (Story 40.8) ---
+
+func TestInsightsView_TabSwitchesToDetail(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+
+	// Initially on Overview tab (activeTab == 0)
+	if iv.activeTab != 0 {
+		t.Fatalf("initial activeTab should be 0, got %d", iv.activeTab)
+	}
+
+	// Press Tab → switches to Detail tab
+	iv.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if iv.activeTab != 1 {
+		t.Errorf("after Tab, activeTab should be 1, got %d", iv.activeTab)
+	}
+}
+
+func TestInsightsView_ShiftTabSwitchesBack(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+
+	// Switch to Detail tab first
+	iv.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if iv.activeTab != 1 {
+		t.Fatalf("after Tab, activeTab should be 1, got %d", iv.activeTab)
+	}
+
+	// Press Shift-Tab → switches back to Overview
+	iv.Update(tea.KeyMsg{Type: tea.KeyShiftTab})
+	if iv.activeTab != 0 {
+		t.Errorf("after Shift-Tab, activeTab should be 0, got %d", iv.activeTab)
+	}
+}
+
+func TestInsightsView_TabWraps(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+
+	// Tab from Overview wraps to Detail
+	iv.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if iv.activeTab != 1 {
+		t.Fatalf("after first Tab, activeTab should be 1, got %d", iv.activeTab)
+	}
+
+	// Tab from Detail wraps back to Overview
+	iv.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if iv.activeTab != 0 {
+		t.Errorf("after second Tab (wrap), activeTab should be 0, got %d", iv.activeTab)
+	}
+}
+
+func TestInsightsView_ShiftTabWraps(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+
+	// Shift-Tab from Overview wraps to Detail
+	iv.Update(tea.KeyMsg{Type: tea.KeyShiftTab})
+	if iv.activeTab != 1 {
+		t.Errorf("Shift-Tab from Overview should wrap to Detail (1), got %d", iv.activeTab)
+	}
+}
+
+func TestInsightsView_EscReturnsFromEitherTab(t *testing.T) {
+	tests := []struct {
+		name string
+		tab  int
+	}{
+		{"from Overview", 0},
+		{"from Detail", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			iv := setupInsightsView(t)
+			iv.SetHeight(24)
+			iv.activeTab = tt.tab
+
+			cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEsc})
+			if cmd == nil {
+				t.Fatal("Esc should produce a command")
+			}
+			msg := cmd()
+			if _, ok := msg.(ReturnToDoorsMsg); !ok {
+				t.Errorf("Esc should produce ReturnToDoorsMsg, got %T", msg)
+			}
+		})
+	}
+}
+
 func TestStyledSparkline(t *testing.T) {
 	t.Run("empty input returns empty string", func(t *testing.T) {
 		got := styledSparkline(nil)
@@ -798,6 +887,102 @@ func TestInsightsView_View_ColdStart_NoFunFact(t *testing.T) {
 	// Cold start should NOT show fun fact panels (only the cold start message)
 	if strings.Contains(output, "COMPLETION TRENDS") {
 		t.Error("cold start should not show data panels including fun facts")
+	}
+}
+
+func TestInsightsView_TabIndicatorOverview(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+	iv.activeTab = 0
+
+	output := iv.View()
+	if !strings.Contains(output, "[Overview]") {
+		t.Errorf("Overview tab indicator should show [Overview] when active, output:\n%s", output)
+	}
+	if strings.Contains(output, "[Detail]") {
+		t.Errorf("Detail should NOT be bracketed when Overview is active")
+	}
+}
+
+func TestInsightsView_TabIndicatorDetail(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+	iv.activeTab = 1
+
+	output := iv.View()
+	if !strings.Contains(output, "[Detail]") {
+		t.Errorf("Detail tab indicator should show [Detail] when active, output:\n%s", output)
+	}
+	if strings.Contains(output, "[Overview]") {
+		t.Errorf("Overview should NOT be bracketed when Detail is active")
+	}
+}
+
+func TestInsightsView_TabInvalidatesCache(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+
+	_ = iv.View() // populate cache
+	if !iv.cacheValid {
+		t.Fatal("cache should be valid after render")
+	}
+
+	iv.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if iv.cacheValid {
+		t.Error("cache should be invalidated after tab switch")
+	}
+}
+
+func TestInsightsView_DetailTabShowsPlaceholder(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+	iv.activeTab = 1
+
+	output := iv.View()
+	if !strings.Contains(output, "Coming soon") {
+		t.Errorf("Detail tab should show placeholder content, got:\n%s", output)
+	}
+}
+
+func TestInsightsView_DetailTabViewportScrollKeys(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+	iv.activeTab = 1
+
+	// These should not panic or return errors — viewport handles scroll keys
+	for _, key := range []string{"j", "k"} {
+		iv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(key)})
+	}
+	iv.Update(tea.KeyMsg{Type: tea.KeyUp})
+	iv.Update(tea.KeyMsg{Type: tea.KeyDown})
+}
+
+func TestInsightsView_OverviewTabStillShowsPanels(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.SetHeight(24)
+	iv.activeTab = 0
+
+	output := iv.View()
+	expectedSections := []string{
+		"YOUR INSIGHTS DASHBOARD",
+		"COMPLETION TRENDS",
+		"STREAKS",
+		"MOOD & PRODUCTIVITY",
+		"DOOR PICKS",
+	}
+	for _, section := range expectedSections {
+		if !strings.Contains(output, section) {
+			t.Errorf("Overview tab missing section %q", section)
+		}
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -22,6 +23,13 @@ const (
 	layoutWide     = "wide"     // 120+ columns
 )
 
+// Tab constants for the insights view.
+const (
+	tabOverview = 0
+	tabDetail   = 1
+	tabCount    = 2
+)
+
 // InsightsView displays the user insights dashboard.
 type InsightsView struct {
 	analyzer   *core.PatternAnalyzer
@@ -32,6 +40,8 @@ type InsightsView struct {
 	cachedView string
 	cacheValid bool
 	lastWidth  int
+	activeTab  int
+	viewport   viewport.Model
 }
 
 // NewInsightsView creates a new InsightsView.
@@ -51,9 +61,15 @@ func (iv *InsightsView) SetWidth(w int) {
 	iv.width = w
 }
 
-// SetHeight sets the terminal height for future viewport support.
+// SetHeight sets the terminal height and updates the viewport.
 func (iv *InsightsView) SetHeight(h int) {
 	iv.height = h
+	// Reserve lines for header + tab indicator + footer
+	vpHeight := h - 4
+	if vpHeight < 1 {
+		vpHeight = 1
+	}
+	iv.viewport.Height = vpHeight
 }
 
 // layoutMode returns the layout mode based on the current terminal width.
@@ -77,9 +93,28 @@ func (iv *InsightsView) invalidateCache() {
 
 // Update handles messages for the insights view.
 func (iv *InsightsView) Update(msg tea.Msg) tea.Cmd {
-	if msg, ok := msg.(tea.KeyMsg); ok {
-		if msg.Type == tea.KeyEscape || msg.String() == "q" {
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		switch {
+		case keyMsg.Type == tea.KeyEscape || keyMsg.String() == "q":
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
+		case keyMsg.Type == tea.KeyTab:
+			iv.activeTab = (iv.activeTab + 1) % tabCount
+			iv.invalidateCache()
+			return nil
+		case keyMsg.Type == tea.KeyShiftTab:
+			iv.activeTab = (iv.activeTab + tabCount - 1) % tabCount
+			iv.invalidateCache()
+			return nil
+		default:
+			// Forward scroll keys to viewport when on Detail tab
+			if iv.activeTab == tabDetail {
+				var cmd tea.Cmd
+				iv.viewport, cmd = iv.viewport.Update(msg)
+				if cmd != nil {
+					iv.invalidateCache()
+				}
+				return cmd
+			}
 		}
 	}
 	return nil
@@ -105,11 +140,18 @@ func (iv *InsightsView) View() string {
 		return result
 	}
 
-	// Hero number
-	iv.renderHeroNumber(&s)
+	// Render tab indicator
+	iv.renderTabIndicator(&s)
 
-	// Content panels arranged by layout mode
-	iv.renderPanelLayout(&s)
+	switch iv.activeTab {
+	case tabOverview:
+		// Hero number
+		iv.renderHeroNumber(&s)
+		// Content panels arranged by layout mode
+		iv.renderPanelLayout(&s)
+	case tabDetail:
+		iv.renderDetailTab(&s)
+	}
 
 	// Fun fact at the bottom
 	iv.renderFunFact(&s)
@@ -122,6 +164,32 @@ func (iv *InsightsView) View() string {
 	iv.cacheValid = true
 	iv.lastWidth = iv.width
 	return result
+}
+
+// renderTabIndicator renders the tab bar showing which tab is active.
+func (iv *InsightsView) renderTabIndicator(s *strings.Builder) {
+	activeStyle := lipgloss.NewStyle().Bold(true).Underline(true)
+	inactiveStyle := lipgloss.NewStyle()
+
+	var overview, detail string
+	if iv.activeTab == tabOverview {
+		overview = activeStyle.Render("[Overview]")
+		detail = inactiveStyle.Render(" Detail")
+	} else {
+		overview = inactiveStyle.Render("Overview ")
+		detail = activeStyle.Render("[Detail]")
+	}
+
+	tabLine := overview + " " + detail
+	fmt.Fprintf(s, "%s\n", tabLine)
+}
+
+// renderDetailTab renders the Detail tab content with a viewport.
+func (iv *InsightsView) renderDetailTab(s *strings.Builder) {
+	placeholder := "Coming soon: activity heatmap, session highlights, and more.\n\nUse Tab/Shift-Tab to switch tabs."
+	iv.viewport.Width = iv.contentWidth()
+	iv.viewport.SetContent(placeholder)
+	fmt.Fprintf(s, "\n%s\n", iv.viewport.View())
 }
 
 // renderDashboardHeader renders the styled "YOUR INSIGHTS DASHBOARD" header.
