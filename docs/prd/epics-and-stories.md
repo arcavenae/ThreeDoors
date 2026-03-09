@@ -227,7 +227,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR108-FR111 | Epic 29 | Task Dependencies (NOT STARTED) |
 | FR116-FR119 | Epic 30 | Linear Integration (NOT STARTED) |
 | FR120-FR126 | Epic 31 | Expand/Fork Key Implementations (NOT STARTED) |
-| FR127-FR131 | Epic 32 | Undo Task Completion (NOT STARTED) |
+| FR127-FR131 | Epic 32 | Undo Task Completion (COMPLETE) |
 | FR132-FR137 | Epic 33 | Seasonal Door Theme Variants (NOT STARTED) |
 | FR148-FR151 | Epic 36 | Door Selection Feedback (COMPLETE) |
 
@@ -4150,7 +4150,7 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 ## Epic 32: Undo Task Completion
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** Complete
 **Dependencies:** None
 
 ### Epic Goal
@@ -4161,9 +4161,9 @@ Allow reversing accidental task completion via `complete -> todo` transition. Va
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
-| 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
-| 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
+| 32.1 | Status Model — Complete-to-Todo Transition | Done (PR #306) | P1 | None |
+| 32.2 | Session Metrics — Undo Complete Event Logging | Done (PR #322) | P1 | 32.1 |
+| 32.3 | TUI & CLI Undo Experience | Done (PR #337) | P1 | 32.1, 32.2 |
 
 **FRs covered:** FR127-FR131
 

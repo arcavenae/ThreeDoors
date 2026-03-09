@@ -266,6 +266,9 @@ func runTaskStatus(cmd *cobra.Command, ids []string, targetStatus string) error 
 		for _, r := range results {
 			if r.Success {
 				_ = formatter.Writef("Task %s status: %s -> %s\n", r.ShortID, r.OldStatus, r.NewStatus)
+				if r.OldStatus == string(core.StatusComplete) && r.NewStatus == string(core.StatusTodo) {
+					_ = formatter.Writef("Task uncompleted — returned to todo\n")
+				}
 			} else {
 				fmt.Fprintf(os.Stderr, "Error changing %s: %s\n", r.ShortID, r.Error)
 			}

@@ -446,7 +446,7 @@ func TestDetailView_CKey_RecordsStatusChange(t *testing.T) {
 
 // --- Undo Complete ('U' key) ---
 
-func TestDetailView_UKey_UndoComplete_SendsTaskUpdatedMsg(t *testing.T) {
+func TestDetailView_UKey_UndoComplete_SendsTaskUndoneMsg(t *testing.T) {
 	task := core.NewTask("test task")
 	_ = task.UpdateStatus(core.StatusComplete)
 	tracker := core.NewSessionTracker()
@@ -457,9 +457,9 @@ func TestDetailView_UKey_UndoComplete_SendsTaskUpdatedMsg(t *testing.T) {
 		t.Fatal("'u' on completed task should return a command")
 	}
 	msg := cmd()
-	tum, ok := msg.(TaskUpdatedMsg)
+	tum, ok := msg.(TaskUndoneMsg)
 	if !ok {
-		t.Fatalf("expected TaskUpdatedMsg, got %T", msg)
+		t.Fatalf("expected TaskUndoneMsg, got %T", msg)
 	}
 	if tum.Task.Status != core.StatusTodo {
 		t.Errorf("expected status %q, got %q", core.StatusTodo, tum.Task.Status)
@@ -517,6 +517,9 @@ func TestDetailView_UKey_DoesNotSendTaskCompletedMsg(t *testing.T) {
 	msg := cmd()
 	if _, ok := msg.(TaskCompletedMsg); ok {
 		t.Error("undo should NOT send TaskCompletedMsg (which would trigger MarkComplete)")
+	}
+	if _, ok := msg.(TaskUpdatedMsg); ok {
+		t.Error("undo should send TaskUndoneMsg, not TaskUpdatedMsg")
 	}
 }
 

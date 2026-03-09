@@ -31,6 +31,11 @@ type TaskCompletedMsg struct {
 	Task *core.Task
 }
 
+// TaskUndoneMsg is sent when a completed task is returned to todo via undo.
+type TaskUndoneMsg struct {
+	Task *core.Task
+}
+
 // ExpandTaskMsg is sent when the user creates a subtask via the expand action.
 type ExpandTaskMsg struct {
 	ParentTask  *core.Task

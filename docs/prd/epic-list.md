@@ -394,7 +394,7 @@
 **Epic 32: Undo Task Completion** (P1)
 - **Goal:** Allow reversing accidental task completion via `complete -> todo` transition
 - **Prerequisites:** None
-- **Status:** Not Started
+- **Status:** Complete
 - **Stories:** 32.1-32.3 (3 stories)
 
 **Epic 33: Seasonal Door Theme Variants** (P2)
@@ -541,7 +541,7 @@
 | Epic 29: Task Dependencies | 4 | Not Started |
 | Epic 30: Linear Integration | 4 | Not Started |
 | Epic 31: Expand/Fork Key | 5 | Not Started |
-| Epic 32: Undo Task Completion | 3 | Not Started |
+| Epic 32: Undo Task Completion | 3 | Complete |
 | Epic 33: Seasonal Theme Variants | 4 | Not Started |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
 | Epic 35: Door Visual Appearance | 7 | Complete |
