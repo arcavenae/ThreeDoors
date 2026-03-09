@@ -714,3 +714,86 @@ func TestSearchView_TerminalResize_UpdatesTextInputWidth(t *testing.T) {
 		t.Error("textInput width should be updated on SetWidth")
 	}
 }
+
+// --- SetHeight and Bottom-Anchored Layout Tests ---
+
+func TestSearchView_SetHeight(t *testing.T) {
+	sv := newTestSearchView("task1")
+	sv.SetHeight(40)
+	if sv.height != 40 {
+		t.Errorf("expected height 40, got %d", sv.height)
+	}
+}
+
+func TestSearchView_CommandMode_FixedHeightSuggestions(t *testing.T) {
+	sv := newTestSearchView("task1")
+	sv.SetWidth(80)
+	sv.SetHeight(40)
+
+	// Full suggestions (all commands shown)
+	sv.textInput.SetValue(":")
+	sv.isCommandMode = true
+	sv.commandSuggestions = filterCommands("")
+	viewAll := sv.View()
+	allLines := strings.Count(viewAll, "\n")
+
+	// Filtered suggestions (fewer commands shown)
+	sv.textInput.SetValue(":he")
+	sv.commandSuggestions = filterCommands("he")
+	viewFiltered := sv.View()
+	filteredLines := strings.Count(viewFiltered, "\n")
+
+	// Both views should have the same total line count — padding compensates
+	if allLines != filteredLines {
+		t.Errorf("expected same line count for all vs filtered suggestions, got %d vs %d", allLines, filteredLines)
+	}
+}
+
+func TestSearchView_CommandMode_NoSuggestions_SameHeight(t *testing.T) {
+	sv := newTestSearchView("task1")
+	sv.SetWidth(80)
+	sv.SetHeight(40)
+
+	// All suggestions
+	sv.textInput.SetValue(":")
+	sv.isCommandMode = true
+	sv.commandSuggestions = filterCommands("")
+	viewAll := sv.View()
+	allLines := strings.Count(viewAll, "\n")
+
+	// No matching suggestions
+	sv.textInput.SetValue(":zzzzz")
+	sv.commandSuggestions = filterCommands("zzzzz")
+	viewNone := sv.View()
+	noneLines := strings.Count(viewNone, "\n")
+
+	if allLines != noneLines {
+		t.Errorf("expected same line count for all vs no suggestions, got %d vs %d", allLines, noneLines)
+	}
+}
+
+func TestSearchView_BottomAnchor_PaddingPresent(t *testing.T) {
+	sv := newTestSearchView()
+	sv.SetWidth(80)
+	sv.SetHeight(50)
+
+	// With no content, the view should have padding to fill 50 lines
+	view := sv.View()
+	lines := strings.Count(view, "\n")
+	// Header (2) + footer (3) + padding should approach height
+	if lines < 40 {
+		t.Errorf("expected padding to push content toward bottom, got only %d lines for height 50", lines)
+	}
+}
+
+func TestSearchView_NoHeight_NoPadding(t *testing.T) {
+	sv := newTestSearchView("task1")
+	sv.SetWidth(80)
+	// height = 0 (default) — no bottom-anchoring
+	view := sv.View()
+	lines := strings.Count(view, "\n")
+	// Without height set, view should be compact
+	if lines > 20 {
+		t.Errorf("expected compact view without height set, got %d lines", lines)
+	}
+}

@@ -356,6 +356,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.searchView != nil {
 			m.searchView.SetWidth(msg.Width)
+			m.searchView.SetHeight(msg.Height)
 		}
 		if m.healthView != nil {
 			m.healthView.SetWidth(msg.Width)
@@ -1682,6 +1683,7 @@ func (m *MainModel) newSearchView() *SearchView {
 	sv.SetSyncLog(m.syncLog)
 	sv.SetDuplicateTaskIDs(m.duplicateTaskIDs)
 	sv.SetInlineHints(m.resolveHints())
+	sv.SetHeight(m.height)
 	if m.devDispatchEnabled && m.dispatcher != nil {
 		if m.dispatcher.CheckAvailable(context.Background()) == nil {
 			sv.SetDevDispatchEnabled(true)

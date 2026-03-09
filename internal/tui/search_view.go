@@ -67,6 +67,7 @@ type SearchView struct {
 	devDispatchEnabled   bool
 	commandSuggestions   []commandDef
 	commandSelectedIndex int
+	height               int
 	hintEnabled          bool
 	hintFade             bool
 }
@@ -95,6 +96,11 @@ func NewSearchView(pool *core.TaskPool, tracker *core.SessionTracker, hc *core.H
 func (sv *SearchView) SetInlineHints(enabled, fade bool) {
 	sv.hintEnabled = enabled
 	sv.hintFade = fade
+}
+
+// SetHeight sets the terminal height for bottom-anchored rendering.
+func (sv *SearchView) SetHeight(h int) {
+	sv.height = h
 }
 
 // SetWidth sets the terminal width for rendering.
@@ -505,32 +511,45 @@ func (sv *SearchView) updateCommandSuggestions() {
 
 // View renders the search view.
 func (sv *SearchView) View() string {
-	s := strings.Builder{}
-
-	fmt.Fprintf(&s, "%s\n\n", headerStyle.Render("ThreeDoors - Search"))
+	// Build the content section (middle area between header and input).
+	var content strings.Builder
 
 	query := sv.textInput.Value()
 
-	// Render results
-	if sv.isCommandMode {
-		fmt.Fprintf(&s, "%s\n\n", commandModeStyle.Render("Command mode"))
+	// Content lines tracks how many lines the content area occupies.
+	contentLines := 0
 
+	if sv.isCommandMode {
+		fmt.Fprintf(&content, "%s\n\n", commandModeStyle.Render("Command mode"))
+		contentLines += 2
+
+		// Render suggestions with fixed-height padding so input stays stable.
+		maxSuggestions := len(commandRegistry)
+		rendered := 0
 		if len(sv.commandSuggestions) > 0 {
 			for i, cmd := range sv.commandSuggestions {
 				name := fmt.Sprintf("  :%-14s", cmd.Name)
 				line := fmt.Sprintf("%s%s", name, cmd.Desc)
 				if i == sv.commandSelectedIndex {
-					fmt.Fprintf(&s, "%s\n", searchSelectedStyle.Render(line))
+					fmt.Fprintf(&content, "%s\n", searchSelectedStyle.Render(line))
 				} else {
-					fmt.Fprintf(&s, "%s\n", searchResultStyle.Render(line))
+					fmt.Fprintf(&content, "%s\n", searchResultStyle.Render(line))
 				}
+				rendered++
 			}
-			s.WriteString("\n")
 		} else {
-			fmt.Fprintf(&s, "%s\n\n", helpStyle.Render("No matching commands"))
+			fmt.Fprintf(&content, "%s\n", helpStyle.Render("No matching commands"))
+			rendered++
 		}
+		// Pad remaining lines to keep total suggestion area at maxSuggestions + 1 (trailing blank).
+		for i := rendered; i < maxSuggestions; i++ {
+			content.WriteString("\n")
+		}
+		content.WriteString("\n")
+		contentLines += maxSuggestions + 1
 	} else if query != "" && len(sv.results) == 0 {
-		fmt.Fprintf(&s, "%s\n\n", helpStyle.Render(fmt.Sprintf("No tasks match '%s'", query)))
+		fmt.Fprintf(&content, "%s\n\n", helpStyle.Render(fmt.Sprintf("No tasks match '%s'", query)))
+		contentLines += 2
 	} else if len(sv.results) > 0 {
 		for i, task := range sv.results {
 			statusColor := StatusColor(string(task.Status))
@@ -549,19 +568,42 @@ func (sv *SearchView) View() string {
 			} else {
 				line = searchResultStyle.Render(line)
 			}
-			fmt.Fprintf(&s, "%s\n", line)
+			fmt.Fprintf(&content, "%s\n", line)
+			contentLines++
 		}
-		s.WriteString("\n")
+		content.WriteString("\n")
+		contentLines++
 	}
 
-	// Render input at bottom
-	fmt.Fprintf(&s, "%s\n\n", sv.textInput.View())
+	// Build the footer: input line + blank + help line = 3 lines.
+	var footer strings.Builder
+	fmt.Fprintf(&footer, "%s\n\n", sv.textInput.View())
 	if sv.hintEnabled {
 		h := func(key string) string { return renderInlineHint(key, sv.hintEnabled, sv.hintFade) }
-		fmt.Fprintf(&s, "%s", helpStyle.Render(h("↑/↓")+" navigate | "+h("enter")+" select | "+h("esc")+" close | : commands"))
+		fmt.Fprintf(&footer, "%s", helpStyle.Render(h("↑/↓")+" navigate | "+h("enter")+" select | "+h("esc")+" close | : commands"))
 	} else {
-		fmt.Fprintf(&s, "%s", helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))
+		fmt.Fprintf(&footer, "%s", helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))
 	}
+	footerLines := 3
+
+	// Assemble: header (2 lines) + padding + content + footer.
+	var s strings.Builder
+	fmt.Fprintf(&s, "%s\n\n", headerStyle.Render("ThreeDoors - Search"))
+	headerLines := 2
+
+	// Push content to the bottom by inserting blank lines.
+	if sv.height > 0 {
+		usedLines := headerLines + contentLines + footerLines
+		padding := sv.height - usedLines
+		if padding > 0 {
+			for i := 0; i < padding; i++ {
+				s.WriteString("\n")
+			}
+		}
+	}
+
+	fmt.Fprintf(&s, "%s", content.String())
+	fmt.Fprintf(&s, "%s", footer.String())
 
 	return s.String()
 }
