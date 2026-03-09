@@ -141,23 +141,35 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
 
-### Epic 38: Dual Homebrew Distribution (P1) — 1/5 stories done
+### Epic 38: Dual Homebrew Distribution (P1) — 2/5 stories done
 
 Parallel Homebrew distribution channels (stable + alpha) with signing parity, publishing controls, verification, and retention.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 38.1 | Alpha Homebrew Formula (`threedoors-a`) | Done (PR #273) | P1 | None |
-| 38.2 | Alpha Publishing Toggle | Not Started | P1 | 38.1 |
+| 38.2 | Alpha Publishing Toggle | Done (PR #287) | P1 | 38.1 |
 | 38.3 | Stable Release Signing & Notarization | Not Started | P1 | None |
 | 38.4 | Alpha Release Verification | Not Started | P2 | 38.1, 38.2 |
 | 38.5 | Alpha Release Retention Cleanup | Not Started | P2 | None |
+
+### Epic 39: Keybinding Display System (P1) — 0/5 stories done
+
+Toggleable keybinding bar and full overlay for TUI discoverability. Context-sensitive bottom bar shows key actions per view; `?` opens comprehensive reference overlay.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 39.1 | Keybinding Registry Model | Not Started | P1 | None |
+| 39.2 | Concise Keybinding Bar Component | Not Started | P1 | 39.1 |
+| 39.3 | Full Keybinding Overlay | Not Started | P1 | 39.1 |
+| 39.4 | Toggle Behavior, Config Persistence, and MainModel Integration | Not Started | P1 | 39.2, 39.3 |
+| 39.5 | View-Specific Keybinding Completeness and Polish | Not Started | P1 | 39.4 |
 
 ## Completed Epics
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 10/13 |
+| 0 | Infrastructure & Process (Backfill) | 11/13 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
