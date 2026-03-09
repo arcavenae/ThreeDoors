@@ -216,10 +216,188 @@ func (iv *InsightsView) renderTabIndicator(s *strings.Builder) {
 
 // renderDetailTab renders the Detail tab content with a viewport.
 func (iv *InsightsView) renderDetailTab(s *strings.Builder) {
-	placeholder := "Coming soon: activity heatmap, session highlights, and more.\n\nUse Tab/Shift-Tab to switch tabs."
+	var content strings.Builder
+	iv.renderHeatmap(&content)
 	iv.viewport.Width = iv.contentWidth()
-	iv.viewport.SetContent(placeholder)
+	iv.viewport.SetContent(content.String())
 	fmt.Fprintf(s, "\n%s\n", iv.viewport.View())
+}
+
+// heatmapLevel maps a daily completion count to a 0-4 intensity level.
+// Level 0: 0 completions, 1: 1-2, 2: 3-4, 3: 5-6, 4: 7+
+func heatmapLevel(count int) int {
+	switch {
+	case count == 0:
+		return 0
+	case count <= 2:
+		return 1
+	case count <= 4:
+		return 2
+	case count <= 6:
+		return 3
+	default:
+		return 4
+	}
+}
+
+// heatmapChars maps intensity levels to Unicode shade characters.
+var heatmapChars = [5]rune{' ', '░', '▒', '▓', '█'}
+
+// Heatmap gradient colors (green tones, GitHub-style).
+var (
+	heatmapColorStart = "#2D4A22" // dim green
+	heatmapColorEnd   = "#39D353" // bright green
+)
+
+// heatmapGrid builds a 7-row (Mon-Sun) by N-column (weeks) grid from daily completion data.
+// Returns the grid and the number of weeks (columns). Weeks are ISO weeks (Mon-Sun).
+// Most recent week is rightmost. Only weeks with data are included.
+func heatmapGrid(daily map[string]int) ([7][]int, int) {
+	if len(daily) == 0 {
+		return [7][]int{}, 0
+	}
+
+	// Parse all dates and find the range
+	type dateCount struct {
+		date  time.Time
+		count int
+	}
+	var entries []dateCount
+	for dateStr, count := range daily {
+		t, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			continue
+		}
+		entries = append(entries, dateCount{t, count})
+	}
+	if len(entries) == 0 {
+		return [7][]int{}, 0
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].date.Before(entries[j].date)
+	})
+
+	earliest := entries[0].date
+	latest := entries[len(entries)-1].date
+
+	// Find Monday of earliest week and Monday of latest week
+	earliestMonday := mondayOf(earliest)
+	latestMonday := mondayOf(latest)
+
+	numWeeks := int(latestMonday.Sub(earliestMonday).Hours()/24)/7 + 1
+	if numWeeks > 8 {
+		// Only show last 8 weeks
+		earliestMonday = latestMonday.AddDate(0, 0, -7*7)
+		numWeeks = 8
+	}
+
+	var grid [7][]int
+	for d := 0; d < 7; d++ {
+		grid[d] = make([]int, numWeeks)
+	}
+
+	// Build lookup
+	dateCounts := make(map[string]int, len(entries))
+	for _, e := range entries {
+		dateCounts[e.date.Format("2006-01-02")] = e.count
+	}
+
+	// Fill grid
+	for w := 0; w < numWeeks; w++ {
+		weekStart := earliestMonday.AddDate(0, 0, w*7)
+		for d := 0; d < 7; d++ {
+			day := weekStart.AddDate(0, 0, d)
+			key := day.Format("2006-01-02")
+			grid[d][w] = dateCounts[key]
+		}
+	}
+
+	return grid, numWeeks
+}
+
+// mondayOf returns the Monday of the ISO week containing t.
+func mondayOf(t time.Time) time.Time {
+	weekday := t.Weekday()
+	if weekday == time.Sunday {
+		weekday = 7
+	}
+	offset := int(weekday) - int(time.Monday)
+	monday := t.AddDate(0, 0, -offset)
+	return time.Date(monday.Year(), monday.Month(), monday.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+// renderHeatmap renders the GitHub-style activity heatmap.
+func (iv *InsightsView) renderHeatmap(s *strings.Builder) {
+	if iv.layoutMode() == layoutCompact {
+		fmt.Fprintf(s, "Widen terminal to see activity heatmap\n")
+		return
+	}
+
+	daily := iv.analyzer.GetDailyCompletions(56)
+	grid, numWeeks := heatmapGrid(daily)
+	if numWeeks == 0 {
+		fmt.Fprintf(s, "Not enough data for activity heatmap.\n")
+		return
+	}
+
+	dayLabels := [7]string{"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}
+
+	// Column headers: W1..WN
+	fmt.Fprintf(s, "ACTIVITY HEATMAP (8 weeks)\n\n")
+	fmt.Fprintf(s, "    ") // row label spacer
+	for w := 0; w < numWeeks; w++ {
+		fmt.Fprintf(s, " W%-3d", w+1)
+	}
+	s.WriteString("\n")
+
+	// Grid rows
+	for d := 0; d < 7; d++ {
+		fmt.Fprintf(s, " %s ", dayLabels[d])
+		for w := 0; w < numWeeks; w++ {
+			count := grid[d][w]
+			level := heatmapLevel(count)
+			ch := string(heatmapChars[level])
+
+			if level == 0 {
+				// No color for empty cells — use dim style
+				dimStyle := lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#D4D4D4", Dark: "#333333"})
+				fmt.Fprintf(s, " %s   ", dimStyle.Render("·"))
+			} else {
+				t := float64(level-1) / 3.0
+				color := blendHexColors(heatmapColorStart, heatmapColorEnd, t)
+				style := lipgloss.NewStyle().Foreground(lipgloss.Color(color))
+				fmt.Fprintf(s, " %s   ", style.Render(ch))
+			}
+		}
+		s.WriteString("\n")
+	}
+
+	// Legend
+	s.WriteString("\n")
+	s.WriteString(" Less ")
+	legendLevels := [5]struct {
+		ch    string
+		label string
+	}{
+		{"·", "0"},
+		{string(heatmapChars[1]), "1-2"},
+		{string(heatmapChars[2]), "3-4"},
+		{string(heatmapChars[3]), "5-6"},
+		{string(heatmapChars[4]), "7+"},
+	}
+	for i, l := range legendLevels {
+		if i == 0 {
+			dimStyle := lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#D4D4D4", Dark: "#333333"})
+			fmt.Fprintf(s, "%s ", dimStyle.Render(l.ch))
+		} else {
+			t := float64(i-1) / 3.0
+			color := blendHexColors(heatmapColorStart, heatmapColorEnd, t)
+			style := lipgloss.NewStyle().Foreground(lipgloss.Color(color))
+			fmt.Fprintf(s, "%s ", style.Render(l.ch))
+		}
+	}
+	s.WriteString("More\n")
 }
 
 // renderDashboardHeader renders the styled "YOUR INSIGHTS DASHBOARD" header.
