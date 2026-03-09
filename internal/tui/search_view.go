@@ -210,6 +210,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "theme":
 		return func() tea.Msg { return ShowThemePickerMsg{} }
 
+	case "deferred", "snoozed":
+		return func() tea.Msg { return ShowDeferredListMsg{} }
+
 	case "devqueue":
 		return func() tea.Msg { return ShowDevQueueMsg{} }
 

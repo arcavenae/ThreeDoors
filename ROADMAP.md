@@ -78,7 +78,7 @@ Surfaces existing `StatusDeferred` as a first-class user action with date-based 
 |-------|-------|--------|----------|------------|
 | 28.1 | DeferUntil Field, Status Transitions, and Auto-Return Logic | Done (PR #310) | P1 | None |
 | 28.2 | Snooze TUI View and Z-Key Binding | Done (PR #338) | P1 | 28.1 |
-| 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
+| 28.3 | Deferred List View and :deferred Command | In Review | P1 | 28.1 |
 | 28.4 | Session Metrics Logging for Snooze Events | Done (PR #355) | P1 | 28.1 |
 
 ### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 4/4 stories done — COMPLETE
