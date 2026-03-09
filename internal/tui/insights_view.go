@@ -291,7 +291,7 @@ func (iv *InsightsView) renderPanelLayout(s *strings.Builder) {
 
 	// Session highlights panel — added as full-width panel after existing layout
 	if highlightsContent != "" {
-		fmt.Fprintf(s, "%s\n", makePanel("SESSION HIGHLIGHTS", highlightsContent, iv.contentWidth()))
+		fmt.Fprintf(s, "%s\n", makePanel("SESSION HIGHLIGHTS", highlightsContent, iv.contentWidth(), iv.statsPanelBorderColor()))
 	}
 }
 
