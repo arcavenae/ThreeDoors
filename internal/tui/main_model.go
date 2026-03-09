@@ -74,7 +74,7 @@ type MainModel struct {
 	snoozeView            *SnoozeView
 	planningView          *PlanningView
 	planningMode          bool // CLI --plan: exit after planning instead of showing doors
-	planningTimestamp      *time.Time
+	planningTimestamp     *time.Time
 	configPath            string
 	pool                  *core.TaskPool
 	tracker               *core.SessionTracker

@@ -328,7 +328,7 @@ func (dv *DoorsView) View() string {
 
 		// Focus badge — show when task has +focus tag and planning is active
 		if core.HasFocusTag(task) && dv.planningTimestamp != nil && !core.IsFocusExpired(*dv.planningTimestamp) {
-			content = content + "\n" + focusBadgeStyle.Render("focus")
+			parts = append(parts, focusBadgeStyle.Render("focus"))
 		}
 
 		// Category badges
