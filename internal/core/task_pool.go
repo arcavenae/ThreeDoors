@@ -1,5 +1,7 @@
 package core
 
+import "time"
+
 // sourceRefKey is the composite key for the SourceRef index.
 type sourceRefKey struct {
 	Provider string
@@ -155,6 +157,21 @@ func (tp *TaskPool) FindByPrefix(prefix string) []*Task {
 		}
 	}
 	return matches
+}
+
+// GetIncompleteTasks returns tasks that were in todo, in-progress, or blocked
+// status and were created on or before the given timestamp.
+func (tp *TaskPool) GetIncompleteTasks(since time.Time) []*Task {
+	var result []*Task
+	for _, t := range tp.tasks {
+		if t.CreatedAt.After(since) {
+			continue
+		}
+		if t.Status == StatusTodo || t.Status == StatusInProgress || t.Status == StatusBlocked {
+			result = append(result, t)
+		}
+	}
+	return result
 }
 
 // removeSourceRefIndexByID removes all index entries pointing to the given task ID.

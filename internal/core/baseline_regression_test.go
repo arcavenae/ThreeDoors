@@ -24,7 +24,7 @@ func TestSelectDoorsWithRand_FisherYatesPartialShuffle(t *testing.T) {
 	)
 
 	rng := rand.New(rand.NewPCG(99, 0))
-	selected := selectDoorsWithRand(pool, 3, rng)
+	selected := selectDoorsWithRand(pool, 3, rng, nil)
 
 	if len(selected) != 3 {
 		t.Fatalf("expected 3 doors, got %d", len(selected))
@@ -73,7 +73,7 @@ func TestSelectDoorsWithRand_CountVariations(t *testing.T) {
 			t.Parallel()
 			pool := poolFromTasks(tasks...)
 			rng := rand.New(rand.NewPCG(42, 0))
-			selected := selectDoorsWithRand(pool, tt.count, rng)
+			selected := selectDoorsWithRand(pool, tt.count, rng, nil)
 			if len(selected) != tt.wantCount {
 				t.Errorf("selectDoorsWithRand(count=%d) returned %d tasks, want %d",
 					tt.count, len(selected), tt.wantCount)
@@ -96,7 +96,7 @@ func TestSelectDoorsWithRand_NoDuplicates(t *testing.T) {
 	for seed := uint64(0); seed < 50; seed++ {
 		freshPool := poolFromTasks(pool.GetAllTasks()...)
 		rng := rand.New(rand.NewPCG(seed, 0))
-		selected := selectDoorsWithRand(freshPool, 3, rng)
+		selected := selectDoorsWithRand(freshPool, 3, rng, nil)
 
 		seen := make(map[string]bool)
 		for _, task := range selected {
@@ -120,7 +120,7 @@ func TestSelectDoorsWithRand_MarksRecentlyShown(t *testing.T) {
 	)
 
 	rng := rand.New(rand.NewPCG(42, 0))
-	selected := selectDoorsWithRand(pool, 3, rng)
+	selected := selectDoorsWithRand(pool, 3, rng, nil)
 
 	for _, task := range selected {
 		if !pool.IsRecentlyShown(task.ID) {
