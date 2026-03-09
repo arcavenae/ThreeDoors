@@ -52,7 +52,7 @@ Replace broken `:help` flash message with dedicated scrollable help view. Conten
 
 ### Story 0.34: Fix 'q' Key in Sub-Views — Go Back Instead of Quit (P1)
 
-**Status:** Ready. Triage complete (issue #330). Story created.
+**Status:** Done (PR #361).
 
 Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health, synclog, etc.) to exit on 'q' instead of going back. Fix: scope 'q' quit to doors view only; sub-views treat 'q' as go-back (D-128).
 
@@ -149,7 +149,7 @@ Parallel Homebrew distribution channels (stable + alpha) with signing parity, pu
 | 38.5 | Alpha Release Retention Cleanup | Done (PR #294) | P2 | None |
 | 38.6 | Fix Alpha Homebrew Formula Template DSL | Done (PR #312) | P1 | 38.1 |
 
-### Epic 39: Keybinding Display System (P1) — 8/12 stories done
+### Epic 39: Keybinding Display System (P1) — 9/12 stories done
 
 Toggleable keybinding bar and full overlay for TUI discoverability. Context-sensitive bottom bar shows key actions per view; `?` opens comprehensive reference overlay. Global command mode accessibility, command autocomplete, and inline key hints on interactive elements.
 
@@ -159,7 +159,7 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.2 | Concise Keybinding Bar Component | Done (PR #318) | P1 | 39.1 |
 | 39.3 | Full Keybinding Overlay | Done (PR #320) | P1 | 39.1 |
 | 39.4 | Toggle Behavior, Config Persistence, and MainModel Integration | Done (PR #346) | P1 | 39.2, 39.3 |
-| 39.5 | View-Specific Keybinding Completeness and Polish | Not Started | P1 | 39.4 |
+| 39.5 | View-Specific Keybinding Completeness and Polish | Done (PR #384) | P1 | 39.4 |
 | 39.6 | Spacebar as Enter Alias in Doors View | Done (PR #303) | P1 | None |
 | 39.7 | Global `:` Command Mode | Done (PR #365) | P1 | None |
 | 39.8 | Command Autocomplete/Completion | Done (PR #381) | P1 | None |
@@ -195,7 +195,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.2 | Lipgloss Layout Utilities Adoption | Done (PR #370) | P2 | None |
 | 41.3 | Viewport Adoption for Help View | Done (PR #364) | P2 | None (sequence after Epic 39 overlay work) |
 | 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | Done (PR #379) | P2 | 41.3 |
-| 41.5 | Harmonica Door Transition Spike | Not Started | P2 | None |
+| 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
 | 41.6 | Adaptive Color Profile Support | Not Started | P2 | None |
 
 ## Completed Epics
