@@ -2869,7 +2869,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 **Epic Goal:** Add toggleable keybinding discoverability to the ThreeDoors TUI — a concise context-sensitive bar at the bottom of every view showing available keys, and a full keybinding overlay (`?` key) as a comprehensive reference. Improves discoverability without adding decision complexity, aligning with SOUL.md's friction-reduction philosophy.
 
 **Prerequisites:** None (all required infrastructure exists — Lipgloss, config.yaml persistence, MainModel composition, isTextInputActive() guard)
-**Status:** In Progress (1/6)
+**Status:** In Progress (2/6)
 
 **Deliverables:**
 - Compile-time keybinding registry mapping each ViewMode to available key bindings with priority levels
@@ -2885,7 +2885,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 - Architecture: `_bmad-output/planning-artifacts/keybinding-display-architecture.md`
 
 ### Story 39.1: Keybinding Registry Model
-- **Status:** Not Started
+- **Status:** Done (PR #305)
 - **Priority:** P1
 - **Estimate:** S (1-2 hours)
 - **Depends on:** None
