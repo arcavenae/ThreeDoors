@@ -4222,7 +4222,7 @@ Allow reversing accidental task completion via `complete -> todo` transition. Va
 ## Epic 40: Beautiful Stats Display
 
 **Priority:** P1 (Phase 1-2), P2 (Phase 3)
-**Status:** Not Started
+**Status:** COMPLETE (10/10 stories done)
 **Dependencies:** None (all data infrastructure exists from Epics 1 and 4)
 
 ### Epic Goal
@@ -4233,16 +4233,16 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 40.1 | Stats Dashboard Shell with Lipgloss Panels | Not Started | P1 | None |
-| 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Not Started | P1 | 40.1 |
-| 40.3 | Fun Facts Engine | Not Started | P1 | 40.1 |
-| 40.4 | Horizontal Bar Charts for Mood Correlation | Not Started | P1 | 40.1 |
-| 40.5 | GitHub-Style Activity Heatmap | Not Started | P2 | 40.1, 40.8 |
-| 40.6 | Surface Hidden Session Metrics | Not Started | P1 | 40.1 |
-| 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
-| 40.8 | Tab Navigation for Detail View | Not Started | P1 | 40.1 |
-| 40.9 | Theme-Matched Stats Color Palettes | Not Started | P2 | 40.1, 40.2, Epic 17 |
-| 40.10 | Milestone Celebrations | Not Started | P2 | 40.1 |
+| 40.1 | Stats Dashboard Shell with Lipgloss Panels | Done (PR #343) | P1 | None |
+| 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Done (PR #366) | P1 | 40.1 |
+| 40.3 | Fun Facts Engine | Done (PR #371) | P1 | 40.1 |
+| 40.4 | Horizontal Bar Charts for Mood Correlation | Done (PR #362) | P1 | 40.1 |
+| 40.5 | GitHub-Style Activity Heatmap | Done (PR #391) | P2 | 40.1, 40.8 |
+| 40.6 | Surface Hidden Session Metrics | Done (PR #368) | P1 | 40.1 |
+| 40.7 | Animated Counter Reveals | Done (PR #392) | P2 | 40.1 |
+| 40.8 | Tab Navigation for Detail View | Done (PR #367) | P1 | 40.1 |
+| 40.9 | Theme-Matched Stats Color Palettes | Done (PR #380) | P2 | 40.1, 40.2, Epic 17 |
+| 40.10 | Milestone Celebrations | Done (PR #393) | P2 | 40.1 |
 
 ### Phase Breakdown
 
