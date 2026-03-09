@@ -17,11 +17,14 @@ type mockTaskFetcher struct {
 	tasksErr   error
 	projects   []TodoistProject
 	projectErr error
+	closeErr   error
 	// Track calls for verification
-	getTasksCalls   int
-	getProjectCalls int
-	lastProjectID   string
-	lastFilter      string
+	getTasksCalls    int
+	getProjectCalls  int
+	closeTaskCalls   int
+	lastProjectID    string
+	lastFilter       string
+	lastClosedTaskID string
 }
 
 func (m *mockTaskFetcher) GetTasks(_ context.Context, projectID, filter string) ([]TodoistTask, error) {
@@ -40,6 +43,12 @@ func (m *mockTaskFetcher) GetProjects(_ context.Context) ([]TodoistProject, erro
 		return nil, m.projectErr
 	}
 	return m.projects, nil
+}
+
+func (m *mockTaskFetcher) CloseTask(_ context.Context, taskID string) error {
+	m.closeTaskCalls++
+	m.lastClosedTaskID = taskID
+	return m.closeErr
 }
 
 func TestTodoistProviderName(t *testing.T) {
@@ -320,7 +329,7 @@ func TestTodoistProviderReadOnlyMethods(t *testing.T) {
 
 	p := NewTodoistProvider(&mockTaskFetcher{}, &TodoistConfig{})
 
-	// AC8: all write methods return ErrReadOnly
+	// Save/Delete remain read-only; MarkComplete is now bidirectional (tested separately)
 	if err := p.SaveTask(&core.Task{}); !errors.Is(err, core.ErrReadOnly) {
 		t.Errorf("SaveTask() = %v, want ErrReadOnly", err)
 	}
@@ -330,9 +339,189 @@ func TestTodoistProviderReadOnlyMethods(t *testing.T) {
 	if err := p.DeleteTask("id"); !errors.Is(err, core.ErrReadOnly) {
 		t.Errorf("DeleteTask() = %v, want ErrReadOnly", err)
 	}
-	if err := p.MarkComplete("id"); !errors.Is(err, core.ErrReadOnly) {
-		t.Errorf("MarkComplete() = %v, want ErrReadOnly", err)
+}
+
+func TestTodoistProviderMarkComplete(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		taskID         string
+		closeErr       error
+		wantErr        bool
+		wantCloseCount int
+	}{
+		{
+			name:           "successful completion calls CloseTask",
+			taskID:         "task-123",
+			wantErr:        false,
+			wantCloseCount: 1,
+		},
+		{
+			name:           "API error propagates",
+			taskID:         "task-456",
+			closeErr:       errors.New("network timeout"),
+			wantErr:        true,
+			wantCloseCount: 1,
+		},
+		{
+			name:           "rate limit error propagates",
+			taskID:         "task-789",
+			closeErr:       &RateLimitError{RetryAfter: 30},
+			wantErr:        true,
+			wantCloseCount: 1,
+		},
 	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mock := &mockTaskFetcher{closeErr: tt.closeErr}
+			p := NewTodoistProvider(mock, &TodoistConfig{})
+
+			err := p.MarkComplete(tt.taskID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MarkComplete() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+			if mock.closeTaskCalls != tt.wantCloseCount {
+				t.Errorf("CloseTask called %d times, want %d", mock.closeTaskCalls, tt.wantCloseCount)
+			}
+			if mock.lastClosedTaskID != tt.taskID {
+				t.Errorf("CloseTask called with taskID = %q, want %q", mock.lastClosedTaskID, tt.taskID)
+			}
+		})
+	}
+}
+
+func TestTodoistProviderCircuitBreaker(t *testing.T) {
+	t.Parallel()
+
+	t.Run("circuit trips after 5 failures", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{closeErr: errors.New("server error")}
+		p := NewTodoistProvider(mock, &TodoistConfig{})
+
+		// Trigger 5 failures to trip the circuit
+		for i := 0; i < 5; i++ {
+			_ = p.MarkComplete("task-1")
+		}
+
+		if p.cb.State() != core.CircuitOpen {
+			t.Errorf("circuit state = %v, want Open after 5 failures", p.cb.State())
+		}
+	})
+
+	t.Run("open circuit returns ErrCircuitOpen without calling API", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{closeErr: errors.New("server error")}
+		p := NewTodoistProvider(mock, &TodoistConfig{})
+
+		// Trip the circuit
+		for i := 0; i < 5; i++ {
+			_ = p.MarkComplete("task-1")
+		}
+		callsBefore := mock.closeTaskCalls
+
+		// Next call should get ErrCircuitOpen without hitting the API
+		err := p.MarkComplete("task-2")
+		if !errors.Is(err, core.ErrCircuitOpen) {
+			t.Errorf("MarkComplete() = %v, want ErrCircuitOpen", err)
+		}
+		if mock.closeTaskCalls != callsBefore {
+			t.Errorf("CloseTask called %d times after circuit open, want %d", mock.closeTaskCalls-callsBefore, 0)
+		}
+	})
+
+	t.Run("successful call resets failure count", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{}
+		p := NewTodoistProvider(mock, &TodoistConfig{})
+
+		// 4 failures then a success — should NOT trip
+		mock.closeErr = errors.New("server error")
+		for i := 0; i < 4; i++ {
+			_ = p.MarkComplete("task-1")
+		}
+		mock.closeErr = nil
+		_ = p.MarkComplete("task-1")
+
+		if p.cb.State() != core.CircuitClosed {
+			t.Errorf("circuit state = %v, want Closed after success", p.cb.State())
+		}
+	})
+}
+
+func TestTodoistProviderWALIntegration(t *testing.T) {
+	t.Parallel()
+
+	t.Run("WAL queues on MarkComplete failure", func(t *testing.T) {
+		t.Parallel()
+		tmpDir := t.TempDir()
+		mock := &mockTaskFetcher{closeErr: errors.New("API down")}
+		p := NewTodoistProvider(mock, &TodoistConfig{})
+
+		walProvider := core.NewWALProvider(p, tmpDir)
+		err := walProvider.MarkComplete("task-100")
+		// WAL swallows the error and queues it
+		if err != nil {
+			t.Errorf("WAL MarkComplete() should not return error, got: %v", err)
+		}
+		if walProvider.PendingCount() != 1 {
+			t.Errorf("pending count = %d, want 1", walProvider.PendingCount())
+		}
+	})
+
+	t.Run("WAL replays queued completion on success", func(t *testing.T) {
+		t.Parallel()
+		tmpDir := t.TempDir()
+		mock := &mockTaskFetcher{closeErr: errors.New("API down")}
+		p := NewTodoistProvider(mock, &TodoistConfig{})
+
+		walProvider := core.NewWALProvider(p, tmpDir)
+		_ = walProvider.MarkComplete("task-200")
+
+		if walProvider.PendingCount() != 1 {
+			t.Fatalf("expected 1 pending entry, got %d", walProvider.PendingCount())
+		}
+
+		// Restore connectivity
+		mock.closeErr = nil
+		errs := walProvider.ReplayPending()
+		if len(errs) != 0 {
+			t.Errorf("ReplayPending() errors = %v, want none", errs)
+		}
+		if walProvider.PendingCount() != 0 {
+			t.Errorf("pending count after replay = %d, want 0", walProvider.PendingCount())
+		}
+		if mock.lastClosedTaskID != "task-200" {
+			t.Errorf("replayed taskID = %q, want %q", mock.lastClosedTaskID, "task-200")
+		}
+	})
+
+	t.Run("circuit open causes WAL queue without API call", func(t *testing.T) {
+		t.Parallel()
+		tmpDir := t.TempDir()
+		mock := &mockTaskFetcher{closeErr: errors.New("server error")}
+		p := NewTodoistProvider(mock, &TodoistConfig{})
+
+		walProvider := core.NewWALProvider(p, tmpDir)
+
+		// Trip the circuit breaker
+		for i := 0; i < 5; i++ {
+			_ = walProvider.MarkComplete("trip-task")
+		}
+
+		callsBefore := mock.closeTaskCalls
+
+		// This should queue via WAL without hitting the API
+		err := walProvider.MarkComplete("queued-task")
+		if err != nil {
+			t.Errorf("WAL MarkComplete() should not return error, got: %v", err)
+		}
+		if mock.closeTaskCalls != callsBefore {
+			t.Errorf("CloseTask called after circuit open, want no new calls")
+		}
+	})
 }
 
 func TestTodoistProviderWatch(t *testing.T) {

@@ -23,16 +23,18 @@ const (
 type TaskFetcher interface {
 	GetTasks(ctx context.Context, projectID, filter string) ([]TodoistTask, error)
 	GetProjects(ctx context.Context) ([]TodoistProject, error)
+	CloseTask(ctx context.Context, taskID string) error
 }
 
-// TodoistProvider implements core.TaskProvider for Todoist (read-only).
+// TodoistProvider implements core.TaskProvider for Todoist.
 // Tasks are fetched from the Todoist REST API and mapped to ThreeDoors tasks.
-// Write operations return core.ErrReadOnly.
+// MarkComplete is bidirectional (calls Todoist API); other write operations return core.ErrReadOnly.
 type TodoistProvider struct {
 	client     TaskFetcher
 	projectIDs []string
 	filter     string
 	cachePath  string
+	cb         *core.CircuitBreaker
 }
 
 // NewTodoistProvider creates a TodoistProvider with the given API client and config.
@@ -41,6 +43,7 @@ func NewTodoistProvider(client TaskFetcher, cfg *TodoistConfig) *TodoistProvider
 		client:     client,
 		projectIDs: cfg.ProjectIDs,
 		filter:     cfg.Filter,
+		cb:         core.NewCircuitBreaker(core.DefaultCircuitBreakerConfig()),
 	}
 }
 
@@ -183,9 +186,13 @@ func (p *TodoistProvider) DeleteTask(_ string) error {
 	return core.ErrReadOnly
 }
 
-// MarkComplete returns ErrReadOnly; Todoist provider is read-only.
-func (p *TodoistProvider) MarkComplete(_ string) error {
-	return core.ErrReadOnly
+// MarkComplete closes a task via the Todoist API, protected by a circuit breaker.
+// When the circuit is open, returns ErrCircuitOpen so the WAL layer can queue it.
+func (p *TodoistProvider) MarkComplete(taskID string) error {
+	return p.cb.Execute(func() error {
+		ctx := context.Background()
+		return p.client.CloseTask(ctx, taskID)
+	})
 }
 
 // Watch returns nil; Todoist provider does not support webhook-based watching
@@ -231,7 +238,8 @@ func (p *TodoistProvider) HealthCheck() core.HealthCheckResult {
 	}
 }
 
-// Factory creates a TodoistProvider from a ProviderConfig.
+// Factory creates a TodoistProvider from a ProviderConfig, wrapped with WALProvider
+// for offline-first bidirectional sync.
 func Factory(config *core.ProviderConfig) (core.TaskProvider, error) {
 	settings := findTodoistSettings(config)
 	if settings == nil {
@@ -249,6 +257,7 @@ func Factory(config *core.ProviderConfig) (core.TaskProvider, error) {
 	configDir, dirErr := core.GetConfigDirPath()
 	if dirErr == nil {
 		provider.SetCachePath(configDir)
+		return core.NewWALProvider(provider, configDir), nil
 	}
 
 	return provider, nil
