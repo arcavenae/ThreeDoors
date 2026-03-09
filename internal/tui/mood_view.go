@@ -48,7 +48,7 @@ func (mv *MoodView) Update(msg tea.Msg) tea.Cmd {
 
 func (mv *MoodView) handleMoodSelection(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
-	case "esc":
+	case "esc", "q":
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "1":
 		return moodCmd("Focused", "")

@@ -129,7 +129,7 @@ func (dv *DetailView) Update(msg tea.Msg) tea.Cmd {
 
 func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
-	case "esc":
+	case "esc", "q":
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "c", "C":
 		if err := dv.task.UpdateStatus(core.StatusComplete); err != nil {

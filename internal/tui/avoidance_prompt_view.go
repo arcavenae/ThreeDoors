@@ -49,7 +49,7 @@ func (v *AvoidancePromptView) Update(msg tea.Msg) tea.Cmd {
 			return func() tea.Msg {
 				return AvoidanceActionMsg{Task: v.task, Action: "archive"}
 			}
-		case "esc", "escape":
+		case "esc", "escape", "q":
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
 		}
 	}
