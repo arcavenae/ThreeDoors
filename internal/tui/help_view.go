@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-const helpPageSize = 20
 
 // helpEntry represents a single key/command → description mapping.
 type helpEntry struct {
@@ -96,56 +95,91 @@ var helpContent = []helpSection{
 	},
 }
 
-// HelpView displays a scrollable categorized help screen.
+// headerHeight is the number of lines consumed by the title header above the viewport.
+const headerHeight = 2
+
+// footerHeight is the number of lines consumed by the footer below the viewport.
+const footerHeight = 3
+
+// HelpView displays a scrollable categorized help screen using bubbles/viewport.
 type HelpView struct {
-	lines  []string
-	offset int
-	width  int
+	viewport viewport.Model
+	content  string
+	width    int
+	height   int
+	ready    bool
 }
 
-// NewHelpView creates a new HelpView with pre-rendered content lines.
+// NewHelpView creates a new HelpView with pre-rendered content.
 func NewHelpView() *HelpView {
 	hv := &HelpView{
-		width: 80,
+		width:  80,
+		height: 24,
 	}
-	hv.renderLines()
+	hv.renderContent()
+	hv.initViewport()
 	return hv
 }
 
 // SetWidth sets the terminal width and re-renders content.
 func (hv *HelpView) SetWidth(w int) {
 	hv.width = w
-	hv.renderLines()
+	hv.renderContent()
+	hv.viewport.Width = w
+	hv.viewport.SetContent(hv.content)
 }
 
-// renderLines pre-computes all output lines from structured help content.
-func (hv *HelpView) renderLines() {
-	hv.lines = nil
+// SetHeight sets the terminal height and adjusts viewport.
+func (hv *HelpView) SetHeight(h int) {
+	hv.height = h
+	vpHeight := h - headerHeight - footerHeight
+	if vpHeight < 1 {
+		vpHeight = 1
+	}
+	hv.viewport.Height = vpHeight
+}
 
+// initViewport creates and configures the viewport.
+func (hv *HelpView) initViewport() {
+	vpHeight := hv.height - headerHeight - footerHeight
+	if vpHeight < 1 {
+		vpHeight = 1
+	}
+	hv.viewport = viewport.New(hv.width, vpHeight)
+	hv.viewport.SetContent(hv.content)
+	hv.viewport.MouseWheelEnabled = true
+	hv.ready = true
+}
+
+// renderContent pre-computes all help content as a single string.
+func (hv *HelpView) renderContent() {
 	keyWidth := 20
-	// Description column width: total width minus key column minus padding/gutters
 	descWidth := hv.width - keyWidth - 6
 	if descWidth < 20 {
 		descWidth = 20
 	}
 
+	var s strings.Builder
+
 	for i, section := range helpContent {
 		if i > 0 {
-			hv.lines = append(hv.lines, "")
+			s.WriteString("\n")
 		}
-		hv.lines = append(hv.lines, syncLogHeaderStyle.Render(section.Title))
-		hv.lines = append(hv.lines, "")
+		s.WriteString(syncLogHeaderStyle.Render(section.Title))
+		s.WriteString("\n\n")
 
 		for _, entry := range section.Entries {
 			key := headerStyle.Render(fmt.Sprintf("  %-*s", keyWidth, entry.Key))
 			wrapped := wordWrap(entry.Description, descWidth)
 			parts := strings.Split(wrapped, "\n")
-			hv.lines = append(hv.lines, fmt.Sprintf("%s  %s", key, parts[0]))
+			fmt.Fprintf(&s, "%s  %s\n", key, parts[0])
 			for _, cont := range parts[1:] {
-				hv.lines = append(hv.lines, fmt.Sprintf("  %-*s  %s", keyWidth, "", cont))
+				fmt.Fprintf(&s, "  %-*s  %s\n", keyWidth, "", cont)
 			}
 		}
 	}
+
+	hv.content = s.String()
 }
 
 // wordWrap wraps text to fit within maxWidth columns.
@@ -186,27 +220,12 @@ func (hv *HelpView) Update(msg tea.Msg) tea.Cmd {
 		switch msg.String() {
 		case "q", "esc":
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
-		case "j", "down":
-			if hv.offset < len(hv.lines)-1 {
-				hv.offset++
-			}
-		case "k", "up":
-			if hv.offset > 0 {
-				hv.offset--
-			}
-		case "pgdown", " ":
-			hv.offset += helpPageSize
-			if hv.offset > len(hv.lines)-1 {
-				hv.offset = max(0, len(hv.lines)-1)
-			}
-		case "pgup":
-			hv.offset -= helpPageSize
-			if hv.offset < 0 {
-				hv.offset = 0
-			}
 		}
 	}
-	return nil
+
+	var cmd tea.Cmd
+	hv.viewport, cmd = hv.viewport.Update(msg)
+	return cmd
 }
 
 // View renders the help screen.
@@ -216,28 +235,17 @@ func (hv *HelpView) View() string {
 	s.WriteString(syncLogHeaderStyle.Render("Help"))
 	s.WriteString("\n\n")
 
-	if len(hv.lines) == 0 {
+	if len(hv.content) == 0 {
 		s.WriteString(helpStyle.Render("No help content available."))
 		s.WriteString("\n\n")
 		s.WriteString(helpStyle.Render("q/Esc to return"))
 		return s.String()
 	}
 
-	// Calculate visible window
-	visibleLines := helpPageSize
-	end := hv.offset + visibleLines
-	if end > len(hv.lines) {
-		end = len(hv.lines)
-	}
-	visible := hv.lines[hv.offset:end]
+	s.WriteString(hv.viewport.View())
 
-	for _, line := range visible {
-		s.WriteString(line)
-		s.WriteString("\n")
-	}
-
-	fmt.Fprintf(&s, "\n  Showing lines %d-%d of %d", hv.offset+1, end, len(hv.lines))
-	s.WriteString("\n\n")
+	fmt.Fprintf(&s, "\n\n  %3.f%%", hv.viewport.ScrollPercent()*100) //nolint:mnd
+	s.WriteString("\n")
 	s.WriteString(helpStyle.Render("j/k scroll | PgUp/PgDn page | q/Esc return"))
 
 	return s.String()

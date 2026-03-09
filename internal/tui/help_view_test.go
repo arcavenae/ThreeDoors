@@ -17,166 +17,158 @@ func TestHelpView_NewHelpView(t *testing.T) {
 	if hv == nil {
 		t.Fatal("NewHelpView returned nil")
 	}
-	if len(hv.lines) == 0 {
-		t.Error("help view should have pre-rendered lines")
-	}
-	if hv.offset != 0 {
-		t.Errorf("initial offset = %d, want 0", hv.offset)
+	if len(hv.content) == 0 {
+		t.Error("help view should have pre-rendered content")
 	}
 	if hv.width != 80 {
 		t.Errorf("default width = %d, want 80", hv.width)
+	}
+	if !hv.ready {
+		t.Error("help view should be ready after creation")
 	}
 }
 
 func TestHelpView_SetWidth(t *testing.T) {
 	t.Parallel()
 	hv := NewHelpView()
-	originalLines := len(hv.lines)
 
 	hv.SetWidth(120)
 	if hv.width != 120 {
 		t.Errorf("width = %d, want 120", hv.width)
 	}
-	// Lines should be re-rendered (may differ in count due to word wrap changes)
-	if len(hv.lines) == 0 {
-		t.Error("lines should not be empty after SetWidth")
+	if hv.viewport.Width != 120 {
+		t.Errorf("viewport width = %d, want 120", hv.viewport.Width)
 	}
-	_ = originalLines // word wrap may change line count
+	if len(hv.content) == 0 {
+		t.Error("content should not be empty after SetWidth")
+	}
 }
 
-func TestHelpView_Update_KeyHandling(t *testing.T) {
+func TestHelpView_SetHeight(t *testing.T) {
+	t.Parallel()
+	hv := NewHelpView()
+
+	hv.SetHeight(40)
+	if hv.height != 40 {
+		t.Errorf("height = %d, want 40", hv.height)
+	}
+	// viewport height = total - header - footer
+	wantVPHeight := 40 - headerHeight - footerHeight
+	if hv.viewport.Height != wantVPHeight {
+		t.Errorf("viewport height = %d, want %d", hv.viewport.Height, wantVPHeight)
+	}
+}
+
+func TestHelpView_SetHeight_MinimumClamp(t *testing.T) {
+	t.Parallel()
+	hv := NewHelpView()
+
+	hv.SetHeight(1)
+	if hv.viewport.Height < 1 {
+		t.Errorf("viewport height should be at least 1, got %d", hv.viewport.Height)
+	}
+}
+
+func TestHelpView_Update_QuitKeys(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name       string
-		key        tea.KeyMsg
-		initial    int
-		totalLines int
-		wantOffset int
-		wantCmd    bool
+		name string
+		key  tea.KeyMsg
 	}{
 		{
-			name:       "j scrolls down",
-			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: 1,
+			name: "esc returns to doors",
+			key:  tea.KeyMsg{Type: tea.KeyEsc},
 		},
 		{
-			name:       "k scrolls up",
-			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'k'}},
-			initial:    5,
-			totalLines: 50,
-			wantOffset: 4,
-		},
-		{
-			name:       "k does not go below 0",
-			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'k'}},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: 0,
-		},
-		{
-			name:       "j does not exceed line count",
-			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}},
-			initial:    49,
-			totalLines: 50,
-			wantOffset: 49,
-		},
-		{
-			name:       "down arrow scrolls down",
-			key:        tea.KeyMsg{Type: tea.KeyDown},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: 1,
-		},
-		{
-			name:       "up arrow scrolls up",
-			key:        tea.KeyMsg{Type: tea.KeyUp},
-			initial:    3,
-			totalLines: 50,
-			wantOffset: 2,
-		},
-		{
-			name:       "pgdown pages forward",
-			key:        tea.KeyMsg{Type: tea.KeyPgDown},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: helpPageSize,
-		},
-		{
-			name:       "pgdown clamps to max",
-			key:        tea.KeyMsg{Type: tea.KeyPgDown},
-			initial:    45,
-			totalLines: 50,
-			wantOffset: 49,
-		},
-		{
-			name:       "pgup pages backward",
-			key:        tea.KeyMsg{Type: tea.KeyPgUp},
-			initial:    helpPageSize + 5,
-			totalLines: 50,
-			wantOffset: 5,
-		},
-		{
-			name:       "pgup clamps to 0",
-			key:        tea.KeyMsg{Type: tea.KeyPgUp},
-			initial:    3,
-			totalLines: 50,
-			wantOffset: 0,
-		},
-		{
-			name:       "space pages forward",
-			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{' '}},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: helpPageSize,
-		},
-		{
-			name:       "esc returns to doors",
-			key:        tea.KeyMsg{Type: tea.KeyEsc},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: 0,
-			wantCmd:    true,
-		},
-		{
-			name:       "q returns to doors",
-			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}},
-			initial:    0,
-			totalLines: 50,
-			wantOffset: 0,
-			wantCmd:    true,
+			name: "q returns to doors",
+			key:  tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			hv := &HelpView{width: 80}
-			// Create exact number of lines for deterministic testing
-			hv.lines = make([]string, tt.totalLines)
-			for i := range hv.lines {
-				hv.lines[i] = "test line"
-			}
-			hv.offset = tt.initial
+			hv := NewHelpView()
 
 			cmd := hv.Update(tt.key)
-
-			if tt.wantCmd {
-				if cmd == nil {
-					t.Fatal("expected command, got nil")
-				}
-				msg := cmd()
-				if _, ok := msg.(ReturnToDoorsMsg); !ok {
-					t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
-				}
-			} else {
-				if hv.offset != tt.wantOffset {
-					t.Errorf("offset = %d, want %d", hv.offset, tt.wantOffset)
-				}
+			if cmd == nil {
+				t.Fatal("expected command, got nil")
+			}
+			msg := cmd()
+			if _, ok := msg.(ReturnToDoorsMsg); !ok {
+				t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
 			}
 		})
+	}
+}
+
+func TestHelpView_Update_ScrollKeys(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		key        tea.KeyMsg
+		wantScroll bool
+	}{
+		{
+			name:       "j scrolls down",
+			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'j'}},
+			wantScroll: true,
+		},
+		{
+			name:       "down arrow scrolls",
+			key:        tea.KeyMsg{Type: tea.KeyDown},
+			wantScroll: true,
+		},
+		{
+			name:       "k at top stays at 0",
+			key:        tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'k'}},
+			wantScroll: false,
+		},
+		{
+			name:       "pgdown pages forward",
+			key:        tea.KeyMsg{Type: tea.KeyPgDown},
+			wantScroll: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			hv := NewHelpView()
+			hv.SetHeight(10) // small height so content overflows
+
+			initialOffset := hv.viewport.YOffset
+			hv.Update(tt.key)
+
+			scrolled := hv.viewport.YOffset != initialOffset
+			if scrolled != tt.wantScroll {
+				t.Errorf("scrolled = %v, want %v (offset: %d → %d)",
+					scrolled, tt.wantScroll, initialOffset, hv.viewport.YOffset)
+			}
+		})
+	}
+}
+
+func TestHelpView_Update_ViewportDelegation(t *testing.T) {
+	t.Parallel()
+	hv := NewHelpView()
+	hv.SetHeight(10) // small viewport so content overflows
+
+	// Press down multiple times to scroll
+	for range 5 {
+		hv.Update(tea.KeyMsg{Type: tea.KeyDown})
+	}
+	if hv.viewport.YOffset == 0 {
+		t.Error("viewport should have scrolled after multiple down presses")
+	}
+
+	// Press up to scroll back
+	offset := hv.viewport.YOffset
+	hv.Update(tea.KeyMsg{Type: tea.KeyUp})
+	if hv.viewport.YOffset >= offset {
+		t.Error("viewport should scroll up on up key")
 	}
 }
 
@@ -188,14 +180,15 @@ func TestHelpView_View_Contains80Columns(t *testing.T) {
 
 	hv := NewHelpView()
 	hv.SetWidth(80)
+	hv.SetHeight(100) // large enough to show all content
 	view := hv.View()
 
 	lines := strings.Split(view, "\n")
 	for i, line := range lines {
-		// Strip ANSI codes for width check (in Ascii mode there shouldn't be any,
-		// but let's be safe)
-		if len(line) > 80 {
-			t.Errorf("line %d exceeds 80 columns (%d chars): %q", i+1, len(line), line)
+		// Viewport right-pads lines to fill width; trim trailing spaces for check
+		trimmed := strings.TrimRight(line, " ")
+		if len(trimmed) > 80 {
+			t.Errorf("line %d exceeds 80 columns (%d chars): %q", i+1, len(trimmed), trimmed)
 		}
 	}
 }
@@ -203,14 +196,9 @@ func TestHelpView_View_Contains80Columns(t *testing.T) {
 func TestHelpView_View_ContainsSections(t *testing.T) {
 	t.Parallel()
 	hv := NewHelpView()
-	// View the full content by scrolling through
-	var fullContent strings.Builder
-	for offset := 0; offset < len(hv.lines); offset += helpPageSize {
-		hv.offset = offset
-		fullContent.WriteString(hv.View())
-	}
+	hv.SetHeight(100) // large enough to show all content
 
-	content := fullContent.String()
+	content := hv.View()
 
 	expectedSections := []string{"Navigation", "Task Actions", "Commands", "Search", "Global"}
 	for _, section := range expectedSections {
@@ -223,39 +211,33 @@ func TestHelpView_View_ContainsSections(t *testing.T) {
 func TestHelpView_View_ContainsAllBindings(t *testing.T) {
 	t.Parallel()
 	hv := NewHelpView()
-	// Collect all lines
-	var allText strings.Builder
-	for _, line := range hv.lines {
-		allText.WriteString(line)
-		allText.WriteString("\n")
-	}
-	content := allText.String()
 
+	// Check the raw content rather than the viewport view
 	expectedEntries := []string{
 		":add", ":tag", ":theme", ":mood", ":stats", ":health",
 		":synclog", ":devqueue", ":help", ":quit",
 		"Complete task", "Mark task as blocked",
 	}
 	for _, entry := range expectedEntries {
-		if !strings.Contains(content, entry) {
+		if !strings.Contains(hv.content, entry) {
 			t.Errorf("help content missing entry %q", entry)
 		}
 	}
 }
 
-func TestHelpView_View_ScrollIndicator(t *testing.T) {
+func TestHelpView_View_ScrollPercent(t *testing.T) {
 	t.Parallel()
 	hv := NewHelpView()
 	view := hv.View()
 
-	if !strings.Contains(view, "Showing lines") {
-		t.Error("view should contain scroll position indicator")
+	if !strings.Contains(view, "%") {
+		t.Error("view should contain scroll percentage indicator")
 	}
 }
 
 func TestHelpView_View_Empty(t *testing.T) {
 	t.Parallel()
-	hv := &HelpView{width: 80}
+	hv := &HelpView{width: 80, height: 24}
 	view := hv.View()
 
 	if !strings.Contains(view, "Help") {
@@ -266,12 +248,22 @@ func TestHelpView_View_Empty(t *testing.T) {
 	}
 }
 
+func TestHelpView_MouseWheelEnabled(t *testing.T) {
+	t.Parallel()
+	hv := NewHelpView()
+
+	if !hv.viewport.MouseWheelEnabled {
+		t.Error("viewport should have mouse wheel enabled")
+	}
+}
+
 func TestGolden_HelpView(t *testing.T) {
 	lipgloss.SetColorProfile(termenv.Ascii)
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	hv := NewHelpView()
 	hv.SetWidth(80)
+	hv.SetHeight(24)
 	out := hv.View()
 	golden.RequireEqual(t, []byte(out))
 }

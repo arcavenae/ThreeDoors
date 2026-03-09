@@ -1,26 +1,24 @@
 Help
 
-Navigation
+Navigation                                                                      
+                                                                                
+  a / Left              Select left door (again to deselect)                    
+  w / Up                Select center door (again to deselect)                  
+  d / Right             Select right door (again to deselect)                   
+  s / Down              Re-roll doors (new random selection)                    
+  Enter / Space         Open selected door (detail view)                        
+  j / k                 Scroll down/up (in scrollable views)                    
+  PgDn / Space          Page down (in scrollable views)                         
+  PgUp                  Page up (in scrollable views)                           
+  Esc                   Return to previous view                                 
+                                                                                
+Task Actions                                                                    
+                                                                                
+  C                     Complete task (in detail view)                          
+  B                     Mark task as blocked (in detail view)                   
+  I                     Mark task as in-progress (in detail view)               
+  E                     Expand task — create subtask (in detail view)           
+  F                     Fork task — create variant (in detail view)             
 
-  a / Left              Select left door (again to deselect)
-  w / Up                Select center door (again to deselect)
-  d / Right             Select right door (again to deselect)
-  s / Down              Re-roll doors (new random selection)
-  Enter / Space         Open selected door (detail view)
-  j / k                 Scroll down/up (in scrollable views)
-  PgDn / Space          Page down (in scrollable views)
-  PgUp                  Page up (in scrollable views)
-  Esc                   Return to previous view
-
-Task Actions
-
-  C                     Complete task (in detail view)
-  B                     Mark task as blocked (in detail view)
-  I                     Mark task as in-progress (in detail view)
-  E                     Expand task — create subtask (in detail view)
-  F                     Fork task — create variant (in detail view)
-  P                     Mark as procrastinated (in detail view)
-
-  Showing lines 1-20 of 60
-
+    0%
 j/k scroll | PgUp/PgDn page | q/Esc return

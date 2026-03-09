@@ -248,7 +248,7 @@ func (m *MainModel) SetDevQueue(q *dispatch.DevQueue) {
 // Init implements tea.Model.
 func (m *MainModel) Init() tea.Cmd {
 	// Check for expired deferred tasks on startup and start periodic tick.
-	returned := core.CheckDeferredReturns(m.pool)
+	returned := core.CheckDeferredReturnsWithTracker(m.pool, m.tracker)
 	if returned > 0 {
 		m.doorsView.RefreshDoors()
 		if err := m.saveTasks(); err != nil {
@@ -320,6 +320,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.helpView != nil {
 			m.helpView.SetWidth(msg.Width)
+			m.helpView.SetHeight(msg.Height)
 		}
 		if m.snoozeView != nil {
 			m.snoozeView.SetWidth(msg.Width)
@@ -662,6 +663,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "defer":
 			if err := msg.Task.UpdateStatus(core.StatusDeferred); err == nil {
+				if m.tracker != nil {
+					m.tracker.RecordSnooze(msg.Task.ID, msg.Task.DeferUntil, "someday")
+				}
 				if err := m.saveTasks(); err != nil {
 					fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 				}
@@ -884,7 +888,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, ClearFlashCmd()
 
 	case DeferReturnTickMsg:
-		returned := core.CheckDeferredReturns(m.pool)
+		returned := core.CheckDeferredReturnsWithTracker(m.pool, m.tracker)
 		if returned > 0 {
 			m.doorsView.RefreshDoors()
 			if err := m.saveTasks(); err != nil {
@@ -934,6 +938,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ShowHelpMsg:
 		hv := NewHelpView()
 		hv.SetWidth(m.width)
+		hv.SetHeight(m.height)
 		m.helpView = hv
 		m.previousView = m.viewMode
 		m.viewMode = ViewHelp

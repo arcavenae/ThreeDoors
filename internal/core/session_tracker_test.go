@@ -354,3 +354,283 @@ func TestSessionTracker_RecordUndoComplete_IncludedInFinalize(t *testing.T) {
 		t.Errorf("Expected finalized 1 undo entry, got %d", len(metrics.UndoCompletes))
 	}
 }
+
+// --- RecordSnooze Tests ---
+
+func TestSessionTracker_RecordSnooze(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	deferUntil := time.Date(2026, 3, 10, 9, 0, 0, 0, time.UTC)
+	st.RecordSnooze("task-abc", &deferUntil, "tomorrow")
+
+	if st.metrics.SnoozeCount != 1 {
+		t.Errorf("Expected SnoozeCount = 1, got %d", st.metrics.SnoozeCount)
+	}
+	if len(st.metrics.SnoozeEvents) != 1 {
+		t.Fatalf("Expected 1 snooze event, got %d", len(st.metrics.SnoozeEvents))
+	}
+	e := st.metrics.SnoozeEvents[0]
+	if e.TaskID != "task-abc" {
+		t.Errorf("Expected task ID 'task-abc', got %q", e.TaskID)
+	}
+	if e.DeferUntil == nil || !e.DeferUntil.Equal(deferUntil) {
+		t.Errorf("Expected DeferUntil = %v, got %v", deferUntil, e.DeferUntil)
+	}
+	if e.Option != "tomorrow" {
+		t.Errorf("Expected option 'tomorrow', got %q", e.Option)
+	}
+	if e.Timestamp.IsZero() {
+		t.Error("Expected non-zero timestamp")
+	}
+}
+
+func TestSessionTracker_RecordSnooze_Someday(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	st.RecordSnooze("task-xyz", nil, "someday")
+
+	if st.metrics.SnoozeCount != 1 {
+		t.Errorf("Expected SnoozeCount = 1, got %d", st.metrics.SnoozeCount)
+	}
+	e := st.metrics.SnoozeEvents[0]
+	if e.DeferUntil != nil {
+		t.Errorf("Expected nil DeferUntil for someday, got %v", e.DeferUntil)
+	}
+	if e.Option != "someday" {
+		t.Errorf("Expected option 'someday', got %q", e.Option)
+	}
+}
+
+func TestSessionTracker_RecordSnooze_Multiple(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	d1 := time.Date(2026, 3, 10, 9, 0, 0, 0, time.UTC)
+	d2 := time.Date(2026, 3, 14, 9, 0, 0, 0, time.UTC)
+
+	st.RecordSnooze("task-1", &d1, "tomorrow")
+	st.RecordSnooze("task-2", &d2, "next_week")
+	st.RecordSnooze("task-3", nil, "someday")
+
+	if st.metrics.SnoozeCount != 3 {
+		t.Errorf("Expected SnoozeCount = 3, got %d", st.metrics.SnoozeCount)
+	}
+	if len(st.metrics.SnoozeEvents) != 3 {
+		t.Errorf("Expected 3 snooze events, got %d", len(st.metrics.SnoozeEvents))
+	}
+}
+
+func TestSessionTracker_RecordSnooze_AllOptions(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		option string
+	}{
+		{"tomorrow", "tomorrow"},
+		{"next_week", "next_week"},
+		{"pick_date", "pick_date"},
+		{"someday", "someday"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			st := NewSessionTracker()
+			st.RecordSnooze("task-1", nil, tt.option)
+			if st.metrics.SnoozeEvents[0].Option != tt.option {
+				t.Errorf("Expected option %q, got %q", tt.option, st.metrics.SnoozeEvents[0].Option)
+			}
+		})
+	}
+}
+
+// --- RecordSnoozeReturn Tests ---
+
+func TestSessionTracker_RecordSnoozeReturn(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	st.RecordSnoozeReturn("task-ret-1")
+
+	if st.metrics.SnoozeReturnCount != 1 {
+		t.Errorf("Expected SnoozeReturnCount = 1, got %d", st.metrics.SnoozeReturnCount)
+	}
+	if len(st.metrics.SnoozeReturnEvents) != 1 {
+		t.Fatalf("Expected 1 snooze return event, got %d", len(st.metrics.SnoozeReturnEvents))
+	}
+	e := st.metrics.SnoozeReturnEvents[0]
+	if e.TaskID != "task-ret-1" {
+		t.Errorf("Expected task ID 'task-ret-1', got %q", e.TaskID)
+	}
+	if e.Timestamp.IsZero() {
+		t.Error("Expected non-zero timestamp")
+	}
+}
+
+func TestSessionTracker_RecordSnoozeReturn_Multiple(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	st.RecordSnoozeReturn("task-1")
+	st.RecordSnoozeReturn("task-2")
+
+	if st.metrics.SnoozeReturnCount != 2 {
+		t.Errorf("Expected SnoozeReturnCount = 2, got %d", st.metrics.SnoozeReturnCount)
+	}
+	if len(st.metrics.SnoozeReturnEvents) != 2 {
+		t.Errorf("Expected 2 snooze return events, got %d", len(st.metrics.SnoozeReturnEvents))
+	}
+}
+
+// --- RecordUnsnooze Tests ---
+
+func TestSessionTracker_RecordUnsnooze(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	st.RecordUnsnooze("task-unsn-1")
+
+	if st.metrics.UnsnoozeCount != 1 {
+		t.Errorf("Expected UnsnoozeCount = 1, got %d", st.metrics.UnsnoozeCount)
+	}
+	if len(st.metrics.UnsnoozeEvents) != 1 {
+		t.Fatalf("Expected 1 unsnooze event, got %d", len(st.metrics.UnsnoozeEvents))
+	}
+	e := st.metrics.UnsnoozeEvents[0]
+	if e.TaskID != "task-unsn-1" {
+		t.Errorf("Expected task ID 'task-unsn-1', got %q", e.TaskID)
+	}
+	if e.Timestamp.IsZero() {
+		t.Error("Expected non-zero timestamp")
+	}
+}
+
+func TestSessionTracker_RecordUnsnooze_Multiple(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	st.RecordUnsnooze("task-1")
+	st.RecordUnsnooze("task-2")
+	st.RecordUnsnooze("task-3")
+
+	if st.metrics.UnsnoozeCount != 3 {
+		t.Errorf("Expected UnsnoozeCount = 3, got %d", st.metrics.UnsnoozeCount)
+	}
+	if len(st.metrics.UnsnoozeEvents) != 3 {
+		t.Errorf("Expected 3 unsnooze events, got %d", len(st.metrics.UnsnoozeEvents))
+	}
+}
+
+// --- Snooze events in Finalize ---
+
+func TestSessionTracker_SnoozeEventsIncludedInFinalize(t *testing.T) {
+	t.Parallel()
+	st := NewSessionTracker()
+	d := time.Date(2026, 3, 10, 9, 0, 0, 0, time.UTC)
+	st.RecordSnooze("task-s", &d, "tomorrow")
+	st.RecordSnoozeReturn("task-r")
+	st.RecordUnsnooze("task-u")
+
+	metrics := st.Finalize()
+
+	if metrics.SnoozeCount != 1 {
+		t.Errorf("Expected finalized SnoozeCount = 1, got %d", metrics.SnoozeCount)
+	}
+	if len(metrics.SnoozeEvents) != 1 {
+		t.Errorf("Expected finalized 1 snooze event, got %d", len(metrics.SnoozeEvents))
+	}
+	if metrics.SnoozeReturnCount != 1 {
+		t.Errorf("Expected finalized SnoozeReturnCount = 1, got %d", metrics.SnoozeReturnCount)
+	}
+	if len(metrics.SnoozeReturnEvents) != 1 {
+		t.Errorf("Expected finalized 1 snooze return event, got %d", len(metrics.SnoozeReturnEvents))
+	}
+	if metrics.UnsnoozeCount != 1 {
+		t.Errorf("Expected finalized UnsnoozeCount = 1, got %d", metrics.UnsnoozeCount)
+	}
+	if len(metrics.UnsnoozeEvents) != 1 {
+		t.Errorf("Expected finalized 1 unsnooze event, got %d", len(metrics.UnsnoozeEvents))
+	}
+}
+
+// --- CheckDeferredReturnsWithTracker Tests ---
+
+func TestCheckDeferredReturnsWithTracker_LogsSnoozeReturn(t *testing.T) {
+	t.Parallel()
+
+	pool := NewTaskPool()
+	task := NewTask("deferred task")
+	task.Status = StatusDeferred
+	past := time.Now().UTC().Add(-1 * time.Hour)
+	task.DeferUntil = &past
+	pool.AddTask(task)
+
+	tracker := NewSessionTracker()
+	returned := CheckDeferredReturnsWithTracker(pool, tracker)
+
+	if returned != 1 {
+		t.Errorf("returned = %d, want 1", returned)
+	}
+	if tracker.metrics.SnoozeReturnCount != 1 {
+		t.Errorf("SnoozeReturnCount = %d, want 1", tracker.metrics.SnoozeReturnCount)
+	}
+	if len(tracker.metrics.SnoozeReturnEvents) != 1 {
+		t.Fatalf("Expected 1 snooze return event, got %d", len(tracker.metrics.SnoozeReturnEvents))
+	}
+	if tracker.metrics.SnoozeReturnEvents[0].TaskID != task.ID {
+		t.Errorf("TaskID = %q, want %q", tracker.metrics.SnoozeReturnEvents[0].TaskID, task.ID)
+	}
+}
+
+func TestCheckDeferredReturnsWithTracker_NilTracker(t *testing.T) {
+	t.Parallel()
+
+	pool := NewTaskPool()
+	task := NewTask("deferred task")
+	task.Status = StatusDeferred
+	past := time.Now().UTC().Add(-1 * time.Hour)
+	task.DeferUntil = &past
+	pool.AddTask(task)
+
+	// Should not panic with nil tracker
+	returned := CheckDeferredReturnsWithTracker(pool, nil)
+
+	if returned != 1 {
+		t.Errorf("returned = %d, want 1", returned)
+	}
+	if task.Status != StatusTodo {
+		t.Errorf("status = %q, want %q", task.Status, StatusTodo)
+	}
+}
+
+func TestCheckDeferredReturnsWithTracker_MultipleReturns(t *testing.T) {
+	t.Parallel()
+
+	pool := NewTaskPool()
+	past := time.Now().UTC().Add(-2 * time.Hour)
+
+	task1 := NewTask("expired 1")
+	task1.Status = StatusDeferred
+	task1.DeferUntil = &past
+	pool.AddTask(task1)
+
+	pastCopy := past
+	task2 := NewTask("expired 2")
+	task2.Status = StatusDeferred
+	task2.DeferUntil = &pastCopy
+	pool.AddTask(task2)
+
+	future := time.Now().UTC().Add(24 * time.Hour)
+	task3 := NewTask("future")
+	task3.Status = StatusDeferred
+	task3.DeferUntil = &future
+	pool.AddTask(task3)
+
+	tracker := NewSessionTracker()
+	returned := CheckDeferredReturnsWithTracker(pool, tracker)
+
+	if returned != 2 {
+		t.Errorf("returned = %d, want 2", returned)
+	}
+	if tracker.metrics.SnoozeReturnCount != 2 {
+		t.Errorf("SnoozeReturnCount = %d, want 2", tracker.metrics.SnoozeReturnCount)
+	}
+	if len(tracker.metrics.SnoozeReturnEvents) != 2 {
+		t.Errorf("Expected 2 snooze return events, got %d", len(tracker.metrics.SnoozeReturnEvents))
+	}
+}

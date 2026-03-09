@@ -30,6 +30,26 @@ type DoorFeedbackEntry struct {
 	Comment      string    `json:"comment,omitempty"`
 }
 
+// SnoozeEvent captures when a task is snoozed/deferred.
+type SnoozeEvent struct {
+	Timestamp  time.Time  `json:"timestamp"`
+	TaskID     string     `json:"task_id"`
+	DeferUntil *time.Time `json:"defer_until,omitempty"` // nil for "someday"
+	Option     string     `json:"option"`                // "tomorrow", "next_week", "pick_date", "someday"
+}
+
+// SnoozeReturnEvent captures when a deferred task auto-returns to todo.
+type SnoozeReturnEvent struct {
+	Timestamp time.Time `json:"timestamp"`
+	TaskID    string    `json:"task_id"`
+}
+
+// UnsnoozeEvent captures when a user manually un-snoozes a task.
+type UnsnoozeEvent struct {
+	Timestamp time.Time `json:"timestamp"`
+	TaskID    string    `json:"task_id"`
+}
+
 // MoodEntry captures a timestamped mood record.
 type MoodEntry struct {
 	Timestamp  time.Time `json:"timestamp"`
@@ -67,6 +87,12 @@ type SessionMetrics struct {
 	UndoCompleteCount    int                   `json:"undo_complete_count"`
 	DependencyEvents     []DependencyEvent     `json:"dependency_events,omitempty"`
 	DependencyEventCount int                   `json:"dependency_event_count"`
+	SnoozeEvents         []SnoozeEvent         `json:"snooze_events,omitempty"`
+	SnoozeCount          int                   `json:"snooze_count"`
+	SnoozeReturnEvents   []SnoozeReturnEvent   `json:"snooze_return_events,omitempty"`
+	SnoozeReturnCount    int                   `json:"snooze_return_count"`
+	UnsnoozeEvents       []UnsnoozeEvent       `json:"unsnooze_events,omitempty"`
+	UnsnoozeCount        int                   `json:"unsnooze_count"`
 }
 
 // SessionTracker provides in-memory tracking of user behavior during an app session.
@@ -165,6 +191,35 @@ func (st *SessionTracker) RecordDoorFeedback(taskID, feedbackType, comment strin
 		Comment:      comment,
 	})
 	st.metrics.DoorFeedbackCount++
+}
+
+// RecordSnooze records when a task is snoozed/deferred.
+func (st *SessionTracker) RecordSnooze(taskID string, deferUntil *time.Time, option string) {
+	st.metrics.SnoozeEvents = append(st.metrics.SnoozeEvents, SnoozeEvent{
+		Timestamp:  time.Now().UTC(),
+		TaskID:     taskID,
+		DeferUntil: deferUntil,
+		Option:     option,
+	})
+	st.metrics.SnoozeCount++
+}
+
+// RecordSnoozeReturn records when a deferred task auto-returns to todo.
+func (st *SessionTracker) RecordSnoozeReturn(taskID string) {
+	st.metrics.SnoozeReturnEvents = append(st.metrics.SnoozeReturnEvents, SnoozeReturnEvent{
+		Timestamp: time.Now().UTC(),
+		TaskID:    taskID,
+	})
+	st.metrics.SnoozeReturnCount++
+}
+
+// RecordUnsnooze records when a user manually un-snoozes a task.
+func (st *SessionTracker) RecordUnsnooze(taskID string) {
+	st.metrics.UnsnoozeEvents = append(st.metrics.UnsnoozeEvents, UnsnoozeEvent{
+		Timestamp: time.Now().UTC(),
+		TaskID:    taskID,
+	})
+	st.metrics.UnsnoozeCount++
 }
 
 // MetricsSnapshot provides a read-only view of current session state without finalizing.
