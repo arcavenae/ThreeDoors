@@ -207,7 +207,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.3 | Viewport Adoption for Help View | Done (PR #364) | P2 | None (sequence after Epic 39 overlay work) |
 | 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | Done (PR #379) | P2 | 41.3 |
 | 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
-| 41.6 | Adaptive Color Profile Support | Not Started | P2 | None |
+| 41.6 | Adaptive Color Profile Support | In Review | P2 | None |
 
 ## Completed Epics
 

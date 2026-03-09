@@ -32,11 +32,11 @@ func TestClassicThemeColors(t *testing.T) {
 
 	theme := NewClassicTheme()
 
-	if theme.Colors.Frame == "" {
-		t.Error("expected non-empty Frame color")
+	if theme.Colors.Frame == nil {
+		t.Error("expected non-nil Frame color")
 	}
-	if theme.Colors.Selected == "" {
-		t.Error("expected non-empty Selected color")
+	if theme.Colors.Selected == nil {
+		t.Error("expected non-nil Selected color")
 	}
 }
 
@@ -75,9 +75,10 @@ func TestClassicRenderSelected(t *testing.T) {
 func TestClassicRenderMatchesExistingStyle(t *testing.T) {
 	t.Parallel()
 
-	// These styles match the existing doorStyle/selectedDoorStyle from internal/tui/styles.go.
-	colorAccent := lipgloss.Color("63")
-	colorDoorBright := lipgloss.Color("255")
+	// These styles match the existing doorStyle/selectedDoorStyle from internal/tui/styles.go,
+	// now using CompleteColor for adaptive color profile support.
+	colorAccent := lipgloss.CompleteColor{TrueColor: "#5f5fff", ANSI256: "63", ANSI: "5"}
+	colorDoorBright := lipgloss.CompleteColor{TrueColor: "#eeeeee", ANSI256: "255", ANSI: "15"}
 
 	existingDoorStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).

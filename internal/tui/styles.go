@@ -9,22 +9,22 @@ import (
 const flashDuration = 3 * time.Second
 
 var (
-	// Status colors
-	colorTodo       = lipgloss.Color("252")
-	colorInProgress = lipgloss.Color("214")
-	colorBlocked    = lipgloss.Color("196")
-	colorInReview   = lipgloss.Color("39")
-	colorComplete   = lipgloss.Color("82")
-	colorAccent     = lipgloss.Color("63")
-	colorSelected   = lipgloss.Color("86")
-	colorGreeting   = lipgloss.Color("229")
-	colorDoorBright = lipgloss.Color("255")
+	// Status colors — use CompleteColor for graceful degradation on 16-color terminals.
+	colorTodo       lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#d0d0d0", ANSI256: "252", ANSI: "7"}
+	colorInProgress lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"}
+	colorBlocked    lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#ff0000", ANSI256: "196", ANSI: "1"}
+	colorInReview   lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#00afff", ANSI256: "39", ANSI: "4"}
+	colorComplete   lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#5fff00", ANSI256: "82", ANSI: "2"}
+	colorAccent     lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#5f5fff", ANSI256: "63", ANSI: "5"}
+	colorSelected   lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"}
+	colorGreeting   lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#ffffaf", ANSI256: "229", ANSI: "11"}
+	colorDoorBright lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#eeeeee", ANSI256: "255", ANSI: "15"}
 
 	// Per-door accent colors (left, center, right)
-	doorColors = []lipgloss.Color{
-		lipgloss.Color("86"),  // Door 0 (left) — cyan
-		lipgloss.Color("212"), // Door 1 (center) — magenta
-		lipgloss.Color("220"), // Door 2 (right) — yellow
+	doorColors = []lipgloss.TerminalColor{
+		lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"},   // Door 0 (left) — cyan
+		lipgloss.CompleteColor{TrueColor: "#ff87d7", ANSI256: "212", ANSI: "13"}, // Door 1 (center) — magenta
+		lipgloss.CompleteColor{TrueColor: "#ffd700", ANSI256: "220", ANSI: "11"}, // Door 2 (right) — yellow
 	}
 
 	// Door styles
@@ -37,7 +37,7 @@ var (
 	// creating a focus funnel toward the selected door.
 	unselectedDoorStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("240")).
+				BorderForeground(lipgloss.CompleteColor{TrueColor: "#585858", ANSI256: "240", ANSI: "8"}).
 				Padding(1, 2).
 				Faint(true)
 
@@ -72,24 +72,24 @@ var (
 			Bold(true)
 
 	helpStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("241"))
+			Foreground(lipgloss.CompleteColor{TrueColor: "#626262", ANSI256: "241", ANSI: "8"})
 
 	moodHeaderStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("205"))
+			Foreground(lipgloss.CompleteColor{TrueColor: "#ff5faf", ANSI256: "205", ANSI: "13"})
 
 	// Search styles
 	searchResultStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("252"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#d0d0d0", ANSI256: "252", ANSI: "7"})
 
 	searchSelectedStyle = lipgloss.NewStyle().
 				Bold(true).
 				Foreground(colorSelected).
-				Background(lipgloss.Color("236"))
+				Background(lipgloss.CompleteColor{TrueColor: "#303030", ANSI256: "236", ANSI: "0"})
 
 	commandModeStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("214"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"})
 
 	// Greeting style
 	greetingStyle = lipgloss.NewStyle().
@@ -97,7 +97,7 @@ var (
 
 	// Separator style
 	separatorStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("238"))
+			Foreground(lipgloss.CompleteColor{TrueColor: "#444444", ANSI256: "238", ANSI: "8"})
 
 	// Greeting messages pool — "progress over perfection" theme
 	greetingMessages = []string{
@@ -150,10 +150,10 @@ var (
 	// Next-steps view styles
 	nextStepsHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("86"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"})
 
 	nextStepsOptionStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("252"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#d0d0d0", ANSI256: "252", ANSI: "7"})
 
 	// Health check styles
 	healthOKStyle = lipgloss.NewStyle().
@@ -173,7 +173,7 @@ var (
 
 	// Values/goals styles
 	valuesFooterStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("243")).
+				Foreground(lipgloss.CompleteColor{TrueColor: "#767676", ANSI256: "243", ANSI: "8"}).
 				Italic(true)
 
 	valuesHeaderStyle = lipgloss.NewStyle().
@@ -182,11 +182,11 @@ var (
 
 	feedbackHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("214"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"})
 
 	improvementHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("86"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"})
 
 	valuesFooterSeparator = "  ·  "
 
@@ -194,57 +194,57 @@ var (
 
 	// Badge style for category tags on door cards
 	badgeStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("243"))
+			Foreground(lipgloss.CompleteColor{TrueColor: "#767676", ANSI256: "243", ANSI: "8"})
 
 	// Conflict view styles
 	conflictHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("196"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ff0000", ANSI256: "196", ANSI: "1"})
 
 	conflictLocalStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("86")).
+				BorderForeground(lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"}).
 				Padding(1, 2)
 
 	conflictRemoteStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("212")).
+				BorderForeground(lipgloss.CompleteColor{TrueColor: "#ff87d7", ANSI256: "212", ANSI: "13"}).
 				Padding(1, 2)
 
 	conflictDiffStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("214")).
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"}).
 				Bold(true)
 
 	// Sync log styles
 	syncLogHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("39"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#00afff", ANSI256: "39", ANSI: "4"})
 
 	syncLogEntryStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("252"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#d0d0d0", ANSI256: "252", ANSI: "7"})
 
 	syncLogTimestampStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("243"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#767676", ANSI256: "243", ANSI: "8"})
 
 	syncLogErrorStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("196"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ff0000", ANSI256: "196", ANSI: "1"})
 
 	// Proposal view styles
 	proposalHeaderStyle = lipgloss.NewStyle().
 				Bold(true).
-				Foreground(lipgloss.Color("86"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"})
 
 	proposalSelectedStyle = lipgloss.NewStyle().
 				Bold(true).
 				Foreground(colorSelected).
-				Background(lipgloss.Color("236"))
+				Background(lipgloss.CompleteColor{TrueColor: "#303030", ANSI256: "236", ANSI: "0"})
 
 	proposalStaleStyle = lipgloss.NewStyle().
 				Faint(true).
 				Strikethrough(true)
 
 	proposalBadgeStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("214")).
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"}).
 				Bold(true)
 
 	focusBadgeStyle = lipgloss.NewStyle().
@@ -252,17 +252,17 @@ var (
 			Bold(true)
 
 	proposalTypeStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("39"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#00afff", ANSI256: "39", ANSI: "4"})
 
 	proposalDiffAddStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("82"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#5fff00", ANSI256: "82", ANSI: "2"})
 
 	proposalDiffRemoveStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("196"))
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ff0000", ANSI256: "196", ANSI: "1"})
 
 	proposalPaneStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("63")).
+				BorderForeground(lipgloss.CompleteColor{TrueColor: "#5f5fff", ANSI256: "63", ANSI: "5"}).
 				Padding(1, 2)
 
 	// Stats dashboard styles (Epic 40)
@@ -298,7 +298,7 @@ var (
 )
 
 // StatusColor returns the lipgloss color for a given status string.
-func StatusColor(status string) lipgloss.Color {
+func StatusColor(status string) lipgloss.TerminalColor {
 	switch status {
 	case "todo":
 		return colorTodo
@@ -311,9 +311,9 @@ func StatusColor(status string) lipgloss.Color {
 	case "complete":
 		return colorComplete
 	case "deferred":
-		return lipgloss.Color("243") // gray/muted
+		return lipgloss.CompleteColor{TrueColor: "#767676", ANSI256: "243", ANSI: "8"}
 	case "archived":
-		return lipgloss.Color("240") // darker gray
+		return lipgloss.CompleteColor{TrueColor: "#585858", ANSI256: "240", ANSI: "8"}
 	default:
 		return colorTodo
 	}

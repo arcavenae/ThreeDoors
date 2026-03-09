@@ -9,7 +9,7 @@ import (
 func TestStatusColor_AllStatuses(t *testing.T) {
 	tests := []struct {
 		status string
-		expect lipgloss.Color
+		expect lipgloss.TerminalColor
 	}{
 		{"todo", colorTodo},
 		{"in-progress", colorInProgress},
@@ -94,8 +94,18 @@ func TestDoorColors_AllDistinct(t *testing.T) {
 	if len(doorColors) < 3 {
 		t.Skip("doorColors has fewer than 3 entries")
 	}
-	if doorColors[0] == doorColors[1] || doorColors[1] == doorColors[2] || doorColors[0] == doorColors[2] {
-		t.Errorf("doorColors entries must all be distinct: %v", doorColors)
+	// Compare RGBA values to verify distinctness since TerminalColor is an interface.
+	r0, g0, b0, _ := doorColors[0].RGBA()
+	r1, g1, b1, _ := doorColors[1].RGBA()
+	r2, g2, b2, _ := doorColors[2].RGBA()
+	if r0 == r1 && g0 == g1 && b0 == b1 {
+		t.Error("doorColors[0] and doorColors[1] must be distinct")
+	}
+	if r1 == r2 && g1 == g2 && b1 == b2 {
+		t.Error("doorColors[1] and doorColors[2] must be distinct")
+	}
+	if r0 == r2 && g0 == g2 && b0 == b2 {
+		t.Error("doorColors[0] and doorColors[2] must be distinct")
 	}
 }
 

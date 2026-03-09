@@ -426,6 +426,11 @@ func TestRenderKeybindingBar_ViewModeTransition(t *testing.T) {
 
 func TestRenderKeybindingBarWithContext_BackwardsCompatible(t *testing.T) {
 	t.Parallel()
+	// Pin color profile so parallel tests that call SetColorProfile cannot
+	// change the renderer between our two sequential Render calls.
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
 	// RenderKeybindingBar should produce same output as RenderKeybindingBarWithContext
 	// when no sub-mode context is provided.
 	modes := []struct {
@@ -440,8 +445,8 @@ func TestRenderKeybindingBarWithContext_BackwardsCompatible(t *testing.T) {
 	for _, m := range modes {
 		old := RenderKeybindingBar(m.mode, 80, 24, true, m.doorSelected)
 		ctx := BarContext{Mode: m.mode, DoorSelected: m.doorSelected}
-		new := RenderKeybindingBarWithContext(ctx, 80, 24, true)
-		if old != new {
+		newBar := RenderKeybindingBarWithContext(ctx, 80, 24, true)
+		if old != newBar {
 			t.Errorf("mode %d (doorSelected=%v): backward compatibility broken", m.mode, m.doorSelected)
 		}
 	}

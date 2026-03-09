@@ -481,18 +481,17 @@ func animatedDoorStyle(doorIndex int, emphasis float64, w, h int, usePerDoorColo
 	}
 
 	// Base color: per-door accent or default accent
-	var baseHex string
+	var baseTermColor lipgloss.TerminalColor
 	if usePerDoorColors && doorIndex < len(doorColors) {
-		baseHex = string(doorColors[doorIndex])
+		baseTermColor = doorColors[doorIndex]
 	} else {
-		baseHex = string(colorAccent)
+		baseTermColor = colorAccent
 	}
-	dimHex := "240" // same as unselectedDoorStyle border
 
 	// Parse colors for interpolation
-	baseColor, _ := colorful.MakeColor(lipgloss.Color(baseHex))
-	dimColor, _ := colorful.MakeColor(lipgloss.Color(dimHex))
-	brightColor, _ := colorful.MakeColor(lipgloss.Color(string(colorDoorBright)))
+	baseColor, _ := colorful.MakeColor(baseTermColor)
+	dimColor, _ := colorful.MakeColor(lipgloss.Color("240")) // same as unselectedDoorStyle border
+	brightColor, _ := colorful.MakeColor(colorDoorBright)
 
 	// Interpolate: dim → base at emphasis 0→0.5, base → bright at 0.5→1.0
 	var borderColor colorful.Color

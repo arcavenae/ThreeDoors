@@ -14,8 +14,8 @@ import (
 // thin panel divider, and open circle handle.
 // When height < MinHeight (or 0), falls back to the compact card style.
 func NewModernTheme() *DoorTheme {
-	frameColor := lipgloss.Color("238")
-	selectedColor := lipgloss.Color("255")
+	frameColor := lipgloss.CompleteColor{TrueColor: "#444444", ANSI256: "238", ANSI: "8"}
+	selectedColor := lipgloss.CompleteColor{TrueColor: "#eeeeee", ANSI256: "255", ANSI: "15"}
 
 	return &DoorTheme{
 		Name:        "modern",
@@ -23,7 +23,7 @@ func NewModernTheme() *DoorTheme {
 		Render:      modernRender(frameColor, selectedColor),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.Color("0"),
+			Fill:     lipgloss.CompleteColor{TrueColor: "#000000", ANSI256: "0", ANSI: "0"},
 			Accent:   frameColor,
 			Selected: selectedColor,
 
@@ -36,7 +36,7 @@ func NewModernTheme() *DoorTheme {
 	}
 }
 
-func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool, string) string {
+func modernRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
 	return func(content string, width int, height int, selected bool, hint string) string {
 		color := frameColor
 		hChar := "─"

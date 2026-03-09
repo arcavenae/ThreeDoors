@@ -14,8 +14,8 @@ import (
 // When height >= MinHeight, renders door-like proportions with bulkhead divider,
 // access panel handle, and floor grating.
 func NewSciFiTheme() *DoorTheme {
-	frameColor := lipgloss.Color("39")
-	selectedColor := lipgloss.Color("51")
+	frameColor := lipgloss.CompleteColor{TrueColor: "#00afff", ANSI256: "39", ANSI: "4"}
+	selectedColor := lipgloss.CompleteColor{TrueColor: "#00ffff", ANSI256: "51", ANSI: "14"}
 
 	return &DoorTheme{
 		Name:        "scifi",
@@ -23,8 +23,8 @@ func NewSciFiTheme() *DoorTheme {
 		Render:      scifiRender(frameColor, selectedColor),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.Color("236"),
-			Accent:   lipgloss.Color("45"),
+			Fill:     lipgloss.CompleteColor{TrueColor: "#303030", ANSI256: "236", ANSI: "0"},
+			Accent:   lipgloss.CompleteColor{TrueColor: "#00d7ff", ANSI256: "45", ANSI: "14"},
 			Selected: selectedColor,
 
 			StatsAccent:        "#22C55E", // neon green
@@ -36,7 +36,7 @@ func NewSciFiTheme() *DoorTheme {
 	}
 }
 
-func scifiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool, string) string {
+func scifiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
 	return func(content string, width int, height int, selected bool, hint string) string {
 		color := frameColor
 		shadeChar := "░"

@@ -32,11 +32,11 @@ func TestModernThemeColors(t *testing.T) {
 
 	theme := NewModernTheme()
 
-	if theme.Colors.Frame == "" {
-		t.Error("expected non-empty Frame color")
+	if theme.Colors.Frame == nil {
+		t.Error("expected non-nil Frame color")
 	}
-	if theme.Colors.Selected == "" {
-		t.Error("expected non-empty Selected color")
+	if theme.Colors.Selected == nil {
+		t.Error("expected non-nil Selected color")
 	}
 }
 

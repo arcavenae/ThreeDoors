@@ -12,8 +12,8 @@ import (
 // When height >= MinHeight, renders with panel divider, doorknob, and threshold.
 // When height < MinHeight (or 0), falls back to the original compact card style.
 func NewClassicTheme() *DoorTheme {
-	frameColor := lipgloss.Color("63")
-	selectedColor := lipgloss.Color("255")
+	frameColor := lipgloss.CompleteColor{TrueColor: "#5f5fff", ANSI256: "63", ANSI: "5"}
+	selectedColor := lipgloss.CompleteColor{TrueColor: "#eeeeee", ANSI256: "255", ANSI: "15"}
 
 	unselectedStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
@@ -31,7 +31,7 @@ func NewClassicTheme() *DoorTheme {
 		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.Color("0"),
+			Fill:     lipgloss.CompleteColor{TrueColor: "#000000", ANSI256: "0", ANSI: "0"},
 			Accent:   frameColor,
 			Selected: selectedColor,
 
@@ -44,7 +44,7 @@ func NewClassicTheme() *DoorTheme {
 	}
 }
 
-func classicRender(frameColor, selectedColor lipgloss.Color, unselectedStyle, selectedStyle lipgloss.Style) func(string, int, int, bool, string) string {
+func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style) func(string, int, int, bool, string) string {
 	return func(content string, width int, height int, selected bool, hint string) string {
 		// Compact mode: use original Lipgloss card style
 		if height < 10 {

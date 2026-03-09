@@ -16,8 +16,8 @@ const (
 
 // Shadow colors: muted grays that create depth without competing with theme colors.
 var (
-	shadowColor         = lipgloss.Color("240")
-	shadowColorSelected = lipgloss.Color("250")
+	shadowColor         lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#585858", ANSI256: "240", ANSI: "8"}
+	shadowColorSelected lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#bcbcbc", ANSI256: "250", ANSI: "7"}
 )
 
 // ApplyShadow adds a right-edge shadow column and a bottom shadow row to a

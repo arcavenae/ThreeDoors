@@ -8,11 +8,14 @@ import (
 )
 
 // ThemeColors holds the color palette for a door theme.
+// All fields use lipgloss.TerminalColor to support adaptive color profiles
+// (TrueColor, ANSI256, ANSI 16-color) for graceful degradation on
+// constrained terminals.
 type ThemeColors struct {
-	Frame    lipgloss.Color
-	Fill     lipgloss.Color
-	Accent   lipgloss.Color
-	Selected lipgloss.Color
+	Frame    lipgloss.TerminalColor
+	Fill     lipgloss.TerminalColor
+	Accent   lipgloss.TerminalColor
+	Selected lipgloss.TerminalColor
 
 	// Stats dashboard colors (Story 40.9). Zero values are safe —
 	// InsightsView falls back to the independent palette when these are empty.

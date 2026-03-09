@@ -13,8 +13,8 @@ import (
 // mid-cross junction, not from many small cells.
 // When selected, uses heavy grid characters (╋━┃) instead of light (┼─│).
 func NewShojiTheme() *DoorTheme {
-	frameColor := lipgloss.Color("180")
-	selectedColor := lipgloss.Color("223")
+	frameColor := lipgloss.CompleteColor{TrueColor: "#d7af87", ANSI256: "180", ANSI: "3"}
+	selectedColor := lipgloss.CompleteColor{TrueColor: "#ffd7af", ANSI256: "223", ANSI: "11"}
 
 	return &DoorTheme{
 		Name:        "shoji",
@@ -22,8 +22,8 @@ func NewShojiTheme() *DoorTheme {
 		Render:      shojiRender(frameColor, selectedColor),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.Color("0"),
-			Accent:   lipgloss.Color("137"),
+			Fill:     lipgloss.CompleteColor{TrueColor: "#000000", ANSI256: "0", ANSI: "0"},
+			Accent:   lipgloss.CompleteColor{TrueColor: "#af8700", ANSI256: "137", ANSI: "3"},
 			Selected: selectedColor,
 
 			StatsAccent:        "#92400E", // earth brown
@@ -46,7 +46,7 @@ type shojiChars struct {
 	tRght string // right T-junction
 }
 
-func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool, string) string {
+func shojiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
 	return func(content string, width int, height int, selected bool, hint string) string {
 		// Compact mode: use existing fixed layout
 		if height < 14 {
@@ -58,7 +58,7 @@ func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int
 }
 
 // shojiCompactRender preserves the original fixed-layout rendering for compact mode.
-func shojiCompactRender(content string, width int, selected bool, frameColor, selectedColor lipgloss.Color, _ string) string {
+func shojiCompactRender(content string, width int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, _ string) string {
 	color := frameColor
 	ch := shojiChars{
 		h: "─", v: "│", cross: "┼",
@@ -113,7 +113,7 @@ func shojiCompactRender(content string, width int, selected bool, frameColor, se
 }
 
 // shojiDoorRender renders the Shoji theme with door-like proportions using DoorAnatomy.
-func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.Color, hint string) string {
+func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string) string {
 	anatomy := NewDoorAnatomy(height)
 
 	color := frameColor
