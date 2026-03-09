@@ -22,9 +22,10 @@
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../research/makefile-vs-justfile-analysis.md) | Owner sign-off |
-| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Artifact](../../_bmad-output/planning-artifacts/envoy-scope-and-firewall-design.md) | Story creation |
-| P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | Story creation |
+| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
+| P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
 | P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../research/persistent-agent-communication-investigation.md) | Story creation |
+| P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode (3 rounds) + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md), [Research](../../_bmad-output/planning-artifacts/scoped-labels-research.md) | Story creation for migration |
 
 ## Decided
 
@@ -135,6 +136,12 @@
 | D-103 | Trophy room deferred; milestones limited to 4 observation-language thresholds (Epic 40) | 2026-03-08 | Trophy room: high complexity, gamification risk; milestones: SOUL.md boundary | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
 | D-104 | Beautiful Stats Display assigned Epic 40 | 2026-03-08 | Originally Epic 39 but renumbered to avoid collision with Keybinding Display (Epic 39) | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
 | D-105 | Spacebar as Enter alias in doors view (Epic 39) | 2026-03-08 | 11-agent unanimous consensus; largest key = most common action; zero new state; consistent with onboarding spacebar behavior | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
+| D-106 | `.` as label scope separator | 2026-03-08 | Universal namespace separator; clean on GitHub; avoids `:` ambiguity | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| D-107 | 9 scopes, 27 total labels (trimmed from initial 35) | 2026-03-08 | Each survived consumer challenge; 6 net new vs current 21; cuts: type.ux, resolution.fixed, process.party-mode, 3 status labels, 3 agent labels | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| D-108 | `status.do-not-merge` label for merge-queue hard stop | 2026-03-08 | Merge-queue needs explicit stop signal beyond draft PRs | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| D-109 | Agent labels limited to `agent.envoy` + `agent.worker` only | 2026-03-08 | Only two agents need GitHub visibility labels; others coordinate via story files/messages | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| D-110 | Label migration via rename-first strategy | 2026-03-08 | Preserves label-issue associations during transition | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| D-111 | Implementation as separate story from research PR | 2026-03-08 | Unanimous; research PR should not apply changes | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 
 ## Rejected
 
@@ -189,6 +196,15 @@
 | X-047 | Spacebar as quick-complete from doors view | 2026-03-08 | Destructive action behind most easily-hit key; accidental completions; requires undo infrastructure that doesn't exist | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
 | X-048 | Spacebar as knock/peek tooltip | 2026-03-08 | Adds step between user and task; new rendering mode needed; scope disproportionate to value | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
 | X-049 | Spacebar as door cycle (tab equivalent) | 2026-03-08 | Adds parallel selection system alongside a/w/d; new cycle state tracking; confusing with existing positional keys | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
+| X-050 | `epic.N` per-epic labels | 2026-03-08 | GitHub milestones serve this purpose; 40+ labels is bloat | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-051 | `sprint.*` labels | 2026-03-08 | No fixed sprints in ThreeDoors workflow | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-052 | `effort.*` Fibonacci labels | 2026-03-08 | Effort tracked in story files, not issues | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-053 | Full 5-agent `agent.*` label set | 2026-03-08 | Agent workloads visible through other signals; only envoy + worker need labels | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-054 | `status.in-review`, `status.approved`, `status.changes-requested` labels | 2026-03-08 | GitHub review states queryable via API; labels duplicate native state | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-055 | `status.merge-ready` and `status.ci-failing` labels | 2026-03-08 | Merge-queue evaluates composite conditions directly; labels would need sync bot | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-056 | `::` (GitLab-style) as label separator | 2026-03-08 | Looks unusual on GitHub; `.` is more universal | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-057 | `/` as label scope separator | 2026-03-08 | Conflicts with path references | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-058 | `process.party-mode` label | 2026-03-08 | Party mode is a process step, not an issue state; covered by `scope.needs-decision` | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 
 ## Superseded
 
