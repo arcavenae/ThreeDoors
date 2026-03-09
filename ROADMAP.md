@@ -67,7 +67,7 @@ Guided daily planning ritual for task review and focus selection. Transforms Thr
 | 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
 | 27.2 | Review Incomplete Tasks Flow | Done (PR #339) | P1 | 27.1 |
 | 27.3 | Focus Selection Flow | Done (PR #352) | P1 | 27.1 |
-| 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
+| 27.4 | Energy Level Matching & Time-of-Day Inference | In Review | P1 | 27.1 |
 | 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
 
 ### Epic 28: Snooze/Defer as First-Class Action (P1) — 2/4 stories done

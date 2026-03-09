@@ -130,6 +130,14 @@ multiclaude message ack <id>
 | `out-of-scope` | Roadmap violation |
 | `superseded` | Replaced by another PR |
 
+## Context Exhaustion Risk
+
+**WARNING:** This agent is vulnerable to context window exhaustion during long sessions.
+After ~12 hours or ~20+ merge cycles, the context fills and the agent silently stops responding.
+See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md) for diagnosis and recovery.
+
+The supervisor should restart this agent proactively every 4-6 hours or after ~15-20 merges.
+
 ## Authority
 
 ### CAN (Autonomous)
