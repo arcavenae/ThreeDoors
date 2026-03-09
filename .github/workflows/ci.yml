@@ -244,6 +244,13 @@ jobs:
           GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-darwin-amd64 ./cmd/threedoors
           GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-linux-amd64 ./cmd/threedoors
 
+      - name: Build alpha binaries
+        run: |
+          LDFLAGS="-X main.version=${{ steps.version.outputs.version }} -X main.channel=alpha"
+          GOOS=darwin GOARCH=arm64 go build -ldflags "$LDFLAGS" -o threedoors-a-darwin-arm64 ./cmd/threedoors
+          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-a-darwin-amd64 ./cmd/threedoors
+          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-a-linux-amd64 ./cmd/threedoors
+
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
@@ -311,13 +318,17 @@ jobs:
         env:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
-          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp threedoors-darwin-arm64
-          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp threedoors-darwin-amd64
+          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcaven.threedoors" --timestamp threedoors-darwin-arm64
+          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcaven.threedoors" --timestamp threedoors-darwin-amd64
+          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcaven.threedoors-a" --timestamp threedoors-a-darwin-arm64
+          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcaven.threedoors-a" --timestamp threedoors-a-darwin-amd64
 
       - name: Verify signatures
         run: |
           codesign --verify --deep --strict threedoors-darwin-arm64
           codesign --verify --deep --strict threedoors-darwin-amd64
+          codesign --verify --deep --strict threedoors-a-darwin-arm64
+          codesign --verify --deep --strict threedoors-a-darwin-amd64
 
       - name: Build app bundles
         run: |
@@ -386,6 +397,8 @@ jobs:
           path: |
             threedoors-darwin-arm64
             threedoors-darwin-amd64
+            threedoors-a-darwin-arm64
+            threedoors-a-darwin-amd64
             threedoors-arm64.pkg
             threedoors-amd64.pkg
             threedoors-arm64.dmg
@@ -425,9 +438,12 @@ jobs:
           name: binaries
           path: unsigned-binaries
 
-      - name: Copy linux binary from unsigned artifacts
+      - name: Copy linux binaries from unsigned artifacts
         if: needs.sign-and-notarize.result == 'success'
-        run: cp unsigned-binaries/threedoors-linux-amd64 . && rm -rf unsigned-binaries
+        run: |
+          cp unsigned-binaries/threedoors-linux-amd64 .
+          cp unsigned-binaries/threedoors-a-linux-amd64 .
+          rm -rf unsigned-binaries
 
       - name: List release files
         run: ls -la threedoors-* *.pkg *.dmg 2>/dev/null || true
@@ -449,7 +465,10 @@ jobs:
           **Binaries:**
           - \`threedoors-darwin-arm64\` — macOS Apple Silicon
           - \`threedoors-darwin-amd64\` — macOS Intel
-          - \`threedoors-linux-amd64\` — Linux x86_64"
+          - \`threedoors-linux-amd64\` — Linux x86_64
+          - \`threedoors-a-darwin-arm64\` — Alpha macOS Apple Silicon
+          - \`threedoors-a-darwin-amd64\` — Alpha macOS Intel
+          - \`threedoors-a-linux-amd64\` — Alpha Linux x86_64"
 
           if [ "$SIGNED" = "Yes (Apple Developer ID)" ]; then
             BODY="${BODY}
@@ -458,6 +477,10 @@ jobs:
           - \`threedoors-arm64.dmg\` — macOS Disk Image (Apple Silicon)
           - \`threedoors-amd64.dmg\` — macOS Disk Image (Intel)"
           fi
+
+          BODY="${BODY}
+
+          **Homebrew (alpha):** \`brew install arcaven/tap/threedoors-a\`"
 
           ASSETS=()
           for f in threedoors-* *.pkg *.dmg; do
@@ -469,4 +492,77 @@ jobs:
             --notes "$BODY" \
             --prerelease \
             "${ASSETS[@]}"
+
+      - name: Update alpha Homebrew formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${{ needs.build-binaries.outputs.version }}"
+          TAG="${{ needs.build-binaries.outputs.tag }}"
+          BASE_URL="https://github.com/arcaven/ThreeDoors/releases/download/${TAG}"
+
+          # Compute SHA256 checksums for alpha binaries
+          SHA_ARM64=$(sha256sum threedoors-a-darwin-arm64 | cut -d' ' -f1)
+          SHA_AMD64=$(sha256sum threedoors-a-darwin-amd64 | cut -d' ' -f1)
+          SHA_LINUX=$(sha256sum threedoors-a-linux-amd64 | cut -d' ' -f1)
+
+          # Generate formula
+          cat > threedoors-a.rb <<FORMULA
+          class ThreedoorsA < Formula
+            desc "TUI task manager — alpha channel (updated on every main push)"
+            homepage "https://github.com/arcaven/ThreeDoors"
+            version "${VERSION}"
+            license "MIT"
+
+            on_arm do
+              url "${BASE_URL}/threedoors-a-darwin-arm64"
+              sha256 "${SHA_ARM64}"
+            end
+
+            on_intel do
+              url "${BASE_URL}/threedoors-a-darwin-amd64"
+              sha256 "${SHA_AMD64}"
+            end
+
+            on_linux do
+              url "${BASE_URL}/threedoors-a-linux-amd64"
+              sha256 "${SHA_LINUX}"
+            end
+
+            def install
+              if OS.mac? && Hardware::CPU.arm?
+                bin.install "threedoors-a-darwin-arm64" => "threedoors-a"
+              elsif OS.mac?
+                bin.install "threedoors-a-darwin-amd64" => "threedoors-a"
+              else
+                bin.install "threedoors-a-linux-amd64" => "threedoors-a"
+              end
+            end
+
+            test do
+              assert_match "ThreeDoors", shell_output("#{bin}/threedoors-a --version 2>&1")
+            end
+          end
+          FORMULA
+
+          # Remove leading whitespace from heredoc indentation
+          sed -i 's/^          //' threedoors-a.rb
+
+          # Validate Ruby syntax before pushing
+          ruby -c threedoors-a.rb
+
+          # Clone tap repo, update formula, push
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/arcaven/homebrew-tap.git" tap-repo
+          mkdir -p tap-repo/Formula
+          cp threedoors-a.rb tap-repo/Formula/threedoors-a.rb
+          cd tap-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/threedoors-a.rb
+          if git diff --cached --quiet; then
+            echo "Formula unchanged, skipping push"
+          else
+            git commit -m "chore(formula): update threedoors-a to ${TAG}"
+            git push origin main
+          fi
 

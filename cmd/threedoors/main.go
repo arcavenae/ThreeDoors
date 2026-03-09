@@ -25,9 +25,13 @@ import (
 // version is set at build time via -ldflags "-X main.version=<semver>"
 var version = "dev"
 
+// channel is set at build time via -ldflags "-X main.channel=alpha" for alpha builds.
+// Empty string means stable/default channel.
+var channel = ""
+
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
-		fmt.Println(dist.FormatVersion(version))
+		fmt.Println(dist.FormatVersionWithChannel(version, channel))
 		os.Exit(0)
 	}
 
