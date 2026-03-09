@@ -2635,7 +2635,7 @@ So that doors appear to have dimension and stand out from the background.
 
 **Prerequisites:** None (complements Epic 35 but does not depend on it)
 **FRs covered:** FR148-FR151
-**Status:** In Progress (3/4 done)
+**Status:** COMPLETE (4/4 stories done)
 
 ### Story 36.1: Enhanced Door Selection Visual Feedback
 
