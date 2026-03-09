@@ -14,6 +14,14 @@ type UndoCompleteEntry struct {
 	ElapsedSeconds      float64   `json:"elapsed_seconds"`
 }
 
+// DependencyEvent captures a dependency-related action during a session.
+type DependencyEvent struct {
+	Timestamp    time.Time `json:"timestamp"`
+	EventType    string    `json:"event_type"` // dependency_added, dependency_removed, dependency_unblocked, dependency_cycle_rejected
+	TaskID       string    `json:"task_id"`
+	DependencyID string    `json:"dependency_id"`
+}
+
 // DoorFeedbackEntry captures feedback on why a door/task was declined.
 type DoorFeedbackEntry struct {
 	Timestamp    time.Time `json:"timestamp"`
@@ -38,25 +46,27 @@ type DoorSelectionRecord struct {
 
 // SessionMetrics captures behavioral data for a single app session.
 type SessionMetrics struct {
-	SessionID           string                `json:"session_id"`
-	StartTime           time.Time             `json:"start_time"`
-	EndTime             time.Time             `json:"end_time"`
-	DurationSeconds     float64               `json:"duration_seconds"`
-	TasksCompleted      int                   `json:"tasks_completed"`
-	DoorsViewed         int                   `json:"doors_viewed"`
-	RefreshesUsed       int                   `json:"refreshes_used"`
-	DetailViews         int                   `json:"detail_views"`
-	NotesAdded          int                   `json:"notes_added"`
-	StatusChanges       int                   `json:"status_changes"`
-	MoodEntryCount      int                   `json:"mood_entries"`
-	TimeToFirstDoorSecs float64               `json:"time_to_first_door_seconds"`
-	DoorSelections      []DoorSelectionRecord `json:"door_selections,omitempty"`
-	TaskBypasses        [][]string            `json:"task_bypasses,omitempty"`
-	MoodEntries         []MoodEntry           `json:"mood_entries_detail,omitempty"`
-	DoorFeedback        []DoorFeedbackEntry   `json:"door_feedback,omitempty"`
-	DoorFeedbackCount   int                   `json:"door_feedback_count"`
-	UndoCompletes       []UndoCompleteEntry   `json:"undo_completes,omitempty"`
-	UndoCompleteCount   int                   `json:"undo_complete_count"`
+	SessionID            string                `json:"session_id"`
+	StartTime            time.Time             `json:"start_time"`
+	EndTime              time.Time             `json:"end_time"`
+	DurationSeconds      float64               `json:"duration_seconds"`
+	TasksCompleted       int                   `json:"tasks_completed"`
+	DoorsViewed          int                   `json:"doors_viewed"`
+	RefreshesUsed        int                   `json:"refreshes_used"`
+	DetailViews          int                   `json:"detail_views"`
+	NotesAdded           int                   `json:"notes_added"`
+	StatusChanges        int                   `json:"status_changes"`
+	MoodEntryCount       int                   `json:"mood_entries"`
+	TimeToFirstDoorSecs  float64               `json:"time_to_first_door_seconds"`
+	DoorSelections       []DoorSelectionRecord `json:"door_selections,omitempty"`
+	TaskBypasses         [][]string            `json:"task_bypasses,omitempty"`
+	MoodEntries          []MoodEntry           `json:"mood_entries_detail,omitempty"`
+	DoorFeedback         []DoorFeedbackEntry   `json:"door_feedback,omitempty"`
+	DoorFeedbackCount    int                   `json:"door_feedback_count"`
+	UndoCompletes        []UndoCompleteEntry   `json:"undo_completes,omitempty"`
+	UndoCompleteCount    int                   `json:"undo_complete_count"`
+	DependencyEvents     []DependencyEvent     `json:"dependency_events,omitempty"`
+	DependencyEventCount int                   `json:"dependency_event_count"`
 }
 
 // SessionTracker provides in-memory tracking of user behavior during an app session.
@@ -187,6 +197,52 @@ func (st *SessionTracker) LatestMood() string {
 		return ""
 	}
 	return st.metrics.MoodEntries[len(st.metrics.MoodEntries)-1].Mood
+}
+
+// RecordDependencyAdded records when a user adds a dependency to a task.
+func (st *SessionTracker) RecordDependencyAdded(taskID, dependencyID string) {
+	st.metrics.DependencyEvents = append(st.metrics.DependencyEvents, DependencyEvent{
+		Timestamp:    time.Now().UTC(),
+		EventType:    "dependency_added",
+		TaskID:       taskID,
+		DependencyID: dependencyID,
+	})
+	st.metrics.DependencyEventCount++
+}
+
+// RecordDependencyRemoved records when a user removes a dependency from a task.
+func (st *SessionTracker) RecordDependencyRemoved(taskID, dependencyID string) {
+	st.metrics.DependencyEvents = append(st.metrics.DependencyEvents, DependencyEvent{
+		Timestamp:    time.Now().UTC(),
+		EventType:    "dependency_removed",
+		TaskID:       taskID,
+		DependencyID: dependencyID,
+	})
+	st.metrics.DependencyEventCount++
+}
+
+// RecordDependencyUnblocked records when a task becomes unblocked because
+// its dependencies have all been completed.
+func (st *SessionTracker) RecordDependencyUnblocked(taskID, completedDependencyID string) {
+	st.metrics.DependencyEvents = append(st.metrics.DependencyEvents, DependencyEvent{
+		Timestamp:    time.Now().UTC(),
+		EventType:    "dependency_unblocked",
+		TaskID:       taskID,
+		DependencyID: completedDependencyID,
+	})
+	st.metrics.DependencyEventCount++
+}
+
+// RecordDependencyCycleRejected records when a dependency addition is rejected
+// because it would create a circular dependency chain.
+func (st *SessionTracker) RecordDependencyCycleRejected(taskID, attemptedDependencyID string) {
+	st.metrics.DependencyEvents = append(st.metrics.DependencyEvents, DependencyEvent{
+		Timestamp:    time.Now().UTC(),
+		EventType:    "dependency_cycle_rejected",
+		TaskID:       taskID,
+		DependencyID: attemptedDependencyID,
+	})
+	st.metrics.DependencyEventCount++
 }
 
 // Finalize calculates session duration and returns metrics for persistence.

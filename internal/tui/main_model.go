@@ -848,6 +848,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case DependencyUnblockedMsg:
 		m.doorsView.RefreshDoors()
+		if m.tracker != nil {
+			for _, task := range msg.UnblockedTasks {
+				m.tracker.RecordDependencyUnblocked(task.ID, msg.CompletedDepID)
+			}
+		}
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after dependency unblock: %v\n", err)
 		}
