@@ -153,6 +153,18 @@ Parallel Homebrew distribution channels (stable + alpha) with signing parity, pu
 | 38.4 | Alpha Release Verification | Not Started | P2 | 38.1, 38.2 |
 | 38.5 | Alpha Release Retention Cleanup | Not Started | P2 | None |
 
+### Epic 39: Keybinding Display System (P1) — 0/5 stories done
+
+Toggleable keybinding bar and full overlay for TUI discoverability. Context-sensitive bottom bar shows key actions per view; `?` opens comprehensive reference overlay.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 39.1 | Keybinding Registry Model | Not Started | P1 | None |
+| 39.2 | Concise Keybinding Bar Component | Not Started | P1 | 39.1 |
+| 39.3 | Full Keybinding Overlay | Not Started | P1 | 39.1 |
+| 39.4 | Toggle Behavior, Config Persistence, and MainModel Integration | Not Started | P1 | 39.2, 39.3 |
+| 39.5 | View-Specific Keybinding Completeness and Polish | Not Started | P1 | 39.4 |
+
 ## Completed Epics
 
 | Epic | Title | Stories |

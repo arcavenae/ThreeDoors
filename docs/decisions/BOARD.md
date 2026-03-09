@@ -117,6 +117,13 @@
 | D-085 | Sequential expand mode for subtask creation (Epic 31) | 2026-03-08 | Stay in expand input after Enter; show running count; only Esc exits; reduces friction | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
 | D-086 | Dedicated ViewHelp view mode for :help display | 2026-03-08 | Consistent with all existing informational views; FlashMsg is fundamentally wrong for help content | [Artifact](../../_bmad-output/planning-artifacts/help-display-redesign.md) |
 | D-087 | ? global keybinding opens help from any view | 2026-03-08 | TUI standard (vim, less, lazygit); solves discoverability; no existing conflicts | [Artifact](../../_bmad-output/planning-artifacts/help-display-redesign.md) |
+| D-088 | Bar rendered by MainModel, views unaware (Epic 39) | 2026-03-08 | Clean separation; no per-view changes needed; MainModel adjusts height | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
+| D-089 | Overlay as boolean flag, not new ViewMode (Epic 39) | 2026-03-08 | Preserves user context; overlay is ephemeral; no ViewMode transition needed | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-party-mode.md) |
+| D-090 | Compile-time keybinding registry, not config-driven (Epic 39) | 2026-03-08 | All bindings known at compile time; YAGNI for runtime registration | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
+| D-091 | `h` toggles bar, `?` toggles overlay (Epic 39) | 2026-03-08 | Separates "persistent reference" (h) from "help me now" (?); both universally understood | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-party-mode.md) |
+| D-092 | Bar defaults ON for new users (Epic 39) | 2026-03-08 | Progressive disclosure; bridges onboarding-to-mastery gap; power users press h to hide | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
+| D-093 | Bar is theme-independent, dim styling only (Epic 39) | 2026-03-08 | Bar is chrome, not content; themed bars would require updating every theme for non-core feature | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
+| D-094 | Auto-hide bar below 10 lines terminal height (Epic 39) | 2026-03-08 | Doors must have priority for screen space; bar is helpful but not essential | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 
 ## Rejected
 
@@ -153,6 +160,12 @@
 | X-029 | Per-push `brew install` verification for alpha | 2026-03-09 | Expensive (macOS runner + Homebrew install time); tap CI provides equivalent coverage | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
 | X-030 | Default `ALPHA_TAP_ENABLED` to ON | 2026-03-09 | First push would attempt formula push before infrastructure is validated | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
 | X-031 | Project-level work tracking across repos | 2026-03-08 | Deferred — single-repo tracking sufficient for now; complexity not justified | [ADR-0033](../ADRs/ADR-0033-project-level-tracking-deferred.md) |
+| X-032 | Custom keybinding remapping (Epic 39) | 2026-03-08 | Out of scope; adds config complexity for unvalidated need; YAGNI | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-party-mode.md) |
+| X-033 | Animated bar show/hide transitions (Epic 39) | 2026-03-08 | No animation system exists; Lipgloss is static styling; instant response is more "deliberate" per SOUL.md | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-party-mode.md) |
+| X-034 | Themed keybinding bar per door theme (Epic 39) | 2026-03-08 | Bar is infrastructure chrome, not content; would require modifying all themes for non-core feature | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
+| X-035 | Single `?` key for both bar toggle and overlay (Epic 39) | 2026-03-08 | Conflates "persistent reference" with "help me now"; separate keys (h/?) are clearer | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-party-mode.md) |
+| X-036 | Overlay as new ViewMode (Epic 39) | 2026-03-08 | ViewMode transition clears previous view; overlay is ephemeral context-preserving layer | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
+| X-037 | Runtime keybinding registration / config-driven bindings (Epic 39) | 2026-03-08 | All bindings are known at compile time; runtime flexibility adds complexity for zero current benefit | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
 
 ## Superseded
 
