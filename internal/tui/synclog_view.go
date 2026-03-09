@@ -5,16 +5,23 @@ import (
 	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const syncLogPageSize = 20
+// syncLogHeaderHeight is the number of lines consumed by the title header above the viewport.
+const syncLogHeaderHeight = 2
 
-// SyncLogView displays a scrollable list of sync log entries.
+// syncLogFooterHeight is the number of lines consumed by the footer below the viewport.
+const syncLogFooterHeight = 3
+
+// SyncLogView displays a scrollable list of sync log entries using bubbles/viewport.
 type SyncLogView struct {
-	entries []core.SyncLogEntry
-	offset  int
-	width   int
+	entries  []core.SyncLogEntry
+	viewport viewport.Model
+	width    int
+	height   int
+	ready    bool
 }
 
 // NewSyncLogView creates a new SyncLogView with the given entries.
@@ -24,67 +31,51 @@ func NewSyncLogView(entries []core.SyncLogEntry) *SyncLogView {
 	for i, e := range entries {
 		reversed[len(entries)-1-i] = e
 	}
-	return &SyncLogView{
+	sv := &SyncLogView{
 		entries: reversed,
+		width:   80,
+		height:  24,
 	}
+	sv.initViewport()
+	return sv
 }
 
-// SetWidth sets the terminal width for rendering.
+// SetWidth sets the terminal width and re-renders content.
 func (sv *SyncLogView) SetWidth(w int) {
 	sv.width = w
+	sv.viewport.Width = w
+	sv.viewport.SetContent(sv.renderContent())
 }
 
-// Update handles key presses for scrolling and closing.
-func (sv *SyncLogView) Update(msg tea.Msg) tea.Cmd {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "q", "esc":
-			return func() tea.Msg { return ReturnToDoorsMsg{} }
-		case "j", "down":
-			if sv.offset+syncLogPageSize < len(sv.entries) {
-				sv.offset++
-			}
-		case "k", "up":
-			if sv.offset > 0 {
-				sv.offset--
-			}
-		case "pgdown", " ":
-			sv.offset += syncLogPageSize
-			if sv.offset+syncLogPageSize > len(sv.entries) {
-				sv.offset = max(0, len(sv.entries)-syncLogPageSize)
-			}
-		case "pgup":
-			sv.offset -= syncLogPageSize
-			if sv.offset < 0 {
-				sv.offset = 0
-			}
-		}
+// SetHeight sets the terminal height and adjusts viewport.
+func (sv *SyncLogView) SetHeight(h int) {
+	sv.height = h
+	vpHeight := h - syncLogHeaderHeight - syncLogFooterHeight
+	if vpHeight < 1 {
+		vpHeight = 1
 	}
-	return nil
+	sv.viewport.Height = vpHeight
 }
 
-// View renders the sync log.
-func (sv *SyncLogView) View() string {
-	var s strings.Builder
+// initViewport creates and configures the viewport.
+func (sv *SyncLogView) initViewport() {
+	vpHeight := sv.height - syncLogHeaderHeight - syncLogFooterHeight
+	if vpHeight < 1 {
+		vpHeight = 1
+	}
+	sv.viewport = NewScrollableView(sv.width, vpHeight)
+	sv.viewport.SetContent(sv.renderContent())
+	sv.ready = true
+}
 
-	s.WriteString(syncLogHeaderStyle.Render("Sync Log"))
-	s.WriteString("\n\n")
-
+// renderContent pre-computes all sync log content as a single string.
+func (sv *SyncLogView) renderContent() string {
 	if len(sv.entries) == 0 {
-		s.WriteString(helpStyle.Render("No sync operations recorded yet."))
-		s.WriteString("\n\n")
-		s.WriteString(helpStyle.Render("q/Esc to return"))
-		return s.String()
+		return ""
 	}
 
-	end := sv.offset + syncLogPageSize
-	if end > len(sv.entries) {
-		end = len(sv.entries)
-	}
-	visible := sv.entries[sv.offset:end]
-
-	for _, entry := range visible {
+	var s strings.Builder
+	for _, entry := range sv.entries {
 		ts := syncLogTimestampStyle.Render(entry.Timestamp.Format("2006-01-02 15:04:05"))
 
 		var line string
@@ -101,9 +92,42 @@ func (sv *SyncLogView) View() string {
 
 		fmt.Fprintf(&s, "  %s  %s\n", ts, line)
 	}
+	return s.String()
+}
 
-	fmt.Fprintf(&s, "\n  Showing %d-%d of %d entries", sv.offset+1, end, len(sv.entries))
+// Update handles key presses for scrolling and closing.
+func (sv *SyncLogView) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "q", "esc":
+			return func() tea.Msg { return ReturnToDoorsMsg{} }
+		}
+	}
+
+	var cmd tea.Cmd
+	sv.viewport, cmd = sv.viewport.Update(msg)
+	return cmd
+}
+
+// View renders the sync log.
+func (sv *SyncLogView) View() string {
+	var s strings.Builder
+
+	s.WriteString(syncLogHeaderStyle.Render("Sync Log"))
 	s.WriteString("\n\n")
+
+	if len(sv.entries) == 0 {
+		s.WriteString(helpStyle.Render("No sync operations recorded yet."))
+		s.WriteString("\n\n")
+		s.WriteString(helpStyle.Render("q/Esc to return"))
+		return s.String()
+	}
+
+	s.WriteString(sv.viewport.View())
+
+	fmt.Fprintf(&s, "\n\n  %3.f%%", sv.viewport.ScrollPercent()*100) //nolint:mnd
+	s.WriteString("\n")
 	s.WriteString(helpStyle.Render("j/k scroll | PgUp/PgDn page | q/Esc return"))
 
 	return s.String()

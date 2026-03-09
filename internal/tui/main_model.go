@@ -99,7 +99,7 @@ type MainModel struct {
 	height                int
 	showKeybindingBar     bool
 	showKeybindingOverlay bool
-	overlayState          OverlayState
+	keybindingOverlay     *KeybindingOverlay
 	searchQuery           string
 	searchSelectedIndex   int
 	promptedTasks         map[string]bool
@@ -314,6 +314,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.syncLogView != nil {
 			m.syncLogView.SetWidth(msg.Width)
+			m.syncLogView.SetHeight(msg.Height)
 		}
 		if m.themePickerView != nil {
 			m.themePickerView.SetWidth(msg.Width)
@@ -825,6 +826,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ShowSyncLogMsg:
 		sv := NewSyncLogView(msg.Entries)
 		sv.SetWidth(m.width)
+		sv.SetHeight(m.height)
 		m.syncLogView = sv
 		m.previousView = m.viewMode
 		m.viewMode = ViewSyncLog
@@ -1061,10 +1063,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Global '?' opens help from any non-text-input view
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "?" && !m.isTextInputActive() {
 		m.showKeybindingOverlay = true
-		m.overlayState = OverlayState{
-			ScrollOffset: 0,
-			ViewMode:     m.viewMode,
-		}
+		m.keybindingOverlay = NewKeybindingOverlay(
+			OverlayState{ViewMode: m.viewMode},
+			m.width, m.height,
+		)
 		return m, nil
 	}
 
@@ -1144,18 +1146,13 @@ func (m *MainModel) updateOverlay(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "?", "esc":
 		m.showKeybindingOverlay = false
-		m.overlayState.ScrollOffset = 0
-		return m, nil
-	case "up", "k":
-		if m.overlayState.ScrollOffset > 0 {
-			m.overlayState.ScrollOffset--
-		}
-		return m, nil
-	case "down", "j":
-		m.overlayState.ScrollOffset = ClampScrollOffset(m.overlayState.ScrollOffset+1, m.height)
+		m.keybindingOverlay = nil
 		return m, nil
 	}
-	// All other keys consumed — no pass-through.
+	if m.keybindingOverlay != nil {
+		cmd := m.keybindingOverlay.Update(msg)
+		return m, cmd
+	}
 	return m, nil
 }
 
@@ -1795,8 +1792,8 @@ func (m *MainModel) runDecompose(taskID, taskDescription string) tea.Cmd {
 // View implements tea.Model.
 func (m *MainModel) View() string {
 	// Overlay takes over the entire screen when visible.
-	if m.showKeybindingOverlay {
-		return RenderKeybindingOverlay(m.overlayState, m.width, m.height)
+	if m.showKeybindingOverlay && m.keybindingOverlay != nil {
+		return m.keybindingOverlay.View()
 	}
 
 	var view string

@@ -194,7 +194,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.1 | Spinner Component for Async Provider Operations | In Review | P2 | None |
 | 41.2 | Lipgloss Layout Utilities Adoption | Done (PR #370) | P2 | None |
 | 41.3 | Viewport Adoption for Help View | Done (PR #364) | P2 | None (sequence after Epic 39 overlay work) |
-| 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | Not Started | P2 | 41.3 |
+| 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | In Review | P2 | 41.3 |
 | 41.5 | Harmonica Door Transition Spike | Not Started | P2 | None |
 | 41.6 | Adaptive Color Profile Support | Not Started | P2 | None |
 

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/exp/golden"
 	"github.com/muesli/termenv"
@@ -15,11 +16,15 @@ func setOverlayAsciiProfile(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 }
 
-func TestRenderKeybindingOverlay_RendersAllGroups(t *testing.T) {
+func newTestOverlay(state OverlayState, width, height int) *KeybindingOverlay {
+	return NewKeybindingOverlay(state, width, height)
+}
+
+func TestKeybindingOverlay_RendersAllGroups(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
-	// Use large height to ensure all content visible.
-	out := RenderKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 100)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 100)
+	out := ko.View()
 
 	allGroups := allKeyBindingGroups()
 	for _, g := range allGroups {
@@ -34,7 +39,7 @@ func TestRenderKeybindingOverlay_RendersAllGroups(t *testing.T) {
 	}
 }
 
-func TestRenderKeybindingOverlay_CurrentViewFirst(t *testing.T) {
+func TestKeybindingOverlay_CurrentViewFirst(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
 	tests := []struct {
@@ -49,7 +54,8 @@ func TestRenderKeybindingOverlay_CurrentViewFirst(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			out := RenderKeybindingOverlay(OverlayState{ViewMode: tt.mode}, 80, 100)
+			ko := newTestOverlay(OverlayState{ViewMode: tt.mode}, 80, 100)
+			out := ko.View()
 
 			if !strings.Contains(out, "(current)") {
 				t.Error("overlay missing (current) marker")
@@ -63,49 +69,46 @@ func TestRenderKeybindingOverlay_CurrentViewFirst(t *testing.T) {
 	}
 }
 
-func TestRenderKeybindingOverlay_ScrollOffset(t *testing.T) {
+func TestKeybindingOverlay_ViewportScrolling(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
-	noScroll := RenderKeybindingOverlay(OverlayState{ScrollOffset: 0, ViewMode: ViewDoors}, 80, 15)
-	scrolled := RenderKeybindingOverlay(OverlayState{ScrollOffset: 3, ViewMode: ViewDoors}, 80, 15)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 15)
+	initialView := ko.View()
 
-	if noScroll == scrolled {
+	// Scroll down via viewport
+	ko.Update(tea.KeyMsg{Type: tea.KeyDown})
+	ko.Update(tea.KeyMsg{Type: tea.KeyDown})
+	ko.Update(tea.KeyMsg{Type: tea.KeyDown})
+	scrolledView := ko.View()
+
+	if initialView == scrolledView {
 		t.Error("scrolling did not change output")
 	}
 }
 
-func TestRenderKeybindingOverlay_ScrollClamping(t *testing.T) {
-	setOverlayAsciiProfile(t)
-
-	out := RenderKeybindingOverlay(OverlayState{ScrollOffset: 9999, ViewMode: ViewDoors}, 80, 60)
-	if out == "" {
-		t.Error("clamped scroll produced empty output")
-	}
-
-	outNeg := RenderKeybindingOverlay(OverlayState{ScrollOffset: -5, ViewMode: ViewDoors}, 80, 60)
-	outZero := RenderKeybindingOverlay(OverlayState{ScrollOffset: 0, ViewMode: ViewDoors}, 80, 60)
-	if outNeg != outZero {
-		t.Error("negative scroll should clamp to 0")
+func TestKeybindingOverlay_MouseWheelEnabled(t *testing.T) {
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
+	if !ko.viewport.MouseWheelEnabled {
+		t.Error("viewport should have mouse wheel enabled")
 	}
 }
 
-func TestRenderKeybindingOverlay_FooterAlwaysPresent(t *testing.T) {
+func TestKeybindingOverlay_FooterAlwaysPresent(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
 	tests := []struct {
 		name   string
-		scroll int
 		height int
 	}{
-		{"no scroll", 0, 60},
-		{"scrolled", 5, 15},
-		{"max scroll", 9999, 15},
-		{"small terminal", 0, 10},
+		{"normal", 60},
+		{"small", 15},
+		{"tiny", 10},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			out := RenderKeybindingOverlay(OverlayState{ScrollOffset: tt.scroll, ViewMode: ViewDoors}, 80, tt.height)
+			ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, tt.height)
+			out := ko.View()
 			if !strings.Contains(out, "Press ? or esc to close") {
 				t.Error("footer not present in overlay output")
 			}
@@ -113,23 +116,27 @@ func TestRenderKeybindingOverlay_FooterAlwaysPresent(t *testing.T) {
 	}
 }
 
-func TestRenderKeybindingOverlay_ScrollIndicator(t *testing.T) {
+func TestKeybindingOverlay_ScrollIndicator(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
 	// Small height forces scroll — should show "▼ more".
-	out := RenderKeybindingOverlay(OverlayState{ScrollOffset: 0, ViewMode: ViewDoors}, 80, 15)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 15)
+	out := ko.View()
 	if !strings.Contains(out, "▼ more") {
 		t.Error("expected scroll-down indicator when content exceeds height")
 	}
 
-	// Scrolled partway — should show both indicators.
-	outMid := RenderKeybindingOverlay(OverlayState{ScrollOffset: 3, ViewMode: ViewDoors}, 80, 15)
+	// Scroll down partway — should show both indicators.
+	for range 3 {
+		ko.Update(tea.KeyMsg{Type: tea.KeyDown})
+	}
+	outMid := ko.View()
 	if !strings.Contains(outMid, "▲") {
 		t.Error("expected scroll-up indicator when scrolled down")
 	}
 }
 
-func TestRenderKeybindingOverlay_TooSmallTerminal(t *testing.T) {
+func TestKeybindingOverlay_TooSmallTerminal(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
 	tests := []struct {
@@ -144,7 +151,8 @@ func TestRenderKeybindingOverlay_TooSmallTerminal(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			out := RenderKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, tt.width, tt.height)
+			ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, tt.width, tt.height)
+			out := ko.View()
 			if out != "" {
 				t.Errorf("expected empty string for small terminal %dx%d, got output", tt.width, tt.height)
 			}
@@ -152,50 +160,23 @@ func TestRenderKeybindingOverlay_TooSmallTerminal(t *testing.T) {
 	}
 }
 
-func TestRenderKeybindingOverlay_Title(t *testing.T) {
+func TestKeybindingOverlay_Title(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
-	out := RenderKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 60)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 60)
+	out := ko.View()
 	if !strings.Contains(out, "KEYBINDING REFERENCE") {
 		t.Error("overlay missing title")
 	}
 }
 
-func TestRenderKeybindingOverlay_BorderPresent(t *testing.T) {
+func TestKeybindingOverlay_BorderPresent(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
-	out := RenderKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 60)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 60)
+	out := ko.View()
 	if !strings.Contains(out, "╔") || !strings.Contains(out, "╗") {
 		t.Error("overlay missing double-line border")
-	}
-}
-
-func TestClampScrollOffset(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name     string
-		offset   int
-		height   int
-		wantZero bool
-	}{
-		{"negative clamps to zero", -5, 60, true},
-		{"zero stays zero", 0, 60, true},
-		{"large clamps to max", 9999, 60, false},
-		{"small height large offset", 100, 10, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			result := ClampScrollOffset(tt.offset, tt.height)
-			if result < 0 {
-				t.Errorf("ClampScrollOffset returned negative: %d", result)
-			}
-			if tt.wantZero && result != 0 {
-				t.Errorf("expected 0, got %d", result)
-			}
-		})
 	}
 }
 
@@ -234,34 +215,29 @@ func TestFormatBinding(t *testing.T) {
 	}
 }
 
-func TestCountContentLines(t *testing.T) {
-	t.Parallel()
-
-	groups := []KeyBindingGroup{
-		{Name: "A", Bindings: []KeyBinding{{Key: "x"}, {Key: "y"}}},
-		{Name: "B", Bindings: []KeyBinding{{Key: "z"}}},
-	}
-	if got := countContentLines(groups); got != 6 {
-		t.Errorf("countContentLines = %d, want 6", got)
-	}
-}
-
 // Golden file tests — deterministic output snapshots.
 
 func TestGolden_Overlay_80x24(t *testing.T) {
 	setOverlayAsciiProfile(t)
-	out := RenderKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
+	out := ko.View()
 	golden.RequireEqual(t, []byte(out))
 }
 
 func TestGolden_Overlay_Scrolled(t *testing.T) {
 	setOverlayAsciiProfile(t)
-	out := RenderKeybindingOverlay(OverlayState{ScrollOffset: 5, ViewMode: ViewDoors}, 80, 15)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 15)
+	// Scroll down 5 lines via viewport
+	for range 5 {
+		ko.Update(tea.KeyMsg{Type: tea.KeyDown})
+	}
+	out := ko.View()
 	golden.RequireEqual(t, []byte(out))
 }
 
 func TestGolden_Overlay_Narrow(t *testing.T) {
 	setOverlayAsciiProfile(t)
-	out := RenderKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 50, 24)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 50, 24)
+	out := ko.View()
 	golden.RequireEqual(t, []byte(out))
 }
