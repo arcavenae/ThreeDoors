@@ -411,6 +411,166 @@ func TestInsightsView_ContentWidth(t *testing.T) {
 	}
 }
 
+// --- Story 40.4: Bar chart tests ---
+
+func TestBarChart(t *testing.T) {
+	// Use Ascii profile so bar output has no ANSI codes for easy comparison.
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	tests := []struct {
+		name  string
+		ratio float64
+		width int
+		want  string
+	}{
+		{"full bar", 1.0, 10, "██████████"},
+		{"empty bar", 0.0, 10, "░░░░░░░░░░"},
+		{"half bar", 0.5, 10, "█████░░░░░"},
+		{"zero width", 0.5, 0, ""},
+		{"ratio clamped above 1", 1.5, 5, "█████"},
+		{"ratio clamped below 0", -0.5, 5, "░░░░░"},
+		{"one char full", 1.0, 1, "█"},
+		{"rounding up at 0.75", 0.75, 4, "███░"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := barChart(tt.ratio, tt.width, defaultMoodColor)
+			if got != tt.want {
+				t.Errorf("barChart(%v, %d) = %q, want %q", tt.ratio, tt.width, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBuildMoodCorrelations_BarChars(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	// Create a view with multiple moods at different averages so both █ and ░ appear.
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 7, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	sessions := []core.SessionMetrics{
+		makeInsightsTestSession(time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC), 5, []string{"Focused"}, []int{0}),
+		makeInsightsTestSession(time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC), 2, []string{"Tired"}, []int{1}),
+		makeInsightsTestSession(time.Date(2026, 3, 7, 10, 0, 0, 0, time.UTC), 5, []string{"Focused"}, []int{0}),
+		makeInsightsTestSession(time.Date(2026, 3, 7, 11, 0, 0, 0, time.UTC), 2, []string{"Tired"}, []int{1}),
+	}
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+	cc := core.NewCompletionCounterWithNow(frozen)
+	iv := NewInsightsView(pa, cc)
+	iv.SetWidth(80)
+
+	content := iv.buildMoodCorrelations()
+
+	// Should contain both bar characters (Focused=full, Tired=partial)
+	if !strings.Contains(content, "█") {
+		t.Errorf("mood correlations should contain filled bar chars (█), got:\n%s", content)
+	}
+	if !strings.Contains(content, "░") {
+		t.Errorf("mood correlations should contain empty bar chars (░), got:\n%s", content)
+	}
+
+	// Should still contain summary info
+	if !strings.Contains(content, "Most productive mood:") {
+		t.Errorf("mood correlations should still contain 'Most productive mood:', got:\n%s", content)
+	}
+}
+
+func TestBuildMoodCorrelations_HighestMoodFullBar(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetWidth(80) // standard layout → barWidth = 20
+	content := iv.buildMoodCorrelations()
+
+	// The highest mood (first in sorted list) should have a full bar (20 █ chars).
+	fullBar := strings.Repeat("█", 20)
+	if !strings.Contains(content, fullBar) {
+		t.Errorf("highest mood should have full bar (%d █ chars), got:\n%s", 20, content)
+	}
+}
+
+func TestBuildMoodCorrelations_EmptyData(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 7, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	// Create sessions without mood data
+	sessions := []core.SessionMetrics{
+		makeInsightsTestSession(now.Add(-48*time.Hour), 3, nil, []int{0}),
+		makeInsightsTestSession(now.Add(-24*time.Hour), 2, nil, []int{1}),
+		makeInsightsTestSession(now, 4, nil, []int{2}),
+	}
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+	cc := core.NewCompletionCounterWithNow(frozen)
+	iv := NewInsightsView(pa, cc)
+	iv.SetWidth(80)
+
+	content := iv.buildMoodCorrelations()
+	if !strings.Contains(content, "Not enough mood data yet") {
+		t.Errorf("empty mood data should show message, got: %q", content)
+	}
+	if strings.Contains(content, "█") || strings.Contains(content, "░") {
+		t.Errorf("empty mood data should NOT show bar chars, got: %q", content)
+	}
+}
+
+func TestBuildMoodCorrelations_CompactBarWidth(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetWidth(50) // compact mode → barWidth = 10
+	content := iv.buildMoodCorrelations()
+
+	// The highest mood should have a bar of width 10.
+	fullBar := strings.Repeat("█", 10)
+	if !strings.Contains(content, fullBar) {
+		t.Errorf("compact mode highest mood should have 10-char bar, got:\n%s", content)
+	}
+	// Should NOT have a 20-char bar.
+	longBar := strings.Repeat("█", 20)
+	if strings.Contains(content, longBar) {
+		t.Errorf("compact mode should not have 20-char bar")
+	}
+}
+
+func TestMoodBarWidth(t *testing.T) {
+	tests := []struct {
+		name  string
+		width int
+		want  int
+	}{
+		{"compact", 40, 10},
+		{"narrow", 70, 15},
+		{"standard", 80, 20},
+		{"wide", 140, 20},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			iv := setupInsightsView(t)
+			iv.SetWidth(tt.width)
+			got := iv.moodBarWidth()
+			if got != tt.want {
+				t.Errorf("moodBarWidth() at width %d = %d, want %d", tt.width, got, tt.want)
+			}
+		})
+	}
+}
+
 // Golden file tests for consistent rendering at standard widths.
 // Use Ascii profile for deterministic output regardless of test execution order.
 func TestInsightsView_GoldenFile_80col(t *testing.T) {

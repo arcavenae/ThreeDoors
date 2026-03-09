@@ -320,6 +320,40 @@ func (iv *InsightsView) buildStreaks() string {
 	return "No active streak — complete a task to start one!"
 }
 
+// moodBarWidth returns the available width for bar charts based on layout mode.
+func (iv *InsightsView) moodBarWidth() int {
+	mode := iv.layoutMode()
+	switch mode {
+	case layoutCompact:
+		return 10
+	case layoutNarrow:
+		return 15
+	default:
+		return 20
+	}
+}
+
+// barChart renders a horizontal bar using █ (filled) and ░ (empty) characters.
+// ratio is clamped to [0.0, 1.0], width must be > 0.
+func barChart(ratio float64, width int, color lipgloss.AdaptiveColor) string {
+	if width <= 0 {
+		return ""
+	}
+	if ratio < 0 {
+		ratio = 0
+	}
+	if ratio > 1 {
+		ratio = 1
+	}
+
+	filled := int(math.Round(ratio * float64(width)))
+	empty := width - filled
+
+	bar := strings.Repeat("█", filled) + strings.Repeat("░", empty)
+	style := lipgloss.NewStyle().Foreground(color)
+	return style.Render(bar)
+}
+
 // buildMoodCorrelations builds the mood panel content (no border).
 func (iv *InsightsView) buildMoodCorrelations() string {
 	corrs := iv.analyzer.GetMoodCorrelations()
@@ -327,9 +361,33 @@ func (iv *InsightsView) buildMoodCorrelations() string {
 		return "Not enough mood data yet. Try logging moods with :mood"
 	}
 
+	// Find the maximum avg for proportional scaling.
+	maxAvg := 0.0
+	for _, c := range corrs {
+		if c.AvgTasksCompleted > maxAvg {
+			maxAvg = c.AvgTasksCompleted
+		}
+	}
+
+	barWidth := iv.moodBarWidth()
 	var s strings.Builder
 	for _, c := range corrs {
-		fmt.Fprintf(&s, "%-12s avg %.1f tasks/session (%d sessions)\n", c.Mood+":", c.AvgTasksCompleted, c.SessionCount)
+		ratio := 0.0
+		if maxAvg > 0 {
+			ratio = c.AvgTasksCompleted / maxAvg
+		}
+
+		color, ok := moodColors[c.Mood]
+		if !ok {
+			color = defaultMoodColor
+		}
+
+		bar := barChart(ratio, barWidth, color)
+		label := c.Mood
+		if iv.layoutMode() == layoutCompact && len(label) > 6 {
+			label = label[:6]
+		}
+		fmt.Fprintf(&s, "%-10s %s %.1f (%d)\n", label, bar, c.AvgTasksCompleted, c.SessionCount)
 	}
 
 	mostProductive := corrs[0].Mood
