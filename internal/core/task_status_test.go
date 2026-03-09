@@ -33,12 +33,14 @@ func TestIsValidTransition(t *testing.T) {
 		{StatusInProgress, StatusInProgress, false},
 		{StatusInReview, StatusInReview, false},
 
+		// Valid transitions from complete (undo)
+		{StatusComplete, StatusTodo, true},
+
 		// Invalid transitions
 		{StatusTodo, StatusInReview, false},
 		{StatusBlocked, StatusInReview, false},
 		{StatusInReview, StatusTodo, false},
 		{StatusInReview, StatusBlocked, false},
-		{StatusComplete, StatusTodo, false},
 		{StatusComplete, StatusInProgress, false},
 		{StatusComplete, StatusBlocked, false},
 		{StatusComplete, StatusInReview, false},
@@ -62,8 +64,11 @@ func TestGetValidTransitions(t *testing.T) {
 	}
 
 	transitions = GetValidTransitions(StatusComplete)
-	if len(transitions) != 0 {
-		t.Errorf("Expected no transitions from StatusComplete, got %d", len(transitions))
+	if len(transitions) != 1 {
+		t.Fatalf("Expected 1 transition from StatusComplete, got %d", len(transitions))
+	}
+	if transitions[0] != StatusTodo {
+		t.Errorf("Expected StatusComplete transition to be StatusTodo, got %q", transitions[0])
 	}
 }
 

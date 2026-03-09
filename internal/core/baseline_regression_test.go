@@ -319,7 +319,7 @@ func TestStatusTransition_FullMatrix(t *testing.T) {
 		StatusInReview: {
 			StatusInProgress: true, StatusComplete: true,
 		},
-		StatusComplete: {},
+		StatusComplete: {StatusTodo: true},
 		StatusDeferred: {StatusTodo: true},
 		StatusArchived: {},
 	}
@@ -501,7 +501,7 @@ func TestGetValidTransitions_AllStatuses(t *testing.T) {
 		{StatusBlocked, 3},    // todo, in-progress, complete
 		{StatusInProgress, 3}, // blocked, in-review, complete
 		{StatusInReview, 2},   // in-progress, complete
-		{StatusComplete, 0},   // terminal
+		{StatusComplete, 1},   // todo (undo)
 		{StatusDeferred, 1},   // todo
 		{StatusArchived, 0},   // terminal
 	}
