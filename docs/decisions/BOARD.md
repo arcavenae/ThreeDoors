@@ -125,6 +125,15 @@
 | D-093 | Bar is theme-independent, dim styling only (Epic 39) | 2026-03-08 | Bar is chrome, not content; themed bars would require updating every theme for non-core feature | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 | D-094 | Auto-hide bar below 10 lines terminal height (Epic 39) | 2026-03-08 | Doors must have priority for screen space; bar is helpful but not essential | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 | D-095 | Fix alpha formula template with `if OS.mac? && Hardware::CPU.arm?` pattern | 2026-03-09 | Matches stable formula fix; addresses root cause in ci.yml not homebrew-tap; minimal change | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
+| D-096 | Custom Lipgloss rendering for stats (no new dependencies in Phase 1) (Epic 40) | 2026-03-08 | Sparklines/bars trivial to build in-tree; ntcharts evaluated for heatmap only in Phase 2 | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-097 | Single view for Phase 1 stats, Tab navigation for Phase 2 (Epic 40) | 2026-03-08 | Fits 24 rows at 80 cols; Tab is simplest interaction; no routing changes needed | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-098 | Phase 1 scope: 3 stories (dashboard shell, sparklines, fun facts) (Epic 40) | 2026-03-08 | Clean dependencies; parallelizable (40.2 and 40.3 independent after 40.1) | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-099 | Fun facts content rules: observe, celebrate, frame gaps, no decline (Epic 40) | 2026-03-08 | SOUL.md alignment; testable via banned-words QA test; daily-seeded rotation | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-100 | Activity heatmap: 8 weeks, custom Unicode+color, Detail tab (Epic 40) | 2026-03-08 | 8 weeks fits 80 cols; custom for consistency; Detail tab keeps main view clean | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-101 | Animated counters: subtle 300-500ms, numbers only, once per entry (Epic 40) | 2026-03-08 | "Button feel" polish; not distracting; low CPU cost; ~16 frames at 30ms tick | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-102 | Independent stats palette (Phase 1), theme coupling (Phase 3) (Epic 40) | 2026-03-08 | Reduces Phase 1 scope; theme extension is cross-cutting change | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-103 | Trophy room deferred; milestones limited to 4 observation-language thresholds (Epic 40) | 2026-03-08 | Trophy room: high complexity, gamification risk; milestones: SOUL.md boundary | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| D-104 | Beautiful Stats Display assigned Epic 40 | 2026-03-08 | Originally Epic 39 but renumbered to avoid collision with Keybinding Display (Epic 39) | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
 
 ## Rejected
 
@@ -169,6 +178,12 @@
 | X-037 | Runtime keybinding registration / config-driven bindings (Epic 39) | 2026-03-08 | All bindings are known at compile time; runtime flexibility adds complexity for zero current benefit | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
 | X-038 | Shared formula template for stable and alpha (Issue #296) | 2026-03-09 | GoReleaser controls stable; prior decision X-028; YAGNI for two instances | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
 | X-039 | Fix alpha formula directly in homebrew-tap (Issue #296) | 2026-03-09 | Would be overwritten on next CI push; root cause is in ThreeDoors ci.yml | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
+| X-040 | ntcharts as primary charting library for stats (Epic 40) | 2026-03-08 | Adds dependency when Lipgloss can build sparklines/bars in-tree; evaluate for heatmap only | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| X-041 | Trophy Room with door-sliding animation (Epic 40) | 2026-03-08 | High complexity, uncertain payoff, "trophy" has gamification connotations, stats should be accessible not hidden | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| X-042 | Gamified milestones ("Century Club unlocked!") (Epic 40) | 2026-03-08 | SOUL.md: "no gamification, no guilt"; achievement language creates extrinsic motivation | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| X-043 | Burnout indicators in TUI (Epic 40) | 2026-03-08 | Too judgmental for user-facing display; keep in MCP for AI agent consumption only | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| X-044 | Productivity scores/grades in stats (Epic 40) | 2026-03-08 | SOUL.md: "not a productivity report"; assigning scores implies judgment | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
+| X-045 | Braille pattern characters for high-res charts (Epic 40) | 2026-03-08 | Inconsistent rendering across terminals and fonts; Unicode blocks are universally safe | [Artifact](../../_bmad-output/planning-artifacts/beautiful-stats-party-mode.md) |
 
 ## Superseded
 
