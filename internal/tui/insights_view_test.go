@@ -766,6 +766,41 @@ func TestBuildCompletionTrends_ContainsSparklineChars(t *testing.T) {
 	}
 }
 
+func TestInsightsView_View_ContainsFunFact(t *testing.T) {
+	iv := setupInsightsView(t)
+	output := iv.View()
+
+	// Fun fact should contain the gold star prefix
+	if !strings.Contains(output, "★") {
+		t.Error("View() should contain gold star for fun fact")
+	}
+}
+
+func TestInsightsView_View_ColdStart_NoFunFact(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 2, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	sessions := []core.SessionMetrics{
+		makeInsightsTestSession(now, 2, []string{"Focused"}, []int{1}),
+	}
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+
+	cc := core.NewCompletionCounterWithNow(frozen)
+	iv := NewInsightsView(pa, cc)
+	iv.SetWidth(80)
+
+	output := iv.View()
+	// Cold start should NOT show fun fact panels (only the cold start message)
+	if strings.Contains(output, "COMPLETION TRENDS") {
+		t.Error("cold start should not show data panels including fun facts")
+	}
+}
+
 // compareGoldenFile compares output against the golden file.
 func compareGoldenFile(t *testing.T, path, actual string) {
 	t.Helper()
