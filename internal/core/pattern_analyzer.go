@@ -882,6 +882,15 @@ func (pa *PatternAnalyzer) GetMoodTrend() string {
 	}
 }
 
+// GetTotalCompleted returns the total number of tasks completed across all sessions.
+func (pa *PatternAnalyzer) GetTotalCompleted() int {
+	total := 0
+	for _, s := range pa.sessions {
+		total += s.TasksCompleted
+	}
+	return total
+}
+
 func avgCompleted(sessions []SessionMetrics) float64 {
 	if len(sessions) == 0 {
 		return 0

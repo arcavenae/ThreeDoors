@@ -260,6 +260,27 @@ var (
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("63")).
 				Padding(1, 2)
+
+	// Stats dashboard styles (Epic 40)
+	statsPanelStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.AdaptiveColor{Light: "#555555", Dark: "#555555"})
+
+	statsDashboardHeaderStyle = lipgloss.NewStyle().
+					Bold(true).
+					Foreground(lipgloss.AdaptiveColor{Light: "#333333", Dark: "#EEEEEE"}).
+					Border(lipgloss.RoundedBorder()).
+					BorderForeground(lipgloss.AdaptiveColor{Light: "#555555", Dark: "#555555"}).
+					Align(lipgloss.Center)
+
+	statsHeroStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FCD34D")).
+			Bold(true).
+			Align(lipgloss.Center)
+
+	statsSectionHeaderStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#333333", Dark: "#EEEEEE"}).
+				Bold(true)
 )
 
 // StatusColor returns the lipgloss color for a given status string.
