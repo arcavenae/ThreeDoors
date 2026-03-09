@@ -161,6 +161,7 @@
 | D-125 | Inline hints as frame decoration (doorknob metaphor), separate from bar toggle | 2026-03-09 | Hints are onboarding scaffolding (auto-fade), bar is reference tool (manual toggle); Approach B preserves door metaphor; no runtime toggle key — `:hints` command only; avoids 39.4 `h` toggle collision | [Artifact](../../_bmad-output/planning-artifacts/default-tooltips-mode-party-mode.md) |
 | D-126 | Session-based auto-fade for inline hints (default 5 sessions) | 2026-03-09 | Simpler than per-key tracking; 90% as effective; graceful dim at N-1 then disable at N; `:hints on` re-enables | [Artifact](../../_bmad-output/planning-artifacts/default-tooltips-mode-party-mode.md) |
 | D-127 | Inline tooltips as Epic 39 stories 39.9-39.12, not a new epic | 2026-03-09 | Same keybinding registry data source (39.1); same config infrastructure; same toggle ecosystem; new epic would fragment discoverability | [Artifact](../../_bmad-output/planning-artifacts/default-tooltips-mode-party-mode.md) |
+| D-128 | Scope 'q' quit to doors view only; sub-views treat 'q' as go-back (overrides Story 36.3) | 2026-03-09 | Matches TUI conventions (vim, lazygit, htop); 'q' = "close current thing"; quit at root, back in sub-views; SOUL.md "work with human nature" | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
 
 ## Rejected
 
@@ -268,6 +269,9 @@
 | X-068 | `bubbles/list` for command autocomplete | 2026-03-09 | Heavyweight for 16 items; fuzzy matching wrong for command completion (users expect prefix matching from vim muscle memory) | [Artifact](../../_bmad-output/planning-artifacts/global-command-mode-analysis.md) |
 | X-069 | Overlay-style dropdown for command suggestions | 2026-03-09 | No overlay rendering system exists; all existing patterns use inline rendering; would require Z-ordering infrastructure | [Artifact](../../_bmad-output/planning-artifacts/global-command-mode-analysis.md) |
 | X-070 | Argument-level completion for commands (MVP) | 2026-03-09 | Only 2 commands benefit (`:insights mood\|avoidance`, `:goals edit`); disproportionate complexity for MVP | [Artifact](../../_bmad-output/planning-artifacts/global-command-mode-analysis.md) |
+| X-071 | Exemption list for 'q' quit (Option A for #330) | 2026-03-09 | Growing maintenance list; wrong default (quit is dangerous, should require opt-in not opt-out) | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
+| X-072 | Sub-view consumes 'q' before universal handler (Option B for #330) | 2026-03-09 | Architecturally impossible — universal handler at line 910 fires before view delegation at line 921 | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
+| X-073 | Different key for universal quit (Option D for #330) | 2026-03-09 | 'q' is THE standard TUI quit key; problem is scope not key choice; changing it violates muscle memory | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
 
 ## Epic Number Registry
 

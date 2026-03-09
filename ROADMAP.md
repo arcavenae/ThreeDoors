@@ -50,6 +50,12 @@ Operations documentation for the envoy agent: patrol workflows, cross-agent prot
 
 Replace broken `:help` flash message with dedicated scrollable help view. Content runs off-screen and disappears after 3 seconds. Fix: new `ViewHelp` mode, categorized two-column layout, `?` global keybinding.
 
+### Story 0.34: Fix 'q' Key in Sub-Views — Go Back Instead of Quit (P1)
+
+**Status:** Ready. Triage complete (issue #330). Story created.
+
+Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health, synclog, etc.) to exit on 'q' instead of going back. Fix: scope 'q' quit to doors view only; sub-views treat 'q' as go-back (D-128).
+
 ## Active Epics
 
 ### Epic 25: Todoist Integration (P1) — 3/4 stories done
