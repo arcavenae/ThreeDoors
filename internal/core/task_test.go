@@ -44,9 +44,56 @@ func TestTask_UpdateStatus_Complete(t *testing.T) {
 func TestTask_UpdateStatus_Invalid(t *testing.T) {
 	task := NewTask("Test")
 	task.Status = StatusComplete
-	err := task.UpdateStatus(StatusTodo)
+	err := task.UpdateStatus(StatusInProgress)
 	if err == nil {
-		t.Error("Expected error for invalid transition complete -> todo")
+		t.Error("Expected error for invalid transition complete -> in-progress")
+	}
+}
+
+func TestTask_UpdateStatus_CompleteToTodo(t *testing.T) {
+	task := NewTask("Test undo")
+	task.AddNote("important note")
+
+	if err := task.UpdateStatus(StatusComplete); err != nil {
+		t.Fatalf("UpdateStatus to complete failed: %v", err)
+	}
+	if task.CompletedAt == nil {
+		t.Fatal("Expected CompletedAt to be set after completion")
+	}
+
+	if err := task.UpdateStatus(StatusTodo); err != nil {
+		t.Fatalf("UpdateStatus complete->todo failed: %v", err)
+	}
+	if task.Status != StatusTodo {
+		t.Errorf("Expected status %q, got %q", StatusTodo, task.Status)
+	}
+	if task.CompletedAt != nil {
+		t.Error("Expected CompletedAt to be nil after undo")
+	}
+	if task.UpdatedAt.IsZero() {
+		t.Error("Expected UpdatedAt to be set after undo")
+	}
+	if task.Blocker != "" {
+		t.Errorf("Expected empty blocker after undo, got %q", task.Blocker)
+	}
+	if len(task.Notes) != 1 || task.Notes[0].Text != "important note" {
+		t.Error("Expected notes to be preserved through undo")
+	}
+}
+
+func TestTask_UpdateStatus_CompleteToInProgress_Invalid(t *testing.T) {
+	task := NewTask("Test")
+	_ = task.UpdateStatus(StatusComplete)
+	if err := task.UpdateStatus(StatusInProgress); err == nil {
+		t.Error("Expected error for complete -> in-progress")
+	}
+}
+
+func TestTask_UpdateStatus_CompleteToBlocked_Invalid(t *testing.T) {
+	task := NewTask("Test")
+	_ = task.UpdateStatus(StatusComplete)
+	if err := task.UpdateStatus(StatusBlocked); err == nil {
+		t.Error("Expected error for complete -> blocked")
 	}
 }
 
