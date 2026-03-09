@@ -99,7 +99,7 @@ type MainModel struct {
 	height                int
 	showKeybindingBar     bool
 	showKeybindingOverlay bool
-	overlayState          OverlayState
+	keybindingOverlay     *KeybindingOverlay
 	searchQuery           string
 	searchSelectedIndex   int
 	promptedTasks         map[string]bool
@@ -314,6 +314,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.syncLogView != nil {
 			m.syncLogView.SetWidth(msg.Width)
+			m.syncLogView.SetHeight(msg.Height)
 		}
 		if m.themePickerView != nil {
 			m.themePickerView.SetWidth(msg.Width)
@@ -825,6 +826,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ShowSyncLogMsg:
 		sv := NewSyncLogView(msg.Entries)
 		sv.SetWidth(m.width)
+		sv.SetHeight(m.height)
 		m.syncLogView = sv
 		m.previousView = m.viewMode
 		m.viewMode = ViewSyncLog
@@ -1061,10 +1063,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Global '?' opens help from any non-text-input view
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "?" && !m.isTextInputActive() {
 		m.showKeybindingOverlay = true
-		m.overlayState = OverlayState{
-			ScrollOffset: 0,
-			ViewMode:     m.viewMode,
-		}
+		m.keybindingOverlay = NewKeybindingOverlay(
+			OverlayState{ViewMode: m.viewMode},
+			m.width, m.height,
+		)
 		return m, nil
 	}
 
@@ -1076,6 +1078,17 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.proposalsView.SetHeight(m.contentHeight())
 		}
 		return m, m.saveKeybindingBarCmd(m.showKeybindingBar)
+	}
+
+	// Global ':' opens command mode from any non-text-input view
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == ":" && !m.isTextInputActive() {
+		m.searchView = m.newSearchView()
+		m.searchView.SetWidth(m.width)
+		m.searchView.textInput.SetValue(":")
+		m.searchView.checkCommandMode()
+		m.previousView = m.viewMode
+		m.viewMode = ViewSearch
+		return m, nil
 	}
 
 	// Delegate to current view
@@ -1133,18 +1146,13 @@ func (m *MainModel) updateOverlay(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "?", "esc":
 		m.showKeybindingOverlay = false
-		m.overlayState.ScrollOffset = 0
-		return m, nil
-	case "up", "k":
-		if m.overlayState.ScrollOffset > 0 {
-			m.overlayState.ScrollOffset--
-		}
-		return m, nil
-	case "down", "j":
-		m.overlayState.ScrollOffset = ClampScrollOffset(m.overlayState.ScrollOffset+1, m.height)
+		m.keybindingOverlay = nil
 		return m, nil
 	}
-	// All other keys consumed — no pass-through.
+	if m.keybindingOverlay != nil {
+		cmd := m.keybindingOverlay.Update(msg)
+		return m, cmd
+	}
 	return m, nil
 }
 
@@ -1194,6 +1202,11 @@ func (m *MainModel) updateImprovement(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case animationFrameMsg:
+		if m.doorsView.doorAnimation != nil && m.doorsView.doorAnimation.Update() {
+			return m, AnimationTickCmd()
+		}
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -1204,18 +1217,24 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.doorsView.selectedDoorIndex = 0
 			}
+			m.doorsView.doorAnimation.SetSelection(m.doorsView.selectedDoorIndex)
+			return m, AnimationTickCmd()
 		case "w", "up":
 			if m.doorsView.selectedDoorIndex == 1 {
 				m.doorsView.selectedDoorIndex = -1
 			} else {
 				m.doorsView.selectedDoorIndex = 1
 			}
+			m.doorsView.doorAnimation.SetSelection(m.doorsView.selectedDoorIndex)
+			return m, AnimationTickCmd()
 		case "d", "right":
 			if m.doorsView.selectedDoorIndex == 2 {
 				m.doorsView.selectedDoorIndex = -1
 			} else {
 				m.doorsView.selectedDoorIndex = 2
 			}
+			m.doorsView.doorAnimation.SetSelection(m.doorsView.selectedDoorIndex)
+			return m, AnimationTickCmd()
 		case "s", "down":
 			if m.tracker != nil {
 				m.tracker.RecordRefresh(m.doorsView.GetCurrentDoorTexts())
@@ -1257,14 +1276,6 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
 				return m, func() tea.Msg { return ShowSnoozeMsg{Task: task} }
 			}
-		case ":":
-			m.searchView = m.newSearchView()
-			m.searchView.SetWidth(m.width)
-			m.searchView.textInput.SetValue(":")
-			m.searchView.checkCommandMode()
-			m.viewMode = ViewSearch
-			m.previousView = ViewDoors
-			return m, nil
 		}
 	}
 	return m, nil
@@ -1413,6 +1424,23 @@ func (m *MainModel) contentHeight() int {
 		return m.height - 2 // separator + bar
 	}
 	return m.height
+}
+
+// buildBarContext constructs a BarContext with sub-mode awareness for the
+// keybinding bar, allowing it to show context-appropriate keys.
+func (m *MainModel) buildBarContext() BarContext {
+	ctx := BarContext{Mode: m.viewMode}
+	switch m.viewMode {
+	case ViewDoors:
+		ctx.DoorSelected = m.doorsView != nil && m.doorsView.selectedDoorIndex >= 0
+	case ViewDetail:
+		if m.detailView != nil {
+			ctx.DetailMode = m.detailView.mode
+		}
+	case ViewSearch:
+		ctx.CommandMode = m.searchView != nil && m.searchView.isCommandMode
+	}
+	return ctx
 }
 
 // isTextInputActive returns true when the current view has an active text input
@@ -1781,8 +1809,8 @@ func (m *MainModel) runDecompose(taskID, taskDescription string) tea.Cmd {
 // View implements tea.Model.
 func (m *MainModel) View() string {
 	// Overlay takes over the entire screen when visible.
-	if m.showKeybindingOverlay {
-		return RenderKeybindingOverlay(m.overlayState, m.width, m.height)
+	if m.showKeybindingOverlay && m.keybindingOverlay != nil {
+		return m.keybindingOverlay.View()
 	}
 
 	var view string
@@ -1886,8 +1914,8 @@ func (m *MainModel) View() string {
 	}
 
 	// Append keybinding bar when enabled.
-	doorSelected := m.viewMode == ViewDoors && m.doorsView != nil && m.doorsView.selectedDoorIndex >= 0
-	barOutput := RenderKeybindingBar(m.viewMode, m.width, m.height, m.showKeybindingBar, doorSelected)
+	barCtx := m.buildBarContext()
+	barOutput := RenderKeybindingBarWithContext(barCtx, m.width, m.height, m.showKeybindingBar)
 	if barOutput != "" {
 		view += "\n" + barOutput
 	}

@@ -145,9 +145,8 @@ func (hv *HelpView) initViewport() {
 	if vpHeight < 1 {
 		vpHeight = 1
 	}
-	hv.viewport = viewport.New(hv.width, vpHeight)
+	hv.viewport = NewScrollableView(hv.width, vpHeight)
 	hv.viewport.SetContent(hv.content)
-	hv.viewport.MouseWheelEnabled = true
 	hv.ready = true
 }
 

@@ -297,3 +297,152 @@ func TestGolden_Disabled(t *testing.T) {
 	got := RenderKeybindingBar(ViewDoors, 80, 24, false, false)
 	testGoldenBar(t, "keybinding_bar_disabled", got)
 }
+
+func TestGolden_DoorsSelected_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewDoors, 80, 24, true, true)
+	testGoldenBar(t, "keybinding_bar_doors_selected_full", got)
+}
+
+func TestGolden_SearchView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewSearch, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_search_full", got)
+}
+
+func TestGolden_AddTaskView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewAddTask, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_addtask_full", got)
+}
+
+func TestGolden_MoodView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewMood, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_mood_full", got)
+}
+
+func TestGolden_HealthView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewHealth, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_health_full", got)
+}
+
+func TestGolden_HelpView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewHelp, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_help_full", got)
+}
+
+func TestGolden_DeferredView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewDeferred, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_deferred_full", got)
+}
+
+func TestGolden_SnoozeView_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBar(ViewSnooze, 80, 24, true, false)
+	testGoldenBar(t, "keybinding_bar_snooze_full", got)
+}
+
+// Sub-mode golden tests
+
+func TestGolden_DetailTextInput_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBarWithContext(
+		BarContext{Mode: ViewDetail, DetailMode: DetailModeExpandInput},
+		80, 24, true,
+	)
+	testGoldenBar(t, "keybinding_bar_detail_textinput", got)
+}
+
+func TestGolden_DetailConfirm_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBarWithContext(
+		BarContext{Mode: ViewDetail, DetailMode: DetailModeDispatchConfirm},
+		80, 24, true,
+	)
+	testGoldenBar(t, "keybinding_bar_detail_confirm", got)
+}
+
+func TestGolden_CommandMode_Full(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	got := RenderKeybindingBarWithContext(
+		BarContext{Mode: ViewSearch, CommandMode: true},
+		80, 24, true,
+	)
+	testGoldenBar(t, "keybinding_bar_command_mode", got)
+}
+
+// Edge case tests
+
+func TestRenderKeybindingBar_ViewModeTransition(t *testing.T) {
+	t.Parallel()
+	// Simulate transitions between views — each should render correctly.
+	transitions := []struct {
+		from ViewMode
+		to   ViewMode
+	}{
+		{ViewDoors, ViewDetail},
+		{ViewDetail, ViewMood},
+		{ViewMood, ViewDoors},
+		{ViewDoors, ViewSearch},
+		{ViewSearch, ViewDoors},
+	}
+	for _, tr := range transitions {
+		fromBar := RenderKeybindingBar(tr.from, 80, 24, true, false)
+		toBar := RenderKeybindingBar(tr.to, 80, 24, true, false)
+		if fromBar == "" || toBar == "" {
+			t.Errorf("transition %d→%d produced empty bar", tr.from, tr.to)
+		}
+		if fromBar == toBar {
+			t.Errorf("transition %d→%d produced identical bars", tr.from, tr.to)
+		}
+	}
+}
+
+func TestRenderKeybindingBarWithContext_BackwardsCompatible(t *testing.T) {
+	t.Parallel()
+	// RenderKeybindingBar should produce same output as RenderKeybindingBarWithContext
+	// when no sub-mode context is provided.
+	modes := []struct {
+		mode         ViewMode
+		doorSelected bool
+	}{
+		{ViewDoors, false},
+		{ViewDoors, true},
+		{ViewDetail, false},
+		{ViewSearch, false},
+	}
+	for _, m := range modes {
+		old := RenderKeybindingBar(m.mode, 80, 24, true, m.doorSelected)
+		ctx := BarContext{Mode: m.mode, DoorSelected: m.doorSelected}
+		new := RenderKeybindingBarWithContext(ctx, 80, 24, true)
+		if old != new {
+			t.Errorf("mode %d (doorSelected=%v): backward compatibility broken", m.mode, m.doorSelected)
+		}
+	}
+}

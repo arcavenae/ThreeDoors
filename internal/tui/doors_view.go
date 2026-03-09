@@ -9,6 +9,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 // typeIcon returns the emoji icon for a task type.
@@ -68,6 +69,7 @@ type DoorsView struct {
 	theme             *themes.DoorTheme
 	themeRegistry     *themes.Registry
 	duplicateTaskIDs  map[string]bool
+	doorAnimation     *DoorAnimation
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -81,6 +83,7 @@ func NewDoorsView(pool *core.TaskPool, tracker *core.SessionTracker) *DoorsView 
 		avoidanceMap:      make(map[string]int),
 		avoidanceShown:    make(map[string]int),
 		duplicateTaskIDs:  make(map[string]bool),
+		doorAnimation:     NewDoorAnimation(),
 	}
 	dv.RefreshDoors()
 	return dv
@@ -340,12 +343,16 @@ func (dv *DoorsView) View() string {
 		}
 		content = statusIndicator + devBadge + "\n\n" + content
 
-		// Apply content emphasis based on selection state:
-		// - When a door is selected: bold/bright for selected, faint for unselected
-		// - When no door is selected (index -1): normal styling for all
+		// Apply content emphasis based on selection state.
+		// When animation is active, emphasis interpolates between states via spring physics.
+		// When settled, fall back to discrete selected/unselected styling.
 		isSelected := i == dv.selectedDoorIndex
 		hasSelection := dv.selectedDoorIndex >= 0
-		if hasSelection {
+		animating := dv.doorAnimation != nil && dv.doorAnimation.Active()
+
+		if animating {
+			// During animation, skip content styling — border color conveys emphasis
+		} else if hasSelection {
 			if isSelected {
 				content = selectedContentStyle.Render(content)
 			} else {
@@ -356,12 +363,16 @@ func (dv *DoorsView) View() string {
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
 			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected))
+		} else if animating {
+			// Spring-interpolated border color based on emphasis
+			emphasis := dv.doorAnimation.Emphasis(i)
+			style := animatedDoorStyle(i, emphasis, doorWidth, doorHeight, usePerDoorColors)
+			renderedDoors = append(renderedDoors, style.Render(content))
 		} else {
 			var style lipgloss.Style
 			if isSelected {
 				style = selectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 			} else if hasSelection {
-				// Another door is selected — dim this door's frame
 				style = unselectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 			} else if usePerDoorColors && i < len(doorColors) {
 				style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
@@ -402,4 +413,54 @@ func (dv *DoorsView) View() string {
 	s.WriteString(greetingStyle.Render(dv.footerMessage))
 
 	return s.String()
+}
+
+// animatedDoorStyle builds a lipgloss style with border color interpolated
+// by spring emphasis (0.0 = unselected/dim, 1.0 = fully selected/bright).
+func animatedDoorStyle(doorIndex int, emphasis float64, w, h int, usePerDoorColors bool) lipgloss.Style {
+	// Clamp emphasis to [0, 1] for color interpolation (spring can overshoot)
+	if emphasis < 0 {
+		emphasis = 0
+	}
+	if emphasis > 1 {
+		emphasis = 1
+	}
+
+	// Base color: per-door accent or default accent
+	var baseHex string
+	if usePerDoorColors && doorIndex < len(doorColors) {
+		baseHex = string(doorColors[doorIndex])
+	} else {
+		baseHex = string(colorAccent)
+	}
+	dimHex := "240" // same as unselectedDoorStyle border
+
+	// Parse colors for interpolation
+	baseColor, _ := colorful.MakeColor(lipgloss.Color(baseHex))
+	dimColor, _ := colorful.MakeColor(lipgloss.Color(dimHex))
+	brightColor, _ := colorful.MakeColor(lipgloss.Color(string(colorDoorBright)))
+
+	// Interpolate: dim → base at emphasis 0→0.5, base → bright at 0.5→1.0
+	var borderColor colorful.Color
+	if emphasis <= 0.5 {
+		t := emphasis * 2 // 0→1 over the 0→0.5 range
+		borderColor = dimColor.BlendLab(baseColor, t)
+	} else {
+		t := (emphasis - 0.5) * 2 // 0→1 over the 0.5→1.0 range
+		borderColor = baseColor.BlendLab(brightColor, t)
+	}
+
+	// Switch border style at midpoint
+	border := lipgloss.RoundedBorder()
+	if emphasis > 0.5 {
+		border = lipgloss.DoubleBorder()
+	}
+
+	return lipgloss.NewStyle().
+		Border(border).
+		BorderForeground(lipgloss.Color(borderColor.Hex())).
+		Padding(1, 2).
+		Width(w).
+		Height(h).
+		AlignVertical(lipgloss.Center)
 }

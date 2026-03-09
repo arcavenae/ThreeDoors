@@ -39,6 +39,12 @@ const (
 // It returns a two-line string (separator + bar) or empty string if disabled or
 // terminal is too small. The function is stateless — all inputs are parameters.
 func RenderKeybindingBar(mode ViewMode, width, height int, enabled bool, doorSelected bool) string {
+	return RenderKeybindingBarWithContext(BarContext{Mode: mode, DoorSelected: doorSelected}, width, height, enabled)
+}
+
+// RenderKeybindingBarWithContext renders the keybinding bar using full BarContext,
+// supporting sub-mode awareness for view-specific key changes.
+func RenderKeybindingBarWithContext(ctx BarContext, width, height int, enabled bool) string {
 	if !enabled {
 		return ""
 	}
@@ -46,7 +52,7 @@ func RenderKeybindingBar(mode ViewMode, width, height int, enabled bool, doorSel
 		return ""
 	}
 
-	bindings := barBindings(mode, doorSelected)
+	bindings := contextBarBindings(ctx)
 	if len(bindings) == 0 {
 		return ""
 	}
