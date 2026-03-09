@@ -221,6 +221,13 @@
 | D-115 | Mandatory preview before bug report submission | 2026-03-09 | SOUL.md trust alignment; user sees exactly what will be sent; friend-helping-friend feel | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
 | D-116 | Bug report target repo hardcoded to arcaven/ThreeDoors | 2026-03-09 | Single-product reporter; YAGNI for configuration; forks can change in code | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
 | D-117 | Sort search results in filterTasks(), not in GetAllTasks() | 2026-03-09 | Consumer-side sort has zero blast radius; other callers don't need stable order; rejected: GetAllTasks sort (unnecessary cost), cached order (premature optimization), ordered data structure (over-engineered) | [Triage](../../_bmad-output/planning-artifacts/issue-334-search-jumping-triage.md) |
+| D-128 | Adopt bubbles/viewport to replace 3 custom scroll implementations | 2026-03-09 | Standardizes behavior, adds mouse wheel, reduces maintenance (3 impls → 1 dep); rejected: keep custom (higher maintenance) | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-129 | Adopt bubbles/spinner for async operation feedback | 2026-03-09 | Trivial effort, eliminates "is it frozen?" uncertainty; deterministic testing | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-130 | Adopt lipgloss.JoinVertical + Place for layout composition | 2026-03-09 | Layout QoL, eliminates manual padding math and `\n` concatenation | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-131 | Harmonica door transitions via spike-first approach | 2026-03-09 | Spring physics delivers SOUL.md "physical objects" promise; testing risk requires validation first; extends prior deferral X-008 | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-132 | Reject bubbles/list for ThreeDoors selection UIs | 2026-03-09 | 3-door constraint is intentional; generic list fights core design philosophy | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-133 | Reject bubbles/textarea, table, filepicker, timer, help, huh, wish | 2026-03-09 | Each solves problems ThreeDoors doesn't have or contradicts SOUL.md values | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-134 | New Epic 41: Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | 5-7 cohesive stories; too many for infra backlog, too few for multiple epics; P2 priority | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
 
 ## Rejected
 
@@ -241,6 +248,14 @@
 | X-056 | `::` (GitLab-style) as label separator | 2026-03-08 | Looks unusual on GitHub; `.` is more universal | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-057 | `/` as label scope separator | 2026-03-08 | Conflicts with path references | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-058 | `process.party-mode` label | 2026-03-08 | Party mode is a process step, not an issue state; covered by `scope.needs-decision` | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-071 | Adopt bubbles/list for custom cursor-based UIs | 2026-03-09 | Fights 3-door constraint; generic list adds selection modes ThreeDoors doesn't want; prior X-068 rejected for commands | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-072 | Adopt bubbles/textarea for multi-line input | 2026-03-09 | Contradicts friction-reduction philosophy; single-step captures are intentional | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-073 | Adopt bubbles/table for data display | 2026-03-09 | No tabular data in ThreeDoors; app shows 3 tasks, not spreadsheets | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-074 | Adopt bubbles/help instead of custom help system | 2026-03-09 | Keybinding registry integration (D-090) too deep; bubbles help too simple for multi-category view-aware system | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-075 | Adopt huh for form building | 2026-03-09 | Over-engineered for at-most 2-step input flows; textinput sufficient | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-076 | Adopt wish for SSH/remote terminal access | 2026-03-09 | SOUL.md: "Local-First, Privacy-Always"; no remote terminal mode needed | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-077 | Adopt bubbles/filepicker for file selection | 2026-03-09 | Path input in onboarding is fine as textinput; filepicker adds UI complexity for rare operation | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| X-078 | Adopt bubbles/timer/stopwatch for session display | 2026-03-09 | Session tracking is backend JSONL, not displayed; visible timers create pressure (anti-SOUL.md) | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
 | X-059 | Stay in normal scrollback buffer (no AltScreen) | 2026-03-09 | Scrollback not useful for task picker; every serious TUI uses AltScreen; dead space below app is accidental | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
 | X-060 | Unlimited door height growth (no cap) | 2026-03-09 | Produces absurd 60+ line "skyscraper" doors on tall terminals; violates door metaphor proportions (D-031) | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
 | X-061 | Fixed door height regardless of terminal size | 2026-03-09 | Ignores terminal size entirely; wastes space on normal terminals; proportional with cap is better | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
@@ -260,7 +275,8 @@
 
 | Epic | Feature | Allocated | Status |
 |------|---------|-----------|--------|
-| 41 | *(next available)* | — | — |
+| 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Proposed (pending PM approval) |
+| 42 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
