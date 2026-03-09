@@ -180,7 +180,7 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.12 | Auto-Fade After N Sessions | Cancelled (D-140) | ~~P2~~ | 39.9, 39.10 |
 | 39.13 | Unified Door Key Indicator Toggle | Not Started | P1 | 39.4, 39.9, 39.10 |
 
-### Epic 40: Beautiful Stats Display (P1) — 9/10 stories done
+### Epic 40: Beautiful Stats Display (P1) — 10/10 stories done — COMPLETE
 
 Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, and fun facts.
 
@@ -195,7 +195,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 40.7 | Animated Counter Reveals | Done (PR #392) | P2 | 40.1 |
 | 40.8 | Tab Navigation for Detail View | Done (PR #367) | P1 | 40.1 |
 | 40.9 | Theme-Matched Stats Color Palettes | Done (PR #380) | P2 | 40.1, 40.2, Epic 17 |
-| 40.10 | Milestone Celebrations | In Review | P2 | 40.1 |
+| 40.10 | Milestone Celebrations | Done (PR #393) | P2 | 40.1 |
 
 ### Epic 41: Charm Ecosystem Adoption & TUI Polish (P2) — 6/6 stories done — COMPLETE
 
@@ -261,6 +261,7 @@ Make door selection feel responsive and satisfying. Reopened for Story 36.4 (spa
 | 38 | Dual Homebrew Distribution | 6/6 |
 | 27 | Daily Planning Mode | 5/5 |
 | 28 | Snooze/Defer as First-Class Action | 4/4 |
+| 40 | Beautiful Stats Display | 10/10 |
 | 41 | Charm Ecosystem Adoption & TUI Polish | 6/6 |
 
 ## Icebox (Deferred Indefinitely)
