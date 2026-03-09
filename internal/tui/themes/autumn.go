@@ -1,0 +1,213 @@
+package themes
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
+)
+
+// NewAutumnTheme creates a layered autumn theme with block elements (▒▓)
+// and angular textures. Uses warm amber/rust tones to evoke falling leaves.
+func NewAutumnTheme() *DoorTheme {
+	frameColor := lipgloss.CompleteColor{TrueColor: "#cc7722", ANSI256: "172", ANSI: "3"}
+	selectedColor := lipgloss.CompleteColor{TrueColor: "#eebb55", ANSI256: "179", ANSI: "11"}
+
+	return &DoorTheme{
+		Name:        "autumn",
+		Description: "Autumn harvest — layered block elements, angular textures",
+		Render:      autumnRender(frameColor, selectedColor),
+		Colors: ThemeColors{
+			Frame:    frameColor,
+			Fill:     lipgloss.CompleteColor{TrueColor: "#1a0f00", ANSI256: "52", ANSI: "0"},
+			Accent:   lipgloss.CompleteColor{TrueColor: "#dd9933", ANSI256: "178", ANSI: "3"},
+			Selected: selectedColor,
+
+			StatsAccent:        "#CC7722",
+			StatsGradientStart: "#8B4513",
+			StatsGradientEnd:   "#CC7722",
+		},
+		MinWidth:  15,
+		MinHeight: 12,
+
+		Season:      "autumn",
+		SeasonStart: MonthDay{9, 1},
+		SeasonEnd:   MonthDay{11, 30},
+	}
+}
+
+func autumnRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
+	return func(content string, width int, height int, selected bool, hint string) string {
+		color := frameColor
+		hChar := "─"
+		vChar := "│"
+		tl, tr := "┌", "┐"
+		bl, br := "└", "┘"
+		if selected {
+			color = selectedColor
+			hChar = "━"
+			vChar = "┃"
+			tl, tr = "┏", "┓"
+			bl, br = "┗", "┛"
+		}
+		style := lipgloss.NewStyle().Foreground(color)
+
+		inner := width - 2
+		if inner < 1 {
+			inner = 1
+		}
+
+		if height < 12 {
+			return autumnCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
+		}
+
+		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint)
+	}
+}
+
+func autumnCompact(content string, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, hint string) string {
+	contentWidth := inner - 6
+	if contentWidth < 1 {
+		contentWidth = 1
+	}
+	wrapped := ansi.Wordwrap(content, contentWidth, "")
+	contentLines := strings.Split(wrapped, "\n")
+
+	var b strings.Builder
+
+	hBar := strings.Repeat(hChar, inner)
+	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
+
+	// Angular top border
+	fmt.Fprintf(&b, "%s\n", style.Render(tl+hBar+tr))
+	fmt.Fprintf(&b, "%s\n", blankLine)
+
+	for _, line := range contentLines {
+		lineWidth := ansi.StringWidth(line)
+		padding := inner - 3 - lineWidth
+		if padding < 0 {
+			padding = 0
+		}
+		fmt.Fprintf(&b, "%s%s%s\n",
+			style.Render(vChar),
+			"   "+line+strings.Repeat(" ", padding),
+			style.Render(vChar),
+		)
+	}
+
+	fmt.Fprintf(&b, "%s\n", blankLine)
+
+	// Handle: filled diamond for angular feel
+	knobPad := inner - 4
+	if knobPad < 1 {
+		knobPad = 1
+	}
+	knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
+	fmt.Fprintf(&b, "%s%s%s\n",
+		style.Render(vChar),
+		knobLine,
+		style.Render(vChar),
+	)
+
+	fmt.Fprintf(&b, "%s\n", blankLine)
+
+	// Angular bottom border
+	fmt.Fprintf(&b, "%s", style.Render(bl+hBar+br))
+
+	return b.String()
+}
+
+func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string) string {
+	anatomy := NewDoorAnatomy(height)
+
+	contentWidth := inner - 6
+	if contentWidth < 1 {
+		contentWidth = 1
+	}
+	wrapped := ansi.Wordwrap(content, contentWidth, "")
+	contentLines := strings.Split(wrapped, "\n")
+
+	var b strings.Builder
+
+	hBar := strings.Repeat(hChar, inner)
+	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
+
+	// Panel divider with angular tee junctions
+	divLeft, divRight := "├", "┤"
+	if selected {
+		divLeft, divRight = "┣", "┫"
+	}
+
+	// Layered block texture rows using ▒ and ▓
+	textureTopRow := anatomy.LintelRow + 1
+	textureBotRow := anatomy.ThresholdRow - 1
+	if textureBotRow <= anatomy.HandleRow {
+		textureBotRow = -1
+	}
+
+	textureRow := func(block string) string {
+		pattern := strings.Repeat(block, inner)
+		return style.Render(vChar) + pattern + style.Render(vChar)
+	}
+
+	for row := 0; row < height; row++ {
+		switch {
+		case row == anatomy.LintelRow:
+			fmt.Fprintf(&b, "%s", style.Render(tl+hBar+tr))
+
+		case row == textureTopRow:
+			// Light block texture below lintel
+			fmt.Fprintf(&b, "%s", textureRow("▒"))
+
+		case row == anatomy.PanelDivider:
+			fmt.Fprintf(&b, "%s", style.Render(divLeft+hBar+divRight))
+
+		case row == anatomy.HandleRow:
+			knobPad := inner - 4
+			if knobPad < 1 {
+				knobPad = 1
+			}
+			knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
+			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+
+		case row == textureBotRow:
+			// Dense block texture above threshold
+			fmt.Fprintf(&b, "%s", textureRow("▓"))
+
+		case row == anatomy.ThresholdRow:
+			fmt.Fprintf(&b, "%s", style.Render(bl+hBar+br))
+
+		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
+			lineIdx := row - anatomy.ContentStart
+			if lineIdx < len(contentLines) {
+				line := contentLines[lineIdx]
+				lineWidth := ansi.StringWidth(line)
+				padding := inner - 3 - lineWidth
+				if padding < 0 {
+					padding = 0
+				}
+				fmt.Fprintf(&b, "%s%s%s",
+					style.Render(vChar),
+					"   "+line+strings.Repeat(" ", padding),
+					style.Render(vChar),
+				)
+			} else {
+				fmt.Fprintf(&b, "%s", blankLine)
+			}
+
+		default:
+			fmt.Fprintf(&b, "%s", blankLine)
+		}
+
+		if row < height-1 {
+			fmt.Fprintf(&b, "\n")
+		}
+	}
+
+	// Threshold: layered block pattern below the door
+	threshold := strings.Repeat("▒", width)
+	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
+
+	return ApplyShadow(b.String(), width, 15, selected)
+}
