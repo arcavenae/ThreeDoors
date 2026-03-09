@@ -220,6 +220,7 @@
 | D-114 | Allowlist-only privacy for bug reports (capture-level filtering) | 2026-03-09 | Defense in depth — can't leak what was never captured; tea.KeyRunes never recorded | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
 | D-115 | Mandatory preview before bug report submission | 2026-03-09 | SOUL.md trust alignment; user sees exactly what will be sent; friend-helping-friend feel | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
 | D-116 | Bug report target repo hardcoded to arcaven/ThreeDoors | 2026-03-09 | Single-product reporter; YAGNI for configuration; forks can change in code | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
+| D-117 | Sort search results in filterTasks(), not in GetAllTasks() | 2026-03-09 | Consumer-side sort has zero blast radius; other callers don't need stable order; rejected: GetAllTasks sort (unnecessary cost), cached order (premature optimization), ordered data structure (over-engineered) | [Triage](../../_bmad-output/planning-artifacts/issue-334-search-jumping-triage.md) |
 
 ## Rejected
 

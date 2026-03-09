@@ -14,11 +14,21 @@ ThreeDoors is a terminal-based task manager that reduces decision friction by sh
 - [Task Management](#task-management)
 - [Search and Commands](#search-and-commands)
 - [Task Sources](#task-sources)
+- [Jira Integration](#jira-integration)
+- [GitHub Issues Integration](#github-issues-integration)
+- [Apple Reminders Integration](#apple-reminders-integration)
+- [Todoist Integration](#todoist-integration)
 - [Obsidian Integration](#obsidian-integration)
 - [Apple Notes Integration](#apple-notes-integration)
+- [Task Dependencies](#task-dependencies)
+- [Snooze and Defer](#snooze-and-defer)
+- [Undo Completion](#undo-completion)
+- [Themes](#themes)
 - [Intelligent Features](#intelligent-features)
 - [Offline and Sync](#offline-and-sync)
 - [Session Metrics](#session-metrics)
+- [CLI Reference](#cli-reference)
+- [MCP Server](#mcp-server)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 
@@ -28,28 +38,27 @@ ThreeDoors is a terminal-based task manager that reduces decision friction by sh
 
 ### Installation
 
-**Homebrew (macOS — recommended):**
+**Homebrew (recommended):**
 
 ```bash
 brew install arcaven/tap/threedoors
 ```
 
-**Pre-built binaries:**
-
-Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases):
+**Alpha channel** — latest development builds from `main`:
 
 ```bash
-# macOS Apple Silicon
-chmod +x threedoors-darwin-arm64
-mv threedoors-darwin-arm64 /usr/local/bin/threedoors
+brew install arcaven/tap/threedoors-a
+```
 
-# macOS Intel
-chmod +x threedoors-darwin-amd64
-mv threedoors-darwin-amd64 /usr/local/bin/threedoors
+Both can be installed side-by-side. Stable runs as `threedoors`, alpha runs as `threedoors-a`.
 
-# Linux x86_64
-chmod +x threedoors-linux-amd64
-mv threedoors-linux-amd64 /usr/local/bin/threedoors
+**Pre-built binaries:**
+
+Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries available for macOS (Apple Silicon, Intel) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
+
+```bash
+chmod +x threedoors-*
+mv threedoors-darwin-arm64 /usr/local/bin/threedoors   # adjust for your platform
 ```
 
 **Go install:**
@@ -126,12 +135,13 @@ Don't like your options? Press `s` or `↓` to refresh and get three new doors.
 | `a` / `←` | Select left door |
 | `w` / `↑` | Select center door |
 | `d` / `→` | Select right door |
-| `enter` | Open the selected door (view task details) |
+| `space` / `enter` | Open the selected door (view task details) |
 | `s` / `↓` | Refresh — get three new doors |
 | `n` | Give feedback on a door (without opening it) |
 | `m` | Log your current mood |
 | `/` | Search tasks |
 | `:` | Open command palette |
+| `?` | Open keybinding overlay |
 | `q` / `ctrl+c` | Quit |
 
 ### Key Bindings — Detail View
@@ -147,7 +157,9 @@ Don't like your options? Press `s` or `↓` to refresh and get three new doors.
 | `f` | Fork task (planned) |
 | `l` | Link to another task |
 | `x` | Browse cross-references |
+| `z` | Snooze / defer task |
 | `m` | Log mood |
+| `?` | Open keybinding overlay |
 | `esc` | Return to doors |
 
 ### Typical Workflow
@@ -278,6 +290,11 @@ Press `:` to enter command mode. Available commands:
 | `:tag` | Categorize the selected task (type, effort, location). |
 | `:dashboard` | Open the insights dashboard. |
 | `:insights` | Same as `:dashboard`. Accepts optional filter: `:insights mood` or `:insights avoidance`. |
+| `:theme` | Open theme picker. |
+| `:synclog` | Show sync history. |
+| `:suggestions` | Browse LLM task proposals. |
+| `:deferred` | Show deferred/snoozed tasks. |
+| `:devqueue` | Open dev dispatch queue. |
 | `:help` | Display all available commands. |
 | `:quit` / `:exit` | Exit the application. |
 
@@ -348,9 +365,67 @@ providers:
 
 See [Obsidian Integration](#obsidian-integration) for details.
 
+### Jira
+
+Pull tasks from Jira Cloud or Server via REST API with JQL filtering.
+
+```yaml
+providers:
+  - name: jira
+    settings:
+      url: https://company.atlassian.net
+      auth_type: basic
+      email: user@example.com
+      api_token: your-api-token
+      jql: "assignee = currentUser() AND statusCategory != Done"
+      max_results: "50"
+      poll_interval: 30s
+```
+
+### GitHub Issues
+
+Import issues from a GitHub repository.
+
+```yaml
+providers:
+  - name: github
+    settings:
+      owner: your-username
+      repo: your-repo
+      token: ghp_your_token
+```
+
+### Apple Reminders
+
+Sync tasks from macOS Reminders lists (macOS only, uses JXA/osascript).
+
+```yaml
+providers:
+  - name: reminders
+    settings:
+      lists: Work,Personal
+      include_completed: false
+```
+
+### Todoist
+
+Sync tasks from Todoist via the REST API.
+
+```yaml
+providers:
+  - name: todoist
+    settings:
+      api_token: your-todoist-api-token    # or set TODOIST_API_TOKEN env var
+      project_ids: "111222333, 444555666"  # optional; filter to specific projects
+      filter: "today | overdue"            # optional; Todoist filter query
+      poll_interval: 30s                   # optional; default 30s
+```
+
+`project_ids` and `filter` are mutually exclusive — use one or the other. The `TODOIST_API_TOKEN` environment variable takes precedence over the config file value.
+
 ### Multiple Providers
 
-You can configure multiple providers with fallback behavior:
+You can configure multiple providers. Tasks are aggregated and deduplicated across all sources. If a provider fails, ThreeDoors falls back to the next one automatically.
 
 ```yaml
 providers:
@@ -362,7 +437,136 @@ providers:
       task_file: ~/.threedoors/tasks.yaml
 ```
 
-If the primary provider fails (e.g., Apple Notes is inaccessible), ThreeDoors falls back to the next provider automatically.
+### Provider Summary
+
+| Provider | Platform | Direction | Key Settings |
+|----------|----------|-----------|-------------|
+| `textfile` | Any | Read/Write | `task_file` |
+| `applenotes` | macOS | Bidirectional | `note_title` |
+| `reminders` | macOS | Read/Write | `lists`, `include_completed` |
+| `jira` | Any | Read (JQL filter) | `url`, `email`, `api_token`, `jql` |
+| `github` | Any | Read | `owner`, `repo`, `token` |
+| `obsidian` | Any | Bidirectional | `vault_path`, `tasks_folder`, `file_pattern` |
+| `todoist` | Any | Read | `api_token`, `project_ids` or `filter` |
+
+All providers are wrapped with a **Write-Ahead Log (WAL)** for crash safety and a **FallbackProvider** that gracefully degrades if the primary source is unavailable.
+
+---
+
+## Jira Integration
+
+### Setup
+
+1. Generate an API token from [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Add the Jira provider to your `config.yaml`:
+
+```yaml
+providers:
+  - name: jira
+    settings:
+      url: https://company.atlassian.net
+      auth_type: basic
+      email: your-email@company.com
+      api_token: your-api-token
+      jql: "assignee = currentUser() AND statusCategory != Done"
+      max_results: "50"
+      poll_interval: 30s
+```
+
+### JQL Filtering
+
+The `jql` setting accepts any valid JQL query. Common examples:
+
+- `"assignee = currentUser() AND statusCategory != Done"` — your open tasks
+- `"project = PROJ AND sprint in openSprints()"` — current sprint for a project
+- `"labels = focus AND statusCategory != Done"` — tagged tasks
+
+### Polling
+
+Jira tasks are refreshed on a configurable interval (`poll_interval`, default 30s). The adapter uses a circuit breaker — if Jira is repeatedly unreachable, polling backs off automatically.
+
+---
+
+## GitHub Issues Integration
+
+### Setup
+
+1. Create a personal access token with `repo` scope at [GitHub Settings](https://github.com/settings/tokens)
+2. Add the GitHub provider to your `config.yaml`:
+
+```yaml
+providers:
+  - name: github
+    settings:
+      owner: your-username
+      repo: your-repo
+      token: ghp_your_token
+```
+
+Issues assigned to you are imported as tasks. Issue labels map to task categories.
+
+---
+
+## Apple Reminders Integration
+
+### Setup
+
+macOS only — uses JXA (JavaScript for Automation) via `osascript`.
+
+```yaml
+providers:
+  - name: reminders
+    settings:
+      lists: Work,Personal
+      include_completed: false
+```
+
+### Requirements
+
+- macOS 12+ (Monterey or later)
+- Reminders app access — you may be prompted to grant permission on first use
+
+### List Selection
+
+Specify one or more Reminders lists as a comma-separated string. Only tasks from those lists are imported.
+
+---
+
+## Todoist Integration
+
+### Setup
+
+1. Get your API token from [Todoist Settings → Integrations → Developer](https://todoist.com/app/settings/integrations/developer)
+2. Add the Todoist provider:
+
+```yaml
+providers:
+  - name: todoist
+    settings:
+      api_token: your-todoist-api-token
+```
+
+Or set the `TODOIST_API_TOKEN` environment variable (takes precedence over config).
+
+### Filtering
+
+Filter tasks by project or Todoist filter query (not both):
+
+```yaml
+# By project IDs:
+project_ids: "111222333, 444555666"
+
+# OR by Todoist filter:
+filter: "today | overdue"
+```
+
+### Polling
+
+Tasks refresh every 30 seconds by default. Customize with `poll_interval`:
+
+```yaml
+poll_interval: 2m
+```
 
 ---
 
@@ -489,6 +693,68 @@ Run `:health` to verify Apple Notes connectivity. The health checker tests:
 
 ---
 
+## Task Dependencies
+
+Tasks can declare dependencies on other tasks using `depends_on`. A task with unmet dependencies is automatically filtered out of door selection — you won't see it until its prerequisites are complete.
+
+### How It Works
+
+- Add a `depends_on` field to a task in your YAML file listing the IDs of prerequisite tasks
+- The `DependencyResolver` checks all tasks before door selection and filters out any with incomplete dependencies
+- When you complete a task, any tasks that depended solely on it are automatically unblocked and become eligible for door selection
+
+### In the TUI
+
+- Blocked-by indicators show which tasks are waiting on the current task
+- Dependency relationships are visible in the task detail view
+
+---
+
+## Snooze and Defer
+
+Snooze lets you temporarily hide a task until a specific date. When the date arrives, the task automatically returns to the active pool.
+
+### Usage
+
+- Press `z` in the task detail view to snooze a task
+- Set a return date — the task moves to `deferred` status with a `defer_until` timestamp
+- When the defer date passes, the task auto-returns to `todo` status
+
+Tasks with a future `defer_until` date are excluded from door selection, so they won't distract you until they're due.
+
+---
+
+## Undo Completion
+
+Accidentally completed a task? The `complete → todo` status transition lets you reverse it.
+
+- In the detail view of a completed task, you can undo the completion
+- The task returns to `todo` status and re-enters the active pool
+- Undo events are logged in session metrics for pattern analysis
+
+---
+
+## Themes
+
+ThreeDoors includes four door themes that change the visual appearance of the doors view.
+
+| Theme | Description |
+|-------|-------------|
+| `classic` | Traditional door styling |
+| `modern` | Contemporary, clean design |
+| `scifi` | Sci-fi / cyberpunk aesthetic |
+| `shoji` | Japanese minimalist sliding doors |
+
+### Switching Themes
+
+- In the TUI: run `:theme` to open the theme picker
+- In config: set `theme: modern` in `~/.threedoors/config.yaml`
+- Via CLI: `threedoors config set theme scifi`
+
+Your choice is saved and persists across sessions.
+
+---
+
 ## Intelligent Features
 
 ### Pattern Recognition
@@ -605,6 +871,134 @@ View quick stats in-app with `:stats`.
 
 ---
 
+## CLI Reference
+
+ThreeDoors includes a full CLI for headless and scripted usage. All commands support `--json` for machine-readable output.
+
+### `task` — Task Management
+
+```bash
+threedoors task add <text>           # Add a task
+  --type <type>                      #   creative, technical, administrative, physical
+  --effort <effort>                  #   quick-win, medium, deep-work
+  --context <text>                   #   Why this task matters
+  --stdin                            #   Read task text from stdin
+
+threedoors task list                 # List tasks
+  --status <status>                  #   Filter: todo, in-progress, blocked, complete, deferred
+  --type <type>                      #   Filter by type
+  --effort <effort>                  #   Filter by effort
+
+threedoors task show <id>            # Show full task details
+threedoors task edit <id>            # Edit a task
+  --text <text>                      #   New task text
+  --context <text>                   #   New context
+threedoors task complete <id>        # Mark task complete
+threedoors task delete <id>          # Delete a task
+threedoors task note <id> <text>     # Add a note to a task
+threedoors task search <query>       # Search tasks by text
+threedoors task unblock <id>         # Unblock a blocked task
+```
+
+### `doors` — Three Doors in the Terminal
+
+```bash
+threedoors doors                     # Show three random tasks
+threedoors doors --pick 1            # Auto-select door 1 (1-3)
+threedoors doors --interactive       # Prompted selection mode
+```
+
+### `mood` — Mood Tracking
+
+```bash
+threedoors mood set <mood>           # Record mood
+threedoors mood history              # View mood entries
+```
+
+### `stats` — Productivity Analytics
+
+```bash
+threedoors stats                     # Session overview
+threedoors stats --daily             # Daily breakdown
+threedoors stats --weekly            # Weekly trends
+threedoors stats --patterns          # Behavioral patterns
+```
+
+### `config` — Configuration
+
+```bash
+threedoors config show               # Display full configuration
+threedoors config get <key>          # Get a single config value
+threedoors config set <key> <value>  # Set a config value
+```
+
+### `health` — System Health Check
+
+```bash
+threedoors health                    # Check provider connectivity and data files
+```
+
+### `completion` — Shell Completions
+
+```bash
+threedoors completion bash           # Generate bash completions
+threedoors completion zsh            # Generate zsh completions
+threedoors completion fish           # Generate fish completions
+```
+
+---
+
+## MCP Server
+
+ThreeDoors ships a separate MCP (Model Context Protocol) server binary that exposes tasks and analytics to LLM agents like Claude.
+
+### Running
+
+```bash
+# stdio transport (default — for Claude Desktop, Cursor, etc.)
+threedoors-mcp
+
+# SSE transport (for web-based clients)
+threedoors-mcp --transport sse --port 8080
+```
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `query_tasks` | Query tasks with filters (status, type, effort, provider, text, date range) |
+| `get_task` | Get full task details with enrichment data |
+| `search_tasks` | Full-text search with relevance scoring |
+| `list_providers` | List configured providers with health/sync status |
+| `get_session` | Current or historical session metrics |
+| `get_mood_correlation` | Mood vs. productivity correlation analysis |
+| `get_productivity_profile` | Time-of-day productivity analysis |
+| `burnout_risk` | Burnout risk assessment (0-1 score) |
+| `walk_graph` | Traverse task relationship graph (BFS) |
+| `find_paths` | Find paths between two tasks in the graph |
+| `get_critical_path` | Longest dependency chain |
+| `get_orphans` | Find tasks with no relationships |
+| `get_completions` | Completion data with grouping options |
+| `get_clusters` | Discover related task groups |
+| `get_provider_overlap` | Find tasks shared between providers |
+
+### Claude Desktop Configuration
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "threedoors": {
+      "command": "threedoors-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+---
+
 ## Configuration
 
 ### Data Directory
@@ -637,6 +1031,9 @@ note_title: ThreeDoors Tasks
 **Advanced mode (multiple providers):**
 
 ```yaml
+schema_version: 2
+theme: classic
+
 providers:
   - name: textfile
     settings:
@@ -655,6 +1052,24 @@ providers:
       daily_notes_folder: Daily
       daily_notes_heading: "## Tasks"
       daily_notes_format: "2006-01-02.md"
+
+  - name: jira
+    settings:
+      url: https://company.atlassian.net
+      auth_type: basic
+      email: user@example.com
+      api_token: your-api-token
+      jql: "assignee = currentUser() AND statusCategory != Done"
+
+  - name: github
+    settings:
+      owner: your-username
+      repo: your-repo
+      token: ghp_your_token
+
+  - name: todoist
+    settings:
+      api_token: your-todoist-api-token
 ```
 
 **Provider options:**
@@ -664,6 +1079,10 @@ providers:
 | `textfile` | `task_file` — path to YAML task file |
 | `applenotes` | `note_title` — name of the Apple Notes note |
 | `obsidian` | `vault_path`, `tasks_folder`, `file_pattern`, `daily_notes`, `daily_notes_folder`, `daily_notes_heading`, `daily_notes_format` |
+| `jira` | `url`, `auth_type`, `email`, `api_token`, `jql`, `max_results`, `poll_interval` |
+| `github` | `owner`, `repo`, `token` |
+| `reminders` | `lists`, `include_completed` |
+| `todoist` | `api_token`, `project_ids`, `filter`, `poll_interval` |
 
 ### Values and Goals
 
@@ -706,6 +1125,17 @@ Status levels:
 - Check `tasks_folder` is relative to vault root
 - Verify your files match `file_pattern` (default: `*.md`)
 - Ensure tasks use checkbox syntax: `- [ ] Task text`
+
+**Jira tasks not loading**
+- Verify `url`, `email`, and `api_token` are correct
+- Test your JQL query in the Jira web UI first
+- Ensure the API token has read access to the target projects
+- Run `:health` to check Jira connectivity
+
+**Todoist tasks not loading**
+- Verify `api_token` is set (in config or `TODOIST_API_TOKEN` env var)
+- Check that `project_ids` and `filter` are not both set (mutually exclusive)
+- Run `:health` to check Todoist connectivity
 
 **Sync stuck in "Pending"**
 - Check `:health` for provider errors

@@ -136,6 +136,7 @@ threedoors stats --daily
 - 🔵 **Jira** — Pull tasks from Jira Cloud/Server via REST API with JQL filtering
 - 🐙 **GitHub Issues** — Import issues from GitHub repositories
 - 💎 **Obsidian** — Read tasks from Obsidian vault markdown files with daily notes support
+- ✅ **Todoist** — Sync tasks from Todoist via REST API with project and filter support
 - 🔌 **Multi-Provider Aggregation** — Run multiple providers simultaneously; tasks merge across sources
 - 🩺 **Health Check** — Run `:health` or `threedoors health` to verify provider connectivity
 
@@ -163,6 +164,11 @@ threedoors stats --daily
 - 🖌️ **Theme Picker** — Switch themes live with `:theme`
 - ⚙️ **Persistent Selection** — Chosen theme saved in `config.yaml`
 
+### Task Workflow
+- ⏰ **Snooze / Defer** — Snooze a task until a specific date; auto-returns to the pool when due
+- 🔗 **Task Dependencies** — Define `depends_on` relationships; blocked tasks are filtered from door selection and auto-unblock on completion
+- ↩️ **Undo Completion** — Reverse accidental completions (`complete → todo`)
+
 ### User Experience
 - 👋 **First-Run Onboarding** — Guided welcome flow with keybinding tutorial, values/goals setup, and optional task import
 - 🎯 **Values & Goals Display** — Persistent footer showing your values as you work
@@ -170,6 +176,7 @@ threedoors stats --daily
 - 💬 **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
 - 💡 **Session Improvement Prompt** — On quit, optionally share improvement suggestions
 - ➡️ **Contextual Next Steps** — After completing or adding a task, see relevant next actions
+- ❓ **Keybinding Display** — Context-sensitive keybinding bar at the bottom of the screen; press `?` to open full keybinding overlay
 
 ### MCP Server 🤖
 - 🔌 **Model Context Protocol** — Expose tasks and analytics to LLM agents via MCP
@@ -342,6 +349,13 @@ providers:
     settings:
       lists: Work,Personal
       include_completed: false
+
+  - name: todoist
+    settings:
+      api_token: your-todoist-api-token    # or set TODOIST_API_TOKEN env var
+      project_ids: "111222333, 444555666"  # optional; filter to specific projects
+      filter: "today | overdue"            # optional; Todoist filter query (mutually exclusive with project_ids)
+      poll_interval: 30s                   # optional; default 30s
 ```
 
 You can also manage config from the CLI:
@@ -375,11 +389,13 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `a` / `Left` | Select left door |
 | `w` / `Up` | Select center door |
 | `d` / `Right` | Select right door |
+| `Space` / `Enter` | Open the selected door |
 | `s` / `Down` | Refresh doors (re-roll) |
 | `n` | Send feedback on selected door |
 | `/` | Open quick search |
 | `:` | Open command palette |
 | `m` | Log mood |
+| `?` | Open keybinding overlay |
 | `q` / `Ctrl+C` | Quit |
 
 ### Task Detail View
@@ -395,6 +411,8 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `l` | Link to another task |
 | `x` | Browse cross-references |
 | `m` | Log mood |
+| `z` | Snooze / defer task |
+| `?` | Open keybinding overlay |
 | `Esc` | Return to doors |
 
 ### Search Mode
@@ -425,6 +443,7 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `:goals edit` | Edit existing values & goals |
 | `:synclog` | Show sync history |
 | `:suggestions` | Browse LLM task proposals |
+| `:deferred` | Show deferred/snoozed tasks |
 | `:devqueue` | Open dev dispatch queue |
 | `:help` | Show all commands |
 | `:quit` / `:exit` | Exit application |
@@ -631,7 +650,8 @@ ThreeDoors/
 │   │   ├── jira/                #   Jira adapter
 │   │   ├── obsidian/            #   Obsidian adapter
 │   │   ├── reminders/           #   Apple Reminders adapter
-│   │   └── textfile/            #   YAML file adapter
+│   │   ├── textfile/            #   YAML file adapter
+│   │   └── todoist/             #   Todoist adapter
 │   ├── cli/                     # CLI command handling
 │   ├── core/                    # Task domain: models, status, config, registry
 │   ├── tui/                     # Bubbletea views (20 views) and UI components
