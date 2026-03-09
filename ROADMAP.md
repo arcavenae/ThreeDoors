@@ -58,15 +58,15 @@ Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health,
 
 ## Active Epics
 
-### Epic 27: Daily Planning Mode (P1) — 2/5 stories done
+### Epic 27: Daily Planning Mode (P1) — 3/5 stories done
 
 Guided daily planning ritual for task review and focus selection. Transforms ThreeDoors from reactive task picker into proactive morning engagement tool.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
-| 27.2 | Review Incomplete Tasks Flow | In Review | P1 | 27.1 |
-| 27.3 | Focus Selection Flow | In Review | P1 | 27.1 |
+| 27.2 | Review Incomplete Tasks Flow | Done (PR #339) | P1 | 27.1 |
+| 27.3 | Focus Selection Flow | Done (PR #352) | P1 | 27.1 |
 | 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
 | 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
 
