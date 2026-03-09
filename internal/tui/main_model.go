@@ -41,6 +41,7 @@ const (
 	ViewDevQueue
 	ViewProposals
 	ViewHelp
+	ViewSnooze
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -66,6 +67,7 @@ type MainModel struct {
 	devQueueView        *DevQueueView
 	proposalsView       *ProposalsView
 	helpView            *HelpView
+	snoozeView          *SnoozeView
 	configPath          string
 	pool                *core.TaskPool
 	tracker             *core.SessionTracker
@@ -309,6 +311,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.helpView != nil {
 			m.helpView.SetWidth(msg.Width)
+		}
+		if m.snoozeView != nil {
+			m.snoozeView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -673,6 +678,34 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case ShowSnoozeMsg:
+		m.snoozeView = NewSnoozeView(msg.Task)
+		m.snoozeView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewSnooze
+		return m, nil
+
+	case TaskSnoozedMsg:
+		m.snoozeView = nil
+		msg.Task.DeferUntil = msg.DeferDate
+		if err := msg.Task.UpdateStatus(core.StatusDeferred); err != nil {
+			m.viewMode = m.previousView
+			m.flash = "Cannot snooze: " + err.Error()
+			return m, ClearFlashCmd()
+		}
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after snooze: %v\n", err)
+		}
+		m.viewMode = ViewDoors
+		m.doorsView.RefreshDoors()
+		m.flash = "Task snoozed"
+		return m, ClearFlashCmd()
+
+	case SnoozeCancelledMsg:
+		m.snoozeView = nil
+		m.viewMode = m.previousView
+		return m, nil
+
 	case OnboardingCompletedMsg:
 		m.onboardingView = nil
 		m.viewMode = ViewDoors
@@ -967,6 +1000,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateProposals(msg)
 	case ViewHelp:
 		return m.updateHelp(msg)
+	case ViewSnooze:
+		return m.updateSnooze(msg)
 	}
 
 	return m, nil
@@ -1040,6 +1075,11 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewMode = ViewSearch
 			m.previousView = ViewDoors
 			return m, nil
+		case "z", "Z":
+			if m.doorsView.selectedDoorIndex >= 0 && m.doorsView.selectedDoorIndex < len(m.doorsView.currentDoors) {
+				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
+				return m, func() tea.Msg { return ShowSnoozeMsg{Task: task} }
+			}
 		case ":":
 			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
@@ -1122,6 +1162,14 @@ func (m *MainModel) updateAvoidancePrompt(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.avoidancePromptView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSnooze(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.snoozeView == nil {
+		return m, nil
+	}
+	cmd := m.snoozeView.Update(msg)
 	return m, cmd
 }
 
@@ -1632,6 +1680,10 @@ func (m *MainModel) View() string {
 	case ViewHelp:
 		if m.helpView != nil {
 			view = m.helpView.View()
+		}
+	case ViewSnooze:
+		if m.snoozeView != nil {
+			view = m.snoozeView.View()
 		}
 	default:
 		view = m.doorsView.View()

@@ -285,6 +285,21 @@ type DevDispatchResultMsg struct {
 	Err    error
 }
 
+// ShowSnoozeMsg is sent to open the snooze view for a task.
+type ShowSnoozeMsg struct {
+	Task *core.Task
+}
+
+// TaskSnoozedMsg is sent when the user confirms a snooze option.
+type TaskSnoozedMsg struct {
+	Task      *core.Task
+	DeferDate *time.Time
+	Option    string // "tomorrow", "next_week", "pick_date", "someday"
+}
+
+// SnoozeCancelledMsg is sent when the user cancels the snooze view.
+type SnoozeCancelledMsg struct{}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {
