@@ -108,11 +108,11 @@ func TestNewMainModel_DetailViewNil(t *testing.T) {
 	}
 }
 
-func TestInit_ReturnsNil(t *testing.T) {
+func TestInit_ReturnsDeferReturnTickCmd(t *testing.T) {
 	m := makeModel("task1")
 	cmd := m.Init()
-	if cmd != nil {
-		t.Error("Init() should return nil")
+	if cmd == nil {
+		t.Error("Init() should return a defer-return tick command")
 	}
 }
 

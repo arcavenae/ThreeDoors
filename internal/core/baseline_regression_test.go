@@ -311,10 +311,10 @@ func TestStatusTransition_FullMatrix(t *testing.T) {
 			StatusComplete: true, StatusDeferred: true, StatusArchived: true,
 		},
 		StatusBlocked: {
-			StatusTodo: true, StatusInProgress: true, StatusComplete: true,
+			StatusTodo: true, StatusInProgress: true, StatusComplete: true, StatusDeferred: true,
 		},
 		StatusInProgress: {
-			StatusBlocked: true, StatusInReview: true, StatusComplete: true,
+			StatusBlocked: true, StatusInReview: true, StatusComplete: true, StatusDeferred: true,
 		},
 		StatusInReview: {
 			StatusInProgress: true, StatusComplete: true,
@@ -498,8 +498,8 @@ func TestGetValidTransitions_AllStatuses(t *testing.T) {
 		wantCount int
 	}{
 		{StatusTodo, 5},       // in-progress, blocked, complete, deferred, archived
-		{StatusBlocked, 3},    // todo, in-progress, complete
-		{StatusInProgress, 3}, // blocked, in-review, complete
+		{StatusBlocked, 4},    // todo, in-progress, complete, deferred
+		{StatusInProgress, 4}, // blocked, in-review, complete, deferred
 		{StatusInReview, 2},   // in-progress, complete
 		{StatusComplete, 1},   // todo (undo)
 		{StatusDeferred, 1},   // todo

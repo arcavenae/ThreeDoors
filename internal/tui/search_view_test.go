@@ -458,12 +458,8 @@ func TestSearchView_HelpCommand_ShowsHelp(t *testing.T) {
 		t.Fatal(":help should return a command")
 	}
 	msg := cmd()
-	fm, ok := msg.(FlashMsg)
-	if !ok {
-		t.Errorf("expected FlashMsg, got %T", msg)
-	}
-	if !strings.Contains(fm.Text, "help") && !strings.Contains(fm.Text, "Help") && !strings.Contains(fm.Text, "Commands") {
-		t.Errorf("expected help text, got %q", fm.Text)
+	if _, ok := msg.(ShowHelpMsg); !ok {
+		t.Errorf("expected ShowHelpMsg, got %T", msg)
 	}
 }
 
@@ -490,12 +486,21 @@ func TestSearchView_HelpCommand_ContainsTheme(t *testing.T) {
 		t.Fatal(":help should return a command")
 	}
 	msg := cmd()
-	fm, ok := msg.(FlashMsg)
-	if !ok {
-		t.Fatalf("expected FlashMsg, got %T", msg)
+	if _, ok := msg.(ShowHelpMsg); !ok {
+		t.Fatalf("expected ShowHelpMsg, got %T", msg)
 	}
-	if !strings.Contains(fm.Text, ":theme") {
-		t.Errorf("expected :help output to contain ':theme', got %q", fm.Text)
+	// Verify :theme is listed in the help content data
+	found := false
+	for _, section := range helpContent {
+		for _, entry := range section.Entries {
+			if entry.Key == ":theme" {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		t.Error("expected helpContent to contain ':theme' entry")
 	}
 }
 

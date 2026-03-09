@@ -40,6 +40,7 @@ const (
 	ViewThemePicker
 	ViewDevQueue
 	ViewProposals
+	ViewHelp
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -64,6 +65,7 @@ type MainModel struct {
 	themePickerView     *ThemePicker
 	devQueueView        *DevQueueView
 	proposalsView       *ProposalsView
+	helpView            *HelpView
 	configPath          string
 	pool                *core.TaskPool
 	tracker             *core.SessionTracker
@@ -234,7 +236,15 @@ func (m *MainModel) SetDevQueue(q *dispatch.DevQueue) {
 
 // Init implements tea.Model.
 func (m *MainModel) Init() tea.Cmd {
-	return nil
+	// Check for expired deferred tasks on startup and start periodic tick.
+	returned := core.CheckDeferredReturns(m.pool)
+	if returned > 0 {
+		m.doorsView.RefreshDoors()
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after defer return: %v\n", err)
+		}
+	}
+	return deferReturnTickCmd()
 }
 
 // Update implements tea.Model.
@@ -296,6 +306,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.proposalsView != nil {
 			m.proposalsView.SetWidth(msg.Width)
 			m.proposalsView.SetHeight(msg.Height)
+		}
+		if m.helpView != nil {
+			m.helpView.SetWidth(msg.Width)
 		}
 		return m, nil
 
@@ -778,6 +791,16 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewDoors
 		return m, nil
 
+	case DeferReturnTickMsg:
+		returned := core.CheckDeferredReturns(m.pool)
+		if returned > 0 {
+			m.doorsView.RefreshDoors()
+			if err := m.saveTasks(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to save tasks after defer return: %v\n", err)
+			}
+		}
+		return m, deferReturnTickCmd()
+
 	case workerPollTickMsg:
 		if m.dispatcher == nil || !m.hasDispatchedItems() {
 			m.pollingActive = false
@@ -815,6 +838,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.flash = fmt.Sprintf("Approved %d proposals", msg.Count)
 		m.doorsView.SetPendingProposals(PendingProposalCount(m.proposalStore))
 		return m, ClearFlashCmd()
+
+	case ShowHelpMsg:
+		hv := NewHelpView()
+		hv.SetWidth(m.width)
+		m.helpView = hv
+		m.previousView = m.viewMode
+		m.viewMode = ViewHelp
+		return m, nil
 
 	case ShowDevQueueMsg:
 		if m.devQueue == nil || m.dispatcher == nil {
@@ -862,6 +893,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, func() tea.Msg { return RequestQuitMsg{} }
 	}
 
+	// Global '?' opens help from any non-text-input view
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "?" && !m.isTextInputActive() {
+		return m, func() tea.Msg { return ShowHelpMsg{} }
+	}
+
 	// Delegate to current view
 	switch m.viewMode {
 	case ViewDoors:
@@ -900,6 +936,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateDevQueue(msg)
 	case ViewProposals:
 		return m.updateProposals(msg)
+	case ViewHelp:
+		return m.updateHelp(msg)
 	}
 
 	return m, nil
@@ -1090,6 +1128,14 @@ func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateHelp(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.helpView == nil {
+		return m, nil
+	}
+	cmd := m.helpView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateDevQueue(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.devQueueView == nil {
 		return m, nil
@@ -1217,6 +1263,16 @@ func (m *MainModel) refreshDuplicates() {
 
 // workerPollInterval is the interval between worker status polling ticks.
 const workerPollInterval = 30 * time.Second
+
+// deferReturnInterval is the interval between deferred task auto-return checks.
+const deferReturnInterval = 1 * time.Minute
+
+// deferReturnTickCmd returns a tea.Cmd that fires a DeferReturnTickMsg after the interval.
+func deferReturnTickCmd() tea.Cmd {
+	return tea.Tick(deferReturnInterval, func(t time.Time) tea.Msg {
+		return DeferReturnTickMsg(t)
+	})
+}
 
 // hasDispatchedItems returns true if any queue items are in dispatched status.
 func (m *MainModel) hasDispatchedItems() bool {
@@ -1543,6 +1599,10 @@ func (m *MainModel) View() string {
 	case ViewProposals:
 		if m.proposalsView != nil {
 			view = m.proposalsView.View()
+		}
+	case ViewHelp:
+		if m.helpView != nil {
+			view = m.helpView.View()
 		}
 	default:
 		view = m.doorsView.View()

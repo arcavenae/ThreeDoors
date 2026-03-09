@@ -161,10 +161,8 @@ func TestSearchView_ExecuteCommand_Help(t *testing.T) {
 	sv.textInput.SetValue(":help")
 	cmd := sv.executeCommand()
 	msg := cmd()
-	if m, ok := msg.(FlashMsg); !ok {
-		t.Errorf("expected FlashMsg, got %T", msg)
-	} else if m.Text == "" {
-		t.Error("expected non-empty help text")
+	if _, ok := msg.(ShowHelpMsg); !ok {
+		t.Errorf("expected ShowHelpMsg, got %T", msg)
 	}
 }
 
