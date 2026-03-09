@@ -26,6 +26,10 @@ func NewSciFiTheme() *DoorTheme {
 			Fill:     lipgloss.Color("236"),
 			Accent:   lipgloss.Color("45"),
 			Selected: selectedColor,
+
+			StatsAccent:        "#22C55E", // neon green
+			StatsGradientStart: "#22C55E", // green
+			StatsGradientEnd:   "#06B6D4", // cyan
 		},
 		MinWidth:  16,
 		MinHeight: 14,

@@ -25,6 +25,10 @@ func NewShojiTheme() *DoorTheme {
 			Fill:     lipgloss.Color("0"),
 			Accent:   lipgloss.Color("137"),
 			Selected: selectedColor,
+
+			StatsAccent:        "#92400E", // earth brown
+			StatsGradientStart: "#92400E", // clay
+			StatsGradientEnd:   "#D4A574", // sand
 		},
 		MinWidth:  19,
 		MinHeight: 14,

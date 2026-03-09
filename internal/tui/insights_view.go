@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -35,6 +36,7 @@ type InsightsView struct {
 	analyzer   *core.PatternAnalyzer
 	counter    *core.CompletionCounter
 	funFactGen *core.FunFactGenerator
+	theme      *themes.DoorTheme
 	width      int
 	height     int
 	cachedView string
@@ -45,11 +47,13 @@ type InsightsView struct {
 }
 
 // NewInsightsView creates a new InsightsView.
-func NewInsightsView(analyzer *core.PatternAnalyzer, counter *core.CompletionCounter) *InsightsView {
+// theme may be nil, in which case the independent fallback palette is used.
+func NewInsightsView(analyzer *core.PatternAnalyzer, counter *core.CompletionCounter, theme *themes.DoorTheme) *InsightsView {
 	return &InsightsView{
 		analyzer:   analyzer,
 		counter:    counter,
 		funFactGen: core.NewFunFactGenerator(analyzer, counter),
+		theme:      theme,
 	}
 }
 
@@ -89,6 +93,32 @@ func (iv *InsightsView) layoutMode() string {
 // invalidateCache marks the render cache as stale.
 func (iv *InsightsView) invalidateCache() {
 	iv.cacheValid = false
+}
+
+// statsAccentColor returns the theme's stats accent or the fallback gold.
+func (iv *InsightsView) statsAccentColor() string {
+	if iv.theme != nil && iv.theme.Colors.StatsAccent != "" {
+		return iv.theme.Colors.StatsAccent
+	}
+	return "#FCD34D" // fallback gold (Phase 1 independent palette)
+}
+
+// statsGradientColors returns the sparkline gradient endpoints from the theme,
+// or the Phase 1 fallback (blue→yellow).
+func (iv *InsightsView) statsGradientColors() (start, end string) {
+	if iv.theme != nil && iv.theme.Colors.StatsGradientStart != "" && iv.theme.Colors.StatsGradientEnd != "" {
+		return iv.theme.Colors.StatsGradientStart, iv.theme.Colors.StatsGradientEnd
+	}
+	return sparkColorStart.Dark, sparkColorEnd.Dark
+}
+
+// statsPanelBorderColor returns the theme's stats accent as a lipgloss color,
+// or the default gray border.
+func (iv *InsightsView) statsPanelBorderColor() lipgloss.AdaptiveColor {
+	if iv.theme != nil && iv.theme.Colors.StatsAccent != "" {
+		return lipgloss.AdaptiveColor{Light: iv.theme.Colors.StatsAccent, Dark: iv.theme.Colors.StatsAccent}
+	}
+	return lipgloss.AdaptiveColor{Light: "#555555", Dark: "#555555"}
 }
 
 // Update handles messages for the insights view.
@@ -199,7 +229,8 @@ func (iv *InsightsView) renderDashboardHeader(s *strings.Builder) {
 	if headerContentWidth < 1 {
 		headerContentWidth = 1
 	}
-	header := statsDashboardHeaderStyle.Width(headerContentWidth).Render("YOUR INSIGHTS DASHBOARD")
+	style := statsDashboardHeaderStyle.BorderForeground(iv.statsPanelBorderColor())
+	header := style.Width(headerContentWidth).Render("YOUR INSIGHTS DASHBOARD")
 	fmt.Fprintf(s, "%s\n", header)
 }
 
@@ -211,16 +242,18 @@ func (iv *InsightsView) renderColdStart(s *strings.Builder) {
 	if panelContentWidth < 1 {
 		panelContentWidth = 1
 	}
-	panel := statsPanelStyle.Width(panelContentWidth).Padding(1, 2).Render(msg)
+	style := statsPanelStyle.BorderForeground(iv.statsPanelBorderColor())
+	panel := style.Width(panelContentWidth).Padding(1, 2).Render(msg)
 	fmt.Fprintf(s, "\n%s\n\n", panel)
 	s.WriteString(helpStyle.Render("Press Esc to return"))
 }
 
-// renderHeroNumber renders the gold-styled total tasks completed count.
+// renderHeroNumber renders the themed total tasks completed count.
 func (iv *InsightsView) renderHeroNumber(s *strings.Builder) {
 	total := iv.analyzer.GetTotalCompleted()
 	heroText := fmt.Sprintf("★ %d tasks completed ★", total)
-	hero := statsHeroStyle.Width(iv.contentWidth()).Render(heroText)
+	style := statsHeroStyle.Foreground(lipgloss.Color(iv.statsAccentColor()))
+	hero := style.Width(iv.contentWidth()).Render(heroText)
 	fmt.Fprintf(s, "\n%s\n\n", hero)
 }
 
@@ -258,7 +291,7 @@ func (iv *InsightsView) renderPanelLayout(s *strings.Builder) {
 
 	// Session highlights panel — added as full-width panel after existing layout
 	if highlightsContent != "" {
-		fmt.Fprintf(s, "%s\n", makePanel("SESSION HIGHLIGHTS", highlightsContent, iv.contentWidth()))
+		fmt.Fprintf(s, "%s\n", makePanel("SESSION HIGHLIGHTS", highlightsContent, iv.contentWidth(), iv.statsPanelBorderColor()))
 	}
 }
 
@@ -285,19 +318,21 @@ func (iv *InsightsView) panelWidth(columns int) int {
 // makePanel wraps content in a styled bordered panel with a section header.
 // width is the total rendered width including borders.
 // Lipgloss Width() sets content width (excluding border), so we subtract 2 for L+R borders.
-func makePanel(title, content string, width int) string {
+func makePanel(title, content string, width int, borderColor lipgloss.AdaptiveColor) string {
 	header := statsSectionHeaderStyle.Render(title)
 	body := fmt.Sprintf("%s\n%s", header, content)
 	contentWidth := width - 2 // subtract left + right border chars
 	if contentWidth < 1 {
 		contentWidth = 1
 	}
-	return statsPanelStyle.Width(contentWidth).Padding(0, 1).Render(body)
+	style := statsPanelStyle.BorderForeground(borderColor)
+	return style.Width(contentWidth).Padding(0, 1).Render(body)
 }
 
 // renderSingleColumn renders all panels in a single vertical column.
 func (iv *InsightsView) renderSingleColumn(s *strings.Builder, trends, streaks, mood, doors string) {
 	w := iv.contentWidth()
+	bc := iv.statsPanelBorderColor()
 	panels := []struct {
 		title   string
 		content string
@@ -308,21 +343,22 @@ func (iv *InsightsView) renderSingleColumn(s *strings.Builder, trends, streaks, 
 		{"DOOR PICKS", doors},
 	}
 	for _, p := range panels {
-		fmt.Fprintf(s, "%s\n", makePanel(p.title, p.content, w))
+		fmt.Fprintf(s, "%s\n", makePanel(p.title, p.content, w, bc))
 	}
 }
 
 // renderTwoColumn renders panels in a 2-column layout.
 func (iv *InsightsView) renderTwoColumn(s *strings.Builder, trends, streaks, mood, doors string) {
 	w := iv.panelWidth(2)
+	bc := iv.statsPanelBorderColor()
 
-	row1Left := makePanel("COMPLETION TRENDS", trends, w)
-	row1Right := makePanel("STREAKS", streaks, w)
+	row1Left := makePanel("COMPLETION TRENDS", trends, w, bc)
+	row1Right := makePanel("STREAKS", streaks, w, bc)
 	row1 := lipgloss.JoinHorizontal(lipgloss.Top, row1Left, " ", row1Right)
 	fmt.Fprintf(s, "%s\n", row1)
 
-	row2Left := makePanel("MOOD & PRODUCTIVITY", mood, w)
-	row2Right := makePanel("DOOR PICKS", doors, w)
+	row2Left := makePanel("MOOD & PRODUCTIVITY", mood, w, bc)
+	row2Right := makePanel("DOOR PICKS", doors, w, bc)
 	row2 := lipgloss.JoinHorizontal(lipgloss.Top, row2Left, " ", row2Right)
 	fmt.Fprintf(s, "%s\n", row2)
 }
@@ -330,15 +366,16 @@ func (iv *InsightsView) renderTwoColumn(s *strings.Builder, trends, streaks, moo
 // renderWideLayout renders a 3-column top row with mood full-width below.
 func (iv *InsightsView) renderWideLayout(s *strings.Builder, trends, streaks, mood, doors string) {
 	w3 := iv.panelWidth(3)
+	bc := iv.statsPanelBorderColor()
 
-	col1 := makePanel("COMPLETION TRENDS", trends, w3)
-	col2 := makePanel("STREAKS", streaks, w3)
-	col3 := makePanel("DOOR PICKS", doors, w3)
+	col1 := makePanel("COMPLETION TRENDS", trends, w3, bc)
+	col2 := makePanel("STREAKS", streaks, w3, bc)
+	col3 := makePanel("DOOR PICKS", doors, w3, bc)
 	topRow := lipgloss.JoinHorizontal(lipgloss.Top, col1, " ", col2, " ", col3)
 	fmt.Fprintf(s, "%s\n", topRow)
 
 	// Full-width mood panel — use total content width for the rendered panel width.
-	moodPanel := makePanel("MOOD & PRODUCTIVITY", mood, iv.contentWidth())
+	moodPanel := makePanel("MOOD & PRODUCTIVITY", mood, iv.contentWidth(), bc)
 	fmt.Fprintf(s, "%s\n", moodPanel)
 }
 
@@ -368,7 +405,8 @@ func (iv *InsightsView) buildCompletionTrends() string {
 		counts = append(counts, e.count)
 	}
 
-	styledChars := styledSparklineChars(counts)
+	gradStart, gradEnd := iv.statsGradientColors()
+	styledChars := styledSparklineCharsWithGradient(counts, gradStart, gradEnd)
 	for _, label := range labels {
 		fmt.Fprintf(&s, "%-5s", label)
 	}
@@ -628,8 +666,15 @@ func sparkline(values []int) string {
 }
 
 // styledSparklineChars returns individually styled sparkline characters
-// with a gradient from blue (low) to yellow (high).
+// with a gradient from the start color (low) to the end color (high).
+// Uses the default blue→yellow when called without theme context.
 func styledSparklineChars(values []int) []string {
+	return styledSparklineCharsWithGradient(values, sparkColorStart.Dark, sparkColorEnd.Dark)
+}
+
+// styledSparklineCharsWithGradient returns individually styled sparkline characters
+// using the specified gradient colors.
+func styledSparklineCharsWithGradient(values []int, gradientStart, gradientEnd string) []string {
 	if len(values) == 0 {
 		return nil
 	}
@@ -652,7 +697,7 @@ func styledSparklineChars(values []int) []string {
 			}
 		}
 		ch := string(sparkChars[idx])
-		blended := blendHexColors(sparkColorStart.Dark, sparkColorEnd.Dark, t)
+		blended := blendHexColors(gradientStart, gradientEnd, t)
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color(blended))
 		chars[i] = style.Render(ch)
 	}

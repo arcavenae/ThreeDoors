@@ -193,7 +193,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 40.6 | Surface Hidden Session Metrics | Not Started | P1 | 40.1 |
 | 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
 | 40.8 | Tab Navigation for Detail View | Done (PR #367) | P1 | 40.1 |
-| 40.9 | Theme-Matched Stats Color Palettes | Not Started | P2 | 40.1, 40.2, Epic 17 |
+| 40.9 | Theme-Matched Stats Color Palettes | Done | P2 | 40.1, 40.2, Epic 17 |
 | 40.10 | Milestone Celebrations | Not Started | P2 | 40.1 |
 
 ### Epic 41: Charm Ecosystem Adoption & TUI Polish (P2) — 5/6 stories done

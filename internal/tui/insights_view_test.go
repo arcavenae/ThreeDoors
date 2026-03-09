@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/google/uuid"
@@ -76,7 +77,7 @@ func setupInsightsView(t *testing.T) *InsightsView {
 
 	cc := core.NewCompletionCounterWithNow(frozen)
 
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 	return iv
 }
@@ -137,7 +138,7 @@ func TestInsightsView_View_ColdStart(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 
 	output := iv.View()
@@ -168,7 +169,7 @@ func TestInsightsView_View_ColdStartStyled(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 
 	output := iv.View()
@@ -465,7 +466,7 @@ func TestBuildMoodCorrelations_BarChars(t *testing.T) {
 		t.Fatalf("LoadSessions() error: %v", err)
 	}
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 
 	content := iv.buildMoodCorrelations()
@@ -516,7 +517,7 @@ func TestBuildMoodCorrelations_EmptyData(t *testing.T) {
 		t.Fatalf("LoadSessions() error: %v", err)
 	}
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 
 	content := iv.buildMoodCorrelations()
@@ -630,7 +631,7 @@ func setupInsightsViewWithHighlights(t *testing.T) *InsightsView {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 	return iv
 }
@@ -737,7 +738,7 @@ func TestInsightsView_SessionHighlights_OmitsZeroData(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 
 	content := iv.buildSessionHighlights()
@@ -1117,7 +1118,7 @@ func TestInsightsView_View_ColdStart_NoFunFact(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 
 	output := iv.View()
@@ -1234,4 +1235,157 @@ func compareGoldenFile(t *testing.T, path, actual string) {
 		t.Errorf("output does not match golden file %s.\nRun with UPDATE_GOLDEN=1 to update.\n\nExpected:\n%s\n\nActual:\n%s",
 			path, string(expected), actual)
 	}
+}
+
+// --- Story 40.9: Theme-matched stats color palettes ---
+
+func TestAllThemesProvideStatsColors(t *testing.T) {
+	allThemes := []*themes.DoorTheme{
+		themes.NewClassicTheme(),
+		themes.NewModernTheme(),
+		themes.NewSciFiTheme(),
+		themes.NewShojiTheme(),
+	}
+
+	for _, th := range allThemes {
+		t.Run(th.Name, func(t *testing.T) {
+			if th.Colors.StatsAccent == "" {
+				t.Errorf("theme %q has empty StatsAccent", th.Name)
+			}
+			if th.Colors.StatsGradientStart == "" {
+				t.Errorf("theme %q has empty StatsGradientStart", th.Name)
+			}
+			if th.Colors.StatsGradientEnd == "" {
+				t.Errorf("theme %q has empty StatsGradientEnd", th.Name)
+			}
+		})
+	}
+}
+
+func TestThemeStatsColorsAreDistinct(t *testing.T) {
+	allThemes := []*themes.DoorTheme{
+		themes.NewClassicTheme(),
+		themes.NewModernTheme(),
+		themes.NewSciFiTheme(),
+		themes.NewShojiTheme(),
+	}
+
+	seen := make(map[string]string) // accent → theme name
+	for _, th := range allThemes {
+		if prev, ok := seen[th.Colors.StatsAccent]; ok {
+			t.Errorf("themes %q and %q share StatsAccent %q", prev, th.Name, th.Colors.StatsAccent)
+		}
+		seen[th.Colors.StatsAccent] = th.Name
+	}
+}
+
+func setupInsightsViewWithTheme(t *testing.T, theme *themes.DoorTheme) *InsightsView {
+	t.Helper()
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 7, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	sessions := []core.SessionMetrics{
+		makeInsightsTestSession(time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC), 3, []string{"Focused"}, []int{0, 1}),
+		makeInsightsTestSession(time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC), 5, []string{"Tired"}, []int{1, 1, 2}),
+		makeInsightsTestSession(time.Date(2026, 3, 7, 10, 0, 0, 0, time.UTC), 4, []string{"Focused", "Energized"}, []int{0, 2}),
+	}
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+
+	cc := core.NewCompletionCounterWithNow(frozen)
+
+	iv := NewInsightsView(pa, cc, theme)
+	iv.SetWidth(80)
+	return iv
+}
+
+func TestInsightsView_NilThemeFallsBackToIndependentPalette(t *testing.T) {
+	iv := setupInsightsViewWithTheme(t, nil)
+
+	// With nil theme, statsAccentColor should return fallback gold.
+	if got := iv.statsAccentColor(); got != "#FCD34D" {
+		t.Errorf("nil theme statsAccentColor() = %q, want #FCD34D", got)
+	}
+
+	start, end := iv.statsGradientColors()
+	if start != sparkColorStart.Dark {
+		t.Errorf("nil theme gradient start = %q, want %q", start, sparkColorStart.Dark)
+	}
+	if end != sparkColorEnd.Dark {
+		t.Errorf("nil theme gradient end = %q, want %q", end, sparkColorEnd.Dark)
+	}
+}
+
+func TestInsightsView_ThemeColorsApplied(t *testing.T) {
+	allThemes := []*themes.DoorTheme{
+		themes.NewClassicTheme(),
+		themes.NewModernTheme(),
+		themes.NewSciFiTheme(),
+		themes.NewShojiTheme(),
+	}
+
+	for _, th := range allThemes {
+		t.Run(th.Name, func(t *testing.T) {
+			iv := setupInsightsViewWithTheme(t, th)
+
+			if got := iv.statsAccentColor(); got != th.Colors.StatsAccent {
+				t.Errorf("theme %q statsAccentColor() = %q, want %q", th.Name, got, th.Colors.StatsAccent)
+			}
+
+			start, end := iv.statsGradientColors()
+			if start != th.Colors.StatsGradientStart {
+				t.Errorf("theme %q gradient start = %q, want %q", th.Name, start, th.Colors.StatsGradientStart)
+			}
+			if end != th.Colors.StatsGradientEnd {
+				t.Errorf("theme %q gradient end = %q, want %q", th.Name, end, th.Colors.StatsGradientEnd)
+			}
+		})
+	}
+}
+
+func TestInsightsView_ThemedViewRendersDifferently(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.Ascii) })
+
+	nilIV := setupInsightsViewWithTheme(t, nil)
+	nilOutput := nilIV.View()
+
+	classicIV := setupInsightsViewWithTheme(t, themes.NewClassicTheme())
+	classicOutput := classicIV.View()
+
+	scifiIV := setupInsightsViewWithTheme(t, themes.NewSciFiTheme())
+	scifiOutput := scifiIV.View()
+
+	// With TrueColor, themed views should differ from nil-theme (different ANSI codes).
+	if nilOutput == classicOutput {
+		t.Error("classic-themed output should differ from nil-themed output")
+	}
+	if classicOutput == scifiOutput {
+		t.Error("classic-themed output should differ from scifi-themed output")
+	}
+}
+
+func TestStyledSparklineCharsWithGradient(t *testing.T) {
+	t.Run("custom gradient produces output", func(t *testing.T) {
+		chars := styledSparklineCharsWithGradient([]int{1, 5, 10}, "#22C55E", "#06B6D4")
+		if len(chars) != 3 {
+			t.Fatalf("expected 3 chars, got %d", len(chars))
+		}
+		for i, ch := range chars {
+			if ch == "" {
+				t.Errorf("char %d is empty", i)
+			}
+		}
+	})
+
+	t.Run("nil input returns nil", func(t *testing.T) {
+		chars := styledSparklineCharsWithGradient(nil, "#000000", "#FFFFFF")
+		if chars != nil {
+			t.Errorf("expected nil, got %v", chars)
+		}
+	})
 }

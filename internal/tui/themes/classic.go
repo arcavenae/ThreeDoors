@@ -34,6 +34,10 @@ func NewClassicTheme() *DoorTheme {
 			Fill:     lipgloss.Color("0"),
 			Accent:   frameColor,
 			Selected: selectedColor,
+
+			StatsAccent:        "#D97706", // warm amber
+			StatsGradientStart: "#D97706", // amber
+			StatsGradientEnd:   "#FCD34D", // gold
 		},
 		MinWidth:  15,
 		MinHeight: 10,
