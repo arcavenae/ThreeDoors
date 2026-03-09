@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-REPORT="docs/spike-reports/2.2-apple-notes-integration.md"
+REPORT="_bmad-output/planning-artifacts/apple-notes-integration-spike.md"
 
 if [ ! -f "$REPORT" ]; then
     echo "[FAIL] Spike report not found: $REPORT" >&2
