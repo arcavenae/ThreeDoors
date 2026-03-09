@@ -1427,7 +1427,7 @@ func setupInsightsViewWithHeatmapData(t *testing.T) *InsightsView {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc)
+	iv := NewInsightsView(pa, cc, nil)
 	iv.SetWidth(80)
 	iv.SetHeight(30)
 	return iv
