@@ -1641,6 +1641,247 @@ func TestAnalyzeMoodCorrelations_TaskNotInMap_Skipped(t *testing.T) {
 	}
 }
 
+// ============================================================
+// Story 40.6 — Session Highlights Tests
+// ============================================================
+
+func TestGetSessionHighlights_NoSessions(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	h := pa.GetSessionHighlights()
+
+	if h.TotalDoors != 0 {
+		t.Errorf("TotalDoors = %d, want 0", h.TotalDoors)
+	}
+	if h.TotalTasks != 0 {
+		t.Errorf("TotalTasks = %d, want 0", h.TotalTasks)
+	}
+	if h.PeakHour != -1 {
+		t.Errorf("PeakHour = %d, want -1", h.PeakHour)
+	}
+	if h.LongestStreak != 0 {
+		t.Errorf("LongestStreak = %d, want 0", h.LongestStreak)
+	}
+}
+
+func TestGetSessionHighlights_SingleSession(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		{
+			SessionID:           "s1",
+			StartTime:           time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC),
+			EndTime:             time.Date(2026, 3, 1, 10, 30, 0, 0, time.UTC),
+			DurationSeconds:     1800,
+			TasksCompleted:      3,
+			DetailViews:         2,
+			NotesAdded:          1,
+			TimeToFirstDoorSecs: 5.5,
+			DoorSelections: []DoorSelectionRecord{
+				{DoorPosition: 0, TaskText: "t1"},
+				{DoorPosition: 1, TaskText: "t2"},
+			},
+		},
+	}
+
+	h := pa.GetSessionHighlights()
+
+	if h.TotalDoors != 2 {
+		t.Errorf("TotalDoors = %d, want 2", h.TotalDoors)
+	}
+	if h.TotalTasks != 3 {
+		t.Errorf("TotalTasks = %d, want 3", h.TotalTasks)
+	}
+	if h.AvgSessionDuration != 30*time.Minute {
+		t.Errorf("AvgSessionDuration = %v, want 30m", h.AvgSessionDuration)
+	}
+	if h.FastestFirstDoor != 5500*time.Millisecond {
+		t.Errorf("FastestFirstDoor = %v, want 5.5s", h.FastestFirstDoor)
+	}
+	if h.TotalDetailViews != 2 {
+		t.Errorf("TotalDetailViews = %d, want 2", h.TotalDetailViews)
+	}
+	if h.TotalNotesAdded != 1 {
+		t.Errorf("TotalNotesAdded = %d, want 1", h.TotalNotesAdded)
+	}
+	if h.PeakHour != 10 {
+		t.Errorf("PeakHour = %d, want 10", h.PeakHour)
+	}
+	if h.LongestStreak != 1 {
+		t.Errorf("LongestStreak = %d, want 1", h.LongestStreak)
+	}
+}
+
+func TestGetSessionHighlights_MultipleSessions(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		{
+			SessionID:           "s1",
+			StartTime:           time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC),
+			DurationSeconds:     600,
+			TasksCompleted:      2,
+			DetailViews:         1,
+			NotesAdded:          0,
+			TimeToFirstDoorSecs: 8.0,
+			DoorSelections:      []DoorSelectionRecord{{DoorPosition: 0}},
+		},
+		{
+			SessionID:           "s2",
+			StartTime:           time.Date(2026, 3, 2, 14, 0, 0, 0, time.UTC),
+			DurationSeconds:     1200,
+			TasksCompleted:      5,
+			DetailViews:         3,
+			NotesAdded:          2,
+			TimeToFirstDoorSecs: 3.0,
+			DoorSelections:      []DoorSelectionRecord{{DoorPosition: 1}, {DoorPosition: 2}},
+		},
+		{
+			SessionID:           "s3",
+			StartTime:           time.Date(2026, 3, 3, 10, 0, 0, 0, time.UTC),
+			DurationSeconds:     900,
+			TasksCompleted:      1,
+			DetailViews:         0,
+			NotesAdded:          1,
+			TimeToFirstDoorSecs: 0, // no first door recorded
+			DoorSelections:      []DoorSelectionRecord{{DoorPosition: 0}},
+		},
+	}
+
+	h := pa.GetSessionHighlights()
+
+	if h.TotalDoors != 4 {
+		t.Errorf("TotalDoors = %d, want 4", h.TotalDoors)
+	}
+	if h.TotalTasks != 8 {
+		t.Errorf("TotalTasks = %d, want 8", h.TotalTasks)
+	}
+	// Avg duration: (600+1200+900)/3 = 900s = 15m
+	if h.AvgSessionDuration != 15*time.Minute {
+		t.Errorf("AvgSessionDuration = %v, want 15m", h.AvgSessionDuration)
+	}
+	// Fastest first door: min(8.0, 3.0) = 3.0s
+	if h.FastestFirstDoor != 3*time.Second {
+		t.Errorf("FastestFirstDoor = %v, want 3s", h.FastestFirstDoor)
+	}
+	if h.TotalDetailViews != 4 {
+		t.Errorf("TotalDetailViews = %d, want 4", h.TotalDetailViews)
+	}
+	if h.TotalNotesAdded != 3 {
+		t.Errorf("TotalNotesAdded = %d, want 3", h.TotalNotesAdded)
+	}
+	// Peak hour: 10 appears twice (s1, s3), 14 appears once => 10
+	if h.PeakHour != 10 {
+		t.Errorf("PeakHour = %d, want 10", h.PeakHour)
+	}
+	// Three consecutive days: Mar 1, 2, 3
+	if h.LongestStreak != 3 {
+		t.Errorf("LongestStreak = %d, want 3", h.LongestStreak)
+	}
+}
+
+func TestGetSessionHighlights_PeakHourTieBreaking(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		{SessionID: "s1", StartTime: time.Date(2026, 3, 1, 14, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		{SessionID: "s2", StartTime: time.Date(2026, 3, 2, 9, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		{SessionID: "s3", StartTime: time.Date(2026, 3, 3, 14, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		{SessionID: "s4", StartTime: time.Date(2026, 3, 4, 9, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+	}
+
+	h := pa.GetSessionHighlights()
+	// Both 9 and 14 have 2 sessions each; earliest hour (9) wins
+	if h.PeakHour != 9 {
+		t.Errorf("PeakHour = %d, want 9 (earliest wins on tie)", h.PeakHour)
+	}
+}
+
+func TestGetSessionHighlights_FastestFirstDoor_IgnoresZero(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		{SessionID: "s1", TimeToFirstDoorSecs: 0, DurationSeconds: 600},
+		{SessionID: "s2", TimeToFirstDoorSecs: -1, DurationSeconds: 600},
+		{SessionID: "s3", TimeToFirstDoorSecs: 12.5, DurationSeconds: 600},
+	}
+
+	h := pa.GetSessionHighlights()
+	if h.FastestFirstDoor != 12500*time.Millisecond {
+		t.Errorf("FastestFirstDoor = %v, want 12.5s", h.FastestFirstDoor)
+	}
+}
+
+func TestGetSessionHighlights_NoFirstDoorData(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		{SessionID: "s1", TimeToFirstDoorSecs: 0, DurationSeconds: 600},
+		{SessionID: "s2", TimeToFirstDoorSecs: -1, DurationSeconds: 600},
+	}
+
+	h := pa.GetSessionHighlights()
+	if h.FastestFirstDoor != 0 {
+		t.Errorf("FastestFirstDoor = %v, want 0 (no valid data)", h.FastestFirstDoor)
+	}
+}
+
+func TestGetSessionHighlights_StreakWithGaps(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		// Streak 1: Mar 1-3 (3 days)
+		{SessionID: "s1", StartTime: time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		{SessionID: "s2", StartTime: time.Date(2026, 3, 2, 10, 0, 0, 0, time.UTC), TasksCompleted: 2, DurationSeconds: 600},
+		{SessionID: "s3", StartTime: time.Date(2026, 3, 3, 10, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		// Gap: Mar 4
+		// Streak 2: Mar 5-9 (5 days)
+		{SessionID: "s4", StartTime: time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		{SessionID: "s5", StartTime: time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+		{SessionID: "s6", StartTime: time.Date(2026, 3, 7, 10, 0, 0, 0, time.UTC), TasksCompleted: 3, DurationSeconds: 600},
+		{SessionID: "s7", StartTime: time.Date(2026, 3, 8, 10, 0, 0, 0, time.UTC), TasksCompleted: 2, DurationSeconds: 600},
+		{SessionID: "s8", StartTime: time.Date(2026, 3, 9, 10, 0, 0, 0, time.UTC), TasksCompleted: 1, DurationSeconds: 600},
+	}
+
+	h := pa.GetSessionHighlights()
+	if h.LongestStreak != 5 {
+		t.Errorf("LongestStreak = %d, want 5", h.LongestStreak)
+	}
+}
+
+func TestGetSessionHighlights_ZeroCompletions_NoStreak(t *testing.T) {
+	pa := NewPatternAnalyzer()
+	pa.sessions = []SessionMetrics{
+		{SessionID: "s1", StartTime: time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC), TasksCompleted: 0, DurationSeconds: 600},
+		{SessionID: "s2", StartTime: time.Date(2026, 3, 2, 10, 0, 0, 0, time.UTC), TasksCompleted: 0, DurationSeconds: 600},
+	}
+
+	h := pa.GetSessionHighlights()
+	if h.LongestStreak != 0 {
+		t.Errorf("LongestStreak = %d, want 0 (no completions)", h.LongestStreak)
+	}
+}
+
+func TestLongestConsecutiveDays(t *testing.T) {
+	tests := []struct {
+		name  string
+		dates map[string]bool
+		want  int
+	}{
+		{"empty", map[string]bool{}, 0},
+		{"single day", map[string]bool{"2026-03-01": true}, 1},
+		{"two consecutive", map[string]bool{"2026-03-01": true, "2026-03-02": true}, 2},
+		{"gap breaks streak", map[string]bool{"2026-03-01": true, "2026-03-03": true}, 1},
+		{"three consecutive", map[string]bool{"2026-03-01": true, "2026-03-02": true, "2026-03-03": true}, 3},
+		{"two streaks picks longest", map[string]bool{
+			"2026-03-01": true, "2026-03-02": true, // streak of 2
+			"2026-03-05": true, "2026-03-06": true, "2026-03-07": true, // streak of 3
+		}, 3},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := longestConsecutiveDays(tt.dates)
+			if got != tt.want {
+				t.Errorf("longestConsecutiveDays() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
+
 // --- Helper ---
 
 func patternContains(s, substr string) bool {

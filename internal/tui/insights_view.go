@@ -239,6 +239,7 @@ func (iv *InsightsView) renderPanelLayout(s *strings.Builder) {
 	streaksContent := iv.buildStreaks()
 	moodContent := iv.buildMoodCorrelations()
 	doorContent := iv.buildDoorPreferences()
+	highlightsContent := iv.buildSessionHighlights()
 
 	switch mode {
 	case layoutCompact:
@@ -253,6 +254,11 @@ func (iv *InsightsView) renderPanelLayout(s *strings.Builder) {
 	case layoutWide:
 		// 3-column top row: [trends | streaks | door picks], mood full width below
 		iv.renderWideLayout(s, trendsContent, streaksContent, moodContent, doorContent)
+	}
+
+	// Session highlights panel — added as full-width panel after existing layout
+	if highlightsContent != "" {
+		fmt.Fprintf(s, "%s\n", makePanel("SESSION HIGHLIGHTS", highlightsContent, iv.contentWidth()))
 	}
 }
 
@@ -495,6 +501,99 @@ func (iv *InsightsView) buildDoorPreferences() string {
 	}
 
 	return s.String()
+}
+
+// buildSessionHighlights builds the session highlights panel content (no border).
+// Metrics with no data are omitted rather than showing "0" or "N/A".
+func (iv *InsightsView) buildSessionHighlights() string {
+	h := iv.analyzer.GetSessionHighlights()
+
+	type metric struct {
+		label string
+		value string
+	}
+	var metrics []metric
+
+	if h.TotalDoors > 0 {
+		metrics = append(metrics, metric{"Doors opened", fmt.Sprintf("%d", h.TotalDoors)})
+	}
+	if h.TotalTasks > 0 {
+		metrics = append(metrics, metric{"Tasks completed", fmt.Sprintf("%d", h.TotalTasks)})
+	}
+	if h.AvgSessionDuration > 0 {
+		metrics = append(metrics, metric{"Avg session", formatDuration(h.AvgSessionDuration)})
+	}
+	if h.FastestFirstDoor > 0 {
+		metrics = append(metrics, metric{"Fastest first pick", formatDuration(h.FastestFirstDoor)})
+	}
+	if h.TotalDetailViews > 0 {
+		metrics = append(metrics, metric{"Detail views", fmt.Sprintf("%d", h.TotalDetailViews)})
+	}
+	if h.TotalNotesAdded > 0 {
+		metrics = append(metrics, metric{"Notes added", fmt.Sprintf("%d", h.TotalNotesAdded)})
+	}
+	if h.LongestStreak > 0 {
+		metrics = append(metrics, metric{"Longest streak", fmt.Sprintf("%d days", h.LongestStreak)})
+	}
+	if h.PeakHour >= 0 {
+		metrics = append(metrics, metric{"Peak hour", formatHour(h.PeakHour)})
+	}
+
+	if len(metrics) == 0 {
+		return ""
+	}
+
+	// Find max label width for alignment
+	maxLabel := 0
+	for _, m := range metrics {
+		if len(m.label) > maxLabel {
+			maxLabel = len(m.label)
+		}
+	}
+
+	var s strings.Builder
+	for i, m := range metrics {
+		if i > 0 {
+			s.WriteString("\n")
+		}
+		fmt.Fprintf(&s, "%-*s  %s", maxLabel, m.label, m.value)
+	}
+	return s.String()
+}
+
+// formatDuration formats a duration for display, using the most appropriate unit.
+func formatDuration(d time.Duration) string {
+	switch {
+	case d < time.Second:
+		return fmt.Sprintf("%dms", d.Milliseconds())
+	case d < time.Minute:
+		secs := d.Seconds()
+		if secs == float64(int(secs)) {
+			return fmt.Sprintf("%ds", int(secs))
+		}
+		return fmt.Sprintf("%.1fs", secs)
+	default:
+		mins := int(d.Minutes())
+		secs := int(d.Seconds()) % 60
+		if secs == 0 {
+			return fmt.Sprintf("%dm", mins)
+		}
+		return fmt.Sprintf("%dm %ds", mins, secs)
+	}
+}
+
+// formatHour formats a 0-23 hour as a human-readable time string (e.g., "10am", "2pm").
+func formatHour(hour int) string {
+	switch {
+	case hour == 0:
+		return "12am"
+	case hour < 12:
+		return fmt.Sprintf("%dam", hour)
+	case hour == 12:
+		return "12pm"
+	default:
+		return fmt.Sprintf("%dpm", hour-12)
+	}
 }
 
 // Gradient endpoint colors for the sparkline (color-blind safe: blue→yellow).
