@@ -253,6 +253,21 @@ func (m *MainModel) SetShowKeyHints(show bool) {
 	}
 }
 
+// SetBaseThemeName sets the user's configured theme as the active theme and
+// stores the name for seasonal fallback. Call before SetSeasonalEnabled.
+func (m *MainModel) SetBaseThemeName(name string) {
+	m.doorsView.SetBaseThemeName(name)
+}
+
+// SetSeasonalEnabled enables or disables automatic seasonal theme switching.
+// When enabled, immediately resolves the seasonal theme for the current time.
+func (m *MainModel) SetSeasonalEnabled(enabled bool) {
+	m.doorsView.SetSeasonalEnabled(enabled)
+	if enabled {
+		m.doorsView.ResolveSeasonalTheme(time.Now().UTC())
+	}
+}
+
 // SetDevDispatch configures dev dispatch with the given dispatcher, queue, and enabled flag.
 func (m *MainModel) SetDevDispatch(enabled bool, d dispatch.Dispatcher, q *dispatch.DevQueue) {
 	m.devDispatchEnabled = enabled
@@ -1064,6 +1079,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case PlanningCompleteMsg:
 		m.planningTimestamp = &msg.Timestamp
 		m.doorsView.SetPlanningTimestamp(&msg.Timestamp)
+		// Re-check seasonal theme on planning session start (handles overnight
+		// sessions crossing season boundaries — AC7 of Story 33.3).
+		m.doorsView.ResolveSeasonalTheme(time.Now().UTC())
 		m.doorsView.RefreshDoors()
 		m.doorsView.RotateFooterMessage()
 		if m.planningMode {

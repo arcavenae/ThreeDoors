@@ -150,7 +150,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 |-------|-------|--------|----------|------------|
 | 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Done (PR #403) | P2 | Epic 17 (done) |
 | 33.2 | Four Seasonal Theme Implementations | Done (PR #409) | P2 | 33.1 |
-| 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
+| 33.3 | Auto-Switch Integration in DoorsView and Config | Done (PR #410) | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
 
 ### Epic 38: Dual Homebrew Distribution (P1) — 6/6 stories done — COMPLETE

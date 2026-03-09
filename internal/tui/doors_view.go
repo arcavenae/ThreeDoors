@@ -76,6 +76,8 @@ type DoorsView struct {
 	doorAnimation     *DoorAnimation
 	planningTimestamp *time.Time
 	showKeyHints      bool
+	baseThemeName     string // user's configured theme for fallback
+	seasonalEnabled   bool   // whether seasonal auto-switch is active
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -184,6 +186,38 @@ func (dv *DoorsView) Theme() *themes.DoorTheme {
 // SetThemeRegistry sets a custom theme registry (useful for testing).
 func (dv *DoorsView) SetThemeRegistry(r *themes.Registry) {
 	dv.themeRegistry = r
+}
+
+// SetBaseThemeName stores the user's configured theme name and activates it.
+// This name is used as the fallback when a seasonal theme's MinWidth is not met.
+func (dv *DoorsView) SetBaseThemeName(name string) {
+	dv.baseThemeName = name
+	dv.SetThemeByName(name)
+}
+
+// SetSeasonalEnabled enables or disables automatic seasonal theme switching.
+func (dv *DoorsView) SetSeasonalEnabled(enabled bool) {
+	dv.seasonalEnabled = enabled
+}
+
+// ResolveSeasonalTheme checks if a seasonal theme should override the base
+// theme for the current date. Called at construction time and on planning
+// session start. When no matching seasonal theme exists in the registry,
+// the base theme is left unchanged.
+func (dv *DoorsView) ResolveSeasonalTheme(now time.Time) {
+	if !dv.seasonalEnabled {
+		return
+	}
+	if dv.themeRegistry == nil {
+		dv.themeRegistry = themes.NewDefaultRegistry()
+	}
+	season := themes.ResolveSeason(now, themes.DefaultSeasonRanges)
+	if season == "" {
+		return
+	}
+	if seasonalTheme, ok := dv.themeRegistry.GetBySeason(season); ok {
+		dv.theme = seasonalTheme
+	}
 }
 
 // pickGreeting selects a random greeting, avoiding lastIdx to prevent consecutive repeats.
@@ -304,11 +338,15 @@ func (dv *DoorsView) View() string {
 	}
 
 	// Resolve the active theme for this render cycle.
-	// Width-aware fallback: if per-door width is below the theme's minimum, use Classic.
-	// Height-aware fallback: if door height is below the theme's MinHeight, use Classic (compact mode).
+	// Width/height fallback: seasonal themes fall back to the user's base theme;
+	// non-seasonal themes fall back to Classic.
 	activeTheme := dv.theme
 	if activeTheme != nil && (doorWidth < activeTheme.MinWidth || (activeTheme.MinHeight > 0 && doorHeight < activeTheme.MinHeight)) {
-		if dv.themeRegistry != nil {
+		if activeTheme.Season != "" && dv.baseThemeName != "" && dv.themeRegistry != nil {
+			if baseTheme, ok := dv.themeRegistry.Get(dv.baseThemeName); ok {
+				activeTheme = baseTheme
+			}
+		} else if dv.themeRegistry != nil {
 			if classic, ok := dv.themeRegistry.Get("classic"); ok {
 				activeTheme = classic
 			}
