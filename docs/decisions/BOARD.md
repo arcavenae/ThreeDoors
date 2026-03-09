@@ -84,6 +84,7 @@
 | D-055 | CI churn reduction | 2026-03-08 | Relax up-to-date rule + path filtering; defer merge queue; 70-80% CI reduction | [ADR-0030](../ADRs/ADR-0030-ci-churn-reduction.md) |
 | D-056 | Alpha binary named `threedoors-a` (not `threedoors`) | 2026-03-08 | Prevents Homebrew conflicts; allows simultaneous install; clear channel identity | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | D-057 | Alpha formula `threedoors-a.rb` in same tap | 2026-03-08 | Single tap; consistent UX; no `conflicts_with` needed | [Research](../research/dual-homebrew-distribution-research.md) |
+| D-058 | Manual planning doc reconciliation over automation | 2026-03-08 | Automation rejected — drift is infrequent, docs are heterogeneous, CLAUDE.md reminder sufficient | [Artifact](../../_bmad-output/planning-artifacts/planning-docs-reconciliation-triage-party-mode.md) |
 
 ## Rejected
 

@@ -118,6 +118,16 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
+### Epic 36: Door Selection Interaction Feedback (P1) — 0/3 stories done
+
+Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit. Addresses GitHub Issue #219.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 36.1 | Enhanced Door Selection Visual Feedback | Not Started | P1 | None |
+| 36.2 | Deselect Toggle — Press Same Key to Unselect | Not Started | P1 | None |
+| 36.3 | Universal Quit — 'q' Works From All Screens | Not Started | P1 | None |
+
 ### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
 
 Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
@@ -133,7 +143,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 19/24 |
+| 0 | Infrastructure & Process (Backfill) | 10/12 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |

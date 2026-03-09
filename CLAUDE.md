@@ -48,6 +48,9 @@ Every PR that changes story status MUST also update planning docs in the same PR
 - Update the story file status line: `Done (PR #NNN)`
 - Update `ROADMAP.md` epic progress if the story completes an epic
 - Each PR updates its own story — do NOT batch status updates across multiple PRs
+- When completing the **last story in an epic**, also update status in `docs/prd/epic-list.md` and `docs/prd/epics-and-stories.md` to reflect COMPLETE
+- When **creating a new epic or story**, ensure it is added to all three docs: `ROADMAP.md`, `docs/prd/epic-list.md`, and `docs/prd/epics-and-stories.md`
+- These three planning docs plus the story files form the source-of-truth chain — story files are authoritative for individual story status; planning docs must be kept consistent
 
 ## Decision Recording — MANDATORY
 

@@ -249,52 +249,49 @@
 - **Stories:** 18.1 (Headless Harness), 18.2 (Golden Files), 18.3 (Workflow Replay), 18.4 (Docker Environment), 18.5 (CI Integration)
 - **FRs covered:** FR52, FR53, FR54
 
-**Epic 19: Jira Integration** PARTIAL
+**Epic 19: Jira Integration** COMPLETE
 - **Goal:** Integrate Jira as a task source via read-only adapter (Phase 1) and bidirectional sync (Phase 2), enabling developers to see their Jira issues as ThreeDoors tasks
 - **Prerequisites:** Epic 7 (adapter SDK), Epic 11 (sync observability), Epic 13 (multi-source aggregation)
-- **Status:** Partial (2/4) — Stories 19.1 (PR #132), 19.2 (PR #138) done. Stories 19.3, 19.4 pending.
+- **Status:** COMPLETE -- All 4 stories implemented and merged (PRs #132, #138, #150, #153)
 - **Deliverables:**
   - Thin Jira REST API v3 HTTP client (auth, search, pagination, rate limits)
   - JiraProvider implementing TaskProvider (JQL search, field mapping)
   - Bidirectional sync via transitions API + WAL queuing
   - Configurable status/priority mapping and JQL in config.yaml
 - **Stories:** 19.1 (HTTP Client), 19.2 (Read-Only Provider), 19.3 (Bidirectional Sync), 19.4 (Config & Registration)
-- **Estimated Effort:** 3-4 weeks at 2-4 hrs/week
 - **FRs covered:** FR63, FR64, FR65, FR66
 - **Research:** See `docs/research/jira-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
 
-**Epic 20: Apple Reminders Integration** PARTIAL
+**Epic 20: Apple Reminders Integration** COMPLETE
 - **Goal:** Add Apple Reminders as a task source with full CRUD support, leveraging structured data model (persistent IDs, native priority/due dates) for a higher-quality integration than Apple Notes
 - **Prerequisites:** Epic 7 (adapter SDK), macOS only
-- **Status:** Partial (1/4) — Story 20.1 (PR #137) done. Stories 20.2-20.4 pending.
+- **Status:** COMPLETE -- All 4 stories implemented and merged (PRs #137, #148, #155, #158)
 - **Deliverables:**
   - JXA scripts for reading, creating, updating, completing, and deleting reminders
   - RemindersProvider implementing TaskProvider with CommandExecutor pattern
   - Field mapping (priority -> effort, completion -> status, list -> source)
   - Configurable list filtering in config.yaml
 - **Stories:** 20.1 (JXA Scripts & CommandExecutor), 20.2 (Read-Only Provider), 20.3 (Write Support), 20.4 (Config, Registration & Health Check)
-- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
 - **FRs covered:** FR67, FR68, FR69
 - **Research:** See `docs/research/apple-reminders-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
 
-**Epic 21: Sync Protocol Hardening** PARTIAL
+**Epic 21: Sync Protocol Hardening** COMPLETE
 - **Goal:** Harden the sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping
 - **Prerequisites:** Epic 11 (sync observability), Epic 13 (multi-source aggregation)
-- **Status:** Partial (3/4) — Stories 21.1 (PR #139), 21.2, 21.3 done. Story 21.4 pending.
+- **Status:** COMPLETE -- All 4 stories implemented and merged (PRs #139, #132, #151, #157)
 - **Deliverables:**
   - Sync scheduler with per-provider independent loops and adaptive intervals
   - Circuit breaker per provider (Closed/Open/Half-Open states)
   - Canonical ID mapping via SourceRef for cross-provider deduplication
   - Enhanced sync status dashboard with staleness indicators
 - **Stories:** 21.1 (Sync Scheduler), 21.2 (Circuit Breaker), 21.3 (Canonical ID Mapping), 21.4 (Dashboard Enhancements)
-- **Estimated Effort:** 3-4 weeks at 2-4 hrs/week
 - **FRs covered:** FR70, FR71, FR72
 - **Research:** See `docs/research/sync-architecture-scaling-research.md`, `docs/research/task-sync-analyst-brief.md`
 
-**Epic 22: Self-Driving Development Pipeline**
+**Epic 22: Self-Driving Development Pipeline** COMPLETE
 - **Goal:** Enable ThreeDoors tasks to directly trigger multiclaude worker agents, creating a closed loop where the app dispatches its own development work and tracks results (PRs, CI status) back in the TUI
 - **Prerequisites:** Epic 14 (LLM Decomposition -- provides AgentService for optional story generation), multiclaude installed and configured
-- **Status:** Not Started
+- **Status:** COMPLETE -- All 8 stories implemented and merged (PRs #149, #152, #163, #162, #161, #164, #159, #160)
 - **Deliverables:**
   - DevDispatch data model and file-based queue persistence (`~/.threedoors/dev-queue.yaml`)
   - Dispatch engine wrapping multiclaude CLI (`CreateWorker`, `ListWorkers`, `GetHistory`, `RemoveWorker`)
@@ -305,10 +302,45 @@
   - Optional story file generation via existing `AgentService`
   - Safety guardrails (max concurrent workers, approval gate, rate limiting, audit log)
 - **Stories:** 22.1-22.8 (8 stories)
-- **Estimated Effort:** 4-6 weeks at 2-4 hrs/week
 - **FRs covered:** FR73, FR74, FR75, FR76, FR77, FR78, FR79, FR80
 - **NFRs covered:** NFR24, NFR25, NFR26, NFR27
 - **Research:** See `docs/research/self-driving-development-pipeline.md`
+
+**Epic 23: CLI Interface** COMPLETE
+- **Goal:** Provide a complete non-TUI CLI interface for ThreeDoors that serves both human power users (scriptable task management) and LLM agents (structured JSON output)
+- **Prerequisites:** None (core domain layer is already CLI-ready with JSON struct tags)
+- **Status:** COMPLETE -- All 11 stories implemented and merged (PRs #170-#195, #225)
+- **Deliverables:**
+  - Cobra-based CLI scaffold with `--json` persistent flag and output formatter
+  - Task CRUD commands (`task list`, `task show`, `task add`, `task update`, `task complete`)
+  - Door selection commands (`doors`, `doors pick`, `doors roll`)
+  - Session and analytics commands
+  - Shell completions (bash, zsh, fish, PowerShell)
+- **Stories:** 23.1-23.11 (11 stories)
+- **FRs covered:** CLI interface requirements
+
+**Epic 24: MCP/LLM Integration Server** COMPLETE
+- **Goal:** Expose ThreeDoors functionality as an MCP (Model Context Protocol) server enabling LLM agents to interact with tasks programmatically
+- **Prerequisites:** Epic 23 (CLI Interface)
+- **Status:** COMPLETE -- All 8 stories implemented and merged (PRs #177-#197)
+- **Deliverables:**
+  - MCP server with tool definitions for task management
+  - Structured JSON responses for LLM consumption
+  - Resource endpoints for task context
+  - Integration with existing TaskProvider infrastructure
+- **Stories:** 24.1-24.8 (8 stories)
+
+**Epic 25: Todoist Integration** (P1)
+- **Goal:** Integrate Todoist as a task source via REST API v1 with thin HTTP client, read-only then bidirectional sync
+- **Prerequisites:** Epic 7 (Adapter SDK -- complete)
+- **Status:** Not Started
+- **Stories:** 25.1-25.4 (4 stories)
+
+**Epic 26: GitHub Issues Integration** COMPLETE
+- **Goal:** Integrate GitHub Issues as a task source, enabling developers to see their GitHub issues as ThreeDoors tasks
+- **Prerequisites:** Epic 7 (Adapter SDK -- complete)
+- **Status:** COMPLETE -- All 4 stories implemented and merged (PRs #201-#205)
+- **Stories:** 26.1-26.4 (4 stories)
 
 **Epic 27: Daily Planning Mode** (P1)
 - **Goal:** Add a guided daily planning ritual that transforms ThreeDoors from a reactive task picker into a proactive morning engagement tool, driving long-term retention through structured planning sessions
@@ -327,6 +359,18 @@
 - **FRs covered:** FR97, FR98, FR99, FR100, FR101, FR102, FR103
 - **Research:** See `docs/research/ux-workflow-improvements-research.md` (Improvement #2: Daily Planning Mode)
 
+**Epic 28: Snooze/Defer as First-Class Action** (P1)
+- **Goal:** Surface existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Stories:** 28.1-28.4 (4 stories)
+
+**Epic 29: Task Dependencies & Blocked-Task Filtering** (P1)
+- **Goal:** Native dependency graph support. Blocks tasks with unmet dependencies from door selection
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Stories:** 29.1-29.4 (4 stories)
+
 **Epic 30: Linear Integration** (P2)
 - **Goal:** Integrate Linear as a task source for engineering teams via the Linear GraphQL API, leveraging Linear's excellent task model alignment (rich workflow states, priority, estimates, labels, due dates) for high-fidelity task import
 - **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 13 (Multi-Source Aggregation — complete)
@@ -341,10 +385,28 @@
 - **FRs covered:** FR116, FR117, FR118, FR119
 - **Research:** See `docs/research/task-source-expansion-research.md` (Linear section)
 
-**Epic 34: SOUL.md + Custom Development Skills** (P1)
+**Epic 31: Expand/Fork Key Implementations** (P2)
+- **Goal:** Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Stories:** 31.1-31.5 (5 stories)
+
+**Epic 32: Undo Task Completion** (P1)
+- **Goal:** Allow reversing accidental task completion via `complete -> todo` transition
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Stories:** 32.1-32.3 (3 stories)
+
+**Epic 33: Seasonal Door Theme Variants** (P2)
+- **Goal:** Time-based seasonal theme variants that auto-switch based on current date, extending Epic 17's theme infrastructure
+- **Prerequisites:** Epic 17 (Door Theme System -- complete)
+- **Status:** Not Started
+- **Stories:** 33.1-33.4 (4 stories)
+
+**Epic 34: SOUL.md + Custom Development Skills** COMPLETE
 - **Goal:** Create SOUL.md project philosophy document and 4 custom Claude Code slash commands (/pre-pr, /validate-adapter, /check-patterns, /new-story) to improve AI agent alignment and developer workflow
 - **Prerequisites:** None (CLAUDE.md already exists)
-- **Status:** Not Started
+- **Status:** COMPLETE -- All 4 stories implemented and merged (PRs #222, #224, #228, #230)
 - **Deliverables:**
   - SOUL.md at project root — project philosophy, design principles, behavioral guidelines for AI agents
   - `/pre-pr` slash command — 8-step pre-PR validation automation
@@ -352,14 +414,13 @@
   - `/check-patterns` slash command — design pattern violation scanning
   - `/new-story` slash command — story template generator referencing CLAUDE.md
 - **Stories:** 34.1-34.4 (4 stories)
-- **Estimated Effort:** 2-3 days
 - **NFRs covered:** NFR-DX1, NFR-DX2, NFR-DX3, NFR-DX4, NFR-DX5, NFR-DX6
 - **Research:** See `docs/research/ai-tooling-findings.md`
 
-**Epic 35: Door Visual Appearance — Door-Like Proportions** (P1)
+**Epic 35: Door Visual Appearance — Door-Like Proportions** COMPLETE
 - **Goal:** Redesign all door themes to visually read as actual doors using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines
 - **Prerequisites:** Epic 17 ✅ (Door Theme System)
-- **Status:** Not Started
+- **Status:** COMPLETE -- All 7 stories implemented and merged (PRs #226, #229, #234, #236, #237, #238, #239)
 - **Deliverables:**
   - DoorAnatomy helper type and height-aware Render signature
   - All 4 themes updated with door-like proportions (portrait orientation, panel dividers, handles, thresholds)
@@ -367,12 +428,22 @@
   - Shadow/depth effects for 3D appearance
   - Golden file test regeneration and accessibility validation
 - **Stories:** 35.1-35.7 (7 stories)
-- **Estimated Effort:** 3-4 days
 - **FRs covered:** FR138-FR147
 - **Research:** See `_bmad-output/planning-artifacts/door-appearance-party-mode.md`
 
-**Epic 36+: Additional UX Improvements** (Quick Capture CLI, Focus Timer, Batch Triage — see `docs/research/ux-workflow-improvements-research.md`)
-**Epic 37+: Cross-Computer Sync** (Implement alternative to monolithic SQLite on cloud storage)
+**Epic 36: Door Selection Interaction Feedback** (P1)
+- **Goal:** Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit. Addresses GitHub Issue #219.
+- **Prerequisites:** None (complements Epic 35 but does not depend on it)
+- **Status:** Not Started
+- **Stories:** 36.1-36.3 (3 stories)
+- **FRs covered:** FR148-FR151
+
+**Epic 37: Persistent BMAD Agent Infrastructure**
+- **Goal:** Enable autonomous project governance by adding persistent BMAD agents and cron jobs that maintain story status, ROADMAP accuracy, architecture doc currency, and quality metrics
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Stories:** 37.1-37.4 (4 stories)
+
 **Epic 38+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -383,7 +454,7 @@
 
 | Epic | Stories | Status |
 |------|---------|--------|
-| Epic 0: Infrastructure & Process (Backfill) | 19 | Complete |
+| Epic 0: Infrastructure & Process (Backfill) | 12 | Partial (10/12) |
 | Epic 1: Technical Demo | 7 | Complete |
 | Epic 2: Apple Notes Integration | 6 | Complete |
 | Epic 3: Enhanced Interaction | 7 | Complete |
@@ -400,16 +471,27 @@
 | Epic 13: Multi-Source Aggregation | 2 | Complete |
 | Epic 14: LLM Decomposition | 2 | Complete |
 | Epic 15: Psychology Research | 2 | Complete |
-| Epic 16: iPhone Mobile App | 7 | Not Started |
+| Epic 16: iPhone Mobile App | 7 | Icebox |
 | Epic 17: Door Theme System | 6 | Complete |
 | Epic 18: Docker E2E & Headless TUI Testing | 5 | Complete |
-| Epic 19: Jira Integration | 4 | Partial (2/4) |
-| Epic 20: Apple Reminders Integration | 4 | Partial (1/4) |
-| Epic 21: Sync Protocol Hardening | 4 | Partial (3/4) |
-| Epic 22: Self-Driving Dev Pipeline | 8 | Not Started |
+| Epic 19: Jira Integration | 4 | Complete |
+| Epic 20: Apple Reminders Integration | 4 | Complete |
+| Epic 21: Sync Protocol Hardening | 4 | Complete |
+| Epic 22: Self-Driving Dev Pipeline | 8 | Complete |
+| Epic 23: CLI Interface | 11 | Complete |
+| Epic 24: MCP/LLM Integration | 8 | Complete |
+| Epic 25: Todoist Integration | 4 | Not Started |
+| Epic 26: GitHub Issues Integration | 4 | Complete |
 | Epic 27: Daily Planning Mode | 5 | Not Started |
+| Epic 28: Snooze/Defer | 4 | Not Started |
+| Epic 29: Task Dependencies | 4 | Not Started |
 | Epic 30: Linear Integration | 4 | Not Started |
-| Epic 34: SOUL.md + Custom Dev Skills | 3 | Not Started |
-| Epic 35: Door Visual Appearance | 7 | Not Started |
-| **Total** | **138** | **97 complete, 3 partial, 38 remaining** |
+| Epic 31: Expand/Fork Key | 5 | Not Started |
+| Epic 32: Undo Task Completion | 3 | Not Started |
+| Epic 33: Seasonal Theme Variants | 4 | Not Started |
+| Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
+| Epic 35: Door Visual Appearance | 7 | Complete |
+| Epic 36: Door Selection Feedback | 3 | Not Started |
+| Epic 37: Persistent BMAD Agents | 4 | Not Started |
+| **Total** | **194** | **147 complete, 1 partial, 46 not started** |
 ---

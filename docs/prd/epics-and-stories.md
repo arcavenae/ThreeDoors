@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-24, 26, 34, 35 are COMPLETE. Epic 16 is ICEBOX. Epics 25, 27-33 are NOT STARTED. 239+ merged PRs total. Last audit: 2026-03-08.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34, 35 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epics 25, 27-33, 36, 37 are NOT STARTED. 267+ merged PRs total. Last audit: 2026-03-08.
 
 ## Requirements Inventory
 
@@ -219,20 +219,24 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR67-FR69 | Epic 20 ✅ | Apple Reminders Integration (COMPLETE) |
 | FR70-FR72 | Epic 21 ✅ | Sync Protocol Hardening (COMPLETE) |
 | FR73-FR80 | Epic 22 ✅ | Self-Driving Development Pipeline (COMPLETE) |
-| FR81-FR88 | Epic 24 | MCP/LLM Integration Server (NOT STARTED) |
+| FR81-FR88 | Epic 24 ✅ | MCP/LLM Integration Server (COMPLETE) |
 | FR89-FR92 | Epic 25 | Todoist Integration (NOT STARTED) |
-| FR93-FR96 | Epic 26 | GitHub Issues Integration (NOT STARTED) |
+| FR93-FR96 | Epic 26 ✅ | GitHub Issues Integration (COMPLETE) |
+| FR97-FR103 | Epic 27 | Daily Planning Mode (NOT STARTED) |
+| FR104-FR107 | Epic 28 | Snooze/Defer (NOT STARTED) |
+| FR108-FR111 | Epic 29 | Task Dependencies (NOT STARTED) |
 | FR116-FR119 | Epic 30 | Linear Integration (NOT STARTED) |
 | FR120-FR126 | Epic 31 | Expand/Fork Key Implementations (NOT STARTED) |
 | FR127-FR131 | Epic 32 | Undo Task Completion (NOT STARTED) |
 | FR132-FR137 | Epic 33 | Seasonal Door Theme Variants (NOT STARTED) |
+| FR148-FR151 | Epic 36 | Door Selection Feedback (NOT STARTED) |
 
 ## Epic List
 
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 19 of 24 stories complete. Stories 0.20 (CI Churn Reduction), 0.21 (Homebrew Public Distribution), 0.24 (Renovate + Dependabot), 0.28 (Issue Tracker & Authority Config), and 0.29 (Envoy Operations Guide) not started.
+**Status:** 10 of 12 stories complete. Stories 0.24 (Renovate + Dependabot) not started; 0.31 (draft).
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -403,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 19 of 24 stories complete. Stories 0.20 (CI Churn Reduction), 0.21 (Homebrew Public Distribution), 0.24 (Renovate + Dependabot), 0.28 (Issue Tracker & Authority Config), and 0.29 (Envoy Operations Guide) not started.
+**Status:** 10 of 12 stories complete. Stories 0.24 (Renovate + Dependabot) not started; 0.31 (draft).
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
 
@@ -3807,3 +3811,140 @@ As a developer, I want the GitHub adapter to pass the contract test suite with c
 - **Read-only first:** Story 26.2 delivers 80% of user value; 26.3 completes the loop
 - **Config:** Explicit repo list required; org-level queries deferred to future enhancement
 - **Schedule:** Recommended after Epic 25 (Todoist) to leverage learnings
+
+---
+
+## Epic 27: Daily Planning Mode
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** Epic 1 (session tracking) COMPLETE, Epic 3 (mood capture) COMPLETE, Epic 4 (task categorization) COMPLETE
+
+### Epic Goal
+
+Add a guided daily planning ritual that transforms ThreeDoors from a reactive task picker into a proactive morning engagement tool, driving long-term retention through structured planning sessions.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 27.1 | Planning Data Model & Focus Tag | Not Started | P1 | Epic 1 (done) |
+| 27.2 | Review Incomplete Tasks Flow | Not Started | P1 | 27.1 |
+| 27.3 | Focus Selection Flow | Not Started | P1 | 27.1 |
+| 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
+| 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
+
+**FRs covered:** FR97-FR103
+**Research:** See `docs/research/ux-workflow-improvements-research.md`
+
+---
+
+## Epic 28: Snooze/Defer as First-Class Action
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** None
+
+### Epic Goal
+
+Surface existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 28.1 | DeferUntil Field, Status Transitions, and Auto-Return Logic | Not Started | P1 | None |
+| 28.2 | Snooze TUI View and Z-Key Binding | Not Started | P1 | 28.1 |
+| 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
+| 28.4 | Session Metrics Logging for Snooze Events | Not Started | P1 | 28.1 |
+
+---
+
+## Epic 29: Task Dependencies & Blocked-Task Filtering
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** None
+
+### Epic Goal
+
+Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Not Started | P1 | None |
+| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Not Started | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
+| 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
+
+---
+
+## Epic 30: Linear Integration
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** Epic 7 (Adapter SDK) COMPLETE, Epic 13 (Multi-Source Aggregation) COMPLETE
+
+### Epic Goal
+
+Integrate Linear as a task source for engineering teams via the Linear GraphQL API, leveraging Linear's excellent task model alignment for high-fidelity task import.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 30.1 | Linear GraphQL Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 30.2 | Read-Only Linear Provider with Field Mapping | Not Started | P2 | 30.1 |
+| 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
+| 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
+
+**FRs covered:** FR116-FR119
+**Research:** See `docs/research/task-source-expansion-research.md`
+
+---
+
+## Epic 31: Expand/Fork Key Implementations
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** None
+
+### Epic Goal
+
+Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 31.1 | Task Model ParentID Extension | Not Started | P2 | None |
+| 31.2 | Enhanced Expand — Sequential Subtask Creation | Not Started | P2 | 31.1 |
+| 31.3 | Subtask List Rendering in Detail View | Not Started | P2 | 31.1, 31.2 |
+| 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
+| 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
+
+**FRs covered:** FR120-FR126
+
+---
+
+## Epic 32: Undo Task Completion
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** None
+
+### Epic Goal
+
+Allow reversing accidental task completion via `complete -> todo` transition. Validated pain point from Phase 1 gate.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
+| 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
+| 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
+
+**FRs covered:** FR127-FR131
