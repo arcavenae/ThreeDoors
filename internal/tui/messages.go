@@ -224,6 +224,18 @@ type DependencyUnblockedMsg struct {
 	CompletedDepID string
 }
 
+// DependencyAddedMsg is sent when a dependency is added to a task.
+type DependencyAddedMsg struct {
+	Task         *core.Task
+	DependencyID string
+}
+
+// DependencyRemovedMsg is sent when a dependency is removed from a task.
+type DependencyRemovedMsg struct {
+	Task         *core.Task
+	DependencyID string
+}
+
 // DeferReturnTickMsg fires periodically to check for expired deferred tasks.
 type DeferReturnTickMsg time.Time
 
