@@ -163,6 +163,77 @@ func TestDoorsView_ArrowRightSelectsDoor(t *testing.T) {
 	}
 }
 
+// --- Deselect Toggle (Story 36.2) ---
+
+func TestDoorsView_DeselectToggle(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		selectKey   string
+		doorIndex   int
+		deselectKey string
+		wantIndex   int
+	}{
+		// Same key deselects
+		{"select door 0 with a then deselect with a", "a", 0, "a", -1},
+		{"select door 0 with left then deselect with left", "left", 0, "left", -1},
+		{"select door 1 with w then deselect with w", "w", 1, "w", -1},
+		{"select door 1 with up then deselect with up", "up", 1, "up", -1},
+		{"select door 2 with d then deselect with d", "d", 2, "d", -1},
+		{"select door 2 with right then deselect with right", "right", 2, "right", -1},
+		// Different key switches (does NOT deselect)
+		{"select door 0 then switch to door 1", "a", 0, "w", 1},
+		{"select door 0 then switch to door 2", "a", 0, "d", 2},
+		{"select door 1 then switch to door 0", "w", 1, "a", 0},
+		{"select door 1 then switch to door 2", "w", 1, "d", 2},
+		{"select door 2 then switch to door 0", "d", 2, "a", 0},
+		{"select door 2 then switch to door 1", "d", 2, "w", 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			m := makeModel("task1", "task2", "task3")
+
+			// First key: select the door
+			m.Update(keyMsg(tt.selectKey))
+			if m.doorsView.selectedDoorIndex != tt.doorIndex {
+				t.Fatalf("after select: expected index %d, got %d", tt.doorIndex, m.doorsView.selectedDoorIndex)
+			}
+
+			// Second key: toggle or switch
+			m.Update(keyMsg(tt.deselectKey))
+			if m.doorsView.selectedDoorIndex != tt.wantIndex {
+				t.Errorf("after second key: expected index %d, got %d", tt.wantIndex, m.doorsView.selectedDoorIndex)
+			}
+		})
+	}
+}
+
+func TestDoorsView_DeselectThenReselect(t *testing.T) {
+	t.Parallel()
+	m := makeModel("task1", "task2", "task3")
+
+	// Select door 0
+	m.Update(keyMsg("a"))
+	if m.doorsView.selectedDoorIndex != 0 {
+		t.Fatalf("expected 0, got %d", m.doorsView.selectedDoorIndex)
+	}
+
+	// Deselect door 0
+	m.Update(keyMsg("a"))
+	if m.doorsView.selectedDoorIndex != -1 {
+		t.Fatalf("expected -1 after deselect, got %d", m.doorsView.selectedDoorIndex)
+	}
+
+	// Re-select door 0
+	m.Update(keyMsg("a"))
+	if m.doorsView.selectedDoorIndex != 0 {
+		t.Errorf("expected 0 after re-select, got %d", m.doorsView.selectedDoorIndex)
+	}
+}
+
 // --- Enter Key ---
 
 func TestEnterKey_WithSelection_OpensDetail(t *testing.T) {

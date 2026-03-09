@@ -915,11 +915,23 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, func() tea.Msg { return RequestQuitMsg{} }
 		case "a", "left":
-			m.doorsView.selectedDoorIndex = 0
+			if m.doorsView.selectedDoorIndex == 0 {
+				m.doorsView.selectedDoorIndex = -1
+			} else {
+				m.doorsView.selectedDoorIndex = 0
+			}
 		case "w", "up":
-			m.doorsView.selectedDoorIndex = 1
+			if m.doorsView.selectedDoorIndex == 1 {
+				m.doorsView.selectedDoorIndex = -1
+			} else {
+				m.doorsView.selectedDoorIndex = 1
+			}
 		case "d", "right":
-			m.doorsView.selectedDoorIndex = 2
+			if m.doorsView.selectedDoorIndex == 2 {
+				m.doorsView.selectedDoorIndex = -1
+			} else {
+				m.doorsView.selectedDoorIndex = 2
+			}
 		case "s", "down":
 			if m.tracker != nil {
 				m.tracker.RecordRefresh(m.doorsView.GetCurrentDoorTexts())
