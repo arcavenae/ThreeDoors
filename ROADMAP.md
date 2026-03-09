@@ -179,7 +179,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 40.1 | Stats Dashboard Shell with Lipgloss Panels | Not Started | P1 | None |
+| 40.1 | Stats Dashboard Shell with Lipgloss Panels | In Review | P1 | None |
 | 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Not Started | P1 | 40.1 |
 | 40.3 | Fun Facts Engine | Not Started | P1 | 40.1 |
 | 40.4 | Horizontal Bar Charts for Mood Correlation | Not Started | P1 | 40.1 |
