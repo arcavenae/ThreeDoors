@@ -891,6 +891,123 @@ func (pa *PatternAnalyzer) GetTotalCompleted() int {
 	return total
 }
 
+// SessionHighlights holds computed aggregate metrics from session history.
+type SessionHighlights struct {
+	TotalDoors         int
+	TotalTasks         int
+	AvgSessionDuration time.Duration
+	FastestFirstDoor   time.Duration
+	TotalDetailViews   int
+	TotalNotesAdded    int
+	LongestStreak      int
+	PeakHour           int // 0-23, -1 if no data
+}
+
+// GetSessionHighlights computes aggregate metrics from all loaded sessions.
+// Returns a SessionHighlights with zero-value fields for metrics that have no data.
+// PeakHour is -1 when no sessions exist.
+func (pa *PatternAnalyzer) GetSessionHighlights() SessionHighlights {
+	h := SessionHighlights{PeakHour: -1}
+	if len(pa.sessions) == 0 {
+		return h
+	}
+
+	var totalDuration float64
+	var fastestDoor float64
+	hourCounts := make(map[int]int)
+	completionDates := make(map[string]bool)
+
+	for _, s := range pa.sessions {
+		h.TotalTasks += s.TasksCompleted
+		h.TotalDoors += len(s.DoorSelections)
+		h.TotalDetailViews += s.DetailViews
+		h.TotalNotesAdded += s.NotesAdded
+		totalDuration += s.DurationSeconds
+
+		// Fastest first door: minimum positive value
+		if s.TimeToFirstDoorSecs > 0 {
+			if fastestDoor == 0 || s.TimeToFirstDoorSecs < fastestDoor {
+				fastestDoor = s.TimeToFirstDoorSecs
+			}
+		}
+
+		// Peak hour: bucket by start hour
+		hourCounts[s.StartTime.Hour()]++
+
+		// Collect dates with completions for streak calculation
+		if s.TasksCompleted > 0 {
+			completionDates[s.StartTime.UTC().Format("2006-01-02")] = true
+		}
+	}
+
+	// Average session duration
+	h.AvgSessionDuration = time.Duration(totalDuration/float64(len(pa.sessions))*1000) * time.Millisecond
+
+	// Fastest first door
+	if fastestDoor > 0 {
+		h.FastestFirstDoor = time.Duration(fastestDoor*1000) * time.Millisecond
+	}
+
+	// Peak hour: find the hour with most sessions
+	if len(hourCounts) > 0 {
+		maxCount := 0
+		peakHour := 0
+		// Iterate 0-23 for deterministic tie-breaking (earliest hour wins)
+		for hour := 0; hour < 24; hour++ {
+			if count, ok := hourCounts[hour]; ok && count > maxCount {
+				maxCount = count
+				peakHour = hour
+			}
+		}
+		h.PeakHour = peakHour
+	}
+
+	// Longest streak from completion dates
+	h.LongestStreak = longestConsecutiveDays(completionDates)
+
+	return h
+}
+
+// longestConsecutiveDays finds the longest run of consecutive days in a set of date strings.
+func longestConsecutiveDays(dates map[string]bool) int {
+	if len(dates) == 0 {
+		return 0
+	}
+
+	// Parse all dates and sort
+	var parsed []time.Time
+	for d := range dates {
+		t, err := time.Parse("2006-01-02", d)
+		if err != nil {
+			continue
+		}
+		parsed = append(parsed, t)
+	}
+	if len(parsed) == 0 {
+		return 0
+	}
+
+	sort.Slice(parsed, func(i, j int) bool {
+		return parsed[i].Before(parsed[j])
+	})
+
+	longest := 1
+	current := 1
+	for i := 1; i < len(parsed); i++ {
+		diff := parsed[i].Sub(parsed[i-1]).Hours() / 24
+		if diff == 1 {
+			current++
+			if current > longest {
+				longest = current
+			}
+		} else if diff > 1 {
+			current = 1
+		}
+		// diff == 0: same day, skip
+	}
+	return longest
+}
+
 func avgCompleted(sessions []SessionMetrics) float64 {
 	if len(sessions) == 0 {
 		return 0
