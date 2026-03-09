@@ -409,6 +409,57 @@ func TestCorruptedLinesPreserveValidSessions(t *testing.T) {
 	}
 }
 
+func TestUndoCompleteEventsParsedCorrectly(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+
+	start := time.Date(2025, 3, 15, 14, 30, 0, 0, time.UTC)
+	completedAt := start.Add(-1 * time.Hour)
+	session := core.SessionMetrics{
+		SessionID:       "undo-session",
+		StartTime:       start,
+		EndTime:         start.Add(5 * time.Minute),
+		DurationSeconds: 300,
+		TasksCompleted:  1,
+		UndoCompletes: []core.UndoCompleteEntry{
+			{
+				Timestamp:           start.Add(2 * time.Minute),
+				TaskID:              "task-undo-1",
+				OriginalCompletedAt: completedAt,
+				ElapsedSeconds:      3720,
+			},
+		},
+		UndoCompleteCount: 1,
+	}
+	path := writeJSONL(t, dir, []core.SessionMetrics{session})
+
+	r := NewReader(path)
+	result, err := r.ReadAll()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("got %d sessions, want 1", len(result))
+	}
+
+	got := result[0]
+	if got.UndoCompleteCount != 1 {
+		t.Errorf("UndoCompleteCount = %d, want 1", got.UndoCompleteCount)
+	}
+	if len(got.UndoCompletes) != 1 {
+		t.Fatalf("UndoCompletes length = %d, want 1", len(got.UndoCompletes))
+	}
+	if got.UndoCompletes[0].TaskID != "task-undo-1" {
+		t.Errorf("UndoCompletes[0].TaskID = %q, want %q", got.UndoCompletes[0].TaskID, "task-undo-1")
+	}
+	if got.UndoCompletes[0].ElapsedSeconds != 3720 {
+		t.Errorf("UndoCompletes[0].ElapsedSeconds = %f, want 3720", got.UndoCompletes[0].ElapsedSeconds)
+	}
+	if !got.UndoCompletes[0].OriginalCompletedAt.Equal(completedAt) {
+		t.Errorf("UndoCompletes[0].OriginalCompletedAt = %v, want %v", got.UndoCompletes[0].OriginalCompletedAt, completedAt)
+	}
+}
+
 func TestSessionFieldsParsedCorrectly(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()

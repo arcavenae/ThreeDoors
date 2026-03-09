@@ -444,6 +444,105 @@ func TestDetailView_CKey_RecordsStatusChange(t *testing.T) {
 	}
 }
 
+// --- Undo Complete ('U' key) ---
+
+func TestDetailView_UKey_UndoComplete_SendsTaskUpdatedMsg(t *testing.T) {
+	task := core.NewTask("test task")
+	_ = task.UpdateStatus(core.StatusComplete)
+	tracker := core.NewSessionTracker()
+	dv := NewDetailView(task, tracker, nil, nil)
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("u")})
+	if cmd == nil {
+		t.Fatal("'u' on completed task should return a command")
+	}
+	msg := cmd()
+	tum, ok := msg.(TaskUpdatedMsg)
+	if !ok {
+		t.Fatalf("expected TaskUpdatedMsg, got %T", msg)
+	}
+	if tum.Task.Status != core.StatusTodo {
+		t.Errorf("expected status %q, got %q", core.StatusTodo, tum.Task.Status)
+	}
+}
+
+func TestDetailView_UKey_UndoComplete_RecordsUndoEvent(t *testing.T) {
+	task := core.NewTask("test task")
+	_ = task.UpdateStatus(core.StatusComplete)
+	tracker := core.NewSessionTracker()
+	dv := NewDetailView(task, tracker, nil, nil)
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("u")})
+	if cmd != nil {
+		cmd()
+	}
+
+	metrics := tracker.Finalize()
+	if metrics.StatusChanges != 1 {
+		t.Errorf("expected 1 status change, got %d", metrics.StatusChanges)
+	}
+	if metrics.UndoCompleteCount != 1 {
+		t.Errorf("expected 1 undo complete, got %d", metrics.UndoCompleteCount)
+	}
+	if len(metrics.UndoCompletes) != 1 {
+		t.Fatalf("expected 1 undo entry, got %d", len(metrics.UndoCompletes))
+	}
+	if metrics.UndoCompletes[0].TaskID != task.ID {
+		t.Errorf("expected task ID %q, got %q", task.ID, metrics.UndoCompletes[0].TaskID)
+	}
+}
+
+func TestDetailView_UKey_NonComplete_NoOp(t *testing.T) {
+	task := core.NewTask("test task") // status = todo
+	dv := NewDetailView(task, nil, nil, nil)
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("u")})
+	if cmd != nil {
+		t.Error("'u' on non-completed task should be no-op")
+	}
+	if task.Status != core.StatusTodo {
+		t.Errorf("status should remain todo, got %q", task.Status)
+	}
+}
+
+func TestDetailView_UKey_DoesNotSendTaskCompletedMsg(t *testing.T) {
+	task := core.NewTask("test task")
+	_ = task.UpdateStatus(core.StatusComplete)
+	dv := NewDetailView(task, nil, nil, nil)
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("u")})
+	if cmd == nil {
+		t.Fatal("expected command from undo")
+	}
+	msg := cmd()
+	if _, ok := msg.(TaskCompletedMsg); ok {
+		t.Error("undo should NOT send TaskCompletedMsg (which would trigger MarkComplete)")
+	}
+}
+
+func TestDetailView_CompletedTask_ShowsUndoHint(t *testing.T) {
+	task := core.NewTask("test task")
+	_ = task.UpdateStatus(core.StatusComplete)
+	dv := NewDetailView(task, nil, nil, nil)
+	dv.SetWidth(80)
+
+	view := dv.View()
+	if !strings.Contains(view, "[U]ndo") {
+		t.Error("completed task should show [U]ndo hint")
+	}
+}
+
+func TestDetailView_TodoTask_NoUndoHint(t *testing.T) {
+	task := core.NewTask("test task")
+	dv := NewDetailView(task, nil, nil, nil)
+	dv.SetWidth(80)
+
+	view := dv.View()
+	if strings.Contains(view, "[U]ndo") {
+		t.Error("todo task should NOT show [U]ndo hint")
+	}
+}
+
 // --- Invalid Transition ---
 
 func TestDetailView_IKey_InvalidTransition_ShowsError(t *testing.T) {

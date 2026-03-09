@@ -191,6 +191,20 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		return func() tea.Msg {
 			return DecomposeStartMsg{TaskID: dv.task.ID, TaskDescription: desc}
 		}
+	case "u", "U":
+		if dv.task.Status == core.StatusComplete {
+			completedAt := dv.task.CompletedAt
+			if err := dv.task.UpdateStatus(core.StatusTodo); err != nil {
+				return func() tea.Msg { return FlashMsg{Text: "Cannot undo: " + err.Error()} }
+			}
+			if dv.tracker != nil {
+				dv.tracker.RecordStatusChange()
+				if completedAt != nil {
+					dv.tracker.RecordUndoComplete(dv.task.ID, *completedAt)
+				}
+			}
+			return func() tea.Msg { return TaskUpdatedMsg{Task: dv.task} }
+		}
 	case "d", "D":
 		if dv.isDuplicate && dv.dedupStore != nil && dv.duplicatePair != nil {
 			_ = dv.dedupStore.RecordDecision(dv.duplicatePair.TaskA.ID, dv.duplicatePair.TaskB.ID, core.DecisionDistinct)
@@ -508,7 +522,11 @@ func (dv *DetailView) View() string {
 		if dv.devDispatchEnabled && dv.dispatcherAvailable {
 			dispatchHint = " [X]dispatch"
 		}
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + " [Esc]Back"))
+		undoHint := ""
+		if dv.task.Status == core.StatusComplete {
+			undoHint = " [U]ndo"
+		}
+		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())
