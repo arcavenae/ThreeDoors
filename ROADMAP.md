@@ -81,7 +81,7 @@ Surfaces existing `StatusDeferred` as a first-class user action with date-based 
 | 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
 | 28.4 | Session Metrics Logging for Snooze Events | Not Started | P1 | 28.1 |
 
-### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 2/4 stories done
+### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 3/4 stories done
 
 Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
 
@@ -90,7 +90,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
-| 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
+| 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ### Epic 32: Undo Task Completion (P1) — COMPLETE
 

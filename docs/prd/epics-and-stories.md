@@ -4097,7 +4097,7 @@ Surface existing `StatusDeferred` as a first-class user action with date-based s
 ## Epic 29: Task Dependencies & Blocked-Task Filtering
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** In Progress (3/4 stories done; 29.3 remaining)
 **Dependencies:** None
 
 ### Epic Goal
@@ -4111,7 +4111,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Not Started | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Not Started | P1 | 29.1 |
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
-| 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
+| 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ---
 
