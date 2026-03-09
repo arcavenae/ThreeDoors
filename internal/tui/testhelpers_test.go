@@ -67,7 +67,7 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 
 	cfg := testAppConfig{
 		width:  80,
-		height: 24,
+		height: 30,
 		tasks:  []string{"Task A", "Task B", "Task C"},
 	}
 	for _, opt := range opts {

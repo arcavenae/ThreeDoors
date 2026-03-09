@@ -46,56 +46,59 @@ const (
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
 type MainModel struct {
-	viewMode            ViewMode
-	previousView        ViewMode
-	doorsView           *DoorsView
-	detailView          *DetailView
-	moodView            *MoodView
-	searchView          *SearchView
-	healthView          *HealthView
-	addTaskView         *AddTaskView
-	valuesView          *ValuesView
-	feedbackView        *FeedbackView
-	improvementView     *ImprovementView
-	nextStepsView       *NextStepsView
-	avoidancePromptView *AvoidancePromptView
-	insightsView        *InsightsView
-	onboardingView      *OnboardingView
-	conflictView        *ConflictView
-	syncLogView         *SyncLogView
-	themePickerView     *ThemePicker
-	devQueueView        *DevQueueView
-	proposalsView       *ProposalsView
-	helpView            *HelpView
-	snoozeView          *SnoozeView
-	configPath          string
-	pool                *core.TaskPool
-	tracker             *core.SessionTracker
-	provider            core.TaskProvider
-	healthChecker       *core.HealthChecker
-	completionCounter   *core.CompletionCounter
-	patternReport       *core.PatternReport
-	patternAnalyzer     *core.PatternAnalyzer
-	enrichDB            *enrichment.DB
-	valuesConfig        *core.ValuesConfig
-	syncTracker         *core.SyncStatusTracker
-	agentService        *intelligence.AgentService
-	decomposing         bool
-	syncLog             *core.SyncLog
-	dedupStore          *core.DedupStore
-	duplicateTaskIDs    map[string]bool
-	duplicatePairs      []core.DuplicatePair
-	devDispatchEnabled  bool
-	dispatcher          dispatch.Dispatcher
-	devQueue            *dispatch.DevQueue
-	proposalStore       *mcp.ProposalStore
-	pollingActive       bool
-	flash               string
-	width               int
-	height              int
-	searchQuery         string
-	searchSelectedIndex int
-	promptedTasks       map[string]bool
+	viewMode              ViewMode
+	previousView          ViewMode
+	doorsView             *DoorsView
+	detailView            *DetailView
+	moodView              *MoodView
+	searchView            *SearchView
+	healthView            *HealthView
+	addTaskView           *AddTaskView
+	valuesView            *ValuesView
+	feedbackView          *FeedbackView
+	improvementView       *ImprovementView
+	nextStepsView         *NextStepsView
+	avoidancePromptView   *AvoidancePromptView
+	insightsView          *InsightsView
+	onboardingView        *OnboardingView
+	conflictView          *ConflictView
+	syncLogView           *SyncLogView
+	themePickerView       *ThemePicker
+	devQueueView          *DevQueueView
+	proposalsView         *ProposalsView
+	helpView              *HelpView
+	snoozeView            *SnoozeView
+	configPath            string
+	pool                  *core.TaskPool
+	tracker               *core.SessionTracker
+	provider              core.TaskProvider
+	healthChecker         *core.HealthChecker
+	completionCounter     *core.CompletionCounter
+	patternReport         *core.PatternReport
+	patternAnalyzer       *core.PatternAnalyzer
+	enrichDB              *enrichment.DB
+	valuesConfig          *core.ValuesConfig
+	syncTracker           *core.SyncStatusTracker
+	agentService          *intelligence.AgentService
+	decomposing           bool
+	syncLog               *core.SyncLog
+	dedupStore            *core.DedupStore
+	duplicateTaskIDs      map[string]bool
+	duplicatePairs        []core.DuplicatePair
+	devDispatchEnabled    bool
+	dispatcher            dispatch.Dispatcher
+	devQueue              *dispatch.DevQueue
+	proposalStore         *mcp.ProposalStore
+	pollingActive         bool
+	flash                 string
+	width                 int
+	height                int
+	showKeybindingBar     bool
+	showKeybindingOverlay bool
+	overlayState          OverlayState
+	searchQuery           string
+	searchSelectedIndex   int
+	promptedTasks         map[string]bool
 }
 
 // NewMainModel creates the root application model.
@@ -190,6 +193,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		duplicateTaskIDs:  duplicateTaskIDs,
 		duplicatePairs:    duplicatePairs,
 		promptedTasks:     make(map[string]bool),
+		showKeybindingBar: true, // default: bar visible
 	}
 
 	if isFirstRun {
@@ -203,6 +207,11 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 // SetConfigPath sets the path to config.yaml for theme persistence.
 func (m *MainModel) SetConfigPath(path string) {
 	m.configPath = path
+}
+
+// SetShowKeybindingBar sets the initial keybinding bar visibility from config.
+func (m *MainModel) SetShowKeybindingBar(show bool) {
+	m.showKeybindingBar = show
 }
 
 // SetDevDispatch configures dev dispatch with the given dispatcher, queue, and enabled flag.
@@ -256,7 +265,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.doorsView.SetWidth(msg.Width)
-		m.doorsView.SetHeight(msg.Height)
+		m.doorsView.SetHeight(m.contentHeight())
 		if m.detailView != nil {
 			m.detailView.SetWidth(msg.Width)
 		}
@@ -307,7 +316,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.proposalsView != nil {
 			m.proposalsView.SetWidth(msg.Width)
-			m.proposalsView.SetHeight(msg.Height)
+			m.proposalsView.SetHeight(m.contentHeight())
 		}
 		if m.helpView != nil {
 			m.helpView.SetWidth(msg.Width)
@@ -902,7 +911,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.proposalsView = NewProposalsView(m.proposalStore, m.pool, m.provider)
 		m.proposalsView.SetWidth(m.width)
-		m.proposalsView.SetHeight(m.height)
+		m.proposalsView.SetHeight(m.contentHeight())
 		m.previousView = m.viewMode
 		m.viewMode = ViewProposals
 		return m, nil
@@ -971,14 +980,37 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// When overlay is visible, intercept all keys.
+	if m.showKeybindingOverlay {
+		if keyMsg, ok := msg.(tea.KeyMsg); ok {
+			return m.updateOverlay(keyMsg)
+		}
+		return m, nil
+	}
+
 	// Universal quit: 'q' quits from any view unless text input is active
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "q" && !m.isTextInputActive() {
 		return m, func() tea.Msg { return RequestQuitMsg{} }
 	}
 
-	// Global '?' opens help from any non-text-input view
+	// Global '?' toggles keybinding overlay from any non-text-input view
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "?" && !m.isTextInputActive() {
-		return m, func() tea.Msg { return ShowHelpMsg{} }
+		m.showKeybindingOverlay = true
+		m.overlayState = OverlayState{
+			ScrollOffset: 0,
+			ViewMode:     m.viewMode,
+		}
+		return m, nil
+	}
+
+	// Global 'h' toggles keybinding bar from any non-text-input view
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "h" && !m.isTextInputActive() {
+		m.showKeybindingBar = !m.showKeybindingBar
+		m.doorsView.SetHeight(m.contentHeight())
+		if m.proposalsView != nil {
+			m.proposalsView.SetHeight(m.contentHeight())
+		}
+		return m, m.saveKeybindingBarCmd(m.showKeybindingBar)
 	}
 
 	// Delegate to current view
@@ -1026,6 +1058,47 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+// updateOverlay handles key events when the keybinding overlay is visible.
+// It intercepts all keys — only ?, esc, and scroll keys have behavior; the rest are consumed.
+func (m *MainModel) updateOverlay(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "?", "esc":
+		m.showKeybindingOverlay = false
+		m.overlayState.ScrollOffset = 0
+		return m, nil
+	case "up", "k":
+		if m.overlayState.ScrollOffset > 0 {
+			m.overlayState.ScrollOffset--
+		}
+		return m, nil
+	case "down", "j":
+		m.overlayState.ScrollOffset = ClampScrollOffset(m.overlayState.ScrollOffset+1, m.height)
+		return m, nil
+	}
+	// All other keys consumed — no pass-through.
+	return m, nil
+}
+
+// saveKeybindingBarCmd returns a tea.Cmd that persists the bar toggle to config.yaml.
+func (m *MainModel) saveKeybindingBarCmd(show bool) tea.Cmd {
+	configPath := m.configPath
+	return func() tea.Msg {
+		if configPath == "" {
+			return nil
+		}
+		cfg, err := core.LoadProviderConfig(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to load config for bar toggle save: %v\n", err)
+			return nil
+		}
+		cfg.ShowKeybindingBar = &show
+		if err := core.SaveProviderConfig(configPath, cfg); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save bar toggle to config: %v\n", err)
+		}
+		return nil
+	}
 }
 
 func (m *MainModel) updateImprovement(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -1256,6 +1329,15 @@ func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	cmd := m.valuesView.Update(msg)
 	return m, cmd
+}
+
+// contentHeight returns the available height for view content, accounting for
+// the keybinding bar when it is visible and the terminal is tall enough to show it.
+func (m *MainModel) contentHeight() int {
+	if m.showKeybindingBar && m.height >= barHeightHidden {
+		return m.height - 2 // separator + bar
+	}
+	return m.height
 }
 
 // isTextInputActive returns true when the current view has an active text input
@@ -1623,6 +1705,11 @@ func (m *MainModel) runDecompose(taskID, taskDescription string) tea.Cmd {
 
 // View implements tea.Model.
 func (m *MainModel) View() string {
+	// Overlay takes over the entire screen when visible.
+	if m.showKeybindingOverlay {
+		return RenderKeybindingOverlay(m.overlayState, m.width, m.height)
+	}
+
 	var view string
 	showValuesFooter := false
 
@@ -1717,6 +1804,13 @@ func (m *MainModel) View() string {
 
 	if showValuesFooter {
 		view += RenderValuesFooter(m.valuesConfig)
+	}
+
+	// Append keybinding bar when enabled.
+	doorSelected := m.viewMode == ViewDoors && m.doorsView != nil && m.doorsView.selectedDoorIndex >= 0
+	barOutput := RenderKeybindingBar(m.viewMode, m.width, m.height, m.showKeybindingBar, doorSelected)
+	if barOutput != "" {
+		view += "\n" + barOutput
 	}
 
 	return view

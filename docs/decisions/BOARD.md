@@ -229,6 +229,7 @@
 | D-132 | Reject bubbles/list for ThreeDoors selection UIs | 2026-03-09 | 3-door constraint is intentional; generic list fights core design philosophy | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
 | D-133 | Reject bubbles/textarea, table, filepicker, timer, help, huh, wish | 2026-03-09 | Each solves problems ThreeDoors doesn't have or contradicts SOUL.md values | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
 | D-134 | New Epic 41: Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | 5-7 cohesive stories; too many for infra backlog, too few for multiple epics; P2 priority | [Audit](../../_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md) |
+| D-135 | Proactive persistent agent restart policy | 2026-03-09 | Context exhaustion caused 30-min merge outage; restart every 4-6 hours or ~15-20 merges | [Ops Guide](../operations/persistent-agent-ops.md) |
 
 ## Rejected
 
