@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34, 35 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epics 25, 27-33, 36, 37 are NOT STARTED. 267+ merged PRs total. Last audit: 2026-03-08.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34-37 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epic 38 is IN PROGRESS (1/5). Epics 25, 27-33, 39 are NOT STARTED. 275+ merged PRs total. Last audit: 2026-03-08.
 
 ## Requirements Inventory
 
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 10 of 12 stories complete. Stories 0.24 (Renovate + Dependabot) not started; 0.31 (draft).
+**Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 10 of 12 stories complete. Stories 0.24 (Renovate + Dependabot) not started; 0.31 (draft).
+**Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
 
@@ -763,6 +763,23 @@ So that the envoy agent can operate consistently per team consensus.
 - **AC5:** Staleness thresholds documented (14d/30d/21d) with escalation templates
 - **AC6:** Reporter communication milestone templates for all 5 stages
 - **AC7:** Duplicate detection and direction alignment handling documented
+
+### Story 0.32: Help Display UX — Dedicated Help View
+
+As a ThreeDoors user,
+I want `:help` to show a persistent, readable, categorized help screen,
+So that I can learn keybindings and commands without content disappearing or running off-screen.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** New `ViewHelp` view mode with `HelpView` struct (Update/View/SetWidth)
+- **AC2:** `:help` transitions to persistent ViewHelp (not FlashMsg)
+- **AC3:** Two-column width-aware layout, works in 80-column terminals
+- **AC4:** Categorized sections: Navigation, Task Actions, Commands, Search
+- **AC5:** Scrollable via j/k, PgUp/PgDn; dismissed via Esc/q
+- **AC6:** `?` global keybinding opens help from any non-text-input view
+- **AC7:** Unit tests, golden file test, race detector passes
 
 ---
 
@@ -2834,6 +2851,75 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 38.3 Stable Release Signing (independent)
 38.4 Alpha Release Verification (depends on 38.1, 38.2)
 38.5 Alpha Release Retention (independent)
+```
+
+---
+
+## Epic 39: Keybinding Display System
+
+**Epic Goal:** Add toggleable keybinding discoverability to the ThreeDoors TUI — a concise context-sensitive bar at the bottom of every view showing available keys, and a full keybinding overlay (`?` key) as a comprehensive reference. Improves discoverability without adding decision complexity, aligning with SOUL.md's friction-reduction philosophy.
+
+**Prerequisites:** None (all required infrastructure exists — Lipgloss, config.yaml persistence, MainModel composition, isTextInputActive() guard)
+**Status:** Not Started (0/5)
+
+**Deliverables:**
+- Compile-time keybinding registry mapping each ViewMode to available key bindings with priority levels
+- Concise bottom bar showing 5-6 priority keys per view with dim Lipgloss styling
+- Full-screen keybinding overlay organized by category with scroll support
+- `h` key toggles bar visibility (persisted to config.yaml), `?` key opens/closes overlay
+- Terminal size adaptation: auto-hide bar < 10 lines, compact mode 10-15 lines, width truncation
+- Context-sensitive bar content (changes per view mode, sub-mode aware)
+
+**Design References:**
+- Party mode: `_bmad-output/planning-artifacts/keybinding-display-party-mode.md`
+- UX review: `_bmad-output/planning-artifacts/keybinding-display-ux-review.md`
+- Architecture: `_bmad-output/planning-artifacts/keybinding-display-architecture.md`
+
+### Story 39.1: Keybinding Registry Model
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** S (1-2 hours)
+- **Depends on:** None
+- **ACs:** KeyBinding/KeyBindingGroup types, per-view registry functions (all 18 ViewModes), barBindings() convenience function (priority-1 only, max 8 per view), allKeyBindingGroups() for overlay, comprehensive table-driven tests
+
+### Story 39.2: Concise Keybinding Bar Component
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.1
+- **ACs:** RenderKeybindingBar() function, context-sensitive content from registry, terminal width adaptation (4 breakpoints), terminal height adaptation (3 breakpoints), dim Lipgloss styling with separator line, golden file tests, unit tests
+
+### Story 39.3: Full Keybinding Overlay
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.1
+- **ACs:** RenderKeybindingOverlay() function, bordered box with categorized bindings, context highlighting (current view first), scroll support with j/k/arrows, fixed footer, golden file tests, unit tests
+
+### Story 39.4: Toggle Behavior, Config Persistence, and MainModel Integration
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.2, 39.3
+- **ACs:** MainModel fields and config initialization, `h` toggle with async config write, `?` overlay toggle, overlay key interception, View() composition with height adjustment, config.yaml persistence, integration tests, race detector pass
+
+### Story 39.5: View-Specific Keybinding Completeness and Polish
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.4
+- **ACs:** Full keybinding audit (every case handler registered), sub-mode awareness (confirm-delete, expand input, command mode), overlay includes `:` commands section, visual polish, comprehensive golden files for all major views, edge case tests
+
+---
+
+### Epic 39 Story Dependencies
+
+```
+39.1 Keybinding Registry Model (independent)
+39.2 Concise Bar Component (depends on 39.1)
+39.3 Full Keybinding Overlay (depends on 39.1)
+39.4 Toggle + Integration (depends on 39.2, 39.3)
+39.5 Completeness + Polish (depends on 39.4)
 ```
 
 ---
