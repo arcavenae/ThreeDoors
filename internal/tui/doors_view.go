@@ -61,6 +61,7 @@ type DoorsView struct {
 	patternAnalyzer   *core.PatternAnalyzer
 	completionCounter *core.CompletionCounter
 	syncTracker       *core.SyncStatusTracker
+	syncSpinner       *SyncSpinner
 	timeContext       *core.TimeContext
 	pendingConflicts  int
 	pendingProposals  int
@@ -107,6 +108,11 @@ func (dv *DoorsView) SetInsightsData(pa *core.PatternAnalyzer, cc *core.Completi
 // SetSyncTracker sets the sync status tracker for displaying provider sync state.
 func (dv *DoorsView) SetSyncTracker(tracker *core.SyncStatusTracker) {
 	dv.syncTracker = tracker
+}
+
+// SetSyncSpinner sets the spinner used during provider sync operations.
+func (dv *DoorsView) SetSyncSpinner(sp *SyncSpinner) {
+	dv.syncSpinner = sp
 }
 
 // SetTimeContext sets the calendar time context for time-aware door selection and display.
@@ -384,8 +390,8 @@ func (dv *DoorsView) View() string {
 		s.WriteString(proposalBadgeStyle.Render(fmt.Sprintf("[%d suggestions] — press S to review", dv.pendingProposals)))
 	}
 
-	// Sync status bar
-	if syncBar := RenderSyncStatusBar(dv.syncTracker); syncBar != "" {
+	// Sync status bar (with spinner animation when syncing)
+	if syncBar := RenderSyncStatusBarWithSpinner(dv.syncTracker, dv.syncSpinner); syncBar != "" {
 		s.WriteString("\n\n")
 		s.WriteString(syncBar)
 	}
