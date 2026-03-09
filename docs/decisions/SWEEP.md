@@ -26,7 +26,7 @@ The Knowledge Decisions Board (`BOARD.md`) drifts as new artifacts, research, an
 
 **Why:** Completed research often contains recommendations that need a decision. Without a board entry, research sits orphaned with no follow-up mechanism.
 
-> **Note:** Research was consolidated from `docs/research/` into `_bmad-output/planning-artifacts/` (PR #TBD). All research, analysis, spike reports, and party mode outputs now live in a single flat directory with type suffixes for filtering.
+> **Note:** Research was consolidated from `docs/research/` into `_bmad-output/planning-artifacts/` (PR #324). All research, analysis, spike reports, and party mode outputs now live in a single flat directory with type suffixes for filtering.
 
 ### 3. Stale Entries
 
