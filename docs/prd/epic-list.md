@@ -368,7 +368,7 @@
 **Epic 29: Task Dependencies & Blocked-Task Filtering** (P1)
 - **Goal:** Native dependency graph support. Blocks tasks with unmet dependencies from door selection
 - **Prerequisites:** None
-- **Status:** Not Started
+- **Status:** In Progress (3/4 stories done; 29.3 remaining)
 - **Stories:** 29.1-29.4 (4 stories)
 
 **Epic 30: Linear Integration** (P2)
@@ -553,7 +553,7 @@
 | Epic 26: GitHub Issues Integration | 4 | Complete |
 | Epic 27: Daily Planning Mode | 5 | Not Started |
 | Epic 28: Snooze/Defer | 4 | Not Started |
-| Epic 29: Task Dependencies | 4 | Not Started |
+| Epic 29: Task Dependencies | 4 | In Progress (3/4) |
 | Epic 30: Linear Integration | 4 | Not Started |
 | Epic 31: Expand/Fork Key | 5 | Not Started |
 | Epic 32: Undo Task Completion | 3 | Complete |
