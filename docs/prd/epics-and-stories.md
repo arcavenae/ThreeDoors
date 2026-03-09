@@ -229,7 +229,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR120-FR126 | Epic 31 | Expand/Fork Key Implementations (NOT STARTED) |
 | FR127-FR131 | Epic 32 | Undo Task Completion (NOT STARTED) |
 | FR132-FR137 | Epic 33 | Seasonal Door Theme Variants (NOT STARTED) |
-| FR148-FR151 | Epic 36 | Door Selection Feedback (NOT STARTED) |
+| FR148-FR151 | Epic 36 | Door Selection Feedback (COMPLETE) |
 
 ## Epic List
 
