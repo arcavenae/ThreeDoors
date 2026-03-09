@@ -74,7 +74,7 @@ type DoorsView struct {
 	themeRegistry     *themes.Registry
 	duplicateTaskIDs  map[string]bool
 	doorAnimation     *DoorAnimation
-	planningTimestamp  *time.Time
+	planningTimestamp *time.Time
 	inlineHintsConfig *core.InlineHintsConfig
 }
 
