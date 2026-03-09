@@ -468,6 +468,16 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tea.Batch(cmds...)
 
+	case TaskUndoneMsg:
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.viewMode = ViewDoors
+		m.detailView = nil
+		m.doorsView.RefreshDoors()
+		m.flash = "Task uncompleted — returned to todo"
+		return m, ClearFlashCmd()
+
 	case TaskUpdatedMsg:
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)

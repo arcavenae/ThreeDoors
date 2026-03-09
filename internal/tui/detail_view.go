@@ -203,7 +203,7 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 					dv.tracker.RecordUndoComplete(dv.task.ID, *completedAt)
 				}
 			}
-			return func() tea.Msg { return TaskUpdatedMsg{Task: dv.task} }
+			return func() tea.Msg { return TaskUndoneMsg{Task: dv.task} }
 		}
 	case "d", "D":
 		if dv.isDuplicate && dv.dedupStore != nil && dv.duplicatePair != nil {
