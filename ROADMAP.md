@@ -44,6 +44,12 @@ Local issue tracker file (`docs/issue-tracker.md`) with authority tier configura
 
 Operations documentation for the envoy agent: patrol workflows, cross-agent protocols, staleness thresholds, SOUL.md alignment patterns.
 
+### Story 0.32: Help Display UX — Dedicated Help View (P1)
+
+**Status:** Not Started. Story created. Party mode artifact produced.
+
+Replace broken `:help` flash message with dedicated scrollable help view. Content runs off-screen and disappears after 3 seconds. Fix: new `ViewHelp` mode, categorized two-column layout, `?` global keybinding.
+
 ## Active Epics
 
 ### Epic 25: Todoist Integration (P1) — 0/4 stories done
@@ -151,7 +157,7 @@ Parallel Homebrew distribution channels (stable + alpha) with signing parity, pu
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 12/12 |
+| 0 | Infrastructure & Process (Backfill) | 10/13 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
