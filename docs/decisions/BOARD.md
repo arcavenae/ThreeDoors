@@ -8,20 +8,23 @@
 
 | ID | Question | Date | Owner | Context |
 |----|----------|------|-------|---------|
-| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) |
-| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) |
+| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
+| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
 
 ## Active Research
 
 | ID | Topic | Date | Owner | Link |
 |----|-------|------|-------|------|
-| | *No active research* | | | |
+| | *No active research — all prior research has produced decisions or been deferred* | | | |
 
 ## Pending Recommendations
 
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../research/makefile-vs-justfile-analysis.md) | Owner sign-off |
+| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Artifact](../../_bmad-output/planning-artifacts/envoy-scope-and-firewall-design.md) | Story creation |
+| P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | Story creation |
+| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../research/persistent-agent-communication-investigation.md) | Story creation |
 
 ## Decided
 
@@ -95,6 +98,23 @@
 | D-066 | Two separate formulas (no shared template) | 2026-03-09 | GoReleaser controls stable formula; different structures; copying > dependency | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
 | D-067 | Alpha release verification via tap CI monitoring | 2026-03-09 | Mirrors stable release-verify.yml pattern; lightweight; tap CI is primary gate | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
 | D-068 | Keep last 30 alpha releases, delete older | 2026-03-09 | Prevents release pollution; formula always points to latest before cleanup; 2-6 days of history | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
+| D-069 | Rename Phase 5+ to Phase 4.5 (Active Governance) | 2026-03-08 | Better reflects evolutionary nature; not a new phase but an extension of existing governance | [ADR-0029](../ADRs/ADR-0029-governance-phase-renaming.md) |
+| D-070 | Three-tier decision system for party mode | 2026-03-08 | Micro (single agent), Standard (party mode), Strategic (owner); scales governance to decision weight | [ADR-0030](../ADRs/ADR-0030-decision-tiers-for-party-mode.md) |
+| D-071 | Biweekly sprint cadence for agent team | 2026-03-08 | Balances planning overhead with delivery velocity for AI agent workflow | [ADR-0031](../ADRs/ADR-0031-biweekly-sprint-cadence.md) |
+| D-072 | BMAD files as primary tracker with ROADMAP sync | 2026-03-08 | Story files are source of truth; ROADMAP.md synced periodically; no external tracker needed | [ADR-0032](../ADRs/ADR-0032-work-tracking-bmad-files-with-roadmap-sync.md) |
+| D-073 | CLI -> MCP -> iPhone implementation priority | 2026-03-07 | CLI most valuable for core persona; MCP enables AI workflows; iPhone has no validated demand | [Research](../research/next-phase-prioritization.md) |
+| D-074 | MIT license for ThreeDoors | 2026-03-08 | Charm ecosystem alignment; maximum adapter freedom; zero maintenance; Homebrew compatible | [Research](../research/license-selection-research.md) |
+| D-075 | Focus state via session-scoped +focus tags (Epic 27) | 2026-03-07 | Reuses existing tag infrastructure; no new Task model field needed | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
+| D-076 | Energy level inferred from time-of-day as default (Epic 27) | 2026-03-07 | Reduces friction; user can override; morning=high, afternoon=medium, evening=low | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
+| D-077 | Soft progress indicator for planning mode (Epic 27) | 2026-03-07 | Step counter + elapsed time; no hard timer pressure; aligns with anti-anxiety philosophy | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
+| D-078 | Seasonal themes as standalone DoorTheme instances (Epic 33) | 2026-03-08 | Replacement model, not overlay; each season is self-contained with own render function | [Architecture](../../_bmad-output/planning-artifacts/architecture-seasonal-themes.md) |
+| D-079 | SeasonalResolver as pure function (Epic 33) | 2026-03-08 | No interface or struct needed; date-in theme-name-out; trivially testable | [Architecture](../../_bmad-output/planning-artifacts/architecture-seasonal-themes.md) |
+| D-080 | Single story (0.31) for combined CI/security hardening | 2026-03-08 | All four issues target same CI workflow; combined diff is small; four stories would be ceremony overhead | [Artifact](../../_bmad-output/planning-artifacts/ci-security-hardening-triage-party-mode.md) |
+| D-081 | SOUL.md + CLAUDE.md restructuring for AI agent alignment | 2026-03-02 | Codifies project philosophy; enables consistent agent decisions; DRY story specs | [Research](../research/ai-tooling-findings.md) |
+| D-082 | Fork as variant creation with ForkTask factory (Epic 31) | 2026-03-08 | Preserves text/context/effort/tags; resets status/timestamps; adds cross-reference via enrichment DB | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
+| D-083 | No property inheritance for subtasks (Epic 31) | 2026-03-08 | Each subtask is own unit of work; inheriting effort would quintuple estimates; misleading | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
+| D-084 | No auto-completion of parent on subtask completion (Epic 31) | 2026-03-08 | Show completion ratio instead; parent excluded from door rotation when it has children | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
+| D-085 | Sequential expand mode for subtask creation (Epic 31) | 2026-03-08 | Stay in expand input after Enter; show running count; only Esc exits; reduces friction | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
 
 ## Rejected
 
@@ -130,6 +150,7 @@
 | X-028 | Shared formula template for stable and alpha | 2026-03-09 | GoReleaser controls stable formula; different structures make sharing impractical | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
 | X-029 | Per-push `brew install` verification for alpha | 2026-03-09 | Expensive (macOS runner + Homebrew install time); tap CI provides equivalent coverage | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
 | X-030 | Default `ALPHA_TAP_ENABLED` to ON | 2026-03-09 | First push would attempt formula push before infrastructure is validated | [Artifact](../../_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md) |
+| X-031 | Project-level work tracking across repos | 2026-03-08 | Deferred — single-repo tracking sufficient for now; complexity not justified | [ADR-0033](../ADRs/ADR-0033-project-level-tracking-deferred.md) |
 
 ## Superseded
 
