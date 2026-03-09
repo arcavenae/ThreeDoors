@@ -179,7 +179,7 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.11 | Non-Door View Inline Hints | Done (PR #388) | P1 | 39.9 |
 | 39.12 | Auto-Fade After N Sessions | Not Started | P2 | 39.9, 39.10 |
 
-### Epic 40: Beautiful Stats Display (P1) — 5/10 stories done
+### Epic 40: Beautiful Stats Display (P1) — 6/10 stories done
 
 Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, and fun facts.
 
@@ -190,7 +190,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 40.3 | Fun Facts Engine | Done (PR #371) | P1 | 40.1 |
 | 40.4 | Horizontal Bar Charts for Mood Correlation | Done (PR #362) | P1 | 40.1 |
 | 40.5 | GitHub-Style Activity Heatmap | Not Started | P2 | 40.1, 40.8 |
-| 40.6 | Surface Hidden Session Metrics | Not Started | P1 | 40.1 |
+| 40.6 | Surface Hidden Session Metrics | Done (PR #368) | P1 | 40.1 |
 | 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
 | 40.8 | Tab Navigation for Detail View | Done (PR #367) | P1 | 40.1 |
 | 40.9 | Theme-Matched Stats Color Palettes | Not Started | P2 | 40.1, 40.2, Epic 17 |
