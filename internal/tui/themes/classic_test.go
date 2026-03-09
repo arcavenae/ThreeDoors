@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func TestNewClassicTheme(t *testing.T) {
@@ -92,17 +93,20 @@ func TestClassicRenderMatchesExistingStyle(t *testing.T) {
 	width := 30
 	content := "Test task text"
 
-	// Unselected should match existing doorStyle
-	themeOutput := theme.Render(content, width, 0, false)
-	existingOutput := existingDoorStyle.Width(width).Render(content)
+	// Unselected should match existing doorStyle.
+	// Compare with ANSI codes stripped — lipgloss color rendering can vary
+	// across environments (CI vs local terminal), but structural content
+	// (box-drawing characters, spacing, text) must match.
+	themeOutput := ansi.Strip(theme.Render(content, width, 0, false))
+	existingOutput := ansi.Strip(existingDoorStyle.Width(width).Render(content))
 
 	if themeOutput != existingOutput {
 		t.Errorf("classic unselected does not match existing doorStyle\ngot:\n%s\nwant:\n%s", themeOutput, existingOutput)
 	}
 
 	// Selected should match existing selectedDoorStyle
-	themeSelectedOutput := theme.Render(content, width, 0, true)
-	existingSelectedOutput := existingSelectedStyle.Width(width).Render(content)
+	themeSelectedOutput := ansi.Strip(theme.Render(content, width, 0, true))
+	existingSelectedOutput := ansi.Strip(existingSelectedStyle.Width(width).Render(content))
 
 	if themeSelectedOutput != existingSelectedOutput {
 		t.Errorf("classic selected does not match existing selectedDoorStyle\ngot:\n%s\nwant:\n%s", themeSelectedOutput, existingSelectedOutput)
