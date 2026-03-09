@@ -36,6 +36,20 @@ func NewDefaultRegistry() *Registry {
 	return r
 }
 
+// GetBySeason returns the first theme matching the given season, or false
+// if no seasonal theme is registered for that season.
+func (r *Registry) GetBySeason(season string) (*DoorTheme, bool) {
+	if season == "" {
+		return nil, false
+	}
+	for _, t := range r.themes {
+		if t.Season == season {
+			return t, true
+		}
+	}
+	return nil, false
+}
+
 // Names returns sorted names of all registered themes.
 func (r *Registry) Names() []string {
 	names := make([]string, 0, len(r.themes))
