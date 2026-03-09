@@ -546,6 +546,115 @@ func TestDetailView_TodoTask_NoUndoHint(t *testing.T) {
 	}
 }
 
+// --- Space/Enter Toggle (Story 36.4) ---
+
+func TestDetailView_SpaceEnterToggle(t *testing.T) {
+	tests := []struct {
+		name string
+		key  tea.KeyMsg
+	}{
+		{"space closes door", tea.KeyMsg{Type: tea.KeySpace}},
+		{"enter closes door", tea.KeyMsg{Type: tea.KeyEnter}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dv := newTestDetailView("test task")
+			cmd := dv.Update(tt.key)
+			if cmd == nil {
+				t.Fatal("expected a command to return to doors")
+			}
+			msg := cmd()
+			if _, ok := msg.(ReturnToDoorsMsg); !ok {
+				t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
+			}
+		})
+	}
+}
+
+func TestDetailView_SpaceEnterToggle_TextInputGuard(t *testing.T) {
+	tests := []struct {
+		name    string
+		mode    DetailViewMode
+		setupFn func(dv *DetailView)
+		key     tea.KeyMsg
+	}{
+		{
+			"space in blocker input not intercepted",
+			DetailModeBlockerInput,
+			func(dv *DetailView) {
+				dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("b")})
+			},
+			tea.KeyMsg{Type: tea.KeySpace},
+		},
+		{
+			"enter in expand input not intercepted as toggle",
+			DetailModeExpandInput,
+			func(dv *DetailView) {
+				dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+			},
+			tea.KeyMsg{Type: tea.KeyEnter},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dv := newTestDetailView("test task")
+			tt.setupFn(dv)
+			if dv.mode != tt.mode {
+				t.Fatalf("expected mode %d, got %d", tt.mode, dv.mode)
+			}
+			cmd := dv.Update(tt.key)
+			// In text input modes, space/enter should NOT return ReturnToDoorsMsg
+			if cmd != nil {
+				msg := cmd()
+				if _, ok := msg.(ReturnToDoorsMsg); ok {
+					t.Error("space/enter in text input mode should NOT return to doors")
+				}
+			}
+		})
+	}
+}
+
+func TestDetailView_RapidToggle(t *testing.T) {
+	// Simulate opening a door, then immediately pressing space to close
+	dv := newTestDetailView("test task")
+
+	// First space should close (return to doors)
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeySpace})
+	if cmd == nil {
+		t.Fatal("first space should return a command")
+	}
+	msg := cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+
+	// Create a fresh detail view (simulating re-opening)
+	dv2 := newTestDetailView("test task")
+	cmd = dv2.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("enter should return a command")
+	}
+	msg = cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+}
+
+func TestDetailView_EscapeStillWorks(t *testing.T) {
+	// AC-3: Escape still works after adding space/enter toggle
+	dv := newTestDetailView("test task")
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	if cmd == nil {
+		t.Fatal("Esc should return a command")
+	}
+	msg := cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+}
+
 // --- Invalid Transition ---
 
 func TestDetailView_IKey_InvalidTransition_ShowsError(t *testing.T) {

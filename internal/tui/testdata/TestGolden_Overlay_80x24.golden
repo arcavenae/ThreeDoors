@@ -10,6 +10,7 @@
 ║  space       confirm                                                       ║
 ║  a/w/d       change door                                                   ║
 ║  esc         deselect                                                      ║
+║  q/esc/space/enter close door                                              ║
 ║  q/esc       back                                                          ║
 ║  esc         close                                                         ║
 ║  ↑/↓         navigate                                                      ║
@@ -19,6 +20,5 @@
 ║  enter       continue                                                      ║
 ║  esc         back                                                          ║
 ║  j/k         scroll                                                        ║
-║  pgdn/pgup   page                                                          ║
 ║Press ? or esc to close   ↑/↓ to scroll  ▼ more                             ║
 ╚════════════════════════════════════════════════════════════════════════════╝

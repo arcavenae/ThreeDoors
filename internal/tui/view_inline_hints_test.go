@@ -288,11 +288,11 @@ func TestDetailViewHintsFromRegistry(t *testing.T) {
 	bindings := detailBindings()
 
 	expectedKeys := map[string]bool{
-		"q/esc": false,
-		"c":     false,
-		"b":     false,
-		"e":     false,
-		"f":     false,
+		"q/esc/space/enter": false,
+		"c":                 false,
+		"b":                 false,
+		"e":                 false,
+		"f":                 false,
 	}
 
 	for _, group := range bindings {

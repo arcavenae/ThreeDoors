@@ -241,7 +241,7 @@ func doorsSelectedBindings() []KeyBindingGroup {
 func detailBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc/space/enter", Description: "close door", Priority: PriorityAlways},
 		}},
 		{Name: "Actions", Bindings: []KeyBinding{
 			{Key: "c", Description: "complete", Priority: PriorityAlways},

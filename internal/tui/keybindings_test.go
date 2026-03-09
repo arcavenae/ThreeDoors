@@ -270,7 +270,7 @@ func TestDetailView_HasRequiredBindings(t *testing.T) {
 	t.Parallel()
 	groups := viewKeyBindings(ViewDetail, false)
 	keys := collectKeys(groups)
-	for _, want := range []string{"q/esc", "c", "b", "e", "f", "?"} {
+	for _, want := range []string{"q/esc/space/enter", "c", "b", "e", "f", "?"} {
 		if !keys[want] {
 			t.Errorf("DetailView missing key %q", want)
 		}
@@ -334,7 +334,7 @@ func TestDetailView_HasAllKeyHandlerBindings(t *testing.T) {
 	keys := collectKeys(groups)
 	// All keys from handleDetailKeys must be registered.
 	for _, want := range []string{
-		"q/esc", "c", "b", "i", "e", "f", "p", "r",
+		"q/esc/space/enter", "c", "b", "i", "e", "f", "p", "r",
 		"m", "l", "x", "z", "g", "+", "-", "u", "d", "y", "?",
 	} {
 		if !keys[want] {
@@ -383,7 +383,7 @@ func TestContextBarBindings_DetailSubModes(t *testing.T) {
 		mode     DetailViewMode
 		wantKeys []string
 	}{
-		{"normal", DetailModeView, []string{"q/esc", "c", "e", "?"}},
+		{"normal", DetailModeView, []string{"q/esc/space/enter", "c", "e", "?"}},
 		{"blocker input", DetailModeBlockerInput, []string{"enter", "esc"}},
 		{"expand input", DetailModeExpandInput, []string{"enter", "esc"}},
 		{"dispatch confirm", DetailModeDispatchConfirm, []string{"y", "n"}},
