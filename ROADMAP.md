@@ -63,13 +63,13 @@ Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirec
 | 25.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 25.2 |
 | 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
 
-### Epic 27: Daily Planning Mode (P1) — 0/5 stories done
+### Epic 27: Daily Planning Mode (P1) — 1/5 stories done
 
 Guided daily planning ritual for task review and focus selection. Transforms ThreeDoors from reactive task picker into proactive morning engagement tool.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 27.1 | Planning Data Model & Focus Tag | Not Started | P1 | Epic 1 (done) |
+| 27.1 | Planning Data Model & Focus Tag | In Review | P1 | Epic 1 (done) |
 | 27.2 | Review Incomplete Tasks Flow | Not Started | P1 | 27.1 |
 | 27.3 | Focus Selection Flow | Not Started | P1 | 27.1 |
 | 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |

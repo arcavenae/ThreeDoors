@@ -28,9 +28,11 @@ var locationTokens = map[string]TaskLocation{
 }
 
 // ParseInlineTags extracts categorization tags from task text.
-// Tags: #type, @effort, +location (case-insensitive).
+// Tags: #type, @effort, +location, +focus (case-insensitive).
 // Matched tokens are stripped from text. Unrecognized tokens are left in text.
 // Duplicate tags of the same category: last one wins.
+// The +focus tag is preserved in the clean text (not stripped) since it is
+// session-scoped state, not a categorization field.
 func ParseInlineTags(text string) (cleanText string, taskType TaskType, effort TaskEffort, loc TaskLocation) {
 	words := strings.Fields(text)
 	var remaining []string
@@ -54,5 +56,14 @@ func ParseInlineTags(text string) (cleanText string, taskType TaskType, effort T
 	}
 
 	cleanText = strings.Join(remaining, " ")
+	return
+}
+
+// ParseInlineTagsWithFocus extracts categorization tags and focus state from task text.
+// Like ParseInlineTags but also reports whether the +focus tag was present.
+// The +focus tag is preserved in the clean text for runtime detection.
+func ParseInlineTagsWithFocus(text string) (cleanText string, taskType TaskType, effort TaskEffort, loc TaskLocation, focus bool) {
+	cleanText, taskType, effort, loc = ParseInlineTags(text)
+	focus = strings.Contains(strings.ToLower(text), "+focus")
 	return
 }

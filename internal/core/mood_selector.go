@@ -34,7 +34,7 @@ func SelectDoorsWithMood(pool *TaskPool, count int, currentMood string, patterns
 func selectDoorsWithMoodAndRand(pool *TaskPool, count int, currentMood string, patterns *PatternReport, rng *rand.Rand) []*Task {
 	// Fallback check: no mood, no patterns, or no matching correlation
 	if currentMood == "" || patterns == nil {
-		return selectDoorsWithRand(pool, count, rng)
+		return selectDoorsWithRand(pool, count, rng, nil)
 	}
 
 	// Find matching mood correlation (case-insensitive — moods are lowercased in analysis)
@@ -47,7 +47,7 @@ func selectDoorsWithMoodAndRand(pool *TaskPool, count int, currentMood string, p
 		}
 	}
 	if correlation == nil || correlation.PreferredType == "" {
-		return selectDoorsWithRand(pool, count, rng)
+		return selectDoorsWithRand(pool, count, rng, nil)
 	}
 
 	preferredType := TaskType(correlation.PreferredType)

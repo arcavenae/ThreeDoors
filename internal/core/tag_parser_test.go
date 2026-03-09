@@ -21,6 +21,8 @@ func TestParseInlineTags(t *testing.T) {
 		{"duplicate type last wins", "#technical #creative", "", TypeCreative, "", ""},
 		{"case insensitive", "#TECHNICAL", "", TypeTechnical, "", ""},
 		{"unrecognized token left in text", "#invalid task text", "#invalid task text", "", "", ""},
+		{"focus tag preserved in text", "buy milk +focus", "buy milk +focus", "", "", ""},
+		{"focus with location", "buy milk +focus +work", "buy milk +focus", "", "", LocationWork},
 		{"all three tags", "buy milk #technical @quick-win +work", "buy milk", TypeTechnical, EffortQuickWin, LocationWork},
 		{"all tag types", "#creative @deep-work +home", "", TypeCreative, EffortDeepWork, LocationHome},
 		{"mixed case tags", "#Technical @Quick-Win +Work", "", TypeTechnical, EffortQuickWin, LocationWork},
@@ -45,6 +47,29 @@ func TestParseInlineTags(t *testing.T) {
 			}
 			if gotLoc != tt.wantLoc {
 				t.Errorf("location = %q, want %q", gotLoc, tt.wantLoc)
+			}
+		})
+	}
+}
+
+func TestParseInlineTagsWithFocus(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		wantFocus bool
+	}{
+		{"no focus", "buy milk #technical", false},
+		{"has focus", "buy milk +focus", true},
+		{"focus case insensitive", "buy milk +FOCUS", true},
+		{"focus with other tags", "+focus @deep-work #creative", true},
+		{"empty", "", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, _, _, gotFocus := ParseInlineTagsWithFocus(tt.input)
+			if gotFocus != tt.wantFocus {
+				t.Errorf("focus = %v, want %v", gotFocus, tt.wantFocus)
 			}
 		})
 	}

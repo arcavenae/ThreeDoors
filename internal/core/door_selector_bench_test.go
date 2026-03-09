@@ -90,7 +90,7 @@ func BenchmarkSelectDoorsWithRand(b *testing.B) {
 			for range b.N {
 				pool.recentlyShown = make([]string, 10)
 				pool.recentlyShownIdx = 0
-				selectDoorsWithRand(pool, 3, rng)
+				selectDoorsWithRand(pool, 3, rng, nil)
 			}
 		})
 	}
