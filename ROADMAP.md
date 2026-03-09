@@ -34,7 +34,7 @@ Pin golangci-lint version, replace third-party release action with gh CLI, add p
 
 ### Story 0.28: Issue Tracker & Authority Configuration (P1)
 
-**Status:** Story created. Implementation not started.
+**Status:** Done (PR #255).
 
 Local issue tracker file (`docs/issue-tracker.md`) with authority tier configuration for the envoy agent. Operationalizes party mode research from PRs #227, #232.
 
