@@ -81,7 +81,7 @@ All commands support `--json` for structured output with schema versioning.
 
 #### Research Reference
 
-- Full design: `docs/research/cli-interface-design.md`
+- Full design: `cli-interface-design-research.md`
 
 ---
 
@@ -134,7 +134,7 @@ MCP Server (internal/mcp/)
 
 #### Research Reference
 
-- Full design: `docs/research/llm-integration-mcp.md`
+- Full design: `llm-integration-mcp-research.md`
 
 ---
 
@@ -193,7 +193,7 @@ This eliminates cold-start delay when Phase 3 begins.
 
 #### Research Reference
 
-- Full design: `docs/research/mobile-app-research.md`
+- Full design: `mobile-app-research.md`
 
 ---
 
@@ -253,7 +253,7 @@ The prioritization is driven by three factors:
 
 ## Sources
 
-- `docs/research/cli-interface-design.md` — CLI architecture and command taxonomy
-- `docs/research/llm-integration-mcp.md` — MCP server design and LLM integration patterns
-- `docs/research/mobile-app-research.md` — iPhone app technology and UX decisions
+- `cli-interface-design-research.md` — CLI architecture and command taxonomy
+- `llm-integration-mcp-research.md` — MCP server design and LLM integration patterns
+- `mobile-app-research.md` — iPhone app technology and UX decisions
 - `docs/prd/epics-and-stories.md` — Current epic status and requirements inventory

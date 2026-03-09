@@ -369,19 +369,19 @@ Complete non-TUI CLI interface for ThreeDoors serving both human power users and
 Expose ThreeDoors task management to LLMs via Model Context Protocol. Read-only queries, controlled enrichment proposals, analytics mining, and relationship graphs.
 **FRs covered:** FR81-FR88
 **Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
-**Status:** All 8 stories complete (PRs #164-#196). Research at `docs/research/llm-integration-mcp.md`.
+**Status:** All 8 stories complete (PRs #164-#196). Research at `../../_bmad-output/planning-artifacts/llm-integration-mcp.md`.
 
 ### Epic 25: Todoist Integration — NOT STARTED
 Todoist as a task source with thin HTTP client against REST API v1, read-only adapter, bidirectional sync.
 **FRs covered:** FR89-FR92
 **Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
-**Status:** Not Started. 4 stories planned (25.1-25.4). Research at `docs/research/task-source-expansion-research.md`.
+**Status:** Not Started. 4 stories planned (25.1-25.4). Research at `../../_bmad-output/planning-artifacts/task-source-expansion-research.md`.
 
 ### Epic 26: GitHub Issues Integration ✅ COMPLETE
 GitHub Issues as a task source for developer workflows using the official go-github SDK. Label-based priority/status conventions.
 **FRs covered:** FR93-FR96
 **Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
-**Status:** All 4 stories complete (PRs #201-#205). Research at `docs/research/task-source-expansion-research.md`.
+**Status:** All 4 stories complete (PRs #201-#205). Research at `../../_bmad-output/planning-artifacts/task-source-expansion-research.md`.
 
 ### Epic 34: SOUL.md + Custom Development Skills ✅ COMPLETE
 Project philosophy document, custom Claude Code slash commands, story template updates, and retroactive spec alignment.
@@ -399,7 +399,7 @@ Redesign all door themes to visually read as actual doors with portrait orientat
 Time-based seasonal theme variants that auto-switch based on the current date, extending the Door Theme System with visual variety.
 **FRs covered:** FR132-FR137
 **Prerequisites:** Epic 17 ✅ (Door Theme System)
-**Status:** Not Started. 4 stories planned (33.1-33.4). Research at `docs/research/door-themes-analyst-review.md`.
+**Status:** Not Started. 4 stories planned (33.1-33.4). Research at `../../_bmad-output/planning-artifacts/door-themes-analyst-review.md`.
 
 ---
 
@@ -409,7 +409,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
 
-**Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
+**Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
 ### Story 0.1: BMAD Framework Setup ✅
 
@@ -1029,7 +1029,7 @@ So that Epic 7's config-driven provider selection has a validated foundation.
 
 **Given** the current scattered configuration (hardcoded paths, text files)
 **When** the spike is complete
-**Then** `docs/spikes/config-schema.md` documents: proposed config.yaml schema, provider section design, migration path from current config
+**Then** `../../_bmad-output/planning-artifacts/config-schema.md` documents: proposed config.yaml schema, provider section design, migration path from current config
 **And** spike verifies zero-friction upgrade: existing users without config.yaml default to current behavior (text file provider)
 **And** sample config.yaml drafted with commented provider examples
 **And** spike identifies any breaking changes and mitigation strategies
@@ -1836,7 +1836,7 @@ So that we understand the approach before full implementation.
 
 **Given** a spike investigation
 **When** completed
-**Then** `docs/spikes/llm-decomposition.md` covers prompt engineering, output schema, git automation
+**Then** `../../_bmad-output/planning-artifacts/llm-decomposition.md` covers prompt engineering, output schema, git automation
 **And** tests multiple providers (local: Ollama; cloud: Claude API)
 **And** agent handoff protocol drafted
 **And** recommendation: build vs wait, local vs cloud, effort estimate
@@ -1885,7 +1885,7 @@ So that design decisions are grounded in behavioral science.
 
 **Given** research task
 **When** review completed
-**Then** `docs/research/choice-architecture.md` covers choice overload, paradox of choice, decision fatigue
+**Then** `../../_bmad-output/planning-artifacts/choice-architecture.md` covers choice overload, paradox of choice, decision fatigue
 **And** specific evidence for why 3 options
 **And** comparable systems analysis
 **And** practical recommendations
@@ -1904,7 +1904,7 @@ So that Epic 4's learning algorithm is evidence-informed.
 
 **Given** research task
 **When** review completed
-**Then** `docs/research/mood-correlation.md` and `docs/research/procrastination.md` produced
+**Then** `../../_bmad-output/planning-artifacts/mood-correlation.md` and `../../_bmad-output/planning-artifacts/procrastination.md` produced
 **And** evidence assessment for "progress over perfection"
 **And** actionable recommendations for Epic 4
 **And** bibliography with accessible references
@@ -3075,7 +3075,7 @@ The following maps each affected story to the specific PR issues it produced:
 **Prerequisites:** Epic 14 ✅ (LLM Decomposition — provides AgentService for optional story generation), multiclaude installed and configured
 **FRs covered:** FR73, FR74, FR75, FR76, FR77, FR78, FR79, FR80
 **NFRs covered:** NFR24, NFR25, NFR26, NFR27
-**Origin:** Self-driving development pipeline research (2026-03-04). Research document at `docs/research/self-driving-development-pipeline.md`.
+**Origin:** Self-driving development pipeline research (2026-03-04). Research document at `../../_bmad-output/planning-artifacts/self-driving-development-pipeline.md`.
 **Architecture:** Option B (TUI-Native Dispatch) — single-process, unified UX, leverages existing multiclaude CLI and Bubbletea patterns.
 **Status:** COMPLETE — All 8 stories implemented and merged (PRs #149, #152, #163, #162, #161, #164, #159, #160).
 
@@ -3298,7 +3298,7 @@ So that I can use the self-driving pipeline without risk of excessive cost or un
 
 **Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
 **FRs covered:** FR81, FR82, FR83, FR84, FR85, FR86, FR87, FR88
-**Origin:** LLM Integration & MCP Server Research (2026-03-06). Research document at `docs/research/llm-integration-mcp.md`.
+**Origin:** LLM Integration & MCP Server Research (2026-03-06). Research document at `../../_bmad-output/planning-artifacts/llm-integration-mcp.md`.
 **Architecture:** Separate binary (`cmd/threedoors-mcp/`) sharing `internal/` packages. No new storage layer — reads same YAML, JSONL, and SQLite as TUI.
 **Status:** All 8 stories complete (PRs #164-#196)
 
@@ -3489,7 +3489,7 @@ So that I can provide high-quality coaching with consistent responses.
 
 **Prerequisites:** None (core domain layer is already CLI-ready with JSON struct tags)
 **Framework:** Cobra (`github.com/spf13/cobra`) for subcommand routing, shell completions, and help generation
-**Origin:** CLI interface design research (`docs/research/cli-interface-design.md`)
+**Origin:** CLI interface design research (`../../_bmad-output/planning-artifacts/cli-interface-design.md`)
 **Architecture:** Layered CLI/TUI coexistence — `internal/cli/` imports `internal/core/`, never `internal/tui/`
 **Status:** All 11 stories complete (PRs #161-#192, #225)
 
@@ -4002,7 +4002,7 @@ Add a guided daily planning ritual that transforms ThreeDoors from a reactive ta
 | 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
 
 **FRs covered:** FR97-FR103
-**Research:** See `docs/research/ux-workflow-improvements-research.md`
+**Research:** See `../../_bmad-output/planning-artifacts/ux-workflow-improvements-research.md`
 
 ---
 
@@ -4068,7 +4068,7 @@ Integrate Linear as a task source for engineering teams via the Linear GraphQL A
 | 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
 
 **FRs covered:** FR116-FR119
-**Research:** See `docs/research/task-source-expansion-research.md`
+**Research:** See `../../_bmad-output/planning-artifacts/task-source-expansion-research.md`
 
 ---
 

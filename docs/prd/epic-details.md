@@ -373,7 +373,7 @@
 **So that** Epic 7's config-driven provider selection has a validated foundation.
 
 **Acceptance Criteria:**
-1. `docs/spikes/config-schema.md` documents proposed schema, migration path
+1. `../../_bmad-output/planning-artifacts/config-schema.md` documents proposed schema, migration path
 2. Zero-friction upgrade verified (no config.yaml defaults to current behavior)
 3. Sample config.yaml drafted with commented provider examples
 4. Breaking changes identified with mitigation strategies
@@ -971,7 +971,7 @@
 **so that** we understand feasibility before committing to full implementation.
 
 **Acceptance Criteria:**
-1. Spike document in `docs/spikes/llm-decomposition.md`
+1. Spike document in `../../_bmad-output/planning-artifacts/llm-decomposition.md`
 2. Covers: prompt engineering experiments, output schema definition, git automation PoC
 3. Tests multiple LLM providers (local: Ollama/llama.cpp; cloud: Claude API)
 4. Agent handoff protocol drafted (how Claude Code / multiclaude discovers work)
@@ -1013,7 +1013,7 @@
 **so that** design decisions are grounded in behavioral science.
 
 **Acceptance Criteria:**
-1. Document at `docs/research/choice-architecture.md`
+1. Document at `../../_bmad-output/planning-artifacts/choice-architecture.md`
 2. Covers: choice overload research (Iyengar & Lepper), paradox of choice, decision fatigue
 3. Specific evidence for why 3 options (not 2, 4, or 5)
 4. Comparable systems analysis (Tinder-like interfaces, binary choices, etc.)
@@ -1030,8 +1030,8 @@
 **so that** Epic 4's learning algorithm is evidence-informed.
 
 **Acceptance Criteria:**
-1. `docs/research/mood-correlation.md` covering mood-productivity models
-2. `docs/research/procrastination.md` covering intervention mechanisms
+1. `../../_bmad-output/planning-artifacts/mood-correlation.md` covering mood-productivity models
+2. `../../_bmad-output/planning-artifacts/procrastination.md` covering intervention mechanisms
 3. Evidence assessment for "progress over perfection" as motivational framework
 4. Actionable recommendations for Epic 4 adaptive algorithm design
 5. Bibliography with accessible references
@@ -1045,7 +1045,7 @@
 **Epic Goal:** Bring the Three Doors experience to iPhone with a native SwiftUI app that syncs tasks via the same Apple Notes document used by the desktop TUI. The mobile app provides the core Three Doors experience — see three doors, pick one, take action — optimized for touch interaction.
 
 **Origin:** Party mode mobile app discussion (2026-03-02)
-**Research:** See `docs/research/mobile-app-research.md` for full analysis of technology choices.
+**Research:** See `../../_bmad-output/planning-artifacts/mobile-app-research.md` for full analysis of technology choices.
 
 **Prerequisites:** Epic 2 ✅ (Apple Notes integration established)
 **Tech Stack:** Swift 5.9+, SwiftUI, iCloud Drive, Xcode 16+, iOS 17+ target
@@ -1208,7 +1208,7 @@
 
 **Scope:** Theme type definitions, registry, three new theme implementations (Modern, Sci-Fi, Shoji), Classic theme wrapper, DoorsView integration, onboarding theme picker, settings `:theme` command, config persistence, and golden file tests.
 
-**Research:** See `docs/research/door-themes-research.md` (8 ANSI mockups, feasibility matrix), `docs/research/door-themes-analyst-review.md` (analyst assessment), `docs/research/door-themes-party-mode.md` (architecture decisions).
+**Research:** See `../../_bmad-output/planning-artifacts/door-themes-research.md` (8 ANSI mockups, feasibility matrix), `../../_bmad-output/planning-artifacts/door-themes-analyst-review.md` (analyst assessment), `../../_bmad-output/planning-artifacts/door-themes-party-mode.md` (architecture decisions).
 
 ---
 

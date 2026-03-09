@@ -214,7 +214,7 @@
 - **Estimated Effort:** 6-8 weeks at 4-6 hrs/week
 - **Tech Stack:** Swift 5.9+, SwiftUI, CloudKit/iCloud Drive, Xcode 16+, iOS 17+ target
 - **FRs covered:** (mobile-specific, not yet in PRD FRs)
-- **Research:** See `docs/research/mobile-app-research.md` for full analysis
+- **Research:** See `../../_bmad-output/planning-artifacts/mobile-app-research.md` for full analysis
 
 **Epic 17: Door Theme System** COMPLETE
 - **Goal:** Replace the uniform rounded-border door appearance with visually distinct themed doors using ASCII/ANSI art frames, with user-selectable themes via onboarding, settings view, and config.yaml
@@ -234,7 +234,7 @@
 - **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
 - **FRs covered:** FR55, FR56, FR57, FR58, FR59, FR60, FR61, FR62
 - **NFRs covered:** NFR17, NFR18, NFR19
-- **Research:** See `docs/research/door-themes-research.md`, `docs/research/door-themes-analyst-review.md`, `docs/research/door-themes-party-mode.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/door-themes-research.md`, `../../_bmad-output/planning-artifacts/door-themes-analyst-review.md`, `../../_bmad-output/planning-artifacts/door-themes-party-mode.md`
 
 **Epic 18: Docker E2E & Headless TUI Testing Infrastructure** COMPLETE
 - **Goal:** Establish reproducible, automated E2E testing using Docker containers and Bubbletea's `teatest` package for headless TUI interaction testing
@@ -260,7 +260,7 @@
   - Configurable status/priority mapping and JQL in config.yaml
 - **Stories:** 19.1 (HTTP Client), 19.2 (Read-Only Provider), 19.3 (Bidirectional Sync), 19.4 (Config & Registration)
 - **FRs covered:** FR63, FR64, FR65, FR66
-- **Research:** See `docs/research/jira-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/jira-integration-research.md`, `../../_bmad-output/planning-artifacts/task-sync-analyst-brief.md`
 
 **Epic 20: Apple Reminders Integration** COMPLETE
 - **Goal:** Add Apple Reminders as a task source with full CRUD support, leveraging structured data model (persistent IDs, native priority/due dates) for a higher-quality integration than Apple Notes
@@ -273,7 +273,7 @@
   - Configurable list filtering in config.yaml
 - **Stories:** 20.1 (JXA Scripts & CommandExecutor), 20.2 (Read-Only Provider), 20.3 (Write Support), 20.4 (Config, Registration & Health Check)
 - **FRs covered:** FR67, FR68, FR69
-- **Research:** See `docs/research/apple-reminders-integration-research.md`, `docs/research/task-sync-analyst-brief.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/apple-reminders-integration-research.md`, `../../_bmad-output/planning-artifacts/task-sync-analyst-brief.md`
 
 **Epic 21: Sync Protocol Hardening** COMPLETE
 - **Goal:** Harden the sync architecture for reliable multi-provider operation with background scheduling, fault isolation, and cross-provider identity mapping
@@ -286,7 +286,7 @@
   - Enhanced sync status dashboard with staleness indicators
 - **Stories:** 21.1 (Sync Scheduler), 21.2 (Circuit Breaker), 21.3 (Canonical ID Mapping), 21.4 (Dashboard Enhancements)
 - **FRs covered:** FR70, FR71, FR72
-- **Research:** See `docs/research/sync-architecture-scaling-research.md`, `docs/research/task-sync-analyst-brief.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/sync-architecture-scaling-research.md`, `../../_bmad-output/planning-artifacts/task-sync-analyst-brief.md`
 
 **Epic 22: Self-Driving Development Pipeline** COMPLETE
 - **Goal:** Enable ThreeDoors tasks to directly trigger multiclaude worker agents, creating a closed loop where the app dispatches its own development work and tracks results (PRs, CI status) back in the TUI
@@ -304,7 +304,7 @@
 - **Stories:** 22.1-22.8 (8 stories)
 - **FRs covered:** FR73, FR74, FR75, FR76, FR77, FR78, FR79, FR80
 - **NFRs covered:** NFR24, NFR25, NFR26, NFR27
-- **Research:** See `docs/research/self-driving-development-pipeline.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/self-driving-development-pipeline.md`
 
 **Epic 23: CLI Interface** COMPLETE
 - **Goal:** Provide a complete non-TUI CLI interface for ThreeDoors that serves both human power users (scriptable task management) and LLM agents (structured JSON output)
@@ -357,7 +357,7 @@
 - **Stories:** 27.1-27.5 (5 stories)
 - **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
 - **FRs covered:** FR97, FR98, FR99, FR100, FR101, FR102, FR103
-- **Research:** See `docs/research/ux-workflow-improvements-research.md` (Improvement #2: Daily Planning Mode)
+- **Research:** See `../../_bmad-output/planning-artifacts/ux-workflow-improvements-research.md` (Improvement #2: Daily Planning Mode)
 
 **Epic 28: Snooze/Defer as First-Class Action** (P1)
 - **Goal:** Surface existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return
@@ -383,7 +383,7 @@
 - **Stories:** 30.1-30.4 (4 stories)
 - **Estimated Effort:** 4-5 days
 - **FRs covered:** FR116, FR117, FR118, FR119
-- **Research:** See `docs/research/task-source-expansion-research.md` (Linear section)
+- **Research:** See `../../_bmad-output/planning-artifacts/task-source-expansion-research.md` (Linear section)
 
 **Epic 31: Expand/Fork Key Implementations** (P2)
 - **Goal:** Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9
@@ -415,7 +415,7 @@
   - `/new-story` slash command — story template generator referencing CLAUDE.md
 - **Stories:** 34.1-34.4 (4 stories)
 - **NFRs covered:** NFR-DX1, NFR-DX2, NFR-DX3, NFR-DX4, NFR-DX5, NFR-DX6
-- **Research:** See `docs/research/ai-tooling-findings.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/ai-tooling-findings.md`
 
 **Epic 35: Door Visual Appearance — Door-Like Proportions** COMPLETE
 - **Goal:** Redesign all door themes to visually read as actual doors using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines
@@ -460,7 +460,7 @@
   - Alpha formula verification via tap CI monitoring
   - Alpha release retention cleanup (keep last 30)
 - **Stories:** 38.1-38.6 (6 stories)
-- **Research:** See `docs/research/dual-homebrew-distribution-research.md`, `_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md`
+- **Research:** See `../../_bmad-output/planning-artifacts/dual-homebrew-distribution-research.md`, `_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md`
 
 **Epic 39: Keybinding Display System** (P1)
 - **Goal:** Add toggleable keybinding discoverability to the TUI: a concise context-sensitive bar at the bottom of every view, and a full keybinding overlay accessible via `?` key

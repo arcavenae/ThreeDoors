@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-03
 **Reviewer:** Business Analyst (Mary)
-**Source:** `docs/research/door-themes-research.md` (PR #116)
+**Source:** `door-themes-research.md` (PR #116)
 **Status:** Reviewed — Recommended for Implementation
 
 ---

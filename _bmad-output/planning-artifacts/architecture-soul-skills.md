@@ -2,7 +2,7 @@
 stepsCompleted: ["step-01-init", "step-02-context", "step-03-decisions", "step-04-components", "step-05-review"]
 inputDocuments:
   - docs/prd/requirements.md (NFR-DX1 through NFR-DX5)
-  - docs/research/ai-tooling-findings.md (7 findings, research spike)
+  - ai-tooling-findings-research.md (7 findings, research spike)
   - docs/prd/epic-list.md (Epic 34 added)
   - CLAUDE.md (existing coding standards)
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-08-soul-skills.md
@@ -110,7 +110,7 @@ SOUL.md
 └── The Feeling We're Going For (emotional target)
 ```
 
-**Source:** Content derived from docs/research/ai-tooling-findings.md Finding 2 (proposed SOUL.md). Reviewed and approved in party mode.
+**Source:** Content derived from ai-tooling-findings-research.md Finding 2 (proposed SOUL.md). Reviewed and approved in party mode.
 
 ### 4.2: /pre-pr Command Design
 

@@ -8,7 +8,7 @@
 
 ## Section 1: Issue Summary
 
-**Problem Statement:** ThreeDoors currently lacks integration with GitHub Issues, the primary task tracker for its target audience (developers). The task source expansion research (docs/research/task-source-expansion-research.md) identifies GitHub Issues as Tier 1 priority due to maximum developer audience overlap (100M+ developers), an excellent official Go SDK (google/go-github), and 2-3 day estimated implementation effort.
+**Problem Statement:** ThreeDoors currently lacks integration with GitHub Issues, the primary task tracker for its target audience (developers). The task source expansion research (task-source-expansion-research.md) identifies GitHub Issues as Tier 1 priority due to maximum developer audience overlap (100M+ developers), an excellent official Go SDK (google/go-github), and 2-3 day estimated implementation effort.
 
 **Discovery Context:** Identified during systematic evaluation of task source expansion candidates. The Adapter SDK (Epic 7), Multi-Source Aggregation (Epic 13), and Sync Protocol Hardening (Epic 21) are all complete, meaning all infrastructure prerequisites are in place.
 

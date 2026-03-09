@@ -5,7 +5,7 @@ inputDocuments:
   - docs/prd/product-scope.md (Phase 5)
   - docs/architecture/components.md (LinearAdapter component)
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-07-linear-integration.md
-  - docs/research/task-source-expansion-research.md
+  - task-source-expansion-research.md
 ---
 
 # ThreeDoors - Epic 30: Linear Integration

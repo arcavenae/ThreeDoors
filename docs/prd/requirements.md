@@ -552,7 +552,7 @@ These non-functional requirements establish code quality gates that all contribu
 
 ## Developer Experience & AI Agent Tooling (Accepted)
 
-*The following requirements establish project-level AI agent alignment and developer workflow automation, based on findings from docs/research/ai-tooling-findings.md and party mode consensus (2026-03-08).*
+*The following requirements establish project-level AI agent alignment and developer workflow automation, based on findings from ../../_bmad-output/planning-artifacts/ai-tooling-findings.md and party mode consensus (2026-03-08).*
 
 **SOUL.md — Project Philosophy Document:**
 

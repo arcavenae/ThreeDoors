@@ -18,12 +18,12 @@
 
 - [Project Overview](./project-overview.md) — Project summary, status, roadmap
 - [Architecture Summary](./architecture.md) — Consolidated architecture overview
-- [Source Tree Analysis](./source-tree-analysis.md) — Directory structure and critical folders
+- [Source Tree Analysis](../_bmad-output/planning-artifacts/source-tree-analysis.md) — Directory structure and critical folders
 - [Technology Stack](./technology-stack.md) — Full technology table
 - [Development Guide](./development-guide.md) — Prerequisites, build, test, coding standards
 - [Project Structure](./project-structure.md) — Classification and legacy artifact inventory
-- [Comprehensive Analysis](./comprehensive-analysis.md) — Component and data model analysis
-- [Existing Documentation Inventory](./existing-documentation-inventory.md) — Catalog of all docs found
+- [Comprehensive Analysis](../_bmad-output/planning-artifacts/comprehensive-analysis.md) — Component and data model analysis
+- [Existing Documentation Inventory](../_bmad-output/planning-artifacts/existing-documentation-inventory-analysis.md) — Catalog of all docs found
 
 ## Existing Documentation (BMAD v4 Artifacts)
 
@@ -71,8 +71,8 @@
 ### Process & Tracking
 
 - [BMM Workflow Status](./bmm-workflow-status.yaml) — BMAD v4 workflow tracking
-- [Brainstorming Results](./brainstorming-session-results.md) — Initial brainstorming session
-- [Deliverables Summary](./DELIVERABLES-SUMMARY.md) — Summary of all deliverables
+- [Brainstorming Results](../_bmad-output/planning-artifacts/brainstorming-session-results-party-mode.md) — Initial brainstorming session
+- [Deliverables Summary](../_bmad-output/planning-artifacts/deliverables-summary-analysis.md) — Summary of all deliverables
 - [Changelog](./CHANGELOG-2025-11-07-to-11.md) — Nov 7-11 2025 changes
 - [Validation Decision Rubric](./validation-decision-rubric.md) — Decision rubric
 

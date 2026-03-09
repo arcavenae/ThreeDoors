@@ -20,11 +20,13 @@ The Knowledge Decisions Board (`BOARD.md`) drifts as new artifacts, research, an
 
 ### 2. Unindexed Research
 
-**Location:** `docs/research/`
+**Location:** `_bmad-output/planning-artifacts/` (research files use the `-research` naming suffix)
 
-**Check:** For each research document, verify that `BOARD.md` contains a reference to it. Research without a board entry is flagged.
+**Check:** For each `*-research.md` file in planning-artifacts, verify that `BOARD.md` contains a reference to it. Research without a board entry is flagged.
 
 **Why:** Completed research often contains recommendations that need a decision. Without a board entry, research sits orphaned with no follow-up mechanism.
+
+> **Note:** Research was consolidated from `docs/research/` into `_bmad-output/planning-artifacts/` (PR #TBD). All research, analysis, spike reports, and party mode outputs now live in a single flat directory with type suffixes for filtering.
 
 ### 3. Stale Entries
 
@@ -108,7 +110,7 @@ The report is addressed to the supervisor, who decides which findings to act on 
 Any agent or the supervisor can run the sweep by following these steps:
 
 1. Read `docs/decisions/BOARD.md`
-2. List files in `_bmad-output/planning-artifacts/` and `docs/research/`
+2. List files in `_bmad-output/planning-artifacts/`
 3. Cross-reference each file against BOARD.md content
 4. Check dates on Active Research, Pending Recommendations, and Open Questions entries
 5. Scan Decided entries for ADR candidates without ADR links

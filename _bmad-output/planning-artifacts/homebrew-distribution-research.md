@@ -382,11 +382,11 @@ Users run: brew update && brew upgrade threedoors
 
 ### Draft Formula
 
-See: `docs/research/homebrew-formula-draft.rb` — source-build formula suitable for homebrew-core, with GoReleaser-compatible variant for the custom tap.
+See: `homebrew-formula-draft.rb` — source-build formula suitable for homebrew-core, with GoReleaser-compatible variant for the custom tap.
 
 ### Draft GoReleaser Config
 
-See: `docs/research/goreleaser-draft.yml` — complete GoReleaser configuration with Homebrew integration, cosign signing, and multi-platform builds.
+See: `goreleaser-draft.yml` — complete GoReleaser configuration with Homebrew integration, cosign signing, and multi-platform builds.
 
 ### Required Changes to Build Process
 

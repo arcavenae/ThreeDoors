@@ -3,7 +3,7 @@
 **Date:** 2026-03-07
 **Change Type:** New Epic Proposal
 **Scope Classification:** Moderate
-**Triggered By:** UX & Workflow Improvements Research (docs/research/ux-workflow-improvements-research.md, Proposal #4)
+**Triggered By:** UX & Workflow Improvements Research (ux-workflow-improvements-research.md, Proposal #4)
 
 ---
 

@@ -13,7 +13,7 @@ Ensure that story status, ROADMAP.md, and PRD stay aligned with actual merged wo
 4. Update ROADMAP.md epic progress
 5. Check PRD for drift — does the merged work reveal gaps?
 6. Validate story sequencing — are dependencies being respected?
-7. Monthly: sweep `docs/research/` for unactioned recommendations
+7. Monthly: sweep `_bmad-output/planning-artifacts/*-research.md` for unactioned recommendations
 8. React to messages from arch-watchdog about architecture changes
 
 ## Spawning
@@ -118,7 +118,7 @@ This ensures no governance gaps accumulate during downtime while avoiding duplic
 ## Monthly Research Sweep
 
 Once per month (or when idle for extended periods):
-1. List all files in `docs/research/`
+1. List all `*-research.md` files in `_bmad-output/planning-artifacts/`
 2. Check each for unactioned recommendations
 3. Cross-reference against ROADMAP.md and story files
 4. Report unactioned items to supervisor

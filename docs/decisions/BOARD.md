@@ -8,8 +8,8 @@
 
 | ID | Question | Date | Owner | Context |
 |----|----------|------|-------|---------|
-| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
-| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../research/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
+| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
+| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
 
 ## Active Research
 
@@ -21,10 +21,10 @@
 
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
-| P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../research/makefile-vs-justfile-analysis.md) | Owner sign-off |
+| P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
 | P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
-| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../research/persistent-agent-communication-investigation.md) | Story creation |
+| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | Story creation |
 | P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode (3 rounds) + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md), [Research](../../_bmad-output/planning-artifacts/scoped-labels-research.md) | Story creation for migration |
 
 ## Decided
@@ -59,7 +59,7 @@
 | D-026 | Self-driving development pipeline | 2026-03-01 | Shell script MVP for story dispatch to multiclaude workers; safety guardrails | [ADR-0026](../ADRs/ADR-0026-self-driving-development-pipeline.md) |
 | D-027 | Multi-provider integration strategy | 2026-02-01 | Three-phase per provider: read-only → bidirectional → advanced; contract tests | [ADR-0027](../ADRs/ADR-0027-multi-provider-integration-strategy.md) |
 | D-028 | CI quality gates and testing strategy | 2025-11-09 | Multi-layer gates; 70% coverage minimum; no bypass allowed | [ADR-0028](../ADRs/ADR-0028-ci-quality-gates.md) |
-| D-029 | Knowledge Decisions Board | 2026-03-08 | Lifecycle-aware kanban; single file dashboard; zero infrastructure | [Research](../research/decision-management-research.md) |
+| D-029 | Knowledge Decisions Board | 2026-03-08 | Lifecycle-aware kanban; single file dashboard; zero infrastructure | [Research](../../_bmad-output/planning-artifacts/decision-management-research.md) |
 | D-030 | Nil check guard for nil provider (Issue #218) | 2026-03-08 | Minimal fix for P0 crash; matches existing bootstrap.go pattern | [Artifact](../../_bmad-output/planning-artifacts/issue-218-party-mode-consensus.md) |
 | D-031 | Portrait door proportions with door anatomy model | 2026-03-08 | Door metaphor fidelity; taller-than-wide is #1 "door" signifier | [Artifact](../../_bmad-output/planning-artifacts/door-appearance-party-mode.md) |
 | D-032 | DoorTheme.Render() extended with height parameter | 2026-03-08 | Enables proportional door rendering; DoorsView calculates available height | [Architecture](../../_bmad-output/planning-artifacts/door-appearance-architecture.md) |
@@ -78,16 +78,16 @@
 | D-045 | SM as 4-hour cron, QA as weekly cron | 2026-03-08 | Sprint health and quality checks don't need continuous monitoring | [Artifact](../../_bmad-output/planning-artifacts/persistent-agent-architecture-round3-mvp.md) |
 | D-046 | Self-directed poll-based envoy patrol rhythm | 2026-03-08 | Envoy monitors autonomously; no external trigger needed | [Artifact](../../_bmad-output/planning-artifacts/envoy-rules-of-behavior-party-mode.md) |
 | D-047 | Slash commands as project skills (Epic 34) | 2026-03-08 | Codifies tribal knowledge; DRY specs as living documentation | [Architecture](../../_bmad-output/planning-artifacts/architecture-soul-skills.md) |
-| D-048 | JXA via osascript for Apple Reminders adapter | 2026-03-03 | Mirrors Apple Notes adapter pattern; native JSON output avoids brittle parsing | [Research](../research/apple-reminders-integration-research.md) |
-| D-049 | JQL-based Jira integration via REST API v3 | 2026-03-03 | Standard API; go-jira library available; WALProvider for offline support | [Research](../research/jira-integration-research.md) |
+| D-048 | JXA via osascript for Apple Reminders adapter | 2026-03-03 | Mirrors Apple Notes adapter pattern; native JSON output avoids brittle parsing | [Research](../../_bmad-output/planning-artifacts/apple-reminders-integration-research.md) |
+| D-049 | JQL-based Jira integration via REST API v3 | 2026-03-03 | Standard API; go-jira library available; WALProvider for offline support | [Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) |
 | D-050 | Linear integration as read-only GraphQL adapter | 2026-03-08 | Read-only first per multi-provider strategy; GraphQL is Linear's primary API | [Artifact](../../_bmad-output/planning-artifacts/epic-30-linear-integration.md) |
 | D-051 | GitHub Issues as task source via gh CLI / PAT | 2026-03-07 | gh CLI already available; PAT via env var or config.yaml | [Artifact](../../_bmad-output/planning-artifacts/party-mode-github-issues-2026-03-07.md) |
-| D-052 | Three-door count validated by choice architecture research | 2026-03-02 | Hick's Law, jam study, working memory limits all support 3 as optimal | [Research](../research/choice-architecture.md) |
-| D-053 | Standardized Decisions Summary table in artifacts | 2026-03-08 | Makes decision extraction mechanical; consistent format across all artifacts | [Research](../research/decision-management-research.md) |
+| D-052 | Three-door count validated by choice architecture research | 2026-03-02 | Hick's Law, jam study, working memory limits all support 3 as optimal | [Research](../../_bmad-output/planning-artifacts/choice-architecture-research.md) |
+| D-053 | Standardized Decisions Summary table in artifacts | 2026-03-08 | Makes decision extraction mechanical; consistent format across all artifacts | [Research](../../_bmad-output/planning-artifacts/decision-management-research.md) |
 | D-054 | DRY spec cleanup for story files | 2026-03-08 | Remove duplicated content from story specs; specs reference architecture docs | [Artifact](../../_bmad-output/planning-artifacts/34.4-party-mode-dry-cleanup.md) |
 | D-055 | CI churn reduction | 2026-03-08 | Relax up-to-date rule + path filtering; defer merge queue; 70-80% CI reduction | [ADR-0030](../ADRs/ADR-0030-ci-churn-reduction.md) |
 | D-056 | Alpha binary named `threedoors-a` (not `threedoors`) | 2026-03-08 | Prevents Homebrew conflicts; allows simultaneous install; clear channel identity | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
-| D-057 | Alpha formula `threedoors-a.rb` in same tap | 2026-03-08 | Single tap; consistent UX; no `conflicts_with` needed | [Research](../research/dual-homebrew-distribution-research.md) |
+| D-057 | Alpha formula `threedoors-a.rb` in same tap | 2026-03-08 | Single tap; consistent UX; no `conflicts_with` needed | [Research](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-research.md) |
 | D-058 | Manual planning doc reconciliation over automation | 2026-03-08 | Automation rejected — drift is infrequent, docs are heterogeneous, CLAUDE.md reminder sufficient | [Artifact](../../_bmad-output/planning-artifacts/planning-docs-reconciliation-triage-party-mode.md) |
 | D-059 | Universal quit via MainModel-level 'q' interception | 2026-03-08 | Centralizes quit logic; views don't need individual 'q' handlers; `isTextInputActive()` guards text input views | [Story 36.3](../stories/36.3.story.md) |
 | D-060 | Content pre-styling for door selection contrast | 2026-03-08 | Style content before theme Render(); avoids modifying each theme; uses Bold/Faint + DoubleBorder for structural emphasis | [Story 36.1](../../docs/stories/36.1.story.md) |
@@ -103,15 +103,15 @@
 | D-070 | Three-tier decision system for party mode | 2026-03-08 | Micro (single agent), Standard (party mode), Strategic (owner); scales governance to decision weight | [ADR-0030](../ADRs/ADR-0030-decision-tiers-for-party-mode.md) |
 | D-071 | Biweekly sprint cadence for agent team | 2026-03-08 | Balances planning overhead with delivery velocity for AI agent workflow | [ADR-0031](../ADRs/ADR-0031-biweekly-sprint-cadence.md) |
 | D-072 | BMAD files as primary tracker with ROADMAP sync | 2026-03-08 | Story files are source of truth; ROADMAP.md synced periodically; no external tracker needed | [ADR-0032](../ADRs/ADR-0032-work-tracking-bmad-files-with-roadmap-sync.md) |
-| D-073 | CLI -> MCP -> iPhone implementation priority | 2026-03-07 | CLI most valuable for core persona; MCP enables AI workflows; iPhone has no validated demand | [Research](../research/next-phase-prioritization.md) |
-| D-074 | MIT license for ThreeDoors | 2026-03-08 | Charm ecosystem alignment; maximum adapter freedom; zero maintenance; Homebrew compatible | [Research](../research/license-selection-research.md) |
+| D-073 | CLI -> MCP -> iPhone implementation priority | 2026-03-07 | CLI most valuable for core persona; MCP enables AI workflows; iPhone has no validated demand | [Research](../../_bmad-output/planning-artifacts/next-phase-prioritization-research.md) |
+| D-074 | MIT license for ThreeDoors | 2026-03-08 | Charm ecosystem alignment; maximum adapter freedom; zero maintenance; Homebrew compatible | [Research](../../_bmad-output/planning-artifacts/license-selection-research.md) |
 | D-075 | Focus state via session-scoped +focus tags (Epic 27) | 2026-03-07 | Reuses existing tag infrastructure; no new Task model field needed | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
 | D-076 | Energy level inferred from time-of-day as default (Epic 27) | 2026-03-07 | Reduces friction; user can override; morning=high, afternoon=medium, evening=low | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
 | D-077 | Soft progress indicator for planning mode (Epic 27) | 2026-03-07 | Step counter + elapsed time; no hard timer pressure; aligns with anti-anxiety philosophy | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
 | D-078 | Seasonal themes as standalone DoorTheme instances (Epic 33) | 2026-03-08 | Replacement model, not overlay; each season is self-contained with own render function | [Architecture](../../_bmad-output/planning-artifacts/architecture-seasonal-themes.md) |
 | D-079 | SeasonalResolver as pure function (Epic 33) | 2026-03-08 | No interface or struct needed; date-in theme-name-out; trivially testable | [Architecture](../../_bmad-output/planning-artifacts/architecture-seasonal-themes.md) |
 | D-080 | Single story (0.31) for combined CI/security hardening | 2026-03-08 | All four issues target same CI workflow; combined diff is small; four stories would be ceremony overhead | [Artifact](../../_bmad-output/planning-artifacts/ci-security-hardening-triage-party-mode.md) |
-| D-081 | SOUL.md + CLAUDE.md restructuring for AI agent alignment | 2026-03-02 | Codifies project philosophy; enables consistent agent decisions; DRY story specs | [Research](../research/ai-tooling-findings.md) |
+| D-081 | SOUL.md + CLAUDE.md restructuring for AI agent alignment | 2026-03-02 | Codifies project philosophy; enables consistent agent decisions; DRY story specs | [Research](../../_bmad-output/planning-artifacts/ai-tooling-findings-research.md) |
 | D-082 | Fork as variant creation with ForkTask factory (Epic 31) | 2026-03-08 | Preserves text/context/effort/tags; resets status/timestamps; adds cross-reference via enrichment DB | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
 | D-083 | No property inheritance for subtasks (Epic 31) | 2026-03-08 | Each subtask is own unit of work; inheriting effort would quintuple estimates; misleading | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
 | D-084 | No auto-completion of parent on subtask completion (Epic 31) | 2026-03-08 | Show completion ratio instead; parent excluded from door rotation when it has children | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
@@ -148,10 +148,10 @@
 | ID | Option | Date | Why Rejected | Link |
 |----|--------|------|--------------|------|
 | X-001 | SQLite enrichment layer | 2026-01-20 | Overhead exceeded benefit; file-based storage sufficient | [ADR-0016](../ADRs/ADR-0016-cancel-sqlite-enrichment-layer.md) |
-| X-002 | ADRs as single canonical decision format | 2026-03-08 | Too heavyweight for micro-decisions; would create ADR sprawl | [Research](../research/decision-management-research.md) |
-| X-003 | RFC process for decisions | 2026-03-08 | Too heavyweight; party mode already handles deliberation | [Research](../research/decision-management-research.md) |
-| X-004 | Tag-based decision system | 2026-03-08 | High retrofit cost (135+ files); distributes source of truth | [Research](../research/decision-management-research.md) |
-| X-005 | Automated ADR generation | 2026-03-08 | ADR creation requires significance judgment; auto-generated would be noisy | [Research](../research/decision-management-research.md) |
+| X-002 | ADRs as single canonical decision format | 2026-03-08 | Too heavyweight for micro-decisions; would create ADR sprawl | [Research](../../_bmad-output/planning-artifacts/decision-management-research.md) |
+| X-003 | RFC process for decisions | 2026-03-08 | Too heavyweight; party mode already handles deliberation | [Research](../../_bmad-output/planning-artifacts/decision-management-research.md) |
+| X-004 | Tag-based decision system | 2026-03-08 | High retrofit cost (135+ files); distributes source of truth | [Research](../../_bmad-output/planning-artifacts/decision-management-research.md) |
+| X-005 | Automated ADR generation | 2026-03-08 | ADR creation requires significance judgment; auto-generated would be noisy | [Research](../../_bmad-output/planning-artifacts/decision-management-research.md) |
 | X-006 | iPhone native app (Epic 16) | 2026-03-07 | No validated demand; deferred indefinitely | [ADR-0023](../ADRs/ADR-0023-iphone-app-deferred.md) |
 | X-007 | NewProviderFromConfig() signature refactor | 2026-03-08 | Too large for bug fix scope; separate story needed | [Artifact](../../_bmad-output/planning-artifacts/issue-218-party-mode-consensus.md) |
 | X-008 | Door opening/closing animations | 2026-03-08 | P2 scope; portrait proportions are the prerequisite | [Artifact](../../_bmad-output/planning-artifacts/door-appearance-party-mode.md) |

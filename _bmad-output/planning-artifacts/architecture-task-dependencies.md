@@ -5,7 +5,7 @@ inputDocuments:
   - docs/prd/product-scope.md (Phase 3.5+)
   - docs/architecture/data-models.md
   - docs/architecture/components.md
-  - docs/research/ux-workflow-improvements-research.md
+  - ux-workflow-improvements-research.md
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-07-task-dependencies.md
   - internal/core/task.go (existing Task struct)
   - internal/core/task_pool.go (GetAvailableForDoors filter)

@@ -17,7 +17,7 @@ Research shows daily planning rituals are the primary driver behind Sunsama's 95
 
 ### Context
 
-- Identified during UX & Workflow Improvements Research (`docs/research/ux-workflow-improvements-research.md`)
+- Identified during UX & Workflow Improvements Research (`ux-workflow-improvements-research.md`)
 - Ranked **P0 priority** with **High impact** and **Medium effort**
 - Part of "Phase 1: Daily Engagement Loop" in the research recommendations
 - Research identifies this as addressing abandonment reason #3 (maintenance burden) by creating a daily rhythm

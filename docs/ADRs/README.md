@@ -100,7 +100,7 @@ ADRs were derived from:
 - 213+ merged PRs in the ThreeDoors repository
 - `docs/design-decisions-needed.md` — 42 design decisions with documented options and rationale
 - `docs/architecture/` — Architecture documentation including high-level architecture, tech stack, and coding standards
-- `docs/research/` — Research documents informing technology and design choices
+- `../../_bmad-output/planning-artifacts/` — Research documents informing technology and design choices
 - PR descriptions and commit history
 
 ## Decisions Board

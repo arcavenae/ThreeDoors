@@ -17,7 +17,7 @@ When a task appears in the doors but isn't actionable today, users can only give
 
 ### Discovery Context
 
-Identified through competitive UX research (`docs/research/ux-workflow-improvements-research.md`), ranked as **P0 (High Impact, Low Effort)**. Akiflow's "snooze to tomorrow" is one of its most-used features. The existing `StatusDeferred` infrastructure confirms this was architecturally anticipated but never surfaced.
+Identified through competitive UX research (`ux-workflow-improvements-research.md`), ranked as **P0 (High Impact, Low Effort)**. Akiflow's "snooze to tomorrow" is one of its most-used features. The existing `StatusDeferred` infrastructure confirms this was architecturally anticipated but never surfaced.
 
 ### Evidence
 

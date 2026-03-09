@@ -6,7 +6,7 @@ inputDocuments:
   - docs/architecture/data-models.md
   - docs/architecture/components.md
   - docs/architecture/core-workflows.md
-  - docs/research/ux-workflow-improvements-research.md
+  - ux-workflow-improvements-research.md
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-07-snooze-defer.md
   - internal/core/task_status.go (existing StatusDeferred + transitions)
   - internal/core/task_pool.go (GetAvailableForDoors filter)

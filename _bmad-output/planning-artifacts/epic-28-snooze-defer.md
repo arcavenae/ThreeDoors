@@ -5,7 +5,7 @@ inputDocuments:
   - docs/prd/product-scope.md (Phase 3.5)
   - _bmad-output/planning-artifacts/architecture-snooze-defer.md
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-07-snooze-defer.md
-  - docs/research/ux-workflow-improvements-research.md
+  - ux-workflow-improvements-research.md
 ---
 
 # ThreeDoors - Epic 28: Snooze/Defer as First-Class Action

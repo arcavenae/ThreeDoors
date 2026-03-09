@@ -9,7 +9,7 @@
 
 Decisions across ThreeDoors are scattered across 5+ locations (ADRs, research docs, party mode artifacts, story files, PR comments). Completed research has no decision artifact trail. Rejected options get re-proposed because no one recorded why they were rejected. Workers lack context on prior decisions.
 
-Research (PR #235, `docs/research/decision-management-research.md`) evaluated 6 approaches and party mode consensus (`_bmad-output/planning-artifacts/decision-management-party-mode.md`) adopted a three-component system:
+Research (PR #235, `decision-management-research.md`) evaluated 6 approaches and party mode consensus (`_bmad-output/planning-artifacts/decision-management-party-mode.md`) adopted a three-component system:
 
 1. **Knowledge Board** (`docs/decisions/BOARD.md`) — kanban-style columns tracking decision lifecycle
 2. **Standardized Artifact Endings** — all party mode artifacts get a Decisions Summary table

@@ -45,6 +45,6 @@ bash scripts/spike/tests/validate_report.sh
 
 ## Output
 
-- Spike report: `docs/spike-reports/2.2-apple-notes-integration.md`
+- Spike report: `../../_bmad-output/planning-artifacts/2.2-apple-notes-integration.md`
 - Benchmark data: `scripts/spike/benchmarks/*.json`
 - MCP evaluation: `scripts/spike/mcp_evaluation.md`

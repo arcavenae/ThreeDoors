@@ -9,7 +9,7 @@
 
 ## Section 1: Issue Summary
 
-**Problem Statement:** ThreeDoors needs to expand its task source integrations to serve engineering teams that use Linear for project management. Linear was identified as Tier 2 priority in the task source expansion research (`docs/research/task-source-expansion-research.md`), ranking 3rd after Todoist (Epic 25) and GitHub Issues (Epic 26).
+**Problem Statement:** ThreeDoors needs to expand its task source integrations to serve engineering teams that use Linear for project management. Linear was identified as Tier 2 priority in the task source expansion research (`task-source-expansion-research.md`), ranking 3rd after Todoist (Epic 25) and GitHub Issues (Epic 26).
 
 **Context:** Linear has the best task model alignment of all evaluated services — 6 workflow states map cleanly to ThreeDoors statuses, priority (0-4) and estimates map to Effort, and due dates, labels, and Markdown descriptions all have direct mappings. The target audience (engineering teams) overlaps strongly with ThreeDoors users.
 

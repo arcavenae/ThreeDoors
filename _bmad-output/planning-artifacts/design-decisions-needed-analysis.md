@@ -40,7 +40,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epics 12, 13, 19, 20, 21
 
-**Source:** `docs/research/sync-architecture-scaling-research.md`, `docs/research/task-source-expansion-research.md`, `docs/architecture/task-sync-architecture.md`
+**Source:** `sync-architecture-scaling-research.md`, `task-source-expansion-research.md`, `docs/architecture/task-sync-architecture.md`
 
 ---
 
@@ -88,7 +88,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 21 (Sync Protocol Hardening)
 
-**Source:** `docs/research/sync-architecture-scaling-research.md`, `docs/architecture/task-sync-architecture.md`
+**Source:** `sync-architecture-scaling-research.md`, `docs/architecture/task-sync-architecture.md`
 
 ---
 
@@ -112,7 +112,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 19 story breakdown and estimation
 
-**Source:** `docs/research/jira-integration-research.md`
+**Source:** `jira-integration-research.md`
 
 ---
 
@@ -136,7 +136,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 20 (Apple Reminders Integration)
 
-**Source:** `docs/research/apple-reminders-integration-research.md`
+**Source:** `apple-reminders-integration-research.md`
 
 ---
 
@@ -161,7 +161,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 13 (Multi-Source Aggregation)
 
-**Source:** `docs/research/task-source-expansion-research.md`, `docs/architecture/task-sync-architecture.md`
+**Source:** `task-source-expansion-research.md`, `docs/architecture/task-sync-architecture.md`
 
 ---
 
@@ -227,7 +227,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epics 8, 19, 20 (adapter implementation approach)
 
-**Source:** `docs/prd/epic-details.md`, `docs/research/task-source-expansion-research.md`
+**Source:** `docs/prd/epic-details.md`, `task-source-expansion-research.md`
 
 ---
 
@@ -291,7 +291,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 9 (Testing Strategy), Epics 19, 20
 
-**Source:** `docs/prd/epic-details.md`, `docs/research/jira-integration-research.md`
+**Source:** `docs/prd/epic-details.md`, `jira-integration-research.md`
 
 ---
 
@@ -332,7 +332,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Self-driving development pipeline
 
-**Source:** `docs/research/multiclaude-auto-execution-research.md`
+**Source:** `multiclaude-auto-execution-research.md`
 
 ---
 
@@ -356,7 +356,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Roadmap prioritization for post-Epic 17 work
 
-**Source:** `docs/research/task-source-expansion-research.md`, `docs/research/apple-reminders-integration-research.md`, `docs/research/jira-integration-research.md`
+**Source:** `task-source-expansion-research.md`, `apple-reminders-integration-research.md`, `jira-integration-research.md`
 
 ---
 
@@ -446,7 +446,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 19 implementation
 
-**Source:** `docs/research/jira-integration-research.md`
+**Source:** `jira-integration-research.md`
 
 ---
 
@@ -460,7 +460,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 19 implementation
 
-**Source:** `docs/research/jira-integration-research.md`
+**Source:** `jira-integration-research.md`
 
 ---
 
@@ -474,7 +474,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 20 implementation
 
-**Source:** `docs/research/apple-reminders-integration-research.md`
+**Source:** `apple-reminders-integration-research.md`
 
 ---
 
@@ -488,7 +488,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 20 implementation
 
-**Source:** `docs/research/apple-reminders-integration-research.md`
+**Source:** `apple-reminders-integration-research.md`
 
 ---
 
@@ -530,7 +530,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 7 (Plugin/Adapter SDK)
 
-**Source:** `docs/research/task-source-expansion-research.md`
+**Source:** `task-source-expansion-research.md`
 
 ---
 
@@ -556,7 +556,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Epic 19 implementation scope
 
-**Source:** `docs/research/jira-integration-research.md`
+**Source:** `jira-integration-research.md`
 
 ---
 
@@ -570,7 +570,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Blocked:** Self-driving pipeline implementation
 
-**Source:** `docs/research/multiclaude-auto-execution-research.md`
+**Source:** `multiclaude-auto-execution-research.md`
 
 ---
 
@@ -658,7 +658,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Decision:** As recommended (Jira probably)
 
-**Source:** `docs/research/task-source-expansion-research.md`
+**Source:** `task-source-expansion-research.md`
 
 ---
 
@@ -684,7 +684,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Decision:** As recommended
 
-**Source:** `docs/research/sync-architecture-scaling-research.md`
+**Source:** `sync-architecture-scaling-research.md`
 
 ---
 
@@ -720,7 +720,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Decision:** As recommended
 
-**Source:** `docs/research/task-source-expansion-research.md`, `docs/research/sync-architecture-scaling-research.md`
+**Source:** `task-source-expansion-research.md`, `sync-architecture-scaling-research.md`
 
 ---
 
@@ -732,7 +732,7 @@ Each decision is framed as a clear question with options, trade-offs, and a reco
 
 **Decision:** As recommended
 
-**Source:** `docs/research/multiclaude-auto-execution-research.md`
+**Source:** `multiclaude-auto-execution-research.md`
 
 ---
 

@@ -26,7 +26,7 @@ so that I can choose the best method for bidirectional sync and document the dec
 3. **Spike report exists with formal recommendation:**
    - Given the spike is complete
    - When results are documented
-   - Then a spike report exists at `docs/spike-reports/2.2-apple-notes-integration.md`
+   - Then a spike report exists at `../planning-artifacts/2.2-apple-notes-integration.md`
    - And it documents: chosen approach, pros/cons matrix, risks, estimated effort for Stories 2.3–2.6
    - And the chosen approach is validated for both read AND write operations
 
@@ -63,7 +63,7 @@ Before running any spike PoC scripts, the developer must:
 
 - All 3 approaches evaluated (or explicitly marked N/A with documented rationale if non-viable)
 - Each viable approach has a working PoC script in `scripts/spike/` with documented expected output
-- Spike report at `docs/spike-reports/2.2-apple-notes-integration.md` with completed comparison matrix
+- Spike report at `../planning-artifacts/2.2-apple-notes-integration.md` with completed comparison matrix
 - Error taxonomy documented per approach (timeout, permission denied, not found, etc.)
 - CI/CD compatibility documented (which tests run on Linux GitHub Actions vs macOS-only)
 - Performance benchmarks: 10 sequential operations, p50/p95/max latency reported
@@ -162,7 +162,7 @@ Before running any spike PoC scripts, the developer must:
   - [ ] 4.6: Document findings in `scripts/spike/mcp_evaluation.md`
 
 - [ ] Task 5: Create comparison matrix and spike report (AC: 3)
-  - [ ] 5.1: Create `docs/spike-reports/2.2-apple-notes-integration.md` with:
+  - [ ] 5.1: Create `../planning-artifacts/2.2-apple-notes-integration.md` with:
     - Executive summary
     - Comparison matrix:
       | Criterion | AppleScript | SQLite | MCP Server |
@@ -232,7 +232,7 @@ Create the following test fixtures in `scripts/spike/testdata/`:
 - All shell scripts: smoke test (executable, shebang, format validation)
 
 ### Spike Report Completeness Validation
-The report at `docs/spike-reports/2.2-apple-notes-integration.md` must contain these sections (validated by `scripts/spike/tests/validate_report.sh`):
+The report at `../planning-artifacts/2.2-apple-notes-integration.md` must contain these sections (validated by `scripts/spike/tests/validate_report.sh`):
 - [ ] Executive Summary
 - [ ] Comparison Matrix (all rows filled, no `?` remaining)
 - [ ] Recommendation with Rationale
@@ -313,7 +313,7 @@ spike-test:
 
 ### Project Structure Notes
 - Spike scripts go in `scripts/spike/` (new directory)
-- Spike report goes in `docs/spike-reports/` (new directory)
+- Spike report goes in `../planning-artifacts/` (new directory)
 - No changes to existing `internal/` code — this is evaluation only
 - Go PoCs are standalone `main` packages, not part of the application
 

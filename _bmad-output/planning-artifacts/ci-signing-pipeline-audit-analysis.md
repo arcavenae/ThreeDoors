@@ -226,7 +226,7 @@ Our architecture matches the GoReleaser pattern: build on Linux, sign on macOS. 
 3. **Add `--verbose` to notarytool** — Essential for debugging first-run issues
 4. **Add notarization log upload on failure** — Capture `notarytool log` output as artifact
 5. **Make `spctl --assess` non-fatal** — May fail in CI headless environment
-6. **Activate the pipeline** — Configure the 9 secrets + `SIGNING_ENABLED=true` variable in GitHub repo settings (see `docs/research/code-signing-findings.md` for the full list)
+6. **Activate the pipeline** — Configure the 9 secrets + `SIGNING_ENABLED=true` variable in GitHub repo settings (see `code-signing-findings-research.md` for the full list)
 
 ---
 

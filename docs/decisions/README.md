@@ -112,7 +112,7 @@ All party mode artifacts (`_bmad-output/planning-artifacts/`) **must** include a
 
 ### Research Docs
 
-Research documents (`docs/research/`) should include a **Recommendations** section at the end with clear, actionable conclusions. Use the same Decisions Summary table format when the research produces concrete decisions.
+Research documents (`_bmad-output/planning-artifacts/*-research.md`) should include a **Recommendations** section at the end with clear, actionable conclusions. Use the same Decisions Summary table format when the research produces concrete decisions.
 
 ## Board Hygiene Sweep
 
@@ -125,5 +125,5 @@ See [`SWEEP.md`](SWEEP.md) for the full process definition, report format, and r
 ## Founding Decision
 
 The board itself was created based on research into decision management approaches. See:
-- Research: [`docs/research/decision-management-research.md`](../research/decision-management-research.md)
+- Research: [`_bmad-output/planning-artifacts/decision-management-research.md`](../../_bmad-output/planning-artifacts/decision-management-research.md)
 - Board entry: D-029

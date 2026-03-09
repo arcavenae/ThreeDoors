@@ -8,7 +8,7 @@
 
 ## Section 1: Issue Summary
 
-**Problem Statement:** ThreeDoors currently supports five task sources (text files, Apple Notes, Obsidian, Jira, Apple Reminders) but lacks integration with Todoist, the most popular standalone personal task manager with 50M+ users. The task source expansion research (`docs/research/task-source-expansion-research.md`) identifies Todoist as the #1 recommended integration based on user base overlap, implementation effort, and field mapping quality.
+**Problem Statement:** ThreeDoors currently supports five task sources (text files, Apple Notes, Obsidian, Jira, Apple Reminders) but lacks integration with Todoist, the most popular standalone personal task manager with 50M+ users. The task source expansion research (`task-source-expansion-research.md`) identifies Todoist as the #1 recommended integration based on user base overlap, implementation effort, and field mapping quality.
 
 **Context:** The adapter infrastructure is mature — Epic 7 (Plugin/Adapter SDK & Registry) established the `TaskProvider` interface, `AdapterRegistry`, and contract test suite. Epics 19 (Jira) and 20 (Apple Reminders) demonstrated the pattern for API-based and IPC-based adapters respectively. Epic 21 (Sync Protocol Hardening) added per-provider sync scheduling, circuit breakers, and canonical ID mapping. All infrastructure needed for a Todoist adapter is in place.
 

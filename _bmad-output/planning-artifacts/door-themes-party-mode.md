@@ -3,7 +3,7 @@
 **Date:** 2026-03-03
 **Participants:** PM (Pat), Architect (Alex), UX Designer (Jordan), Dev (Sam), QA (Taylor)
 **Topic:** Door theme system implementation strategy
-**Source Research:** `docs/research/door-themes-research.md` (PR #116)
+**Source Research:** `door-themes-research.md` (PR #116)
 
 ---
 

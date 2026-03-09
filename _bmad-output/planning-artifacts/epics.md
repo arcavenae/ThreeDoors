@@ -1188,7 +1188,7 @@ So that design decisions are grounded in behavioral science.
 
 **Given** research task
 **When** review completed
-**Then** `docs/research/choice-architecture.md` covers choice overload, paradox of choice, decision fatigue
+**Then** `choice-architecture-research.md` covers choice overload, paradox of choice, decision fatigue
 **And** specific evidence for why 3 options
 **And** comparable systems analysis
 **And** practical recommendations
@@ -1203,7 +1203,7 @@ So that Epic 4's learning algorithm is evidence-informed.
 
 **Given** research task
 **When** review completed
-**Then** `docs/research/mood-correlation.md` and `docs/research/procrastination.md` produced
+**Then** `mood-correlation-research.md` and `procrastination-research.md` produced
 **And** evidence assessment for "progress over perfection"
 **And** actionable recommendations for Epic 4
 **And** bibliography with accessible references

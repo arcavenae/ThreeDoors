@@ -3,7 +3,7 @@ stepsCompleted: ["step-01-init", "step-02-context", "step-03-decisions", "step-0
 inputDocuments:
   - docs/prd/requirements.md (FR132-FR137, NFR28-NFR30)
   - docs/architecture/components.md (existing theme system architecture)
-  - docs/research/door-themes-analyst-review.md
+  - door-themes-analyst-review.md
   - internal/tui/themes/theme.go (DoorTheme struct)
   - internal/tui/themes/registry.go (Registry)
   - internal/tui/themes/modern.go (reference implementation)

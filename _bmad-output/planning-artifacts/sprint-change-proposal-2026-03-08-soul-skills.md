@@ -1,7 +1,7 @@
 # Sprint Change Proposal: SOUL.md + Custom Multiclaude Skills
 
 **Date:** 2026-03-08
-**Triggered by:** Research spike (docs/research/ai-tooling-findings.md)
+**Triggered by:** Research spike (ai-tooling-findings-research.md)
 **Scope Classification:** Moderate — New epic, PRD updates, no code changes
 **Proposed Epic:** Epic 34: SOUL.md + Custom Multiclaude Skills
 

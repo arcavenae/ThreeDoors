@@ -5,7 +5,7 @@ inputDocuments:
   - docs/prd/product-scope.md (Phase 3.5+)
   - _bmad-output/planning-artifacts/architecture-task-dependencies.md
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-07-task-dependencies.md
-  - docs/research/ux-workflow-improvements-research.md
+  - ux-workflow-improvements-research.md
 ---
 
 # ThreeDoors - Epic 29: Task Dependencies & Blocked-Task Filtering

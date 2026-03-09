@@ -5,7 +5,7 @@ inputDocuments:
   - docs/prd/epic-list.md (Epic 34 entry)
   - _bmad-output/planning-artifacts/architecture-soul-skills.md
   - _bmad-output/planning-artifacts/sprint-change-proposal-2026-03-08-soul-skills.md
-  - docs/research/ai-tooling-findings.md
+  - ai-tooling-findings-research.md
   - CLAUDE.md
 ---
 
@@ -13,7 +13,7 @@ inputDocuments:
 
 ## Overview
 
-This document provides the epic and story breakdown for Epic 34, which adds project philosophy documentation (SOUL.md) and four custom Claude Code slash commands to improve AI agent alignment and developer workflow. Based on research findings (docs/research/ai-tooling-findings.md) and party mode consensus (2026-03-08).
+This document provides the epic and story breakdown for Epic 34, which adds project philosophy documentation (SOUL.md) and four custom Claude Code slash commands to improve AI agent alignment and developer workflow. Based on research findings (ai-tooling-findings-research.md) and party mode consensus (2026-03-08).
 
 **Key constraint:** Documentation/configuration only. Zero Go code changes.
 
@@ -101,7 +101,7 @@ This document provides the epic and story breakdown for Epic 34, which adds proj
 
 **Tasks:**
 - [ ] Create SOUL.md at project root with all sections from architecture doc (AD-34.1)
-- [ ] Content sourced from docs/research/ai-tooling-findings.md Finding 2
+- [ ] Content sourced from ai-tooling-findings-research.md Finding 2
 - [ ] Add SOUL.md reference to CLAUDE.md
 - [ ] Verify consistency with PRD goals and product brief
 

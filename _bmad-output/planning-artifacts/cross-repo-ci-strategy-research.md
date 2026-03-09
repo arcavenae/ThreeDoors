@@ -164,7 +164,7 @@ jobs:
 
 ### 3. GoReleaser Config Update
 
-The existing draft at `docs/research/goreleaser-draft.yml` targets `arcaven/homebrew-threedoors`. Update for shared tap:
+The existing draft at `goreleaser-draft.yml` targets `arcaven/homebrew-threedoors`. Update for shared tap:
 
 ```yaml
 brews:

@@ -703,7 +703,7 @@ make lint   # Run linter (must pass with zero warnings)
 - **[Architecture](docs/architecture/index.md)** — Technical design and patterns
 - **[User Stories](docs/stories/)** — Story files with acceptance criteria
 - **[Coding Standards](docs/architecture/coding-standards.md)** — Go best practices
-- **[Research](docs/research/)** — Choice architecture, mood correlation, procrastination
+- **[Research](_bmad-output/planning-artifacts/)** — Choice architecture, mood correlation, procrastination
 
 ## License
 
