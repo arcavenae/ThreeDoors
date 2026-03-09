@@ -56,16 +56,23 @@ type InsightsView struct {
 	animating              bool
 	animationProgress      float64
 	hasAnimatedThisSession bool
+
+	// Milestone celebration banner
+	milestoneChecker *core.MilestoneChecker
+	activeMilestone  *core.Milestone
+	bannerActive     bool
 }
 
 // NewInsightsView creates a new InsightsView.
 // theme may be nil, in which case the independent fallback palette is used.
-func NewInsightsView(analyzer *core.PatternAnalyzer, counter *core.CompletionCounter, theme *themes.DoorTheme) *InsightsView {
+// milestoneChecker may be nil to disable milestone celebrations.
+func NewInsightsView(analyzer *core.PatternAnalyzer, counter *core.CompletionCounter, theme *themes.DoorTheme, milestoneChecker *core.MilestoneChecker) *InsightsView {
 	return &InsightsView{
-		analyzer:   analyzer,
-		counter:    counter,
-		funFactGen: core.NewFunFactGenerator(analyzer, counter),
-		theme:      theme,
+		analyzer:         analyzer,
+		counter:          counter,
+		funFactGen:       core.NewFunFactGenerator(analyzer, counter),
+		theme:            theme,
+		milestoneChecker: milestoneChecker,
 	}
 }
 
@@ -152,6 +159,30 @@ func (iv *InsightsView) statsPanelBorderColor() lipgloss.AdaptiveColor {
 	return lipgloss.AdaptiveColor{Light: "#555555", Dark: "#555555"}
 }
 
+// CheckAndShowMilestone checks for an unshown milestone and activates the banner.
+// Returns a tea.Cmd for the auto-dismiss timer, or nil if no milestone.
+func (iv *InsightsView) CheckAndShowMilestone(totalTasks, currentStreak, sessionCount int) tea.Cmd {
+	if iv.milestoneChecker == nil {
+		return nil
+	}
+
+	m := iv.milestoneChecker.CheckMilestones(totalTasks, currentStreak, sessionCount)
+	if m == nil {
+		return nil
+	}
+
+	iv.activeMilestone = m
+	iv.bannerActive = true
+	iv.invalidateCache()
+
+	// Mark as shown immediately so it won't appear again
+	_ = iv.milestoneChecker.MarkShown(m.ID)
+
+	return tea.Tick(5*time.Second, func(_ time.Time) tea.Msg {
+		return MilestoneDismissMsg{}
+	})
+}
+
 // Update handles messages for the insights view.
 func (iv *InsightsView) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
@@ -169,7 +200,19 @@ func (iv *InsightsView) Update(msg tea.Msg) tea.Cmd {
 		}
 		return statsAnimationTickCmd()
 
+	case MilestoneDismissMsg:
+		iv.bannerActive = false
+		iv.invalidateCache()
+		return nil
+
 	case tea.KeyMsg:
+		// If banner is active, any key dismisses it without passing through
+		if iv.bannerActive {
+			iv.bannerActive = false
+			iv.invalidateCache()
+			return nil
+		}
+
 		switch {
 		case msg.Type == tea.KeyEscape || msg.String() == "q":
 			iv.animating = false
@@ -205,6 +248,11 @@ func (iv *InsightsView) View() string {
 	}
 
 	var s strings.Builder
+
+	// Milestone celebration banner (rendered above everything)
+	if iv.bannerActive && iv.activeMilestone != nil {
+		iv.renderMilestoneBanner(&s)
+	}
 
 	// Dashboard header
 	iv.renderDashboardHeader(&s)
@@ -472,6 +520,25 @@ func (iv *InsightsView) renderColdStart(s *strings.Builder) {
 	panel := style.Width(panelContentWidth).Padding(1, 2).Render(msg)
 	fmt.Fprintf(s, "\n%s\n\n", panel)
 	s.WriteString(helpStyle.Render("Press Esc to return"))
+}
+
+// renderMilestoneBanner renders a celebration banner at the top of the insights view.
+func (iv *InsightsView) renderMilestoneBanner(s *strings.Builder) {
+	accentColor := iv.statsAccentColor()
+	bannerStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#1A1A1A")).
+		Background(lipgloss.Color(accentColor)).
+		Align(lipgloss.Center).
+		Padding(0, 2)
+
+	contentWidth := iv.contentWidth()
+	if contentWidth < 1 {
+		contentWidth = 1
+	}
+
+	banner := bannerStyle.Width(contentWidth).Render("★ " + iv.activeMilestone.Message + " ★")
+	fmt.Fprintf(s, "%s\n\n", banner)
 }
 
 // renderHeroNumber renders the themed total tasks completed count.

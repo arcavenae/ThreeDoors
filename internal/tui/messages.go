@@ -320,6 +320,9 @@ type TaskSnoozedMsg struct {
 // SnoozeCancelledMsg is sent when the user cancels the snooze view.
 type SnoozeCancelledMsg struct{}
 
+// MilestoneDismissMsg dismisses the milestone celebration banner.
+type MilestoneDismissMsg struct{}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

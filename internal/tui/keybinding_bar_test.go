@@ -425,12 +425,9 @@ func TestRenderKeybindingBar_ViewModeTransition(t *testing.T) {
 }
 
 func TestRenderKeybindingBarWithContext_BackwardsCompatible(t *testing.T) {
-	t.Parallel()
-	// Pin color profile so parallel tests that call SetColorProfile cannot
-	// change the renderer between our two sequential Render calls.
+	// Not parallel: sets global lipgloss color profile.
 	lipgloss.SetColorProfile(termenv.Ascii)
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
-
 	// RenderKeybindingBar should produce same output as RenderKeybindingBarWithContext
 	// when no sub-mode context is provided.
 	modes := []struct {

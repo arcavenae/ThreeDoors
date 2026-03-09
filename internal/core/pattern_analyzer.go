@@ -202,6 +202,11 @@ func (pa *PatternAnalyzer) HasSufficientData() bool {
 	return len(pa.sessions) >= 3
 }
 
+// GetSessionCount returns the total number of sessions loaded.
+func (pa *PatternAnalyzer) GetSessionCount() int {
+	return len(pa.sessions)
+}
+
 // GetSessionsNeeded returns how many more sessions are needed for insights.
 func (pa *PatternAnalyzer) GetSessionsNeeded() int {
 	needed := 3 - len(pa.sessions)
