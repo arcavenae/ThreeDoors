@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 10 of 12 stories complete. Stories 0.24 (Renovate + Dependabot) not started; 0.31 (draft).
+**Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 10 of 12 stories complete. Stories 0.24 (Renovate + Dependabot) not started; 0.31 (draft).
+**Status:** 10 of 13 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32 not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `docs/analysis/pr-story-gap-analysis.md`
 
@@ -763,6 +763,23 @@ So that the envoy agent can operate consistently per team consensus.
 - **AC5:** Staleness thresholds documented (14d/30d/21d) with escalation templates
 - **AC6:** Reporter communication milestone templates for all 5 stages
 - **AC7:** Duplicate detection and direction alignment handling documented
+
+### Story 0.32: Help Display UX — Dedicated Help View
+
+As a ThreeDoors user,
+I want `:help` to show a persistent, readable, categorized help screen,
+So that I can learn keybindings and commands without content disappearing or running off-screen.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** New `ViewHelp` view mode with `HelpView` struct (Update/View/SetWidth)
+- **AC2:** `:help` transitions to persistent ViewHelp (not FlashMsg)
+- **AC3:** Two-column width-aware layout, works in 80-column terminals
+- **AC4:** Categorized sections: Navigation, Task Actions, Commands, Search
+- **AC5:** Scrollable via j/k, PgUp/PgDn; dismissed via Esc/q
+- **AC6:** `?` global keybinding opens help from any non-text-input view
+- **AC7:** Unit tests, golden file test, race detector passes
 
 ---
 

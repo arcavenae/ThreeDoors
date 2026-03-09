@@ -115,6 +115,8 @@
 | D-083 | No property inheritance for subtasks (Epic 31) | 2026-03-08 | Each subtask is own unit of work; inheriting effort would quintuple estimates; misleading | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
 | D-084 | No auto-completion of parent on subtask completion (Epic 31) | 2026-03-08 | Show completion ratio instead; parent excluded from door rotation when it has children | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
 | D-085 | Sequential expand mode for subtask creation (Epic 31) | 2026-03-08 | Stay in expand input after Enter; show running count; only Esc exits; reduces friction | [Artifact](../../_bmad-output/planning-artifacts/party-mode-expand-fork-2026-03-08.md) |
+| D-086 | Dedicated ViewHelp view mode for :help display | 2026-03-08 | Consistent with all existing informational views; FlashMsg is fundamentally wrong for help content | [Artifact](../../_bmad-output/planning-artifacts/help-display-redesign.md) |
+| D-087 | ? global keybinding opens help from any view | 2026-03-08 | TUI standard (vim, less, lazygit); solves discoverability; no existing conflicts | [Artifact](../../_bmad-output/planning-artifacts/help-display-redesign.md) |
 
 ## Rejected
 

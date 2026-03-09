@@ -472,7 +472,7 @@
 
 | Epic | Stories | Status |
 |------|---------|--------|
-| Epic 0: Infrastructure & Process (Backfill) | 12 | Partial (10/12) |
+| Epic 0: Infrastructure & Process (Backfill) | 13 | Partial (10/13) |
 | Epic 1: Technical Demo | 7 | Complete |
 | Epic 2: Apple Notes Integration | 6 | Complete |
 | Epic 3: Enhanced Interaction | 7 | Complete |
