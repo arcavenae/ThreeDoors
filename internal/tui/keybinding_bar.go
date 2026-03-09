@@ -93,7 +93,7 @@ func RenderKeybindingBar(mode ViewMode, width, height int, enabled bool, doorSel
 
 	// Build separator + bar.
 	separator := barSeparatorStyle.Render(strings.Repeat("─", width))
-	return separator + "\n" + bar
+	return lipgloss.JoinVertical(lipgloss.Left, separator, bar)
 }
 
 // formatBar renders the binding pairs as a single line, truncating if needed.
