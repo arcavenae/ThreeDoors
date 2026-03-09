@@ -8,6 +8,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -801,5 +802,407 @@ func TestAddTaskPromptMsg_PreservesPreviousView(t *testing.T) {
 	}
 	if m.previousView != ViewDoors {
 		t.Errorf("expected previousView ViewDoors, got %d", m.previousView)
+	}
+}
+
+// --- Story 36.3: Universal Quit Tests ---
+
+// isQuitCmd checks if a tea.Cmd produces a RequestQuitMsg when executed.
+func isQuitCmd(t *testing.T, cmd tea.Cmd) bool {
+	t.Helper()
+	if cmd == nil {
+		return false
+	}
+	msg := cmd()
+	_, ok := msg.(RequestQuitMsg)
+	return ok
+}
+
+func TestUniversalQuit_DetailView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(keyMsg("w"))
+	m.Update(keyMsg("enter"))
+	if m.viewMode != ViewDetail {
+		t.Fatal("should be in ViewDetail")
+	}
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from detail view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_MoodView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	_, cmd := m.Update(keyMsg("m"))
+	if cmd != nil {
+		msg := cmd()
+		m.Update(msg)
+	}
+	if m.viewMode != ViewMood {
+		t.Fatal("should be in ViewMood")
+	}
+
+	_, cmd = m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from mood view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_MoodView_CustomInput_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	_, cmd := m.Update(keyMsg("m"))
+	if cmd != nil {
+		msg := cmd()
+		m.Update(msg)
+	}
+	if m.viewMode != ViewMood {
+		t.Fatal("should be in ViewMood")
+	}
+
+	// Enter custom input mode by pressing "7"
+	m.Update(keyMsg("7"))
+	if !m.moodView.isCustom {
+		t.Fatal("should be in custom input mode")
+	}
+
+	_, cmd = m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in mood custom input mode should NOT quit")
+	}
+}
+
+func TestUniversalQuit_HealthView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.healthView = NewHealthView(core.HealthCheckResult{})
+	m.viewMode = ViewHealth
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from health view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_InsightsView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.insightsView = NewInsightsView(nil, nil)
+	m.viewMode = ViewInsights
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from insights view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_NextStepsView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.nextStepsView = NewNextStepsView("completed", m.pool, nil)
+	m.viewMode = ViewNextSteps
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from next steps view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_AvoidancePromptView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	task := m.pool.GetAllTasks()[0]
+	m.avoidancePromptView = NewAvoidancePromptView(task, 15)
+	m.viewMode = ViewAvoidancePrompt
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from avoidance prompt should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_ThemePicker_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.themePickerView = NewThemePicker(themes.NewDefaultRegistry(), "")
+	m.viewMode = ViewThemePicker
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from theme picker should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_DevQueueView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.devQueueView = &DevQueueView{}
+	m.viewMode = ViewDevQueue
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from dev queue view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_SearchView_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(keyMsg("/"))
+	if m.viewMode != ViewSearch {
+		t.Fatal("should be in ViewSearch")
+	}
+
+	_, cmd := m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in search view (has text input) should NOT quit")
+	}
+}
+
+func TestUniversalQuit_AddTaskView_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.addTaskView = NewAddTaskView()
+	m.viewMode = ViewAddTask
+
+	_, cmd := m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in add task view (has text input) should NOT quit")
+	}
+}
+
+func TestUniversalQuit_FeedbackView_QKeyQuits(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	task := m.pool.GetAllTasks()[0]
+	m.feedbackView = NewFeedbackView(task)
+	m.viewMode = ViewFeedback
+
+	_, cmd := m.Update(keyMsg("q"))
+	if !isQuitCmd(t, cmd) {
+		t.Error("'q' from feedback selection view should produce RequestQuitMsg")
+	}
+}
+
+func TestUniversalQuit_FeedbackView_CustomInput_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	task := m.pool.GetAllTasks()[0]
+	m.feedbackView = NewFeedbackView(task)
+	m.viewMode = ViewFeedback
+
+	// Enter custom input mode
+	m.Update(keyMsg("4"))
+	if !m.feedbackView.isCustom {
+		t.Fatal("should be in custom input mode")
+	}
+
+	_, cmd := m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in feedback custom input mode should NOT quit")
+	}
+}
+
+func TestUniversalQuit_ImprovementView_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.improvementView = NewImprovementView()
+	m.viewMode = ViewImprovement
+
+	_, cmd := m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in improvement view (text input) should NOT quit")
+	}
+}
+
+func TestUniversalQuit_DetailView_BlockerInput_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(keyMsg("w"))
+	m.Update(keyMsg("enter"))
+	if m.viewMode != ViewDetail {
+		t.Fatal("should be in ViewDetail")
+	}
+
+	// Enter blocker input mode
+	m.detailView.mode = DetailModeBlockerInput
+
+	_, cmd := m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in detail blocker input mode should NOT quit")
+	}
+}
+
+func TestUniversalQuit_DetailView_ExpandInput_QKeyDoesNotQuit(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(keyMsg("w"))
+	m.Update(keyMsg("enter"))
+	if m.viewMode != ViewDetail {
+		t.Fatal("should be in ViewDetail")
+	}
+
+	// Enter expand input mode
+	m.detailView.mode = DetailModeExpandInput
+
+	_, cmd := m.Update(keyMsg("q"))
+	if isQuitCmd(t, cmd) {
+		t.Error("'q' in detail expand input mode should NOT quit")
+	}
+}
+
+// Table-driven test covering all views
+func TestUniversalQuit_TableDriven(t *testing.T) {
+	tests := []struct {
+		name     string
+		setup    func(*MainModel)
+		wantQuit bool
+	}{
+		{
+			name:     "doors view",
+			setup:    func(_ *MainModel) {},
+			wantQuit: true,
+		},
+		{
+			name: "detail view (normal mode)",
+			setup: func(m *MainModel) {
+				m.Update(keyMsg("w"))
+				m.Update(keyMsg("enter"))
+			},
+			wantQuit: true,
+		},
+		{
+			name: "mood view (selection mode)",
+			setup: func(m *MainModel) {
+				_, cmd := m.Update(keyMsg("m"))
+				if cmd != nil {
+					msg := cmd()
+					m.Update(msg)
+				}
+			},
+			wantQuit: true,
+		},
+		{
+			name: "health view",
+			setup: func(m *MainModel) {
+				m.healthView = NewHealthView(core.HealthCheckResult{})
+				m.viewMode = ViewHealth
+			},
+			wantQuit: true,
+		},
+		{
+			name: "insights view",
+			setup: func(m *MainModel) {
+				m.insightsView = NewInsightsView(nil, nil)
+				m.viewMode = ViewInsights
+			},
+			wantQuit: true,
+		},
+		{
+			name: "next steps view",
+			setup: func(m *MainModel) {
+				m.nextStepsView = NewNextStepsView("completed", m.pool, nil)
+				m.viewMode = ViewNextSteps
+			},
+			wantQuit: true,
+		},
+		{
+			name: "avoidance prompt",
+			setup: func(m *MainModel) {
+				task := m.pool.GetAllTasks()[0]
+				m.avoidancePromptView = NewAvoidancePromptView(task, 15)
+				m.viewMode = ViewAvoidancePrompt
+			},
+			wantQuit: true,
+		},
+		{
+			name: "theme picker",
+			setup: func(m *MainModel) {
+				m.themePickerView = NewThemePicker(themes.NewDefaultRegistry(), "")
+				m.viewMode = ViewThemePicker
+			},
+			wantQuit: true,
+		},
+		{
+			name: "dev queue",
+			setup: func(m *MainModel) {
+				m.devQueueView = &DevQueueView{}
+				m.viewMode = ViewDevQueue
+			},
+			wantQuit: true,
+		},
+		{
+			name: "feedback (selection mode)",
+			setup: func(m *MainModel) {
+				task := m.pool.GetAllTasks()[0]
+				m.feedbackView = NewFeedbackView(task)
+				m.viewMode = ViewFeedback
+			},
+			wantQuit: true,
+		},
+		{
+			name: "search view (text input)",
+			setup: func(m *MainModel) {
+				m.Update(keyMsg("/"))
+			},
+			wantQuit: false,
+		},
+		{
+			name: "add task view (text input)",
+			setup: func(m *MainModel) {
+				m.addTaskView = NewAddTaskView()
+				m.viewMode = ViewAddTask
+			},
+			wantQuit: false,
+		},
+		{
+			name: "improvement view (text input)",
+			setup: func(m *MainModel) {
+				m.improvementView = NewImprovementView()
+				m.viewMode = ViewImprovement
+			},
+			wantQuit: false,
+		},
+		{
+			name: "feedback (custom input)",
+			setup: func(m *MainModel) {
+				task := m.pool.GetAllTasks()[0]
+				m.feedbackView = NewFeedbackView(task)
+				m.feedbackView.isCustom = true
+				m.viewMode = ViewFeedback
+			},
+			wantQuit: false,
+		},
+		{
+			name: "mood (custom input)",
+			setup: func(m *MainModel) {
+				_, cmd := m.Update(keyMsg("m"))
+				if cmd != nil {
+					msg := cmd()
+					m.Update(msg)
+				}
+				m.moodView.isCustom = true
+			},
+			wantQuit: false,
+		},
+		{
+			name: "detail (blocker input)",
+			setup: func(m *MainModel) {
+				m.Update(keyMsg("w"))
+				m.Update(keyMsg("enter"))
+				m.detailView.mode = DetailModeBlockerInput
+			},
+			wantQuit: false,
+		},
+		{
+			name: "detail (expand input)",
+			setup: func(m *MainModel) {
+				m.Update(keyMsg("w"))
+				m.Update(keyMsg("enter"))
+				m.detailView.mode = DetailModeExpandInput
+			},
+			wantQuit: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := makeModel("task1", "task2", "task3", "task4", "task5")
+			tt.setup(m)
+
+			_, cmd := m.Update(keyMsg("q"))
+			gotQuit := isQuitCmd(t, cmd)
+
+			if gotQuit != tt.wantQuit {
+				t.Errorf("'q' in %s: got quit=%v, want quit=%v", tt.name, gotQuit, tt.wantQuit)
+			}
+		})
 	}
 }

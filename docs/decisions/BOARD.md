@@ -85,6 +85,7 @@
 | D-056 | Alpha binary named `threedoors-a` (not `threedoors`) | 2026-03-08 | Prevents Homebrew conflicts; allows simultaneous install; clear channel identity | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | D-057 | Alpha formula `threedoors-a.rb` in same tap | 2026-03-08 | Single tap; consistent UX; no `conflicts_with` needed | [Research](../research/dual-homebrew-distribution-research.md) |
 | D-058 | Manual planning doc reconciliation over automation | 2026-03-08 | Automation rejected — drift is infrequent, docs are heterogeneous, CLAUDE.md reminder sufficient | [Artifact](../../_bmad-output/planning-artifacts/planning-docs-reconciliation-triage-party-mode.md) |
+| D-059 | Universal quit via MainModel-level 'q' interception | 2026-03-08 | Centralizes quit logic; views don't need individual 'q' handlers; `isTextInputActive()` guards text input views | [Story 36.3](../stories/36.3.story.md) |
 
 ## Rejected
 
@@ -113,6 +114,7 @@
 | X-021 | Same binary name with `conflicts_with` for alpha | 2026-03-08 | Prevents simultaneous install; poor UX for users wanting both channels | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | X-022 | `threedoors@alpha` formula naming | 2026-03-08 | `@` is for versioned formulae, not rolling channels; triggers keg_only expectations | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | X-023 | Separate tap for alpha (`homebrew-tap-alpha`) | 2026-03-08 | Unnecessary complexity; single tap with two formulae is standard | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
+| X-024 | Per-view 'q' handler for universal quit | 2026-03-08 | Would require modifying 10+ view files; higher maintenance burden; centralized interception is simpler | [Story 36.3](../stories/36.3.story.md) |
 
 ## Superseded
 

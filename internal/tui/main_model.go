@@ -857,6 +857,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// Universal quit: 'q' quits from any view unless text input is active
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "q" && !m.isTextInputActive() {
+		return m, func() tea.Msg { return RequestQuitMsg{} }
+	}
+
 	// Delegate to current view
 	switch m.viewMode {
 	case ViewDoors:
@@ -1107,6 +1112,36 @@ func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	cmd := m.valuesView.Update(msg)
 	return m, cmd
+}
+
+// isTextInputActive returns true when the current view has an active text input
+// field where 'q' should be treated as text, not as a quit command.
+func (m *MainModel) isTextInputActive() bool {
+	switch m.viewMode {
+	case ViewSearch:
+		return true
+	case ViewAddTask:
+		return true
+	case ViewImprovement:
+		return true
+	case ViewOnboarding:
+		// Onboarding has text input during the values step
+		return true
+	case ViewFeedback:
+		return m.feedbackView != nil && m.feedbackView.isCustom
+	case ViewMood:
+		return m.moodView != nil && m.moodView.isCustom
+	case ViewDetail:
+		if m.detailView == nil {
+			return false
+		}
+		return m.detailView.mode == DetailModeBlockerInput ||
+			m.detailView.mode == DetailModeExpandInput
+	case ViewValuesGoals:
+		// When text input is focused, treat 'q' as text
+		return m.valuesView != nil && m.valuesView.textInput.Focused()
+	}
+	return false
 }
 
 // findAvoidancePromptTask checks current doors for a task with 10+ bypasses
