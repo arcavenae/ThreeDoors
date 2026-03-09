@@ -15,8 +15,8 @@ func TestStatusDeferred_Transitions(t *testing.T) {
 		{"deferred to complete", StatusDeferred, StatusComplete, false},
 		{"archived to todo", StatusArchived, StatusTodo, false},
 		{"archived is terminal", StatusArchived, StatusInProgress, false},
-		{"in-progress to deferred", StatusInProgress, StatusDeferred, false},
-		{"blocked to deferred", StatusBlocked, StatusDeferred, false},
+		{"in-progress to deferred", StatusInProgress, StatusDeferred, true},
+		{"blocked to deferred", StatusBlocked, StatusDeferred, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -212,6 +212,9 @@ type WorkerStatusMsg struct {
 // workerPollTickMsg is an internal tick message that triggers worker status polling.
 type workerPollTickMsg struct{}
 
+// DeferReturnTickMsg fires periodically to check for expired deferred tasks.
+type DeferReturnTickMsg time.Time
+
 // DuplicateDismissedMsg is sent when the user dismisses a duplicate flag (marks as distinct).
 type DuplicateDismissedMsg struct {
 	Task *core.Task

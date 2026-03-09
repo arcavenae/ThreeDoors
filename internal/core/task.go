@@ -36,6 +36,7 @@ type Task struct {
 	CreatedAt      time.Time             `yaml:"created_at" json:"created_at"`
 	UpdatedAt      time.Time             `yaml:"updated_at" json:"updated_at"`
 	CompletedAt    *time.Time            `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
+	DeferUntil     *time.Time            `yaml:"defer_until,omitempty" json:"defer_until,omitempty"`
 	SourceProvider string                `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
 	SourceRefs     []SourceRef           `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
 	DependsOn      []string              `yaml:"depends_on,omitempty" json:"depends_on,omitempty"`
