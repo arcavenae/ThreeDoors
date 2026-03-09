@@ -26,6 +26,7 @@ const (
 type InsightsView struct {
 	analyzer   *core.PatternAnalyzer
 	counter    *core.CompletionCounter
+	funFactGen *core.FunFactGenerator
 	width      int
 	height     int
 	cachedView string
@@ -36,8 +37,9 @@ type InsightsView struct {
 // NewInsightsView creates a new InsightsView.
 func NewInsightsView(analyzer *core.PatternAnalyzer, counter *core.CompletionCounter) *InsightsView {
 	return &InsightsView{
-		analyzer: analyzer,
-		counter:  counter,
+		analyzer:   analyzer,
+		counter:    counter,
+		funFactGen: core.NewFunFactGenerator(analyzer, counter),
 	}
 }
 
@@ -109,6 +111,9 @@ func (iv *InsightsView) View() string {
 	// Content panels arranged by layout mode
 	iv.renderPanelLayout(&s)
 
+	// Fun fact at the bottom
+	iv.renderFunFact(&s)
+
 	s.WriteString("\n")
 	s.WriteString(helpStyle.Render("Press Esc to return"))
 
@@ -149,6 +154,13 @@ func (iv *InsightsView) renderHeroNumber(s *strings.Builder) {
 	heroText := fmt.Sprintf("★ %d tasks completed ★", total)
 	hero := statsHeroStyle.Width(iv.contentWidth()).Render(heroText)
 	fmt.Fprintf(s, "\n%s\n\n", hero)
+}
+
+// renderFunFact renders the daily fun fact with gold star styling.
+func (iv *InsightsView) renderFunFact(s *strings.Builder) {
+	fact := iv.funFactGen.Generate()
+	styled := statsHeroStyle.Width(iv.contentWidth()).Render("★ " + fact)
+	fmt.Fprintf(s, "\n%s\n", styled)
 }
 
 // renderPanelLayout arranges content panels based on the current layout mode.
