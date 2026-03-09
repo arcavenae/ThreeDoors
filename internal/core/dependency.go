@@ -83,3 +83,23 @@ func GetNewlyUnblockedTasks(completedTaskID string, pool *TaskPool) []*Task {
 	}
 	return unblocked
 }
+
+// ClearCompletedDependency removes completedTaskID from the DependsOn list
+// of all tasks in the pool. This should be called after a task completes and
+// before it is removed from the pool, so that the completed dependency
+// reference does not become orphaned (which would be treated as unmet).
+func ClearCompletedDependency(completedTaskID string, pool *TaskPool) {
+	for _, task := range pool.GetAllTasks() {
+		filtered := task.DependsOn[:0]
+		for _, depID := range task.DependsOn {
+			if depID != completedTaskID {
+				filtered = append(filtered, depID)
+			}
+		}
+		if len(filtered) == 0 {
+			task.DependsOn = nil
+		} else {
+			task.DependsOn = filtered
+		}
+	}
+}

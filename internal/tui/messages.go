@@ -212,6 +212,13 @@ type WorkerStatusMsg struct {
 // workerPollTickMsg is an internal tick message that triggers worker status polling.
 type workerPollTickMsg struct{}
 
+// DependencyUnblockedMsg is sent when a task becomes unblocked because its
+// dependencies have all been completed.
+type DependencyUnblockedMsg struct {
+	UnblockedTasks []*core.Task
+	CompletedDepID string
+}
+
 // DeferReturnTickMsg fires periodically to check for expired deferred tasks.
 type DeferReturnTickMsg time.Time
 

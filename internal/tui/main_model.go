@@ -440,6 +440,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.flash = "Error completing task"
 			return m, ClearFlashCmd()
 		}
+		// Check for newly unblocked tasks before removing the completed task
+		unblockedTasks := core.GetNewlyUnblockedTasks(msg.Task.ID, m.pool)
+		core.ClearCompletedDependency(msg.Task.ID, m.pool)
 		m.pool.RemoveTask(msg.Task.ID)
 		m.doorsView.IncrementCompleted()
 		m.completionCounter.IncrementToday()
@@ -454,7 +457,16 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.nextStepsView = NewNextStepsView("completed", m.pool, m.completionCounter)
 		m.nextStepsView.SetWidth(m.width)
 		m.viewMode = ViewNextSteps
-		return m, ClearFlashCmd()
+		cmds := []tea.Cmd{ClearFlashCmd()}
+		if len(unblockedTasks) > 0 {
+			cmds = append(cmds, func() tea.Msg {
+				return DependencyUnblockedMsg{
+					UnblockedTasks: unblockedTasks,
+					CompletedDepID: msg.Task.ID,
+				}
+			})
+		}
+		return m, tea.Batch(cmds...)
 
 	case TaskUpdatedMsg:
 		if err := m.saveTasks(); err != nil {
@@ -789,6 +801,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ThemeCancelledMsg:
 		m.themePickerView = nil
 		m.viewMode = ViewDoors
+		return m, nil
+
+	case DependencyUnblockedMsg:
+		m.doorsView.RefreshDoors()
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after dependency unblock: %v\n", err)
+		}
 		return m, nil
 
 	case DeferReturnTickMsg:
