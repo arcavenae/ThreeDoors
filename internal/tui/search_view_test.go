@@ -616,6 +616,84 @@ func TestSearchView_View_CommandModeIndicator(t *testing.T) {
 	}
 }
 
+// --- Stable Ordering Tests ---
+
+func TestSearchView_FilterTasks_StableOrdering(t *testing.T) {
+	// Create tasks whose map iteration order will be randomized.
+	// With enough tasks, Go's map randomization makes unstable ordering
+	// detectable across repeated calls.
+	texts := []string{
+		"Zebra task",
+		"Alpha task",
+		"Mango task",
+		"Beta task",
+		"Omega task",
+		"Delta task",
+		"Gamma task",
+	}
+	sv := newTestSearchView(texts...)
+
+	// Call filterTasks multiple times — results must be identical each time
+	first := sv.filterTasks("task")
+	if len(first) != len(texts) {
+		t.Fatalf("expected %d matches, got %d", len(texts), len(first))
+	}
+
+	for i := 0; i < 20; i++ {
+		got := sv.filterTasks("task")
+		if len(got) != len(first) {
+			t.Fatalf("iteration %d: length changed from %d to %d", i, len(first), len(got))
+		}
+		for j := range first {
+			if got[j].Text != first[j].Text {
+				t.Errorf("iteration %d, index %d: got %q, want %q — order is not stable",
+					i, j, got[j].Text, first[j].Text)
+			}
+		}
+	}
+
+	// Verify alphabetical sort order
+	for i := 1; i < len(first); i++ {
+		if first[i-1].Text > first[i].Text {
+			t.Errorf("results not sorted: %q should come before %q",
+				first[i].Text, first[i-1].Text)
+		}
+	}
+}
+
+func TestSearchView_FilterTasks_StableOrdering_SubsetPreserved(t *testing.T) {
+	// When adding/removing a character, unaffected results should stay
+	// in the same relative order.
+	texts := []string{
+		"Buy apples",
+		"Buy bananas",
+		"Sell oranges",
+		"Buy cherries",
+	}
+	sv := newTestSearchView(texts...)
+
+	broad := sv.filterTasks("Buy")
+	if len(broad) != 3 {
+		t.Fatalf("expected 3 matches for 'Buy', got %d", len(broad))
+	}
+
+	// Narrow the query — the subset that still matches must keep the same order
+	narrow := sv.filterTasks("Buy b")
+	if len(narrow) != 1 {
+		t.Fatalf("expected 1 match for 'Buy b', got %d", len(narrow))
+	}
+	if narrow[0].Text != "Buy bananas" {
+		t.Errorf("expected 'Buy bananas', got %q", narrow[0].Text)
+	}
+
+	// Verify broad results are alphabetically sorted
+	for i := 1; i < len(broad); i++ {
+		if broad[i-1].Text > broad[i].Text {
+			t.Errorf("broad results not sorted: %q before %q", broad[i-1].Text, broad[i].Text)
+		}
+	}
+}
+
 // --- Edge Cases ---
 
 func TestSearchView_EmptyPool_NoResults(t *testing.T) {
