@@ -15,6 +15,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
 	"github.com/arcaven/ThreeDoors/internal/mcp"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -90,6 +91,7 @@ type MainModel struct {
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
 	pollingActive         bool
+	syncSpinner           *SyncSpinner
 	flash                 string
 	width                 int
 	height                int
@@ -192,9 +194,12 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		dedupStore:        dedupStore,
 		duplicateTaskIDs:  duplicateTaskIDs,
 		duplicatePairs:    duplicatePairs,
+		syncSpinner:       NewSyncSpinner(),
 		promptedTasks:     make(map[string]bool),
 		showKeybindingBar: true, // default: bar visible
 	}
+
+	doorsView.SetSyncSpinner(m.syncSpinner)
 
 	if isFirstRun {
 		m.onboardingView = NewOnboardingView()
@@ -969,17 +974,34 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, ClearFlashCmd()
 
+	case spinner.TickMsg:
+		if m.syncSpinner != nil {
+			cmd := m.syncSpinner.Update(msg)
+			return m, cmd
+		}
+		return m, nil
+
 	case SyncStatusUpdateMsg:
 		if m.syncTracker != nil {
 			switch msg.Phase {
 			case core.SyncPhaseSynced:
 				m.syncTracker.SetSynced(msg.ProviderName)
+				if m.syncSpinner != nil {
+					m.syncSpinner.Stop()
+				}
 			case core.SyncPhaseSyncing:
 				m.syncTracker.SetSyncing(msg.ProviderName)
+				if m.syncSpinner != nil {
+					m.syncSpinner.Start(msg.ProviderName)
+					return m, m.syncSpinner.Tick()
+				}
 			case core.SyncPhasePending:
 				m.syncTracker.SetPending(msg.ProviderName, msg.PendingCount)
 			case core.SyncPhaseError:
 				m.syncTracker.SetError(msg.ProviderName, msg.ErrorMsg)
+				if m.syncSpinner != nil {
+					m.syncSpinner.Stop()
+				}
 			}
 		}
 		return m, nil
