@@ -39,6 +39,64 @@ func SelectDoorsWithFocus(pool *TaskPool, count int, planningTimestamp *time.Tim
 	return selectDoorsWithRand(pool, count, rng, planningTimestamp)
 }
 
+// SelectDoorsWithEnergy picks up to count tasks, incorporating energy match scoring
+// alongside diversity and optional focus boost. When energy is empty, behaves like
+// SelectDoorsWithFocus.
+func SelectDoorsWithEnergy(pool *TaskPool, count int, energy EnergyLevel, planningTimestamp *time.Time) []*Task {
+	rng := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
+	return selectDoorsWithEnergyRand(pool, count, energy, rng, planningTimestamp)
+}
+
+// selectDoorsWithEnergyRand is the testable core of SelectDoorsWithEnergy.
+func selectDoorsWithEnergyRand(pool *TaskPool, count int, energy EnergyLevel, rng *rand.Rand, planningTimestamp *time.Time) []*Task {
+	available := pool.GetAvailableForDoors()
+	if len(available) == 0 {
+		return nil
+	}
+	if len(available) <= count {
+		for _, t := range available {
+			pool.MarkRecentlyShown(t.ID)
+		}
+		return available
+	}
+
+	const numCandidates = 10
+
+	bestScore := -1.0
+	var bestSet []*Task
+
+	for i := range numCandidates {
+		perm := make([]*Task, len(available))
+		copy(perm, available)
+		for j := range count {
+			k := j + rng.IntN(len(perm)-j)
+			perm[j], perm[k] = perm[k], perm[j]
+		}
+		candidate := perm[:count]
+		score := float64(DiversityScore(candidate))
+		if planningTimestamp != nil {
+			score += FocusScoreBoost(candidate, *planningTimestamp)
+		}
+		if energy != "" {
+			score += EnergySetScore(candidate, energy)
+		}
+
+		if score > bestScore {
+			bestScore = score
+			bestSet = make([]*Task, count)
+			copy(bestSet, candidate)
+		} else if score == bestScore && rng.IntN(i+1) == 0 {
+			bestSet = make([]*Task, count)
+			copy(bestSet, candidate)
+		}
+	}
+
+	for _, t := range bestSet {
+		pool.MarkRecentlyShown(t.ID)
+	}
+	return bestSet
+}
+
 // selectDoorsWithRand picks up to count tasks from the pool using the provided RNG.
 // It generates N=10 random candidate sets and picks the one with the highest diversity score.
 // If planningTimestamp is non-nil, focus-tagged tasks receive a scoring boost.
