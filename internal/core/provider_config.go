@@ -268,6 +268,11 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 		case "reminders":
 			fmt.Fprintf(&b, "#       lists: Work,ThreeDoors  # Optional: comma-separated list names (default: all)\n")
 			fmt.Fprintf(&b, "#       include_completed: false  # Optional: include completed reminders\n")
+		case "todoist":
+			fmt.Fprintf(&b, "#       api_token: \"\"  # Or set TODOIST_API_TOKEN env var\n")
+			fmt.Fprintf(&b, "#       project_ids: \"\"  # Optional: comma-separated project IDs\n")
+			fmt.Fprintf(&b, "#       filter: \"\"  # Optional: Todoist filter expression (mutually exclusive with project_ids)\n")
+			fmt.Fprintf(&b, "#       poll_interval: 30s  # Optional\n")
 		default:
 			fmt.Fprintf(&b, "#       # Add provider-specific settings here\n")
 		}

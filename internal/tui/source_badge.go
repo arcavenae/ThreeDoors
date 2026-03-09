@@ -13,6 +13,7 @@ var providerLabels = map[string]string{
 	"textfile":   "TXT",
 	"obsidian":   "OBS",
 	"applenotes": "NOTES",
+	"todoist":    "TDT",
 }
 
 // Provider badge colors.
@@ -20,6 +21,7 @@ var providerColors = map[string]lipgloss.Color{
 	"textfile":   lipgloss.Color("243"), // gray
 	"obsidian":   lipgloss.Color("141"), // purple
 	"applenotes": lipgloss.Color("220"), // yellow
+	"todoist":    lipgloss.Color("196"), // red (Todoist brand)
 }
 
 // SourceBadgeLabel returns the short label for a provider name.

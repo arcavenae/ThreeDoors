@@ -21,7 +21,8 @@ func TestSourceBadgeLabel(t *testing.T) {
 		{"obsidian", "obsidian", "OBS"},
 		{"applenotes", "applenotes", "NOTES"},
 		{"unknown short", "jira", "JIRA"},
-		{"unknown long", "todoist", "TODO"},
+		{"todoist", "todoist", "TDT"},
+		{"unknown long", "longname", "LONG"},
 		{"empty", "", ""},
 	}
 	for _, tt := range tests {

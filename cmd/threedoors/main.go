@@ -12,6 +12,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
 	"github.com/arcaven/ThreeDoors/internal/adapters/reminders"
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcaven/ThreeDoors/internal/adapters/todoist"
 	"github.com/arcaven/ThreeDoors/internal/cli"
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/dist"
@@ -262,6 +263,9 @@ func registerBuiltinAdapters(reg *core.Registry) {
 	// Apple Reminders provider: macOS-only via JXA/osascript.
 	// On non-macOS platforms the factory returns a descriptive error.
 	_ = reg.Register("reminders", reminders.NewFactory())
+
+	// Todoist provider: reads tasks from Todoist via REST API (read-only).
+	_ = reg.Register("todoist", todoist.Factory)
 }
 
 // isSubcommand checks whether arg is a known CLI subcommand name.
