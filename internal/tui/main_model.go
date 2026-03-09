@@ -236,7 +236,15 @@ func (m *MainModel) SetDevQueue(q *dispatch.DevQueue) {
 
 // Init implements tea.Model.
 func (m *MainModel) Init() tea.Cmd {
-	return nil
+	// Check for expired deferred tasks on startup and start periodic tick.
+	returned := core.CheckDeferredReturns(m.pool)
+	if returned > 0 {
+		m.doorsView.RefreshDoors()
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after defer return: %v\n", err)
+		}
+	}
+	return deferReturnTickCmd()
 }
 
 // Update implements tea.Model.
@@ -783,6 +791,16 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewDoors
 		return m, nil
 
+	case DeferReturnTickMsg:
+		returned := core.CheckDeferredReturns(m.pool)
+		if returned > 0 {
+			m.doorsView.RefreshDoors()
+			if err := m.saveTasks(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to save tasks after defer return: %v\n", err)
+			}
+		}
+		return m, deferReturnTickCmd()
+
 	case workerPollTickMsg:
 		if m.dispatcher == nil || !m.hasDispatchedItems() {
 			m.pollingActive = false
@@ -1245,6 +1263,16 @@ func (m *MainModel) refreshDuplicates() {
 
 // workerPollInterval is the interval between worker status polling ticks.
 const workerPollInterval = 30 * time.Second
+
+// deferReturnInterval is the interval between deferred task auto-return checks.
+const deferReturnInterval = 1 * time.Minute
+
+// deferReturnTickCmd returns a tea.Cmd that fires a DeferReturnTickMsg after the interval.
+func deferReturnTickCmd() tea.Cmd {
+	return tea.Tick(deferReturnInterval, func(t time.Time) tea.Msg {
+		return DeferReturnTickMsg(t)
+	})
+}
 
 // hasDispatchedItems returns true if any queue items are in dispatched status.
 func (m *MainModel) hasDispatchedItems() bool {
