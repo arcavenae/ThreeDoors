@@ -43,15 +43,20 @@ git log -1 --format="%ci" ROADMAP.md
 
 1. **Check correlation ID list** — if this PR number is already in the processed list, skip it entirely (idempotent)
 2. Identify which story the PR relates to (from branch name, PR title, or commit messages)
-3. Read the story file — check if status needs updating
-4. If story complete:
+3. **Verify epic identity** — before updating any epic-level data, read ROADMAP.md and confirm the epic number maps to the expected feature. Do NOT assume epic numbering from PR titles alone — renumbering may have occurred (see D-112, D-104 for precedent)
+4. Read the story file — check if status needs updating
+5. If story complete:
    - Update story file: `Status: Done (PR #NNN)`
    - Update ROADMAP.md: increment epic progress count
    - Check if this completes an epic — if so, move the epic to the Completed Epics table
    - Check PRD: does completion reveal drift?
-5. If PRD drift detected:
+6. If PRD drift detected:
    - Message arch-watchdog: `"PRD section X may need architecture review after PR #NNN. Correlation: PR-NNN"`
-6. **Add PR number to processed list** after all operations complete
+7. **Add PR number to processed list** after all operations complete
+
+### Batching
+
+When multiple PRs have merged since the last poll, batch all updates into a single governance sync PR rather than creating one PR per story. This reduces merge ordering issues and PR fatigue.
 
 ### Analyzing PR Contents
 

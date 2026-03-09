@@ -10,6 +10,8 @@
 |----|----------|------|-------|---------|
 | Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
 | Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
+| Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 
 ## Active Research
 
@@ -142,6 +144,8 @@
 | D-109 | Agent labels limited to `agent.envoy` + `agent.worker` only | 2026-03-08 | Only two agents need GitHub visibility labels; others coordinate via story files/messages | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | D-110 | Label migration via rename-first strategy | 2026-03-08 | Preserves label-issue associations during transition | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | D-111 | Implementation as separate story from research PR | 2026-03-08 | Unanimous; research PR should not apply changes | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| D-112 | Epic number reservation registry in BOARD.md | 2026-03-09 | Prevents parallel workers from claiming same epic number; lightweight alternative to persistent PM agent | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| D-113 | No housekeeping epic for governance syncs | 2026-03-09 | Governance syncs are routine doc maintenance, not feature work; adding an epic creates overhead for non-deliverable work | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 
 ## Rejected
 
@@ -205,6 +209,21 @@
 | X-056 | `::` (GitLab-style) as label separator | 2026-03-08 | Looks unusual on GitHub; `.` is more universal | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-057 | `/` as label scope separator | 2026-03-08 | Conflicts with path references | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-058 | `process.party-mode` label | 2026-03-08 | Party mode is a process step, not an issue state; covered by `scope.needs-decision` | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+
+## Epic Number Registry
+
+> **Purpose:** Prevents epic number collisions when multiple agents work in parallel. Check this table before assigning a new epic number. PM is the authority for allocating numbers (per standing orders). See D-112.
+
+| Epic | Feature | Allocated | Status |
+|------|---------|-----------|--------|
+| 41 | *(next available)* | — | — |
+
+**Rules:**
+1. Before creating a new epic, check this table for the next available number
+2. Reserve the number here FIRST, before creating story files or updating ROADMAP.md
+3. Only PM (or supervisor acting as PM) may allocate epic numbers
+4. Completed epics (0-38) are not listed here — see ROADMAP.md Completed Epics table
+5. Active epics (39-40) are already allocated — do not reuse
 
 ## Superseded
 
