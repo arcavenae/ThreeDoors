@@ -8,8 +8,8 @@
 
 | ID | Question | Date | Owner | Context |
 |----|----------|------|-------|---------|
-| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
-| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Audit note:** Epic 19 is complete; verify if resolved during implementation |
+| Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support story points as a preference, but require the custom field involved to be specified — it's not built in. |
+| Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support multi-project JQL in Jira adapter. |
 | Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 | Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 
@@ -25,9 +25,9 @@
 |----|----------------|------|--------|------|----------|
 | P-006 | In-app bug reporting via `:bug` command — browser URL primary, PAT upgrade, file fallback | 2026-03-09 | Party mode (4 rounds: PM, Architect, UX, Dev) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md), [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) | Epic/story creation |
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
-| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
-| P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
-| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | Story creation |
+| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Artifact](../../_bmad-output/planning-artifacts/envoy-scope-and-firewall-design.md) | Story creation |
+| P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | Story creation |
+| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | **Approved** — update then run `/sync-enhancements` after merge |
 | P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode (3 rounds) + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md), [Research](../../_bmad-output/planning-artifacts/scoped-labels-research.md) | Story creation for migration |
 
 ## Decided
