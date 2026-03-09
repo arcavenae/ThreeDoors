@@ -867,6 +867,22 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case DependencyAddedMsg:
+		m.doorsView.RefreshDoors()
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after dependency added: %v\n", err)
+		}
+		m.flash = "Dependency added"
+		return m, ClearFlashCmd()
+
+	case DependencyRemovedMsg:
+		m.doorsView.RefreshDoors()
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after dependency removed: %v\n", err)
+		}
+		m.flash = "Dependency removed"
+		return m, ClearFlashCmd()
+
 	case DeferReturnTickMsg:
 		returned := core.CheckDeferredReturns(m.pool)
 		if returned > 0 {

@@ -21,6 +21,8 @@ const (
 	DetailModeLinkSelect
 	DetailModeLinkBrowse
 	DetailModeDispatchConfirm
+	DetailModeDepBrowse
+	DetailModeDepAdd
 )
 
 // DetailView displays full task details and status action menu.
@@ -43,6 +45,9 @@ type DetailView struct {
 	duplicatePair       *core.DuplicatePair
 	devDispatchEnabled  bool
 	dispatcherAvailable bool
+	depBrowseIndex      int
+	depAddCandidates    []*core.Task
+	depAddSelectedIndex int
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -111,6 +116,10 @@ func (dv *DetailView) Update(msg tea.Msg) tea.Cmd {
 			return dv.handleLinkBrowse(msg)
 		case DetailModeDispatchConfirm:
 			return dv.handleDispatchConfirm(msg)
+		case DetailModeDepBrowse:
+			return dv.handleDepBrowse(msg)
+		case DetailModeDepAdd:
+			return dv.handleDepAdd(msg)
 		default:
 			return dv.handleDetailKeys(msg)
 		}
@@ -194,6 +203,23 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		return func() tea.Msg {
 			return DecomposeStartMsg{TaskID: dv.task.ID, TaskDescription: desc}
 		}
+	case "+":
+		if dv.pool == nil {
+			return func() tea.Msg { return FlashMsg{Text: "Dependencies not available"} }
+		}
+		dv.depAddCandidates = dv.buildDepAddCandidates()
+		if len(dv.depAddCandidates) == 0 {
+			return func() tea.Msg { return FlashMsg{Text: "No tasks available to add as dependency"} }
+		}
+		dv.depAddSelectedIndex = 0
+		dv.mode = DetailModeDepAdd
+	case "-":
+		deps := dv.getDependencies()
+		if len(deps) == 0 {
+			return func() tea.Msg { return FlashMsg{Text: "No dependencies to remove"} }
+		}
+		dv.depBrowseIndex = 0
+		dv.mode = DetailModeDepBrowse
 	case "u", "U":
 		if dv.task.Status == core.StatusComplete {
 			completedAt := dv.task.CompletedAt
@@ -384,6 +410,78 @@ func (dv *DetailView) handleLinkBrowse(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
+func (dv *DetailView) handleDepBrowse(msg tea.KeyMsg) tea.Cmd {
+	deps := dv.getDependencies()
+	switch msg.String() {
+	case "esc":
+		dv.mode = DetailModeView
+	case "up", "k":
+		if dv.depBrowseIndex > 0 {
+			dv.depBrowseIndex--
+		}
+	case "down", "j":
+		if dv.depBrowseIndex < len(deps)-1 {
+			dv.depBrowseIndex++
+		}
+	case "enter":
+		if dv.depBrowseIndex >= 0 && dv.depBrowseIndex < len(deps) {
+			dep := deps[dv.depBrowseIndex]
+			if dv.pool != nil {
+				if target := dv.pool.GetTask(dep.ID); target != nil {
+					return func() tea.Msg { return NavigateToLinkedMsg{Task: target} }
+				}
+			}
+			return func() tea.Msg { return FlashMsg{Text: "Dependency task not found in pool"} }
+		}
+	case "-", "backspace", "delete":
+		if dv.depBrowseIndex >= 0 && dv.depBrowseIndex < len(dv.task.DependsOn) {
+			removedID := dv.task.DependsOn[dv.depBrowseIndex]
+			dv.task.DependsOn = append(dv.task.DependsOn[:dv.depBrowseIndex], dv.task.DependsOn[dv.depBrowseIndex+1:]...)
+			if len(dv.task.DependsOn) == 0 {
+				dv.task.DependsOn = nil
+				dv.mode = DetailModeView
+			} else if dv.depBrowseIndex >= len(dv.task.DependsOn) {
+				dv.depBrowseIndex = len(dv.task.DependsOn) - 1
+			}
+			task := dv.task
+			return func() tea.Msg { return DependencyRemovedMsg{Task: task, DependencyID: removedID} }
+		}
+	}
+	return nil
+}
+
+func (dv *DetailView) handleDepAdd(msg tea.KeyMsg) tea.Cmd {
+	switch msg.String() {
+	case "esc":
+		dv.mode = DetailModeView
+		dv.depAddCandidates = nil
+	case "up", "k":
+		if dv.depAddSelectedIndex > 0 {
+			dv.depAddSelectedIndex--
+		}
+	case "down", "j":
+		if dv.depAddSelectedIndex < len(dv.depAddCandidates)-1 {
+			dv.depAddSelectedIndex++
+		}
+	case "enter":
+		if dv.depAddSelectedIndex >= 0 && dv.depAddSelectedIndex < len(dv.depAddCandidates) {
+			candidate := dv.depAddCandidates[dv.depAddSelectedIndex]
+			if core.WouldCreateCycle(dv.task.ID, candidate.ID, dv.pool) {
+				return func() tea.Msg {
+					return FlashMsg{Text: "Cannot add dependency: would create a circular chain"}
+				}
+			}
+			dv.task.DependsOn = append(dv.task.DependsOn, candidate.ID)
+			dv.mode = DetailModeView
+			dv.depAddCandidates = nil
+			task := dv.task
+			depID := candidate.ID
+			return func() tea.Msg { return DependencyAddedMsg{Task: task, DependencyID: depID} }
+		}
+	}
+	return nil
+}
+
 func (dv *DetailView) handleDispatchConfirm(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
 	case "y", "Y":
@@ -394,6 +492,63 @@ func (dv *DetailView) handleDispatchConfirm(msg tea.KeyMsg) tea.Cmd {
 		dv.mode = DetailModeView
 	}
 	return nil
+}
+
+// FormatBlockedBy renders a "Blocked by: [text] (+N more)" indicator.
+// The first blocker's text is truncated to maxLen characters.
+func FormatBlockedBy(blockers []*core.Task, maxLen int) string {
+	if len(blockers) == 0 {
+		return ""
+	}
+	text := blockers[0].Text
+	if len(text) > maxLen {
+		text = text[:maxLen-3] + "..."
+	}
+	result := "Blocked by: " + text
+	if len(blockers) > 1 {
+		result += fmt.Sprintf(" (+%d more)", len(blockers)-1)
+	}
+	return result
+}
+
+// getDependencies returns all dependencies for the current task with their status.
+func (dv *DetailView) getDependencies() []*core.Task {
+	if dv.pool == nil || len(dv.task.DependsOn) == 0 {
+		return nil
+	}
+	var deps []*core.Task
+	for _, depID := range dv.task.DependsOn {
+		dep := dv.pool.GetTask(depID)
+		if dep == nil {
+			deps = append(deps, &core.Task{
+				ID:   depID,
+				Text: "[deleted task]",
+			})
+		} else {
+			deps = append(deps, dep)
+		}
+	}
+	return deps
+}
+
+// buildDepAddCandidates returns tasks that can be added as dependencies
+// (excluding current task and existing dependencies).
+func (dv *DetailView) buildDepAddCandidates() []*core.Task {
+	if dv.pool == nil {
+		return nil
+	}
+	existing := make(map[string]bool)
+	existing[dv.task.ID] = true
+	for _, depID := range dv.task.DependsOn {
+		existing[depID] = true
+	}
+	var candidates []*core.Task
+	for _, t := range dv.pool.GetAllTasks() {
+		if !existing[t.ID] {
+			candidates = append(candidates, t)
+		}
+	}
+	return candidates
 }
 
 // resolveTaskText looks up task text by ID from the pool.
@@ -476,6 +631,32 @@ func (dv *DetailView) View() string {
 		}
 	}
 
+	// Show dependencies
+	deps := dv.getDependencies()
+	if len(deps) > 0 {
+		depHeaderStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("214")).Bold(true)
+		fmt.Fprintf(&s, "\n%s (%d):\n", depHeaderStyle.Render("Dependencies"), len(deps))
+		for i, dep := range deps {
+			checkbox := "[ ]"
+			if dep.Status == core.StatusComplete {
+				checkbox = "[x]"
+			}
+			prefix := "  "
+			if dv.mode == DetailModeDepBrowse && i == dv.depBrowseIndex {
+				prefix = "> "
+			}
+			fmt.Fprintf(&s, "%s%s %s\n", prefix, checkbox, dep.Text)
+		}
+
+		// Show blocked-by summary if there are blocking deps
+		blockers := core.GetBlockingDependencies(dv.task, dv.pool)
+		if len(blockers) > 0 {
+			blockedStyle := lipgloss.NewStyle().Foreground(colorBlocked)
+			s.WriteString(blockedStyle.Render(FormatBlockedBy(blockers, 40)))
+			s.WriteString("\n")
+		}
+	}
+
 	s.WriteString("\n")
 	s.WriteString(separatorStyle.Render("─────────────────────────────────"))
 	s.WriteString("\n\n")
@@ -498,6 +679,17 @@ func (dv *DetailView) View() string {
 		}
 	case DetailModeLinkBrowse:
 		s.WriteString(helpStyle.Render("[Enter] Navigate [U]nlink [Esc] Back"))
+	case DetailModeDepBrowse:
+		s.WriteString(helpStyle.Render("[Enter] Navigate [- / Del] Remove [Esc] Back"))
+	case DetailModeDepAdd:
+		s.WriteString("Select task to add as dependency (Enter to add, Esc to cancel):\n\n")
+		for i, t := range dv.depAddCandidates {
+			prefix := "  "
+			if i == dv.depAddSelectedIndex {
+				prefix = "> "
+			}
+			fmt.Fprintf(&s, "%s%s\n", prefix, t.Text)
+		}
 	case DetailModeDispatchConfirm:
 		truncated := dv.task.Text
 		if len(truncated) > 50 {
@@ -529,7 +721,11 @@ func (dv *DetailView) View() string {
 		if dv.task.Status == core.StatusComplete {
 			undoHint = " [U]ndo"
 		}
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + " [Esc]Back"))
+		depHint := ""
+		if dv.pool != nil {
+			depHint = " [+]dep [-]dep"
+		}
+		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())
