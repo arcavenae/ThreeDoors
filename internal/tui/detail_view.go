@@ -180,6 +180,9 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 			dv.linkBrowseIndex = 0
 			dv.mode = DetailModeLinkBrowse
 		}
+	case "z", "Z":
+		task := dv.task
+		return func() tea.Msg { return ShowSnoozeMsg{Task: task} }
 	case "g", "G":
 		if dv.agentService == nil {
 			return func() tea.Msg { return FlashMsg{Text: "LLM not configured"} }
@@ -526,7 +529,7 @@ func (dv *DetailView) View() string {
 		if dv.task.Status == core.StatusComplete {
 			undoHint = " [U]ndo"
 		}
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + " [Esc]Back"))
+		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())
