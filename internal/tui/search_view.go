@@ -93,7 +93,7 @@ func NewSearchView(pool *core.TaskPool, tracker *core.SessionTracker, hc *core.H
 }
 
 // SetInlineHints sets the inline hint display state.
-func (sv *SearchView) SetInlineHints(enabled, fade bool) {
+func (sv *SearchView) SetInlineHints(enabled bool, fade bool) {
 	sv.hintEnabled = enabled
 	sv.hintFade = fade
 }

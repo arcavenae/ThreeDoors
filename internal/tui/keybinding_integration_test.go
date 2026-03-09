@@ -11,41 +11,41 @@ import (
 
 // --- Keybinding Bar Toggle (h key) ---
 
-func TestHKey_TogglesBarVisibility(t *testing.T) {
+func TestHKey_TogglesKeyHints(t *testing.T) {
 	t.Parallel()
 	m := makeModel("task1", "task2", "task3")
 	m.width = 80
 	m.height = 24
+	m.doorsView.SetWidth(80)
+	m.doorsView.SetHeight(24)
+	m.doorsView.SetThemeByName("classic")
 
-	// Disable inline hints so "? help" only appears in the keybinding bar.
-	m.doorsView.SetInlineHintsConfig(&core.InlineHintsConfig{ShowInlineHints: false})
-
-	// Bar is on by default.
-	if !m.showKeybindingBar {
-		t.Fatal("expected bar visible by default")
+	// Key hints on by default.
+	if !m.showKeyHints {
+		t.Fatal("expected key hints visible by default")
 	}
 
-	// View should contain the bar separator.
+	// In doors view, hints should appear on doors.
 	view := m.View()
-	if !strings.Contains(view, "─") {
-		t.Error("expected bar separator in view output when bar is enabled")
+	if !strings.Contains(view, "[a]") {
+		t.Error("expected door hints visible when key hints enabled")
 	}
 
 	// Press 'h' to toggle off.
 	m.Update(keyMsg("h"))
-	if m.showKeybindingBar {
-		t.Error("expected bar hidden after pressing h")
+	if m.showKeyHints {
+		t.Error("expected key hints hidden after pressing h")
 	}
 
 	view = m.View()
-	if strings.Contains(view, "? help") {
-		t.Error("expected no bar content in view output when bar is disabled")
+	if strings.Contains(view, "[a]") {
+		t.Error("expected no door hints when key hints disabled")
 	}
 
 	// Press 'h' again to toggle back on.
 	m.Update(keyMsg("h"))
-	if !m.showKeybindingBar {
-		t.Error("expected bar visible after pressing h again")
+	if !m.showKeyHints {
+		t.Error("expected key hints visible after pressing h again")
 	}
 }
 
@@ -57,9 +57,9 @@ func TestHKey_SuppressedDuringTextInput(t *testing.T) {
 	m.searchView = m.newSearchView()
 	m.viewMode = ViewSearch
 
-	barBefore := m.showKeybindingBar
+	barBefore := m.showKeyHints
 	m.Update(keyMsg("h"))
-	if m.showKeybindingBar != barBefore {
+	if m.showKeyHints != barBefore {
 		t.Error("'h' should not toggle bar during text input")
 	}
 }
@@ -71,10 +71,10 @@ func TestHKey_SuppressedWhenOverlayVisible(t *testing.T) {
 	m.height = 24
 	m.showKeybindingOverlay = true
 
-	barBefore := m.showKeybindingBar
+	barBefore := m.showKeyHints
 	m.Update(keyMsg("h"))
 	// Overlay intercepts all keys — bar should not toggle.
-	if m.showKeybindingBar != barBefore {
+	if m.showKeyHints != barBefore {
 		t.Error("'h' should not toggle bar when overlay is visible")
 	}
 }
@@ -251,21 +251,38 @@ func TestView_BarContentChangesWithView(t *testing.T) {
 	}
 }
 
-func TestView_BarHiddenWhenDisabled(t *testing.T) {
+func TestView_BarHiddenInDoorsView(t *testing.T) {
 	t.Parallel()
 	m := makeModel("task1", "task2", "task3")
 	m.width = 80
 	m.height = 24
-	m.showKeybindingBar = false
+	m.showKeyHints = true
 
+	// In doors view, the keybinding bar should never appear (inline hints instead).
 	view := m.View()
-	// When bar is disabled, there should be no separator line in the bar area.
-	// The view should not contain the RenderKeybindingBar output.
 	lines := strings.Split(view, "\n")
 	lastLine := lines[len(lines)-1]
-	// The bar would end with "? help" — shouldn't be there.
 	if strings.Contains(lastLine, "? help") || strings.Contains(lastLine, "? Help") {
-		t.Error("bar content should not appear when bar is disabled")
+		t.Error("keybinding bar should not appear in doors view")
+	}
+}
+
+func TestView_BarHiddenWhenHintsDisabled(t *testing.T) {
+	t.Parallel()
+	m := makeModel("task1", "task2", "task3")
+	m.width = 80
+	m.height = 24
+	m.showKeyHints = false
+
+	// Navigate to detail view where bar would normally show.
+	m.Update(keyMsg("a"))
+	m.Update(keyMsg("enter"))
+
+	view := m.View()
+	lines := strings.Split(view, "\n")
+	lastLine := lines[len(lines)-1]
+	if strings.Contains(lastLine, "? help") || strings.Contains(lastLine, "? Help") {
+		t.Error("bar content should not appear when hints are disabled")
 	}
 }
 
@@ -275,15 +292,23 @@ func TestContentHeight_AdjustsWhenBarVisible(t *testing.T) {
 	t.Parallel()
 	m := makeModel("task1", "task2", "task3")
 	m.height = 24
-	m.showKeybindingBar = true
+	m.showKeyHints = true
 
-	if h := m.contentHeight(); h != 22 {
-		t.Errorf("expected content height 22 with bar, got %d", h)
+	// Doors view: no bar, full height even when hints are on
+	m.viewMode = ViewDoors
+	if h := m.contentHeight(); h != 24 {
+		t.Errorf("expected content height 24 in doors view (no bar), got %d", h)
 	}
 
-	m.showKeybindingBar = false
+	// Non-door view: bar deducted
+	m.viewMode = ViewDetail
+	if h := m.contentHeight(); h != 22 {
+		t.Errorf("expected content height 22 in detail view with bar, got %d", h)
+	}
+
+	m.showKeyHints = false
 	if h := m.contentHeight(); h != 24 {
-		t.Errorf("expected content height 24 without bar, got %d", h)
+		t.Errorf("expected content height 24 without hints, got %d", h)
 	}
 }
 
@@ -291,7 +316,8 @@ func TestContentHeight_NoReductionForSmallTerminals(t *testing.T) {
 	t.Parallel()
 	m := makeModel("task1", "task2", "task3")
 	m.height = 8 // below barHeightHidden (10)
-	m.showKeybindingBar = true
+	m.showKeyHints = true
+	m.viewMode = ViewDetail // non-door view
 
 	if h := m.contentHeight(); h != 8 {
 		t.Errorf("expected no height reduction for small terminal, got %d", h)
@@ -300,7 +326,7 @@ func TestContentHeight_NoReductionForSmallTerminals(t *testing.T) {
 
 // --- Config Persistence ---
 
-func TestSaveKeybindingBarCmd_PersistsToConfig(t *testing.T) {
+func TestSaveKeyHintsCmd_PersistsToConfig(t *testing.T) {
 	t.Parallel()
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.yaml")
@@ -316,7 +342,7 @@ func TestSaveKeybindingBarCmd_PersistsToConfig(t *testing.T) {
 
 	// Generate the save command and execute it.
 	show := false
-	cmd := m.saveKeybindingBarCmd(show)
+	cmd := m.saveKeyHintsCmd(show)
 	if cmd == nil {
 		t.Fatal("expected non-nil command")
 	}
@@ -329,19 +355,19 @@ func TestSaveKeybindingBarCmd_PersistsToConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to reload config: %v", err)
 	}
-	if loaded.ShowKeybindingBar == nil {
-		t.Fatal("expected ShowKeybindingBar to be set in config")
+	if loaded.ShowKeyHints == nil {
+		t.Fatal("expected ShowKeyHints to be set in config")
 	}
-	if *loaded.ShowKeybindingBar != false {
-		t.Error("expected ShowKeybindingBar to be false")
+	if *loaded.ShowKeyHints != false {
+		t.Error("expected ShowKeyHints to be false")
 	}
 }
 
-func TestSaveKeybindingBarCmd_NilWhenNoConfigPath(t *testing.T) {
+func TestSaveKeyHintsCmd_NilWhenNoConfigPath(t *testing.T) {
 	t.Parallel()
 	m := makeModel("task1", "task2", "task3")
 	// configPath is empty — command should be a no-op.
-	cmd := m.saveKeybindingBarCmd(true)
+	cmd := m.saveKeyHintsCmd(true)
 	if cmd == nil {
 		t.Fatal("expected non-nil command")
 	}
@@ -352,24 +378,24 @@ func TestSaveKeybindingBarCmd_NilWhenNoConfigPath(t *testing.T) {
 	}
 }
 
-// --- SetShowKeybindingBar ---
+// --- SetShowKeyHints ---
 
-func TestSetShowKeybindingBar(t *testing.T) {
+func TestSetShowKeyHints(t *testing.T) {
 	t.Parallel()
 	m := makeModel("task1", "task2", "task3")
-	if !m.showKeybindingBar {
+	if !m.showKeyHints {
 		t.Fatal("expected default true")
 	}
 
-	m.SetShowKeybindingBar(false)
-	if m.showKeybindingBar {
-		t.Error("expected false after SetShowKeybindingBar(false)")
+	m.SetShowKeyHints(false)
+	if m.showKeyHints {
+		t.Error("expected false after SetShowKeyHints(false)")
 	}
 }
 
-// --- Config ShowKeybindingBar field ---
+// --- Config ShowKeyHints field and migration ---
 
-func TestProviderConfig_ShowKeybindingBarField(t *testing.T) {
+func TestProviderConfig_ShowKeyHintsField(t *testing.T) {
 	t.Parallel()
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "config.yaml")
@@ -382,11 +408,11 @@ func TestProviderConfig_ShowKeybindingBarField(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)
 	}
-	if cfg.ShowKeybindingBar != nil {
-		t.Error("expected nil ShowKeybindingBar when absent from config")
+	if cfg.ShowKeyHints != nil {
+		t.Error("expected nil ShowKeyHints when absent from config")
 	}
 
-	// Test explicit false.
+	// Test migration: old show_keybinding_bar migrates to show_key_hints.
 	if err := os.WriteFile(configPath, []byte("provider: textfile\nshow_keybinding_bar: false\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -394,20 +420,20 @@ func TestProviderConfig_ShowKeybindingBarField(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)
 	}
-	if cfg.ShowKeybindingBar == nil || *cfg.ShowKeybindingBar != false {
-		t.Error("expected ShowKeybindingBar to be false")
+	if cfg.ShowKeyHints == nil || *cfg.ShowKeyHints != false {
+		t.Error("expected ShowKeyHints to be false after migration from show_keybinding_bar")
 	}
 
-	// Test explicit true.
-	if err := os.WriteFile(configPath, []byte("provider: textfile\nshow_keybinding_bar: true\n"), 0o644); err != nil {
+	// Test explicit show_key_hints true.
+	if err := os.WriteFile(configPath, []byte("provider: textfile\nshow_key_hints: true\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	cfg, err = core.LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)
 	}
-	if cfg.ShowKeybindingBar == nil || *cfg.ShowKeybindingBar != true {
-		t.Error("expected ShowKeybindingBar to be true")
+	if cfg.ShowKeyHints == nil || *cfg.ShowKeyHints != true {
+		t.Error("expected ShowKeyHints to be true")
 	}
 }
 
@@ -497,12 +523,12 @@ func TestHKey_WorksInMultipleViews(t *testing.T) {
 			m.height = 24
 			tt.setup(m)
 
-			if !m.showKeybindingBar {
-				t.Fatal("expected bar visible initially")
+			if !m.showKeyHints {
+				t.Fatal("expected key hints visible initially")
 			}
 			m.Update(keyMsg("h"))
-			if m.showKeybindingBar {
-				t.Error("expected bar hidden after pressing h")
+			if m.showKeyHints {
+				t.Error("expected key hints hidden after pressing h")
 			}
 		})
 	}

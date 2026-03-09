@@ -49,46 +49,46 @@ const (
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
 type MainModel struct {
-	viewMode              ViewMode
-	previousView          ViewMode
-	doorsView             *DoorsView
-	detailView            *DetailView
-	moodView              *MoodView
-	searchView            *SearchView
-	healthView            *HealthView
-	addTaskView           *AddTaskView
-	valuesView            *ValuesView
-	feedbackView          *FeedbackView
-	improvementView       *ImprovementView
-	nextStepsView         *NextStepsView
-	avoidancePromptView   *AvoidancePromptView
-	insightsView          *InsightsView
-	onboardingView        *OnboardingView
-	conflictView          *ConflictView
-	syncLogView           *SyncLogView
-	themePickerView       *ThemePicker
-	devQueueView          *DevQueueView
-	proposalsView         *ProposalsView
-	helpView              *HelpView
-	deferredListView      *DeferredListView
-	snoozeView            *SnoozeView
-	planningView          *PlanningView
-	planningMode          bool // CLI --plan: exit after planning instead of showing doors
-	planningTimestamp     *time.Time
-	configPath            string
-	pool                  *core.TaskPool
-	tracker               *core.SessionTracker
-	provider              core.TaskProvider
-	healthChecker         *core.HealthChecker
-	completionCounter     *core.CompletionCounter
-	patternReport         *core.PatternReport
-	patternAnalyzer       *core.PatternAnalyzer
-	enrichDB              *enrichment.DB
-	valuesConfig          *core.ValuesConfig
-	syncTracker           *core.SyncStatusTracker
-	agentService          *intelligence.AgentService
-	decomposing           bool
-	inlineHintsConfig     *core.InlineHintsConfig
+	viewMode            ViewMode
+	previousView        ViewMode
+	doorsView           *DoorsView
+	detailView          *DetailView
+	moodView            *MoodView
+	searchView          *SearchView
+	healthView          *HealthView
+	addTaskView         *AddTaskView
+	valuesView          *ValuesView
+	feedbackView        *FeedbackView
+	improvementView     *ImprovementView
+	nextStepsView       *NextStepsView
+	avoidancePromptView *AvoidancePromptView
+	insightsView        *InsightsView
+	onboardingView      *OnboardingView
+	conflictView        *ConflictView
+	syncLogView         *SyncLogView
+	themePickerView     *ThemePicker
+	devQueueView        *DevQueueView
+	proposalsView       *ProposalsView
+	helpView            *HelpView
+	deferredListView    *DeferredListView
+	snoozeView          *SnoozeView
+	planningView        *PlanningView
+	planningMode        bool // CLI --plan: exit after planning instead of showing doors
+	planningTimestamp   *time.Time
+	configPath          string
+	pool                *core.TaskPool
+	tracker             *core.SessionTracker
+	provider            core.TaskProvider
+	healthChecker       *core.HealthChecker
+	completionCounter   *core.CompletionCounter
+	patternReport       *core.PatternReport
+	patternAnalyzer     *core.PatternAnalyzer
+	enrichDB            *enrichment.DB
+	valuesConfig        *core.ValuesConfig
+	syncTracker         *core.SyncStatusTracker
+	agentService        *intelligence.AgentService
+	decomposing         bool
+
 	syncLog               *core.SyncLog
 	dedupStore            *core.DedupStore
 	duplicateTaskIDs      map[string]bool
@@ -103,7 +103,7 @@ type MainModel struct {
 	flash                 string
 	width                 int
 	height                int
-	showKeybindingBar     bool
+	showKeyHints          bool
 	showKeybindingOverlay bool
 	keybindingOverlay     *KeybindingOverlay
 	searchQuery           string
@@ -125,30 +125,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		valuesConfig = &core.ValuesConfig{}
 	}
 
-	// Load inline hints config and increment session counter
-	var inlineHintsConfig *core.InlineHintsConfig
-	var inlineHintsFlash string
-	if configPath, err := core.GetConfigDirPath(); err == nil {
-		cfg, loadErr := core.LoadInlineHintsConfig(configPath)
-		if loadErr != nil {
-			cfg = core.DefaultInlineHintsConfig()
-		}
-		cfg.SessionCount++
-
-		// Check if auto-disable threshold reached
-		if cfg.ShowInlineHints && cfg.FadeThreshold > 0 && cfg.SessionCount >= cfg.FadeThreshold {
-			cfg.ShowInlineHints = false
-			inlineHintsFlash = "Key hints hidden — type :hints to bring them back"
-		}
-
-		if saveErr := core.SaveInlineHintsConfig(configPath, cfg); saveErr != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save inline hints config: %v\n", saveErr)
-		}
-		inlineHintsConfig = cfg
-	}
-	if inlineHintsConfig == nil {
-		inlineHintsConfig = core.DefaultInlineHintsConfig()
-	}
+	// showKeyHints defaults to true (D-092: discoverable by default)
 
 	// Initialize completion counter for daily tracking
 	cc := core.NewCompletionCounter()
@@ -228,8 +205,6 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 	if planningTs != nil {
 		doorsView.SetPlanningTimestamp(planningTs)
 	}
-	doorsView.SetInlineHintsConfig(inlineHintsConfig)
-
 	m := &MainModel{
 		viewMode:          ViewDoors,
 		doorsView:         doorsView,
@@ -242,7 +217,6 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		patternAnalyzer:   pa,
 		enrichDB:          edb,
 		valuesConfig:      valuesConfig,
-		inlineHintsConfig: inlineHintsConfig,
 		syncTracker:       syncTracker,
 		syncLog:           syncLog,
 		dedupStore:        dedupStore,
@@ -252,18 +226,15 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		milestoneChecker:  mc,
 		planningTimestamp: planningTs,
 		promptedTasks:     make(map[string]bool),
-		showKeybindingBar: true, // default: bar visible
+		showKeyHints:      true, // default: hints visible (D-092)
 	}
 
 	doorsView.SetSyncSpinner(m.syncSpinner)
+	doorsView.SetShowKeyHints(m.showKeyHints)
 
 	if isFirstRun {
 		m.onboardingView = NewOnboardingView()
 		m.viewMode = ViewOnboarding
-	}
-
-	if inlineHintsFlash != "" {
-		m.flash = inlineHintsFlash
 	}
 
 	return m
@@ -274,9 +245,12 @@ func (m *MainModel) SetConfigPath(path string) {
 	m.configPath = path
 }
 
-// SetShowKeybindingBar sets the initial keybinding bar visibility from config.
-func (m *MainModel) SetShowKeybindingBar(show bool) {
-	m.showKeybindingBar = show
+// SetShowKeyHints sets the initial key hints visibility from config.
+func (m *MainModel) SetShowKeyHints(show bool) {
+	m.showKeyHints = show
+	if m.doorsView != nil {
+		m.doorsView.SetShowKeyHints(show)
+	}
 }
 
 // SetDevDispatch configures dev dispatch with the given dispatcher, queue, and enabled flag.
@@ -882,27 +856,23 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case InlineHintsToggleMsg:
 		switch msg.Arg {
 		case "on":
-			m.inlineHintsConfig.ShowInlineHints = true
-			m.inlineHintsConfig.SessionCount = 0
-			m.flash = "Inline hints enabled"
+			m.showKeyHints = true
+			m.flash = "Key hints enabled"
 		case "off":
-			m.inlineHintsConfig.ShowInlineHints = false
-			m.flash = "Inline hints disabled"
+			m.showKeyHints = false
+			m.flash = "Key hints disabled"
 		default:
-			m.inlineHintsConfig.ShowInlineHints = !m.inlineHintsConfig.ShowInlineHints
-			if m.inlineHintsConfig.ShowInlineHints {
-				m.inlineHintsConfig.SessionCount = 0
-				m.flash = "Inline hints enabled"
+			m.showKeyHints = !m.showKeyHints
+			if m.showKeyHints {
+				m.flash = "Key hints enabled"
 			} else {
-				m.flash = "Inline hints disabled"
+				m.flash = "Key hints disabled"
 			}
 		}
-		if configDir, err := core.GetConfigDirPath(); err == nil {
-			_ = core.SaveInlineHintsConfig(configDir, m.inlineHintsConfig)
-		}
-		m.doorsView.SetInlineHintsConfig(m.inlineHintsConfig)
+		m.doorsView.SetShowKeyHints(m.showKeyHints)
+		m.doorsView.SetHeight(m.contentHeight())
 		m.viewMode = ViewDoors
-		return m, ClearFlashCmd()
+		return m, tea.Batch(ClearFlashCmd(), m.saveKeyHintsCmd(m.showKeyHints))
 
 	case DecomposeStartMsg:
 		if m.decomposing {
@@ -1232,14 +1202,15 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// Global 'h' toggles keybinding bar from any non-text-input view
+	// Global 'h' toggles key hints from any non-text-input view
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "h" && !m.isTextInputActive() {
-		m.showKeybindingBar = !m.showKeybindingBar
+		m.showKeyHints = !m.showKeyHints
+		m.doorsView.SetShowKeyHints(m.showKeyHints)
 		m.doorsView.SetHeight(m.contentHeight())
 		if m.proposalsView != nil {
 			m.proposalsView.SetHeight(m.contentHeight())
 		}
-		return m, m.saveKeybindingBarCmd(m.showKeybindingBar)
+		return m, m.saveKeyHintsCmd(m.showKeyHints)
 	}
 
 	// Global ':' opens command mode from any non-text-input view
@@ -1320,8 +1291,8 @@ func (m *MainModel) updateOverlay(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// saveKeybindingBarCmd returns a tea.Cmd that persists the bar toggle to config.yaml.
-func (m *MainModel) saveKeybindingBarCmd(show bool) tea.Cmd {
+// saveKeyHintsCmd returns a tea.Cmd that persists the key hints toggle to config.yaml.
+func (m *MainModel) saveKeyHintsCmd(show bool) tea.Cmd {
 	configPath := m.configPath
 	return func() tea.Msg {
 		if configPath == "" {
@@ -1329,12 +1300,13 @@ func (m *MainModel) saveKeybindingBarCmd(show bool) tea.Cmd {
 		}
 		cfg, err := core.LoadProviderConfig(configPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to load config for bar toggle save: %v\n", err)
+			fmt.Fprintf(os.Stderr, "warning: failed to load config for key hints save: %v\n", err)
 			return nil
 		}
-		cfg.ShowKeybindingBar = &show
+		cfg.ShowKeyHints = &show
+		cfg.ShowKeybindingBar = nil // clean up legacy field
 		if err := core.SaveProviderConfig(configPath, cfg); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save bar toggle to config: %v\n", err)
+			fmt.Fprintf(os.Stderr, "warning: failed to save key hints to config: %v\n", err)
 		}
 		return nil
 	}
@@ -1592,7 +1564,8 @@ func (m *MainModel) updateValues(msg tea.Msg) (tea.Model, tea.Cmd) {
 // contentHeight returns the available height for view content, accounting for
 // the keybinding bar when it is visible and the terminal is tall enough to show it.
 func (m *MainModel) contentHeight() int {
-	if m.showKeybindingBar && m.height >= barHeightHidden {
+	// Keybinding bar only shows in non-door views when key hints are on
+	if m.showKeyHints && m.viewMode != ViewDoors && m.height >= barHeightHidden {
 		return m.height - 2 // separator + bar
 	}
 	return m.height
@@ -1658,8 +1631,8 @@ func (m *MainModel) findAvoidancePromptTask() *core.Task {
 }
 
 // resolveHints returns the current inline hint enabled/fade state.
-func (m *MainModel) resolveHints() (bool, bool) {
-	return core.ResolveInlineHintState(m.inlineHintsConfig)
+func (m *MainModel) resolveHints() bool {
+	return m.showKeyHints
 }
 
 func (m *MainModel) newDetailView(task *core.Task) *DetailView {
@@ -2097,11 +2070,13 @@ func (m *MainModel) View() string {
 		view += RenderValuesFooter(m.valuesConfig)
 	}
 
-	// Append keybinding bar when enabled.
-	barCtx := m.buildBarContext()
-	barOutput := RenderKeybindingBarWithContext(barCtx, m.width, m.height, m.showKeybindingBar)
-	if barOutput != "" {
-		view += "\n" + barOutput
+	// Append keybinding bar when enabled — doors view uses inline hints instead.
+	if m.viewMode != ViewDoors {
+		barCtx := m.buildBarContext()
+		barOutput := RenderKeybindingBarWithContext(barCtx, m.width, m.height, m.showKeyHints)
+		if barOutput != "" {
+			view += "\n" + barOutput
+		}
 	}
 
 	return view
