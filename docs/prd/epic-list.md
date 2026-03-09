@@ -498,7 +498,22 @@
 - **Estimated Effort:** 17-23 hours across 3 phases
 - **Research:** See `_bmad-output/planning-artifacts/beautiful-stats-research.md`
 
-**Epic 41+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 41: Charm Ecosystem Adoption & TUI Polish** (P2)
+- **Goal:** Systematically adopt underutilized charmbracelet ecosystem components to reduce custom code maintenance, improve UX consistency, and deliver on SOUL.md's "physical objects" promise
+- **Prerequisites:** None hard. Stories 41.3-41.4 should follow Epic 39 keybinding overlay work to avoid conflicts.
+- **Status:** Not Started
+- **Deliverables:**
+  - bubbles/spinner for async provider operation feedback
+  - lipgloss.JoinVertical + Place for cleaner layout composition
+  - bubbles/viewport replacing 3 custom scroll implementations (help, synclog, keybinding overlay)
+  - harmonica spring-physics door transition spike (proof of concept + testing pattern)
+  - Adaptive color profile support for terminal-aware color degradation
+- **Stories:** 41.1-41.6 (6 stories)
+- **Estimated Effort:** 10-15 days
+- **Research:** See `_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md`
+- **Decisions:** D-128 (viewport), D-129 (spinner), D-130 (layout), D-131 (harmonica spike), D-132 (reject list), D-133 (reject textarea/table/etc.), D-134 (epic number 41)
+
+**Epic 42+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -550,5 +565,6 @@
 | Epic 38: Dual Homebrew Distribution | 6 | In Progress (2/6) |
 | Epic 39: Keybinding Display System | 12 | In Progress (4/12) |
 | Epic 40: Beautiful Stats Display | 10 | Not Started |
-| **Total** | **209** | **146 complete, 3 epics in progress, 63 not started** |
+| Epic 41: Charm Ecosystem Adoption | 6 | Not Started |
+| **Total** | **215** | **146 complete, 3 epics in progress, 69 not started** |
 ---

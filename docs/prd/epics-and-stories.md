@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34-37 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epic 38 is IN PROGRESS (2/5). Epics 25, 27-33, 39 are NOT STARTED. 275+ merged PRs total. Last audit: 2026-03-08.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 32, 34-38 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 27-31, 33, 39-41 are NOT STARTED or IN PROGRESS. 340+ merged PRs total. Last audit: 2026-03-09.
 
 ## Requirements Inventory
 
@@ -4220,3 +4220,78 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 - UX Review: `_bmad-output/planning-artifacts/beautiful-stats-ux-review.md`
 - Party Mode: `_bmad-output/planning-artifacts/beautiful-stats-party-mode.md`
 - Architecture: `_bmad-output/planning-artifacts/architecture-beautiful-stats.md`
+
+---
+
+## Epic 41: Charm Ecosystem Adoption & TUI Polish
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** None hard. Stories 41.3-41.4 should be sequenced after Epic 39 keybinding overlay work to avoid merge conflicts.
+
+### Epic Goal
+
+Systematically adopt underutilized charmbracelet ecosystem components to reduce custom code maintenance, improve UX consistency, and deliver on SOUL.md's "physical objects" promise. Prioritizes replacements (viewport, layout) over additions (spinner, harmonica).
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 41.1 | Spinner Component for Async Provider Operations | Not Started | P2 | None |
+| 41.2 | Lipgloss Layout Utilities Adoption | Not Started | P2 | None |
+| 41.3 | Viewport Adoption for Help View | Not Started | P2 | None (sequence after Epic 39) |
+| 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | Not Started | P2 | 41.3 |
+| 41.5 | Harmonica Door Transition Spike | Not Started | P2 | None |
+| 41.6 | Adaptive Color Profile Support | Not Started | P2 | None |
+
+### Story Details
+
+#### Story 41.1: Spinner Component for Async Provider Operations
+
+Add bubbles/spinner for sync and provider loading feedback. When Todoist sync, Apple Notes fetch, or other provider operations are in flight, show a spinner. Replace "no feedback" state with clear activity indication.
+
+**AC:** Spinner visible during provider sync (>100ms), stops on completion/error, deterministic golden file testing, no spinner for instant operations.
+
+#### Story 41.2: Lipgloss Layout Utilities Adoption
+
+Adopt lipgloss.JoinVertical and Place for cleaner layout composition. Replace manual `\n` concatenation with JoinVertical, manual centering with Place. Pure refactor — no functional change.
+
+**AC:** Manual vertical joins replaced, centered content uses Place, all golden tests pass, no behavioral change.
+
+#### Story 41.3: Viewport Adoption for Help View
+
+Replace custom page-based scrolling in help_view with bubbles/viewport. First of three viewport migrations. Adds mouse wheel scrolling and continuous (vs page-based) navigation.
+
+**AC:** Viewport used for help content, mouse wheel works, j/k/up/down preserved, PgUp/PgDn supported, golden tests updated, no content regression.
+
+#### Story 41.4: Viewport Adoption for Synclog and Keybinding Overlay
+
+Complete viewport migration for synclog_view and keybinding_overlay. Create shared NewScrollableView() factory for ThreeDoors viewport defaults. After this, zero custom scroll implementations remain.
+
+**AC:** Both views use viewport, shared factory function exists, mouse wheel works in both, consistent scroll behavior across all three migrated views, golden tests updated.
+
+#### Story 41.5: Harmonica Door Transition Spike
+
+Research spike: spring-physics door selection animation with harmonica. Proof of concept on door selection → detail view transition. Primary deliverable is documented testing pattern for frame-based animations, not the animation itself.
+
+**AC:** harmonica in go.mod, POC transition works, testing pattern documented, golden file strategy documented, performance verified, go/no-go decision recorded.
+
+#### Story 41.6: Adaptive Color Profile Support
+
+Terminal-aware color degradation via lipgloss color profiles. Replace hardcoded 256-color values with adaptive definitions that work across TrueColor, ANSI256, ANSI, and ASCII terminals.
+
+**AC:** Profile detected at startup, graceful degradation in 16-color terminals, theme colors adapt, no change on modern terminals, existing golden tests pass.
+
+### Design Decisions
+
+- D-128: Adopt bubbles/viewport to replace 3 custom scroll implementations
+- D-129: Adopt bubbles/spinner for async operation feedback
+- D-130: Adopt lipgloss.JoinVertical + Place for layout composition
+- D-131: Harmonica door transitions via spike-first approach
+- D-132: Reject bubbles/list for ThreeDoors selection UIs (3-door constraint intentional)
+- D-133: Reject textarea, table, filepicker, timer, help, huh, wish (contradicts SOUL.md)
+- D-134: Epic number 41
+
+### Research
+
+- Audit & Party Mode: `_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md`
