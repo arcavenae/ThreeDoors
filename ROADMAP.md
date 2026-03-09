@@ -52,13 +52,13 @@ Replace broken `:help` flash message with dedicated scrollable help view. Conten
 
 ## Active Epics
 
-### Epic 25: Todoist Integration (P1) — 0/4 stories done
+### Epic 25: Todoist Integration (P1) — 1/4 stories done
 
 Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 25.1 | Todoist HTTP Client & Auth Configuration | Not Started | P1 | Epic 7 (done) |
+| 25.1 | Todoist HTTP Client & Auth Configuration | Done (PR #308) | P1 | Epic 7 (done) |
 | 25.2 | Read-Only Todoist Adapter with Field Mapping | Not Started | P1 | 25.1 |
 | 25.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 25.2 |
 | 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
