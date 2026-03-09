@@ -97,13 +97,13 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
 
-### Epic 32: Undo Task Completion (P1) — 0/3 stories done
+### Epic 32: Undo Task Completion (P1) — 1/3 stories done
 
 Allow reversing accidental task completion via `complete → todo` transition. Validated pain point from Phase 1 gate.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 32.1 | Status Model — Complete-to-Todo Transition | Not Started | P1 | None |
+| 32.1 | Status Model — Complete-to-Todo Transition | Done (PR #306) | P1 | None |
 | 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
 | 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
 
@@ -141,7 +141,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
 
-### Epic 38: Dual Homebrew Distribution (P1) — 3/6 stories done
+### Epic 38: Dual Homebrew Distribution (P1) — 6/6 stories done — COMPLETE
 
 Parallel Homebrew distribution channels (stable + alpha) with signing parity, publishing controls, verification, and retention.
 
@@ -150,9 +150,9 @@ Parallel Homebrew distribution channels (stable + alpha) with signing parity, pu
 | 38.1 | Alpha Homebrew Formula (`threedoors-a`) | Done (PR #273) | P1 | None |
 | 38.2 | Alpha Publishing Toggle | Done (PR #287) | P1 | 38.1 |
 | 38.3 | Stable Release Signing & Notarization | Done (PR #288) | P1 | None |
-| 38.4 | Alpha Release Verification | Not Started | P2 | 38.1, 38.2 |
-| 38.5 | Alpha Release Retention Cleanup | Not Started | P2 | None |
-| 38.6 | Fix Alpha Homebrew Formula Template DSL | Not Started | P1 | 38.1 |
+| 38.4 | Alpha Release Verification | Done (PR #295) | P2 | 38.1, 38.2 |
+| 38.5 | Alpha Release Retention Cleanup | Done (PR #294) | P2 | None |
+| 38.6 | Fix Alpha Homebrew Formula Template DSL | Done (PR #312) | P1 | 38.1 |
 
 ### Epic 39: Keybinding Display System (P1) — 2/6 stories done
 
@@ -218,6 +218,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
 | 36 | Door Selection Interaction Feedback | 3/3 |
 | 37 | Persistent BMAD Agent Infrastructure | 4/4 |
+| 38 | Dual Homebrew Distribution | 6/6 |
 
 ## Icebox (Deferred Indefinitely)
 
