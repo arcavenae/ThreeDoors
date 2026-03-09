@@ -13,14 +13,12 @@ func TestDetailViewInlineHints(t *testing.T) {
 	tests := []struct {
 		name       string
 		enabled    bool
-		fade       bool
 		wantHints  []string // substrings that must appear when hints enabled
 		wantAbsent []string // substrings that must NOT appear when hints disabled
 	}{
 		{
 			name:    "hints enabled shows key labels",
 			enabled: true,
-			fade:    false,
 			wantHints: []string{
 				"[esc]", "[c]", "[b]", "[e]", "[f]",
 			},
@@ -28,17 +26,8 @@ func TestDetailViewInlineHints(t *testing.T) {
 		{
 			name:    "hints disabled shows no bracketed keys",
 			enabled: false,
-			fade:    false,
 			wantAbsent: []string{
 				"[esc]", "[c]", "[b]", "[e]", "[f]",
-			},
-		},
-		{
-			name:    "hints fade mode shows key labels",
-			enabled: true,
-			fade:    true,
-			wantHints: []string{
-				"[esc]", "[c]", "[b]",
 			},
 		},
 	}
@@ -49,7 +38,7 @@ func TestDetailViewInlineHints(t *testing.T) {
 			task := core.NewTask("Test task for detail view")
 			dv := NewDetailView(task, nil, nil, nil)
 			dv.SetWidth(80)
-			dv.SetInlineHints(tt.enabled, tt.fade)
+			dv.SetInlineHints(tt.enabled)
 
 			output := dv.View()
 
@@ -99,7 +88,7 @@ func TestSearchViewInlineHints(t *testing.T) {
 			t.Parallel()
 			sv := NewSearchView(pool, nil, nil, nil, nil)
 			sv.SetWidth(80)
-			sv.SetInlineHints(tt.enabled, false)
+			sv.SetInlineHints(tt.enabled)
 
 			output := sv.View()
 
@@ -147,7 +136,7 @@ func TestMoodViewInlineHints(t *testing.T) {
 			t.Parallel()
 			mv := NewMoodView()
 			mv.SetWidth(80)
-			mv.SetInlineHints(tt.enabled, false)
+			mv.SetInlineHints(tt.enabled)
 
 			output := mv.View()
 
@@ -195,7 +184,7 @@ func TestAddTaskViewInlineHints(t *testing.T) {
 			t.Parallel()
 			av := NewAddTaskView()
 			av.SetWidth(80)
-			av.SetInlineHints(tt.enabled, false)
+			av.SetInlineHints(tt.enabled)
 
 			output := av.View()
 
@@ -246,7 +235,7 @@ func TestHealthViewInlineHints(t *testing.T) {
 			}
 			hv := NewHealthView(result)
 			hv.SetWidth(80)
-			hv.SetInlineHints(tt.enabled, false)
+			hv.SetInlineHints(tt.enabled)
 
 			output := hv.View()
 
@@ -284,7 +273,6 @@ func TestDetailViewHintsFromRegistry(t *testing.T) {
 	t.Parallel()
 
 	// Verify that detail bindings include the keys we render as hints.
-	// This ensures hints are sourced from the keybinding registry.
 	bindings := detailBindings()
 
 	expectedKeys := map[string]bool{
@@ -432,7 +420,7 @@ func TestDetailViewSubModeHints(t *testing.T) {
 			task := core.NewTask("Test task")
 			dv := NewDetailView(task, nil, nil, nil)
 			dv.SetWidth(80)
-			dv.SetInlineHints(true, false)
+			dv.SetInlineHints(true)
 			dv.mode = tt.mode
 
 			output := dv.View()
@@ -451,7 +439,7 @@ func TestMoodViewCustomModeHints(t *testing.T) {
 
 	mv := NewMoodView()
 	mv.SetWidth(80)
-	mv.SetInlineHints(true, false)
+	mv.SetInlineHints(true)
 	mv.isCustom = true
 
 	output := mv.View()

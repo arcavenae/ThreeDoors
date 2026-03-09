@@ -25,7 +25,6 @@ type AddTaskView struct {
 	step         addTaskStep
 	capturedText string
 	hintEnabled  bool
-	hintFade     bool
 }
 
 // NewAddTaskView creates a new AddTaskView with a focused text input.
@@ -50,9 +49,8 @@ func NewAddTaskWithContextView() *AddTaskView {
 }
 
 // SetInlineHints sets the inline hint display state.
-func (av *AddTaskView) SetInlineHints(enabled, fade bool) {
+func (av *AddTaskView) SetInlineHints(enabled bool) {
 	av.hintEnabled = enabled
-	av.hintFade = fade
 }
 
 // SetWidth sets the terminal width for rendering.
@@ -142,7 +140,7 @@ func (av *AddTaskView) View() string {
 	s.WriteString("\n\n")
 
 	if av.hintEnabled {
-		h := func(key string) string { return renderInlineHint(key, av.hintEnabled, av.hintFade) }
+		h := func(key string) string { return renderInlineHint(key, av.hintEnabled) }
 		if av.step == stepContext {
 			s.WriteString(helpStyle.Render(h("enter") + " Submit | Enter (empty) skip | " + h("esc") + " Cancel"))
 		} else {

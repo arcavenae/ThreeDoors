@@ -45,9 +45,13 @@ type ProviderConfig struct {
 	Theme string `yaml:"theme,omitempty"`
 	// DevDispatchEnabled enables the dev dispatch feature (x key and :dispatch command).
 	DevDispatchEnabled bool `yaml:"dev_dispatch_enabled,omitempty"`
-	// ShowKeybindingBar controls whether the keybinding bar is visible.
-	// Uses *bool so we can distinguish "absent" (nil → default true) from "explicitly false".
+	// ShowKeybindingBar is the legacy field, replaced by ShowKeyHints.
+	// Kept for backward-compatible deserialization during migration.
 	ShowKeybindingBar *bool `yaml:"show_keybinding_bar,omitempty"`
+	// ShowKeyHints controls whether key hints are visible.
+	// In doors view: inline door hints [a] [w] [d]. In other views: keybinding bar.
+	// Uses *bool so we can distinguish "absent" (nil → default true) from "explicitly false".
+	ShowKeyHints *bool `yaml:"show_key_hints,omitempty"`
 }
 
 // CurrentSchemaVersion is the current config.yaml schema version.
@@ -98,9 +102,15 @@ func LoadProviderConfig(path string) (*ProviderConfig, error) {
 
 // MigrateConfig updates a config to the current schema version.
 // Version 1 → 2: no config-level changes needed (SourceRef migration happens at task load time).
+// Also migrates show_keybinding_bar → show_key_hints when the new field is absent.
 func MigrateConfig(cfg *ProviderConfig) {
 	if cfg.SchemaVersion < CurrentSchemaVersion {
 		cfg.SchemaVersion = CurrentSchemaVersion
+	}
+	// Migrate show_keybinding_bar → show_key_hints (Story 39.13)
+	if cfg.ShowKeyHints == nil && cfg.ShowKeybindingBar != nil {
+		cfg.ShowKeyHints = cfg.ShowKeybindingBar
+		cfg.ShowKeybindingBar = nil
 	}
 }
 

@@ -3014,7 +3014,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 - **ACs:** ~~Graceful dimming at session N-1 (ANSI 240), auto-disable at session N with flash message, re-enable via :hints on resets counter, configurable threshold (default 5, 0 = never fade), unit tests~~ — Cancelled per course correction D-137/D-140
 
 ### Story 39.13: Unified Door Key Indicator Toggle
-- **Status:** Not Started
+- **Status:** Done (PR #407)
 - **Priority:** P1
 - **Estimate:** M (3-5 hours)
 - **Depends on:** 39.4, 39.9, 39.10

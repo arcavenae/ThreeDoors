@@ -23,7 +23,6 @@ type MoodView struct {
 	isCustom    bool
 	width       int
 	hintEnabled bool
-	hintFade    bool
 }
 
 // NewMoodView creates a new mood capture view.
@@ -32,9 +31,8 @@ func NewMoodView() *MoodView {
 }
 
 // SetInlineHints sets the inline hint display state.
-func (mv *MoodView) SetInlineHints(enabled, fade bool) {
+func (mv *MoodView) SetInlineHints(enabled bool) {
 	mv.hintEnabled = enabled
-	mv.hintFade = fade
 }
 
 // SetWidth sets the terminal width.
@@ -112,7 +110,7 @@ func (mv *MoodView) View() string {
 
 	for i, mood := range moodOptions {
 		if mv.hintEnabled {
-			hint := renderInlineHint(fmt.Sprintf("%d", i+1), mv.hintEnabled, mv.hintFade)
+			hint := renderInlineHint(fmt.Sprintf("%d", i+1), mv.hintEnabled)
 			fmt.Fprintf(&s, "  %s %s\n", hint, mood)
 		} else {
 			fmt.Fprintf(&s, "  %d. %s\n", i+1, mood)
@@ -124,7 +122,7 @@ func (mv *MoodView) View() string {
 	if mv.isCustom {
 		s.WriteString("Enter your mood: " + mv.customInput + "_\n")
 	} else if mv.hintEnabled {
-		h := func(key string) string { return renderInlineHint(key, mv.hintEnabled, mv.hintFade) }
+		h := func(key string) string { return renderInlineHint(key, mv.hintEnabled) }
 		s.WriteString(helpStyle.Render(h("esc") + " Cancel"))
 	} else {
 		s.WriteString(helpStyle.Render("Press 1-7 to select | Esc to cancel"))
