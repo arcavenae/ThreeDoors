@@ -434,14 +434,19 @@
 **Epic 36: Door Selection Interaction Feedback** (P1)
 - **Goal:** Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit. Addresses GitHub Issue #219.
 - **Prerequisites:** None (complements Epic 35 but does not depend on it)
-- **Status:** Not Started
+- **Status:** COMPLETE (PRs #272, #276, #277 merged)
 - **Stories:** 36.1-36.3 (3 stories)
 - **FRs covered:** FR148-FR151
 
 **Epic 37: Persistent BMAD Agent Infrastructure**
 - **Goal:** Enable autonomous project governance by adding persistent BMAD agents and cron jobs that maintain story status, ROADMAP accuracy, architecture doc currency, and quality metrics
 - **Prerequisites:** None
-- **Status:** Not Started
+- **Status:** COMPLETE -- All 4 stories implemented (PR #271, PR #280, PR #279, PR #281)
+- **Deliverables:**
+  - Agent definition files for project-watchdog and arch-watchdog (`agents/`)
+  - Cron configuration for SM sprint health (4h) and QA coverage audit (weekly) (`docs/quality/cron-setup.md`)
+  - Agent communication architecture documentation (`_bmad-output/planning-artifacts/architecture-persistent-agent-infrastructure.md`)
+  - Monitoring, tuning, and Phase 1 evaluation framework (`docs/operations/agent-evaluation.md`)
 - **Stories:** 37.1-37.4 (4 stories)
 
 **Epic 38+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
@@ -491,7 +496,7 @@
 | Epic 33: Seasonal Theme Variants | 4 | Not Started |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
 | Epic 35: Door Visual Appearance | 7 | Complete |
-| Epic 36: Door Selection Feedback | 3 | Not Started |
-| Epic 37: Persistent BMAD Agents | 4 | Not Started |
-| **Total** | **194** | **147 complete, 1 partial, 46 not started** |
+| Epic 36: Door Selection Feedback | 3 | Complete |
+| Epic 37: Persistent BMAD Agents | 4 | Complete |
+| **Total** | **194** | **154 complete, 0 partial, 40 not started** |
 ---

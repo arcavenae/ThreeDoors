@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-08
+> Last updated: 2026-03-09
 
 ## Priority Legend
 
@@ -14,7 +14,7 @@
 
 ### Issue #219: Door Selection UX Improvements
 
-**Status:** Triage complete (PR #221 merged). Implementation not yet started.
+**Status:** Resolved. Epic 36 fully implemented (PRs #272, #276, #277 merged). Issue #219 closed.
 
 Door selection lacks tactile feedback and intuitive interaction patterns.
 
@@ -28,7 +28,7 @@ Branch protection & merge queue optimization to reduce cascading CI reruns.
 
 ### Story 0.31: CI/Security Hardening — Secrets, Supply Chain & Reproducibility (P1)
 
-**Status:** In Review.
+**Status:** Done (PR #270).
 
 Pin golangci-lint version, replace third-party release action with gh CLI, add protected environment for release secrets.
 
@@ -124,16 +124,6 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 36: Door Selection Interaction Feedback (P1) — 0/3 stories done
-
-Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit. Addresses GitHub Issue #219.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 36.1 | Enhanced Door Selection Visual Feedback | Not Started | P1 | None |
-| 36.2 | Deselect Toggle — Press Same Key to Unselect | Not Started | P1 | None |
-| 36.3 | Universal Quit — 'q' Works From All Screens | Not Started | P1 | None |
-
 ### Epic 33: Seasonal Door Theme Variants (P2) — 0/4 stories done
 
 Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
@@ -149,7 +139,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 10/12 |
+| 0 | Infrastructure & Process (Backfill) | 12/12 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
@@ -177,6 +167,8 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 26 | GitHub Issues Integration | 4/4 |
 | 34 | SOUL.md + Custom Development Skills | 4/4 |
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
+| 36 | Door Selection Interaction Feedback | 3/3 |
+| 37 | Persistent BMAD Agent Infrastructure | 4/4 |
 
 ## Icebox (Deferred Indefinitely)
 
