@@ -1426,6 +1426,23 @@ func (m *MainModel) contentHeight() int {
 	return m.height
 }
 
+// buildBarContext constructs a BarContext with sub-mode awareness for the
+// keybinding bar, allowing it to show context-appropriate keys.
+func (m *MainModel) buildBarContext() BarContext {
+	ctx := BarContext{Mode: m.viewMode}
+	switch m.viewMode {
+	case ViewDoors:
+		ctx.DoorSelected = m.doorsView != nil && m.doorsView.selectedDoorIndex >= 0
+	case ViewDetail:
+		if m.detailView != nil {
+			ctx.DetailMode = m.detailView.mode
+		}
+	case ViewSearch:
+		ctx.CommandMode = m.searchView != nil && m.searchView.isCommandMode
+	}
+	return ctx
+}
+
 // isTextInputActive returns true when the current view has an active text input
 // field where 'q' should be treated as text, not as a quit command.
 func (m *MainModel) isTextInputActive() bool {
@@ -1897,8 +1914,8 @@ func (m *MainModel) View() string {
 	}
 
 	// Append keybinding bar when enabled.
-	doorSelected := m.viewMode == ViewDoors && m.doorsView != nil && m.doorsView.selectedDoorIndex >= 0
-	barOutput := RenderKeybindingBar(m.viewMode, m.width, m.height, m.showKeybindingBar, doorSelected)
+	barCtx := m.buildBarContext()
+	barOutput := RenderKeybindingBarWithContext(barCtx, m.width, m.height, m.showKeybindingBar)
 	if barOutput != "" {
 		view += "\n" + barOutput
 	}

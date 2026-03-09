@@ -23,7 +23,7 @@ func newTestOverlay(state OverlayState, width, height int) *KeybindingOverlay {
 func TestKeybindingOverlay_RendersAllGroups(t *testing.T) {
 	setOverlayAsciiProfile(t)
 
-	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 100)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 200)
 	out := ko.View()
 
 	allGroups := allKeyBindingGroups()
@@ -240,4 +240,88 @@ func TestGolden_Overlay_Narrow(t *testing.T) {
 	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 50, 24)
 	out := ko.View()
 	golden.RequireEqual(t, []byte(out))
+}
+
+func TestKeybindingOverlay_CommandsSectionPresent(t *testing.T) {
+	setOverlayAsciiProfile(t)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 200)
+	out := ko.View()
+	if !strings.Contains(out, "Commands") {
+		t.Error("overlay missing Commands section")
+	}
+	// Verify some key commands are listed.
+	for _, cmd := range []string{":add", ":mood", ":stats", ":health", ":deferred"} {
+		if !strings.Contains(out, cmd) {
+			t.Errorf("overlay missing command %q", cmd)
+		}
+	}
+}
+
+func TestKeybindingOverlay_GroupOrdering(t *testing.T) {
+	setOverlayAsciiProfile(t)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 200)
+	out := ko.View()
+
+	// Navigation should appear first (marked as current for DoorsView).
+	navIdx := strings.Index(out, "Navigation")
+	actIdx := strings.Index(out, "Actions")
+	dispIdx := strings.Index(out, "Display")
+	cmdIdx := strings.Index(out, "Commands")
+
+	if navIdx < 0 || actIdx < 0 || dispIdx < 0 || cmdIdx < 0 {
+		t.Fatal("not all expected groups found in overlay output")
+	}
+
+	// Verify ordering: Navigation (current) > Actions > Display > Commands
+	if navIdx >= actIdx {
+		t.Error("Navigation should appear before Actions")
+	}
+	if actIdx >= dispIdx {
+		t.Error("Actions should appear before Display")
+	}
+	if dispIdx >= cmdIdx {
+		t.Error("Display should appear before Commands")
+	}
+}
+
+func TestKeybindingOverlay_CommandsSectionSeparate(t *testing.T) {
+	setOverlayAsciiProfile(t)
+	ko := newTestOverlay(OverlayState{ViewMode: ViewDoors}, 80, 200)
+	out := ko.View()
+
+	// Commands section should be separate from key bindings sections.
+	navIdx := strings.Index(out, "Navigation")
+	cmdIdx := strings.Index(out, "Commands")
+	if cmdIdx <= navIdx {
+		t.Error("Commands should appear after Navigation (key bindings)")
+	}
+}
+
+func TestKeybindingOverlay_ContextFromDifferentViews(t *testing.T) {
+	setOverlayAsciiProfile(t)
+
+	tests := []struct {
+		name     string
+		mode     ViewMode
+		wantName string
+	}{
+		{"doors", ViewDoors, "Navigation"},
+		{"detail", ViewDetail, "Navigation"},
+		{"search", ViewSearch, "Navigation"},
+		{"conflict", ViewConflict, "Actions"},
+		{"help", ViewHelp, "Navigation"},
+		{"deferred", ViewDeferred, "Navigation"},
+		{"snooze", ViewSnooze, "Navigation"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ko := newTestOverlay(OverlayState{ViewMode: tt.mode}, 80, 200)
+			out := ko.View()
+			marker := tt.wantName + " (current)"
+			if !strings.Contains(out, marker) {
+				t.Errorf("expected %q marker in overlay for %s", marker, tt.name)
+			}
+		})
+	}
 }

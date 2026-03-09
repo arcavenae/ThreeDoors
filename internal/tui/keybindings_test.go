@@ -12,6 +12,7 @@ func allViewModes() []ViewMode {
 		ViewAddTask, ViewValuesGoals, ViewFeedback, ViewImprovement,
 		ViewNextSteps, ViewAvoidancePrompt, ViewInsights, ViewOnboarding,
 		ViewConflict, ViewSyncLog, ViewThemePicker, ViewDevQueue, ViewProposals,
+		ViewHelp, ViewDeferred, ViewSnooze,
 	}
 }
 
@@ -219,6 +220,7 @@ func TestAllKeyBindingGroups_HasExpectedCategories(t *testing.T) {
 		"Navigation": false,
 		"Actions":    false,
 		"Display":    false,
+		"Commands":   false,
 	}
 	for _, g := range groups {
 		if _, ok := expected[g.Name]; ok {
@@ -324,4 +326,167 @@ func collectKeys(groups []KeyBindingGroup) map[string]bool {
 		}
 	}
 	return keys
+}
+
+func TestDetailView_HasAllKeyHandlerBindings(t *testing.T) {
+	t.Parallel()
+	groups := viewKeyBindings(ViewDetail, false)
+	keys := collectKeys(groups)
+	// All keys from handleDetailKeys must be registered.
+	for _, want := range []string{
+		"q/esc", "c", "b", "i", "e", "f", "p", "r",
+		"m", "l", "x", "z", "g", "+", "-", "u", "d", "y", "?",
+	} {
+		if !keys[want] {
+			t.Errorf("DetailView missing key %q", want)
+		}
+	}
+}
+
+func TestHelpView_HasRequiredBindings(t *testing.T) {
+	t.Parallel()
+	groups := viewKeyBindings(ViewHelp, false)
+	keys := collectKeys(groups)
+	for _, want := range []string{"q/esc", "j/k", "?"} {
+		if !keys[want] {
+			t.Errorf("HelpView missing key %q", want)
+		}
+	}
+}
+
+func TestDeferredView_HasRequiredBindings(t *testing.T) {
+	t.Parallel()
+	groups := viewKeyBindings(ViewDeferred, false)
+	keys := collectKeys(groups)
+	for _, want := range []string{"q/esc", "j/k", "u", "?"} {
+		if !keys[want] {
+			t.Errorf("DeferredView missing key %q", want)
+		}
+	}
+}
+
+func TestSnoozeView_HasRequiredBindings(t *testing.T) {
+	t.Parallel()
+	groups := viewKeyBindings(ViewSnooze, false)
+	keys := collectKeys(groups)
+	for _, want := range []string{"↑/↓", "enter", "esc", "?"} {
+		if !keys[want] {
+			t.Errorf("SnoozeView missing key %q", want)
+		}
+	}
+}
+
+func TestContextBarBindings_DetailSubModes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		mode     DetailViewMode
+		wantKeys []string
+	}{
+		{"normal", DetailModeView, []string{"q/esc", "c", "e", "?"}},
+		{"blocker input", DetailModeBlockerInput, []string{"enter", "esc"}},
+		{"expand input", DetailModeExpandInput, []string{"enter", "esc"}},
+		{"dispatch confirm", DetailModeDispatchConfirm, []string{"y", "n"}},
+		{"link select", DetailModeLinkSelect, []string{"↑/↓", "enter", "esc"}},
+		{"dep browse", DetailModeDepBrowse, []string{"↑/↓", "esc"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctx := BarContext{Mode: ViewDetail, DetailMode: tt.mode}
+			bindings := contextBarBindings(ctx)
+			keys := make(map[string]bool)
+			for _, b := range bindings {
+				keys[b.Key] = true
+			}
+			for _, want := range tt.wantKeys {
+				if !keys[want] {
+					t.Errorf("DetailMode %d missing key %q in bar", tt.mode, want)
+				}
+			}
+		})
+	}
+}
+
+func TestContextBarBindings_CommandMode(t *testing.T) {
+	t.Parallel()
+	ctx := BarContext{Mode: ViewSearch, CommandMode: true}
+	bindings := contextBarBindings(ctx)
+	keys := make(map[string]bool)
+	for _, b := range bindings {
+		keys[b.Key] = true
+	}
+	if !keys["enter"] {
+		t.Error("command mode bar missing 'enter'")
+	}
+	if !keys["esc"] {
+		t.Error("command mode bar missing 'esc'")
+	}
+	// Should NOT show search navigation keys
+	if keys["↑/↓"] {
+		t.Error("command mode bar should not show search navigation keys")
+	}
+}
+
+func TestContextBarBindings_FallbackToNormal(t *testing.T) {
+	t.Parallel()
+	// Non-sub-mode contexts should fall back to normal barBindings.
+	ctx := BarContext{Mode: ViewDoors, DoorSelected: false}
+	bindings := contextBarBindings(ctx)
+	normalBindings := barBindings(ViewDoors, false)
+	if len(bindings) != len(normalBindings) {
+		t.Errorf("fallback binding count mismatch: got %d, want %d", len(bindings), len(normalBindings))
+	}
+}
+
+func TestCommandBindingGroup_HasAllCommands(t *testing.T) {
+	t.Parallel()
+	group := commandBindingGroup()
+	if group.Name != "Commands" {
+		t.Errorf("command group name = %q, want %q", group.Name, "Commands")
+	}
+	wantCommands := []string{
+		":add", ":mood", ":stats", ":health", ":dashboard",
+		":goals", ":synclog", ":theme", ":deferred", ":devqueue",
+		":suggestions", ":help", ":quit",
+	}
+	keys := make(map[string]bool)
+	for _, b := range group.Bindings {
+		keys[b.Key] = true
+	}
+	for _, want := range wantCommands {
+		if !keys[want] {
+			t.Errorf("command group missing %q", want)
+		}
+	}
+}
+
+func TestAllKeyBindingGroups_CommandsSectionPresent(t *testing.T) {
+	t.Parallel()
+	groups := allKeyBindingGroups()
+	found := false
+	for _, g := range groups {
+		if g.Name == "Commands" {
+			found = true
+			if len(g.Bindings) == 0 {
+				t.Error("Commands group has no bindings")
+			}
+			break
+		}
+	}
+	if !found {
+		t.Error("Commands section not found in allKeyBindingGroups")
+	}
+}
+
+func TestAllKeyBindingGroups_CommandsIsLast(t *testing.T) {
+	t.Parallel()
+	groups := allKeyBindingGroups()
+	if len(groups) == 0 {
+		t.Fatal("no groups")
+	}
+	last := groups[len(groups)-1]
+	if last.Name != "Commands" {
+		t.Errorf("last group = %q, want Commands", last.Name)
+	}
 }

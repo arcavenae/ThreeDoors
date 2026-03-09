@@ -20,6 +20,16 @@ const (
 	PriorityOverlay = 3 // Overlay only
 )
 
+// BarContext carries all context needed for keybinding bar rendering.
+// This allows the bar to adapt to sub-modes (e.g., DetailView text input)
+// without growing function parameter lists.
+type BarContext struct {
+	Mode         ViewMode
+	DoorSelected bool
+	DetailMode   DetailViewMode
+	CommandMode  bool
+}
+
 // viewKeyBindings returns categorized bindings for the given view mode.
 // The doorSelected parameter only matters for ViewDoors — when true, it
 // returns the door-selected binding set instead of the default set.
@@ -64,6 +74,12 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return devQueueBindings()
 	case ViewProposals:
 		return proposalsBindings()
+	case ViewHelp:
+		return helpBindings()
+	case ViewDeferred:
+		return deferredBindings()
+	case ViewSnooze:
+		return snoozeBindings()
 	default:
 		return nil
 	}
@@ -81,6 +97,30 @@ func barBindings(mode ViewMode, doorSelected bool) []KeyBinding {
 		}
 	}
 	return result
+}
+
+// contextBarBindings returns priority-1 bindings using full BarContext,
+// supporting sub-mode awareness (e.g., DetailView text input modes).
+func contextBarBindings(ctx BarContext) []KeyBinding {
+	// Sub-mode overrides for specific view modes.
+	switch ctx.Mode {
+	case ViewDetail:
+		switch ctx.DetailMode {
+		case DetailModeBlockerInput, DetailModeExpandInput:
+			return detailTextInputBarBindings()
+		case DetailModeDispatchConfirm:
+			return detailConfirmBarBindings()
+		case DetailModeLinkSelect, DetailModeDepAdd:
+			return detailSelectBarBindings()
+		case DetailModeLinkBrowse, DetailModeDepBrowse:
+			return detailBrowseBarBindings()
+		}
+	case ViewSearch:
+		if ctx.CommandMode {
+			return commandModeBarBindings()
+		}
+	}
+	return barBindings(ctx.Mode, ctx.DoorSelected)
 }
 
 // allKeyBindingGroups returns all bindings across all views, organized
@@ -139,6 +179,9 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewThemePicker, false},
 		{ViewDevQueue, false},
 		{ViewProposals, false},
+		{ViewHelp, false},
+		{ViewDeferred, false},
+		{ViewSnooze, false},
 	}
 
 	for _, m := range allModes {
@@ -146,6 +189,10 @@ func allKeyBindingGroups() []KeyBindingGroup {
 			addUnique(g.Name, g.Bindings)
 		}
 	}
+
+	// Append commands section — always last.
+	cmdGroup := commandBindingGroup()
+	addUnique(cmdGroup.Name, cmdGroup.Bindings)
 
 	return groups
 }
@@ -210,6 +257,10 @@ func detailBindings() []KeyBindingGroup {
 			{Key: "d", Description: "dismiss dup", Priority: PriorityOverlay},
 			{Key: "y", Description: "merge dup", Priority: PriorityOverlay},
 			{Key: "x", Description: "dispatch", Priority: PriorityOverlay},
+			{Key: "z", Description: "snooze", Priority: PriorityOverlay},
+			{Key: "u", Description: "undo complete", Priority: PriorityOverlay},
+			{Key: "+", Description: "add dependency", Priority: PriorityOverlay},
+			{Key: "-", Description: "remove dependency", Priority: PriorityOverlay},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},
@@ -443,3 +494,116 @@ func proposalsBindings() []KeyBindingGroup {
 		}},
 	}
 }
+
+func helpBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
+			{Key: "j/k", Description: "scroll", Priority: PriorityAlways},
+			{Key: "pgdn/pgup", Description: "page", Priority: PriorityIfSpace},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
+func deferredBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
+			{Key: "j/k", Description: "navigate", Priority: PriorityAlways},
+		}},
+		{Name: "Actions", Bindings: []KeyBinding{
+			{Key: "u", Description: "unsnooze", Priority: PriorityAlways},
+			{Key: "e", Description: "edit date", Priority: PriorityIfSpace},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
+func snoozeBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "↑/↓", Description: "navigate", Priority: PriorityAlways},
+			{Key: "enter", Description: "select", Priority: PriorityAlways},
+			{Key: "esc", Description: "cancel", Priority: PriorityAlways},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
+// --- Sub-mode bar bindings for DetailView ---
+// These replace the normal detail bindings when the view is in a sub-mode.
+
+func detailTextInputBarBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "enter", Description: "submit", Priority: PriorityAlways},
+		{Key: "esc", Description: "cancel", Priority: PriorityAlways},
+	}
+}
+
+func detailConfirmBarBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "y", Description: "confirm", Priority: PriorityAlways},
+		{Key: "n", Description: "cancel", Priority: PriorityAlways},
+	}
+}
+
+func detailSelectBarBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "↑/↓", Description: "navigate", Priority: PriorityAlways},
+		{Key: "enter", Description: "select", Priority: PriorityAlways},
+		{Key: "esc", Description: "cancel", Priority: PriorityAlways},
+	}
+}
+
+func detailBrowseBarBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "↑/↓", Description: "navigate", Priority: PriorityAlways},
+		{Key: "esc", Description: "back", Priority: PriorityAlways},
+	}
+}
+
+func commandModeBarBindings() []KeyBinding {
+	return []KeyBinding{
+		{Key: "enter", Description: "run command", Priority: PriorityAlways},
+		{Key: "esc", Description: "cancel", Priority: PriorityAlways},
+	}
+}
+
+// --- Commands section for overlay ---
+
+// commandBindingGroup returns a KeyBindingGroup listing all : commands.
+func commandBindingGroup() KeyBindingGroup {
+	return KeyBindingGroup{
+		Name: "Commands",
+		Bindings: []KeyBinding{
+			{Key: ":add", Description: "add task", Priority: PriorityOverlay},
+			{Key: ":add-ctx", Description: "add task with context", Priority: PriorityOverlay},
+			{Key: ":mood", Description: "capture mood", Priority: PriorityOverlay},
+			{Key: ":stats", Description: "session statistics", Priority: PriorityOverlay},
+			{Key: ":health", Description: "health check", Priority: PriorityOverlay},
+			{Key: ":dashboard", Description: "insights dashboard", Priority: PriorityOverlay},
+			{Key: ":goals", Description: "values & goals", Priority: PriorityOverlay},
+			{Key: ":synclog", Description: "sync log", Priority: PriorityOverlay},
+			{Key: ":theme", Description: "theme picker", Priority: PriorityOverlay},
+			{Key: ":deferred", Description: "deferred tasks", Priority: PriorityOverlay},
+			{Key: ":devqueue", Description: "dev queue", Priority: PriorityOverlay},
+			{Key: ":suggestions", Description: "task proposals", Priority: PriorityOverlay},
+			{Key: ":help", Description: "help view", Priority: PriorityOverlay},
+			{Key: ":quit", Description: "exit app", Priority: PriorityOverlay},
+		},
+	}
+}
+
+// Audit notes — intentionally omitted bindings:
+// - ctrl+c: handled by Bubbletea framework as universal quit, not view-specific
+// - h: global bar toggle, not a view action — toggling the bar from within the bar
+//   would be circular; users discover 'h' from the overlay or documentation
+// - backspace: standard text editing key in input modes, not a keybinding per se
+// - single-character typing in input modes: not keybindings, just text entry

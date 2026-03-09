@@ -159,32 +159,53 @@ func (ko *KeybindingOverlay) View() string {
 	return bordered
 }
 
+// overlayGroupOrder defines the canonical ordering of groups in the overlay.
+// Current view's primary group is always first (handled separately).
+var overlayGroupOrder = []string{"Navigation", "Actions", "Display", "Commands"}
+
 // reorderGroupsForView returns a copy of groups with the current view's
-// primary group moved to the front. The matching is based on which group
-// contains the most bindings from the current view.
+// primary group first, then remaining groups in canonical order:
+// Current View > Navigation > Actions > Display > Commands.
 func reorderGroupsForView(groups []KeyBindingGroup, mode ViewMode) []KeyBindingGroup {
 	viewGroups := viewKeyBindings(mode, false)
-	if len(viewGroups) == 0 {
-		return groups
+
+	// Build a name→group index.
+	byName := make(map[string]KeyBindingGroup, len(groups))
+	for _, g := range groups {
+		byName[g.Name] = g
 	}
 
-	// Find the name of the first group from the current view.
-	primaryName := viewGroups[0].Name
+	// Determine which group is "current" (first group from the view).
+	primaryName := ""
+	if len(viewGroups) > 0 {
+		primaryName = viewGroups[0].Name
+	}
 
-	// Find and move the matching group to front.
 	result := make([]KeyBindingGroup, 0, len(groups))
-	var primary *KeyBindingGroup
-	for i := range groups {
-		if groups[i].Name == primaryName && primary == nil {
-			primary = &groups[i]
-		} else {
-			result = append(result, groups[i])
+
+	// Current view's primary group first.
+	if primary, ok := byName[primaryName]; ok {
+		result = append(result, primary)
+		delete(byName, primaryName)
+	}
+
+	// Remaining groups in canonical order.
+	for _, name := range overlayGroupOrder {
+		if g, ok := byName[name]; ok {
+			result = append(result, g)
+			delete(byName, name)
 		}
 	}
-	if primary != nil {
-		return append([]KeyBindingGroup{*primary}, result...)
+
+	// Any unexpected groups appended at end.
+	for _, g := range groups {
+		if _, ok := byName[g.Name]; ok {
+			result = append(result, g)
+			delete(byName, g.Name)
+		}
 	}
-	return groups
+
+	return result
 }
 
 // formatBinding formats a single keybinding as "  key     description"
