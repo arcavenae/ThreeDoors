@@ -161,6 +161,9 @@ type ReturnToSearchMsg struct {
 // ShowInsightsMsg is sent to open the insights dashboard view.
 type ShowInsightsMsg struct{}
 
+// StatsAnimationTickMsg drives the counter reveal animation in the insights view.
+type StatsAnimationTickMsg struct{}
+
 // NavigateToLinkedMsg is sent when user selects a linked task to navigate to.
 type NavigateToLinkedMsg struct {
 	Task *core.Task

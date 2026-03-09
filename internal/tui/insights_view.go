@@ -31,6 +31,13 @@ const (
 	tabCount    = 2
 )
 
+// Animation constants for counter reveals.
+const (
+	animationTickInterval = 30 * time.Millisecond
+	animationDuration     = 500 * time.Millisecond
+	animationStep         = float64(animationTickInterval) / float64(animationDuration)
+)
+
 // InsightsView displays the user insights dashboard.
 type InsightsView struct {
 	analyzer   *core.PatternAnalyzer
@@ -44,6 +51,11 @@ type InsightsView struct {
 	lastWidth  int
 	activeTab  int
 	viewport   viewport.Model
+
+	// Animation state for counter reveals (Story 40.7).
+	animating              bool
+	animationProgress      float64
+	hasAnimatedThisSession bool
 }
 
 // NewInsightsView creates a new InsightsView.
@@ -95,6 +107,25 @@ func (iv *InsightsView) invalidateCache() {
 	iv.cacheValid = false
 }
 
+// StartAnimation begins the counter reveal animation if it hasn't played yet this session.
+// Returns a tea.Cmd to start the tick loop, or nil if animation was already shown.
+func (iv *InsightsView) StartAnimation() tea.Cmd {
+	if iv.hasAnimatedThisSession {
+		return nil
+	}
+	iv.animating = true
+	iv.animationProgress = 0.0
+	iv.invalidateCache()
+	return statsAnimationTickCmd()
+}
+
+// statsAnimationTickCmd returns a command that sends a StatsAnimationTickMsg after the tick interval.
+func statsAnimationTickCmd() tea.Cmd {
+	return tea.Tick(animationTickInterval, func(_ time.Time) tea.Msg {
+		return StatsAnimationTickMsg{}
+	})
+}
+
 // statsAccentColor returns the theme's stats accent or the fallback gold.
 func (iv *InsightsView) statsAccentColor() string {
 	if iv.theme != nil && iv.theme.Colors.StatsAccent != "" {
@@ -123,15 +154,31 @@ func (iv *InsightsView) statsPanelBorderColor() lipgloss.AdaptiveColor {
 
 // Update handles messages for the insights view.
 func (iv *InsightsView) Update(msg tea.Msg) tea.Cmd {
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+	switch msg := msg.(type) {
+	case StatsAnimationTickMsg:
+		if !iv.animating {
+			return nil
+		}
+		iv.animationProgress += animationStep
+		iv.invalidateCache()
+		if iv.animationProgress >= 1.0 {
+			iv.animationProgress = 1.0
+			iv.animating = false
+			iv.hasAnimatedThisSession = true
+			return nil
+		}
+		return statsAnimationTickCmd()
+
+	case tea.KeyMsg:
 		switch {
-		case keyMsg.Type == tea.KeyEscape || keyMsg.String() == "q":
+		case msg.Type == tea.KeyEscape || msg.String() == "q":
+			iv.animating = false
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
-		case keyMsg.Type == tea.KeyTab:
+		case msg.Type == tea.KeyTab:
 			iv.activeTab = (iv.activeTab + 1) % tabCount
 			iv.invalidateCache()
 			return nil
-		case keyMsg.Type == tea.KeyShiftTab:
+		case msg.Type == tea.KeyShiftTab:
 			iv.activeTab = (iv.activeTab + tabCount - 1) % tabCount
 			iv.invalidateCache()
 			return nil
@@ -152,7 +199,8 @@ func (iv *InsightsView) Update(msg tea.Msg) tea.Cmd {
 
 // View renders the insights dashboard.
 func (iv *InsightsView) View() string {
-	if iv.cacheValid && iv.lastWidth == iv.width {
+	// Disable cache during animation — every tick must re-render.
+	if !iv.animating && iv.cacheValid && iv.lastWidth == iv.width {
 		return iv.cachedView
 	}
 
@@ -427,12 +475,23 @@ func (iv *InsightsView) renderColdStart(s *strings.Builder) {
 }
 
 // renderHeroNumber renders the themed total tasks completed count.
+// During animation, the displayed value interpolates from 0 to the final value.
 func (iv *InsightsView) renderHeroNumber(s *strings.Builder) {
 	total := iv.analyzer.GetTotalCompleted()
-	heroText := fmt.Sprintf("★ %d tasks completed ★", total)
+	displayed := iv.animatedValue(total)
+	heroText := fmt.Sprintf("★ %d tasks completed ★", displayed)
 	style := statsHeroStyle.Foreground(lipgloss.Color(iv.statsAccentColor()))
 	hero := style.Width(iv.contentWidth()).Render(heroText)
 	fmt.Fprintf(s, "\n%s\n\n", hero)
+}
+
+// animatedValue returns the interpolated value based on animation progress.
+// When not animating (or animation complete), returns the final value unchanged.
+func (iv *InsightsView) animatedValue(finalValue int) int {
+	if !iv.animating {
+		return finalValue
+	}
+	return int(float64(finalValue) * iv.animationProgress)
 }
 
 // renderFunFact renders the daily fun fact with gold star styling.
@@ -614,10 +673,12 @@ func (iv *InsightsView) buildCompletionTrends() string {
 }
 
 // buildStreaks builds the streaks panel content (no border).
+// During animation, the streak count interpolates from 0 to its final value.
 func (iv *InsightsView) buildStreaks() string {
 	streak := iv.counter.GetStreak()
 	if streak > 0 {
-		return fmt.Sprintf("Current streak: %d days", streak)
+		displayed := iv.animatedValue(streak)
+		return fmt.Sprintf("Current streak: %d days", displayed)
 	}
 	return "No active streak — complete a task to start one!"
 }

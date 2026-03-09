@@ -3,6 +3,7 @@ package tui
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -1638,4 +1639,178 @@ func TestStyledSparklineCharsWithGradient(t *testing.T) {
 			t.Errorf("expected nil, got %v", chars)
 		}
 	})
+}
+
+// --- Story 40.7: Animated Counter Reveals ---
+
+func TestInsightsView_AnimationProgressIncrements(t *testing.T) {
+	iv := setupInsightsView(t)
+
+	cmd := iv.StartAnimation()
+	if cmd == nil {
+		t.Fatal("StartAnimation() should return a tick command")
+	}
+	if !iv.animating {
+		t.Fatal("expected animating=true after StartAnimation()")
+	}
+	if iv.animationProgress != 0.0 {
+		t.Fatalf("expected progress=0.0, got %f", iv.animationProgress)
+	}
+
+	// Send one tick — progress should advance by animationStep
+	cmd = iv.Update(StatsAnimationTickMsg{})
+	if cmd == nil {
+		t.Fatal("expected tick command while animating")
+	}
+	expectedProgress := animationStep
+	if iv.animationProgress < expectedProgress-0.001 || iv.animationProgress > expectedProgress+0.001 {
+		t.Fatalf("expected progress ~%f, got %f", expectedProgress, iv.animationProgress)
+	}
+}
+
+func TestInsightsView_AnimationStopsAfterCompletion(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.StartAnimation()
+
+	// Fast-forward to near completion
+	iv.animationProgress = 1.0 - animationStep/2
+
+	cmd := iv.Update(StatsAnimationTickMsg{})
+	if cmd != nil {
+		t.Fatal("expected nil command after animation completes")
+	}
+	if iv.animating {
+		t.Fatal("expected animating=false after completion")
+	}
+	if iv.animationProgress != 1.0 {
+		t.Fatalf("expected progress=1.0 at completion, got %f", iv.animationProgress)
+	}
+	if !iv.hasAnimatedThisSession {
+		t.Fatal("expected hasAnimatedThisSession=true after completion")
+	}
+}
+
+func TestInsightsView_ReentrySkipsAnimation(t *testing.T) {
+	iv := setupInsightsView(t)
+
+	// Simulate completed animation
+	iv.hasAnimatedThisSession = true
+
+	cmd := iv.StartAnimation()
+	if cmd != nil {
+		t.Fatal("StartAnimation() should return nil for re-entry")
+	}
+	if iv.animating {
+		t.Fatal("expected animating=false for re-entry")
+	}
+}
+
+func TestInsightsView_EscDuringAnimationStopsCleanly(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.StartAnimation()
+
+	// Advance a few ticks
+	iv.Update(StatsAnimationTickMsg{})
+	iv.Update(StatsAnimationTickMsg{})
+	if !iv.animating {
+		t.Fatal("expected still animating")
+	}
+
+	// Press Esc
+	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	if cmd == nil {
+		t.Fatal("expected ReturnToDoorsMsg command")
+	}
+	if iv.animating {
+		t.Fatal("expected animating=false after Esc")
+	}
+
+	// Verify the command produces ReturnToDoorsMsg
+	msg := cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Fatalf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+}
+
+func TestInsightsView_AnimatedValueInterpolation(t *testing.T) {
+	iv := setupInsightsView(t)
+
+	tests := []struct {
+		name       string
+		animating  bool
+		progress   float64
+		finalValue int
+		want       int
+	}{
+		{"not animating returns final", false, 0.5, 100, 100},
+		{"progress 0 returns 0", true, 0.0, 100, 0},
+		{"progress 0.5 returns half", true, 0.5, 100, 50},
+		{"progress 1.0 returns final", true, 1.0, 100, 100},
+		{"progress 0.3 rounds down", true, 0.3, 10, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			iv.animating = tt.animating
+			iv.animationProgress = tt.progress
+			got := iv.animatedValue(tt.finalValue)
+			if got != tt.want {
+				t.Errorf("animatedValue(%d) = %d, want %d", tt.finalValue, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestInsightsView_AnimatedHeroNumber(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	iv := setupInsightsView(t)
+
+	// Start animation at progress 0
+	iv.StartAnimation()
+	output := iv.View()
+	if !strings.Contains(output, "0 tasks completed") {
+		t.Errorf("expected '0 tasks completed' at progress 0, got:\n%s", output)
+	}
+
+	// Complete animation
+	iv.animating = false
+	iv.animationProgress = 1.0
+	iv.hasAnimatedThisSession = true
+	iv.invalidateCache()
+	output = iv.View()
+	total := iv.analyzer.GetTotalCompleted()
+	expected := fmt.Sprintf("%d tasks completed", total)
+	if !strings.Contains(output, expected) {
+		t.Errorf("expected '%s' after animation, got:\n%s", expected, output)
+	}
+}
+
+func TestInsightsView_CacheDisabledDuringAnimation(t *testing.T) {
+	iv := setupInsightsView(t)
+	iv.StartAnimation()
+
+	// Render once
+	first := iv.View()
+
+	// Advance progress — should re-render even if cacheValid
+	iv.animationProgress = 0.5
+	iv.cacheValid = true // artificially set cache valid
+	second := iv.View()
+
+	// During animation, cache should be bypassed so we get different output
+	// (hero number changes from 0 to ~half)
+	if first == second {
+		t.Error("expected different output after progress change during animation")
+	}
+}
+
+func TestInsightsView_TickAfterAnimationComplete(t *testing.T) {
+	iv := setupInsightsView(t)
+	// Not animating — lingering tick should be ignored
+	iv.hasAnimatedThisSession = true
+	iv.animating = false
+
+	cmd := iv.Update(StatsAnimationTickMsg{})
+	if cmd != nil {
+		t.Fatal("expected nil command for tick when not animating")
+	}
 }

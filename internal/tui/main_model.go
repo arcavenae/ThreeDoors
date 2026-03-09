@@ -452,7 +452,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.insightsView.SetWidth(m.width)
 		m.previousView = m.viewMode
 		m.viewMode = ViewInsights
-		return m, nil
+		cmd := m.insightsView.StartAnimation()
+		return m, cmd
 
 	case ReturnToSearchMsg:
 		m.searchView = m.newSearchView()
