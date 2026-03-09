@@ -908,7 +908,7 @@ func TestQKey_DetailView_GoesBack(t *testing.T) {
 
 func TestQKey_InsightsView_GoesBack(t *testing.T) {
 	m := makeModel("task1", "task2", "task3")
-	m.insightsView = NewInsightsView(nil, nil)
+	m.insightsView = NewInsightsView(nil, nil, nil)
 	m.viewMode = ViewInsights
 
 	_, cmd := m.Update(keyMsg("q"))
@@ -986,7 +986,7 @@ func TestQKey_TableDriven(t *testing.T) {
 		{
 			name: "insights view — q goes back",
 			setup: func(m *MainModel) {
-				m.insightsView = NewInsightsView(nil, nil)
+				m.insightsView = NewInsightsView(nil, nil, nil)
 				m.viewMode = ViewInsights
 			},
 			wantGoBack: true,

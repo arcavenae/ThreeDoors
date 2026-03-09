@@ -26,6 +26,10 @@ func NewModernTheme() *DoorTheme {
 			Fill:     lipgloss.Color("0"),
 			Accent:   frameColor,
 			Selected: selectedColor,
+
+			StatsAccent:        "#0D9488", // cool teal
+			StatsGradientStart: "#2563EB", // blue
+			StatsGradientEnd:   "#0D9488", // teal
 		},
 		MinWidth:  15,
 		MinHeight: 12,

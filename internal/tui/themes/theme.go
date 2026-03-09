@@ -13,6 +13,12 @@ type ThemeColors struct {
 	Fill     lipgloss.Color
 	Accent   lipgloss.Color
 	Selected lipgloss.Color
+
+	// Stats dashboard colors (Story 40.9). Zero values are safe —
+	// InsightsView falls back to the independent palette when these are empty.
+	StatsAccent        string // panel borders, hero number (#RRGGBB)
+	StatsGradientStart string // sparkline low end (#RRGGBB)
+	StatsGradientEnd   string // sparkline high end (#RRGGBB)
 }
 
 // DoorTheme defines the visual frame for a door.

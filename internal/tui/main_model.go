@@ -444,7 +444,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case ShowInsightsMsg:
-		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter)
+		var activeTheme *themes.DoorTheme
+		if dv := m.doorsView; dv != nil {
+			activeTheme = dv.Theme()
+		}
+		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter, activeTheme)
 		m.insightsView.SetWidth(m.width)
 		m.previousView = m.viewMode
 		m.viewMode = ViewInsights
