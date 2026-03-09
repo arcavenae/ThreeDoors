@@ -47,7 +47,7 @@ func (fv *FeedbackView) Update(msg tea.Msg) tea.Cmd {
 
 func (fv *FeedbackView) handleFeedbackSelection(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
-	case "esc":
+	case "esc", "q":
 		return func() tea.Msg { return ReturnToDoorsMsg{} }
 	case "1":
 		return feedbackCmd(fv.task, "blocked", "")

@@ -109,7 +109,7 @@ func (nv *NextStepsView) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
+		case "esc", "q":
 			return func() tea.Msg { return NextStepDismissedMsg{} }
 		default:
 			// Handle number key selection (1-based)

@@ -45,6 +45,9 @@ func (tp *ThemePicker) SetWidth(w int) {
 func (tp *ThemePicker) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if msg.String() == "q" {
+			return func() tea.Msg { return ThemeCancelledMsg{} }
+		}
 		switch msg.Type {
 		case tea.KeyEscape:
 			return func() tea.Msg { return ThemeCancelledMsg{} }

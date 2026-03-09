@@ -123,14 +123,18 @@ func TestHealthView_Update_EscReturnsToDoorsMsg(t *testing.T) {
 	}
 }
 
-func TestHealthView_Update_QKeyReturnsNil(t *testing.T) {
+func TestHealthView_Update_QKeyGoesBack(t *testing.T) {
 	hv := newTestHealthView(core.HealthCheckItem{
 		Name:   "Test",
 		Status: core.HealthOK,
 	})
 	cmd := hv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
-	if cmd != nil {
-		t.Error("expected nil cmd on 'q' press from health view — q should NOT quit from this view")
+	if cmd == nil {
+		t.Fatal("expected non-nil cmd on 'q' press — q should go back")
+	}
+	msg := cmd()
+	if _, ok := msg.(ReturnToDoorsMsg); !ok {
+		t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
 	}
 }
 

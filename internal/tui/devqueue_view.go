@@ -63,7 +63,7 @@ func (dv *DevQueueView) Update(msg tea.Msg) tea.Cmd {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
+		case "esc", "q":
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
 
 		case "j", "down":

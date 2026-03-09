@@ -28,7 +28,7 @@ func (hv *HealthView) SetWidth(w int) {
 // Update handles messages for the health view.
 func (hv *HealthView) Update(msg tea.Msg) tea.Cmd {
 	if msg, ok := msg.(tea.KeyMsg); ok {
-		if msg.Type == tea.KeyEscape {
+		if msg.Type == tea.KeyEscape || msg.String() == "q" {
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
 		}
 	}
