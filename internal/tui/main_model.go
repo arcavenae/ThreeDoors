@@ -97,6 +97,7 @@ type MainModel struct {
 	dispatcher            dispatch.Dispatcher
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
+	milestoneChecker      *core.MilestoneChecker
 	pollingActive         bool
 	syncSpinner           *SyncSpinner
 	flash                 string
@@ -203,6 +204,16 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		}
 	}
 
+	// Initialize milestone checker
+	var mc *core.MilestoneChecker
+	if configPath, err := core.GetConfigDirPath(); err == nil {
+		mc = core.NewMilestoneChecker(configPath)
+		if loadErr := mc.Load(); loadErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to load milestones: %v\n", loadErr)
+			mc = nil
+		}
+	}
+
 	// Load planning timestamp for focus boost
 	var planningTs *time.Time
 	if configPath, err := core.GetConfigDirPath(); err == nil {
@@ -238,6 +249,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		duplicateTaskIDs:  duplicateTaskIDs,
 		duplicatePairs:    duplicatePairs,
 		syncSpinner:       NewSyncSpinner(),
+		milestoneChecker:  mc,
 		planningTimestamp: planningTs,
 		promptedTasks:     make(map[string]bool),
 		showKeybindingBar: true, // default: bar visible
@@ -449,11 +461,23 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if dv := m.doorsView; dv != nil {
 			activeTheme = dv.Theme()
 		}
-		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter, activeTheme)
+		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter, activeTheme, m.milestoneChecker)
 		m.insightsView.SetWidth(m.width)
 		m.previousView = m.viewMode
 		m.viewMode = ViewInsights
-		cmd := m.insightsView.StartAnimation()
+		animCmd := m.insightsView.StartAnimation()
+
+		// Check for milestone celebrations on view entry
+		var totalTasks, currentStreak, sessionCount int
+		if m.patternAnalyzer != nil {
+			totalTasks = m.patternAnalyzer.GetTotalCompleted()
+			sessionCount = m.patternAnalyzer.GetSessionCount()
+		}
+		if m.completionCounter != nil {
+			currentStreak = m.completionCounter.GetStreak()
+		}
+		milestoneCmd := m.insightsView.CheckAndShowMilestone(totalTasks, currentStreak, sessionCount)
+		cmd := tea.Batch(animCmd, milestoneCmd)
 		return m, cmd
 
 	case ReturnToSearchMsg:

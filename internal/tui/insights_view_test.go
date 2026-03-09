@@ -78,7 +78,7 @@ func setupInsightsView(t *testing.T) *InsightsView {
 
 	cc := core.NewCompletionCounterWithNow(frozen)
 
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 	return iv
 }
@@ -139,7 +139,7 @@ func TestInsightsView_View_ColdStart(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 
 	output := iv.View()
@@ -170,7 +170,7 @@ func TestInsightsView_View_ColdStartStyled(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 
 	output := iv.View()
@@ -467,7 +467,7 @@ func TestBuildMoodCorrelations_BarChars(t *testing.T) {
 		t.Fatalf("LoadSessions() error: %v", err)
 	}
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 
 	content := iv.buildMoodCorrelations()
@@ -518,7 +518,7 @@ func TestBuildMoodCorrelations_EmptyData(t *testing.T) {
 		t.Fatalf("LoadSessions() error: %v", err)
 	}
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 
 	content := iv.buildMoodCorrelations()
@@ -632,7 +632,7 @@ func setupInsightsViewWithHighlights(t *testing.T) *InsightsView {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 	return iv
 }
@@ -739,7 +739,7 @@ func TestInsightsView_SessionHighlights_OmitsZeroData(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 
 	content := iv.buildSessionHighlights()
@@ -1119,7 +1119,7 @@ func TestInsightsView_View_ColdStart_NoFunFact(t *testing.T) {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 
 	output := iv.View()
@@ -1428,7 +1428,7 @@ func setupInsightsViewWithHeatmapData(t *testing.T) *InsightsView {
 	}
 
 	cc := core.NewCompletionCounterWithNow(frozen)
-	iv := NewInsightsView(pa, cc, nil)
+	iv := NewInsightsView(pa, cc, nil, nil)
 	iv.SetWidth(80)
 	iv.SetHeight(30)
 	return iv
@@ -1549,7 +1549,7 @@ func setupInsightsViewWithTheme(t *testing.T, theme *themes.DoorTheme) *Insights
 
 	cc := core.NewCompletionCounterWithNow(frozen)
 
-	iv := NewInsightsView(pa, cc, theme)
+	iv := NewInsightsView(pa, cc, theme, nil)
 	iv.SetWidth(80)
 	return iv
 }
@@ -1812,5 +1812,120 @@ func TestInsightsView_TickAfterAnimationComplete(t *testing.T) {
 	cmd := iv.Update(StatsAnimationTickMsg{})
 	if cmd != nil {
 		t.Fatal("expected nil command for tick when not animating")
+	}
+}
+
+// --- Story 40.10: Milestone Celebrations ---
+
+func TestInsightsView_MilestoneBannerShows(t *testing.T) {
+	dir := t.TempDir()
+	mc := core.NewMilestoneChecker(dir)
+	if err := mc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	pa := core.NewPatternAnalyzer()
+	cc := core.NewCompletionCounter()
+	iv := NewInsightsView(pa, cc, nil, mc)
+	iv.SetWidth(80)
+
+	// Trigger milestone check with sessionCount=1 (first session)
+	cmd := iv.CheckAndShowMilestone(0, 0, 1)
+	if cmd == nil {
+		t.Fatal("expected auto-dismiss command for milestone banner")
+	}
+	if !iv.bannerActive {
+		t.Error("banner should be active after milestone check")
+	}
+
+	output := iv.View()
+	if !strings.Contains(output, "Welcome! Your journey starts here.") {
+		t.Error("view should contain milestone message")
+	}
+}
+
+func TestInsightsView_MilestoneBannerDismissOnKey(t *testing.T) {
+	dir := t.TempDir()
+	mc := core.NewMilestoneChecker(dir)
+	if err := mc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	pa := core.NewPatternAnalyzer()
+	cc := core.NewCompletionCounter()
+	iv := NewInsightsView(pa, cc, nil, mc)
+	iv.SetWidth(80)
+	iv.CheckAndShowMilestone(0, 0, 1)
+
+	// Any key should dismiss
+	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
+	if iv.bannerActive {
+		t.Error("banner should be dismissed after keypress")
+	}
+	// Key should NOT be passed through (no ReturnToDoorsMsg etc.)
+	if cmd != nil {
+		t.Error("keypress during banner should not produce a command")
+	}
+}
+
+func TestInsightsView_MilestoneBannerDismissOnTimer(t *testing.T) {
+	dir := t.TempDir()
+	mc := core.NewMilestoneChecker(dir)
+	if err := mc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	pa := core.NewPatternAnalyzer()
+	cc := core.NewCompletionCounter()
+	iv := NewInsightsView(pa, cc, nil, mc)
+	iv.SetWidth(80)
+	iv.CheckAndShowMilestone(0, 0, 1)
+
+	// Simulate timer firing
+	iv.Update(MilestoneDismissMsg{})
+	if iv.bannerActive {
+		t.Error("banner should be dismissed after MilestoneDismissMsg")
+	}
+}
+
+func TestInsightsView_MilestoneShownOnlyOnce(t *testing.T) {
+	dir := t.TempDir()
+	mc := core.NewMilestoneChecker(dir)
+	if err := mc.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	pa := core.NewPatternAnalyzer()
+	cc := core.NewCompletionCounter()
+
+	// First entry: should trigger
+	iv1 := NewInsightsView(pa, cc, nil, mc)
+	iv1.SetWidth(80)
+	cmd1 := iv1.CheckAndShowMilestone(0, 0, 1)
+	if cmd1 == nil {
+		t.Fatal("first check should trigger milestone")
+	}
+
+	// Second entry with same checker: should NOT trigger (already marked shown)
+	iv2 := NewInsightsView(pa, cc, nil, mc)
+	iv2.SetWidth(80)
+	cmd2 := iv2.CheckAndShowMilestone(0, 0, 1)
+	if cmd2 != nil {
+		t.Error("second check should not trigger same milestone again")
+	}
+}
+
+func TestInsightsView_NilMilestoneChecker(t *testing.T) {
+	pa := core.NewPatternAnalyzer()
+	cc := core.NewCompletionCounter()
+	iv := NewInsightsView(pa, cc, nil, nil)
+	iv.SetWidth(80)
+
+	cmd := iv.CheckAndShowMilestone(100, 10, 5)
+	if cmd != nil {
+		t.Error("nil milestone checker should return nil command")
+	}
+	if iv.bannerActive {
+		t.Error("banner should not be active with nil checker")
 	}
 }
