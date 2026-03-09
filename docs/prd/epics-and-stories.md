@@ -2869,7 +2869,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 **Epic Goal:** Add toggleable keybinding discoverability to the ThreeDoors TUI — a concise context-sensitive bar at the bottom of every view showing available keys, and a full keybinding overlay (`?` key) as a comprehensive reference. Improves discoverability without adding decision complexity, aligning with SOUL.md's friction-reduction philosophy.
 
 **Prerequisites:** None (all required infrastructure exists — Lipgloss, config.yaml persistence, MainModel composition, isTextInputActive() guard)
-**Status:** Not Started (0/5)
+**Status:** In Progress (1/6)
 
 **Deliverables:**
 - Compile-time keybinding registry mapping each ViewMode to available key bindings with priority levels
@@ -2919,6 +2919,13 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 - **Depends on:** 39.4
 - **ACs:** Full keybinding audit (every case handler registered), sub-mode awareness (confirm-delete, expand input, command mode), overlay includes `:` commands section, visual polish, comprehensive golden files for all major views, edge case tests
 
+### Story 39.6: Spacebar as Enter Alias in Doors View
+- **Status:** Done (PR #TBD)
+- **Priority:** P1
+- **Estimate:** XS (<1 hour)
+- **Depends on:** None
+- **ACs:** Spacebar opens selected door (Enter alias), no-op when no selection, help text updated, table-driven tests, race detector passes
+
 ---
 
 ### Epic 39 Story Dependencies
@@ -2929,6 +2936,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 39.3 Full Keybinding Overlay (depends on 39.1)
 39.4 Toggle + Integration (depends on 39.2, 39.3)
 39.5 Completeness + Polish (depends on 39.4)
+39.6 Spacebar as Enter Alias (independent)
 ```
 
 ---

@@ -949,7 +949,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.flash = doorRefreshMessages[rand.IntN(len(doorRefreshMessages))]
 			return m, ClearFlashCmd()
-		case "enter":
+		case "enter", " ":
 			if m.doorsView.selectedDoorIndex >= 0 && m.doorsView.selectedDoorIndex < len(m.doorsView.currentDoors) {
 				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
 				if m.tracker != nil {

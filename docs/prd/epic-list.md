@@ -526,6 +526,6 @@
 | Epic 36: Door Selection Feedback | 3 | Complete |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
 | Epic 38: Dual Homebrew Distribution | 6 | In Progress (2/6) |
-| Epic 39: Keybinding Display System | 5 | Not Started |
+| Epic 39: Keybinding Display System | 6 | In Progress (1/6) |
 | **Total** | **204** | **154 complete, 1 in progress, 49 not started** |
 ---

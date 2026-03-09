@@ -125,6 +125,7 @@
 | D-093 | Bar is theme-independent, dim styling only (Epic 39) | 2026-03-08 | Bar is chrome, not content; themed bars would require updating every theme for non-core feature | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 | D-094 | Auto-hide bar below 10 lines terminal height (Epic 39) | 2026-03-08 | Doors must have priority for screen space; bar is helpful but not essential | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 | D-095 | Fix alpha formula template with `if OS.mac? && Hardware::CPU.arm?` pattern | 2026-03-09 | Matches stable formula fix; addresses root cause in ci.yml not homebrew-tap; minimal change | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
+| D-096 | Spacebar as Enter alias in doors view (Epic 39) | 2026-03-08 | 11-agent unanimous consensus; largest key = most common action; zero new state; consistent with onboarding spacebar behavior | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
 
 ## Rejected
 
@@ -169,6 +170,10 @@
 | X-037 | Runtime keybinding registration / config-driven bindings (Epic 39) | 2026-03-08 | All bindings are known at compile time; runtime flexibility adds complexity for zero current benefit | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
 | X-038 | Shared formula template for stable and alpha (Issue #296) | 2026-03-09 | GoReleaser controls stable; prior decision X-028; YAGNI for two instances | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
 | X-039 | Fix alpha formula directly in homebrew-tap (Issue #296) | 2026-03-09 | Would be overwritten on next CI push; root cause is in ThreeDoors ci.yml | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
+| X-040 | Spacebar as context-sensitive select+confirm | 2026-03-08 | Adds state-dependent behavior diverging from Enter; creates door-1 bias when no selection; ambiguity generates bug reports | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
+| X-041 | Spacebar as quick-complete from doors view | 2026-03-08 | Destructive action behind most easily-hit key; accidental completions; requires undo infrastructure that doesn't exist | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
+| X-042 | Spacebar as knock/peek tooltip | 2026-03-08 | Adds step between user and task; new rendering mode needed; scope disproportionate to value | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
+| X-043 | Spacebar as door cycle (tab equivalent) | 2026-03-08 | Adds parallel selection system alongside a/w/d; new cycle state tracking; confusing with existing positional keys | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
 
 ## Superseded
 

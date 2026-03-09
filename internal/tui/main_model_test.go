@@ -70,6 +70,8 @@ func keyMsg(s string) tea.Msg {
 		return tea.KeyMsg{Type: tea.KeyEscape}
 	case "ctrl+c":
 		return tea.KeyMsg{Type: tea.KeyCtrlC}
+	case " ":
+		return tea.KeyMsg{Type: tea.KeySpace}
 	case "left":
 		return tea.KeyMsg{Type: tea.KeyLeft}
 	case "up":
@@ -259,6 +261,48 @@ func TestEnterKey_NoSelection_Noop(t *testing.T) {
 
 	if m.viewMode != ViewDoors {
 		t.Errorf("expected ViewDoors, got %d (Enter with no selection should be no-op)", m.viewMode)
+	}
+	if m.detailView != nil {
+		t.Error("detailView should remain nil when no door selected")
+	}
+}
+
+// --- Spacebar as Enter Alias (Story 39.6) ---
+
+func TestSpacebar_OpensSelectedDoor(t *testing.T) {
+	tests := []struct {
+		name      string
+		selectKey string
+		doorIndex int
+	}{
+		{"left door via a", "a", 0},
+		{"center door via w", "w", 1},
+		{"right door via d", "d", 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := makeModel("task1", "task2", "task3")
+			m.Update(keyMsg(tt.selectKey))
+			if m.doorsView.selectedDoorIndex != tt.doorIndex {
+				t.Fatalf("expected selectedDoorIndex %d, got %d", tt.doorIndex, m.doorsView.selectedDoorIndex)
+			}
+			m.Update(keyMsg(" "))
+			if m.viewMode != ViewDetail {
+				t.Errorf("expected ViewDetail after spacebar, got %d", m.viewMode)
+			}
+			if m.detailView == nil {
+				t.Fatal("detailView should not be nil after spacebar")
+			}
+		})
+	}
+}
+
+func TestSpacebar_NoSelection_Noop(t *testing.T) {
+	m := makeModel("task1", "task2", "task3")
+	m.Update(keyMsg(" "))
+
+	if m.viewMode != ViewDoors {
+		t.Errorf("expected ViewDoors, got %d (spacebar with no selection should be no-op)", m.viewMode)
 	}
 	if m.detailView != nil {
 		t.Error("detailView should remain nil when no door selected")
