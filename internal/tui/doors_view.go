@@ -289,27 +289,28 @@ func (dv *DoorsView) View() string {
 
 	var renderedDoors []string
 	for i, task := range dv.currentDoors {
-		content := task.Text
+		// Build content parts for vertical composition via lipgloss.JoinVertical.
+		parts := []string{task.Text}
 
 		// Source provider badge
 		if srcBadge := SourceBadge(task.SourceProvider); srcBadge != "" {
-			content = content + "\n" + srcBadge
+			parts = append(parts, srcBadge)
 		}
 
 		// Duplicate indicator
 		if dv.duplicateTaskIDs[task.ID] {
-			content = content + "\n" + DuplicateIndicator()
+			parts = append(parts, DuplicateIndicator())
 		}
 
 		// PR status badge
 		if prBadge := DevDispatchBadge(task); prBadge != "" {
-			content = content + "\n" + prBadge
+			parts = append(parts, prBadge)
 		}
 
 		// Category badges
 		badge := categoryBadge(task)
 		if badge != "" {
-			content = content + "\n" + badgeStyle.Render(badge)
+			parts = append(parts, badgeStyle.Render(badge))
 		}
 
 		// Avoidance indicator — show when bypassed 5+ times, display total times shown
@@ -319,8 +320,10 @@ func (dv *DoorsView) View() string {
 				shownCount = bypassCount
 			}
 			avoidStyle := lipgloss.NewStyle().Faint(true)
-			content = content + "\n" + avoidStyle.Render(fmt.Sprintf("Seen %d times", shownCount))
+			parts = append(parts, avoidStyle.Render(fmt.Sprintf("Seen %d times", shownCount)))
 		}
+
+		content := lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 		statusIndicator := lipgloss.NewStyle().
 			Foreground(StatusColor(string(task.Status))).

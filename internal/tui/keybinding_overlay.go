@@ -102,13 +102,9 @@ func RenderKeybindingOverlay(state OverlayState, width, height int) string {
 	// Build the inner body: title + blank line + visible content.
 	var body strings.Builder
 	title := overlayTitleStyle.Render(overlayTitle)
-	// Center the title within inner width.
-	titleLen := lipgloss.Width(title)
-	titlePad := (innerWidth - titleLen) / 2
-	if titlePad < 0 {
-		titlePad = 0
-	}
-	fmt.Fprintf(&body, "%s%s\n", strings.Repeat(" ", titlePad), title)
+	// Center the title within inner width using lipgloss.Place.
+	body.WriteString(lipgloss.Place(innerWidth, 1, lipgloss.Center, lipgloss.Top, title))
+	body.WriteString("\n")
 	body.WriteString("\n")
 	for i, line := range visible {
 		body.WriteString(line)
