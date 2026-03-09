@@ -281,6 +281,16 @@ var (
 	statsSectionHeaderStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: "#333333", Dark: "#EEEEEE"}).
 				Bold(true)
+
+	// Mood bar chart colors (Story 40.4)
+	moodColors = map[string]lipgloss.AdaptiveColor{
+		"Focused":   {Light: "#2563EB", Dark: "#60A5FA"},
+		"Energized": {Light: "#D97706", Dark: "#FBBF24"},
+		"Calm":      {Light: "#059669", Dark: "#34D399"},
+		"Tired":     {Light: "#6B7280", Dark: "#9CA3AF"},
+	}
+
+	defaultMoodColor = lipgloss.AdaptiveColor{Light: "#6B7280", Dark: "#9CA3AF"}
 )
 
 // StatusColor returns the lipgloss color for a given status string.
