@@ -493,7 +493,11 @@ jobs:
             --prerelease \
             "${ASSETS[@]}"
 
+      # Gated by repository variable — set vars.ALPHA_TAP_ENABLED to 'true'
+      # in GitHub Settings > Actions > Variables to activate alpha formula publishing.
+      # The alpha GitHub release is always created; only the tap push is controlled.
       - name: Update alpha Homebrew formula
+        if: vars.ALPHA_TAP_ENABLED == 'true'
         env:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
