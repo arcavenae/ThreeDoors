@@ -177,6 +177,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 26 | GitHub Issues Integration | 4/4 |
 | 34 | SOUL.md + Custom Development Skills | 4/4 |
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
+| 37 | Persistent BMAD Agent Infrastructure | 4/4 |
 
 ## Icebox (Deferred Indefinitely)
 
