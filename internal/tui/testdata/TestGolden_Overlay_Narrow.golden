@@ -1,0 +1,25 @@
+╔══════════════════════════════════════════════╗
+║             KEYBINDING REFERENCE             ║
+║                                              ║
+║Navigation (current)                          ║
+║  a/w/d       select door                     ║
+║  s           re-roll                         ║
+║  ←/↑/→       select door                     ║
+║  ↓           re-roll                         ║
+║  enter       confirm                         ║
+║  space       confirm                         ║
+║  a/w/d       change door                     ║
+║  esc         deselect                        ║
+║  esc         back                            ║
+║  esc         close                           ║
+║  ↑/↓         navigate                        ║
+║  enter       select                          ║
+║  esc         save & back                     ║
+║  esc         dismiss                         ║
+║  enter       continue                        ║
+║  j/k         scroll                          ║
+║  pgdn/pgup   page                            ║
+║  space       page down                       ║
+║Press ? or esc to close   ↑/↓ to scroll  ▼    ║
+║more                                          ║
+╚══════════════════════════════════════════════╝
