@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/viewport"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-// OverlayState holds the scroll position and context for the keybinding overlay.
+// OverlayState holds the context for the keybinding overlay.
 type OverlayState struct {
-	ScrollOffset int
-	ViewMode     ViewMode
+	ViewMode ViewMode
 }
 
 // Overlay styling — theme-neutral to work with any door theme.
@@ -38,98 +39,111 @@ const (
 	overlayFooter = "Press ? or esc to close   ↑/↓ to scroll"
 )
 
-// RenderKeybindingOverlay renders a full-screen keybinding reference panel.
-// It shows all keybindings organized by category, with the current view's
-// group highlighted at the top. Supports scrolling when content exceeds height.
-func RenderKeybindingOverlay(state OverlayState, width, height int) string {
-	if width < 20 || height < 5 {
-		return ""
+// KeybindingOverlay manages a full-screen keybinding reference panel with viewport scrolling.
+type KeybindingOverlay struct {
+	viewport viewport.Model
+	state    OverlayState
+	width    int
+	height   int
+	ready    bool
+}
+
+// NewKeybindingOverlay creates a new overlay with viewport-based scrolling.
+func NewKeybindingOverlay(state OverlayState, width, height int) *KeybindingOverlay {
+	ko := &KeybindingOverlay{
+		state:  state,
+		width:  width,
+		height: height,
+	}
+	ko.initViewport()
+	return ko
+}
+
+// initViewport creates and configures the viewport for the overlay content.
+func (ko *KeybindingOverlay) initViewport() {
+	// Available height inside the border: total height minus border (2) minus title (1)
+	// minus blank-after-title (1) minus footer (1).
+	innerHeight := ko.height - 5
+	if innerHeight < 1 {
+		innerHeight = 1
 	}
 
-	groups := allKeyBindingGroups()
-	groups = reorderGroupsForView(groups, state.ViewMode)
+	innerWidth := ko.innerWidth()
 
-	// Build content lines (without border/title/footer).
-	var contentLines []string
+	ko.viewport = NewScrollableView(innerWidth, innerHeight)
+	ko.viewport.SetContent(ko.renderContent())
+	ko.ready = true
+}
+
+// innerWidth calculates the usable width inside the border.
+func (ko *KeybindingOverlay) innerWidth() int {
+	// Inner width: total width minus border sides (2) minus padding (2).
+	w := ko.width - 4
+	if w < 10 {
+		w = 10
+	}
+	return w
+}
+
+// renderContent builds the keybinding content lines as a single string.
+func (ko *KeybindingOverlay) renderContent() string {
+	groups := allKeyBindingGroups()
+	groups = reorderGroupsForView(groups, ko.state.ViewMode)
+
+	var s strings.Builder
 	for i, g := range groups {
 		if i > 0 {
-			contentLines = append(contentLines, "")
+			s.WriteString("\n")
 		}
 		label := g.Name
 		if i == 0 {
 			label += " (current)"
 		}
-		contentLines = append(contentLines, overlayCategoryStyle.Render(label))
+		s.WriteString(overlayCategoryStyle.Render(label))
+		s.WriteString("\n")
 
 		for _, b := range g.Bindings {
-			contentLines = append(contentLines, formatBinding(b))
+			s.WriteString(formatBinding(b))
+			s.WriteString("\n")
 		}
 	}
+	return s.String()
+}
 
-	// Available height inside the border: total height minus border (2) minus title (1)
-	// minus blank-after-title (1) minus footer (1).
-	innerHeight := height - 5
-	if innerHeight < 1 {
-		innerHeight = 1
-	}
+// Update handles key events for the overlay.
+func (ko *KeybindingOverlay) Update(msg tea.Msg) tea.Cmd {
+	var cmd tea.Cmd
+	ko.viewport, cmd = ko.viewport.Update(msg)
+	return cmd
+}
 
-	// Inner width: total width minus border sides (2) minus padding (2).
-	innerWidth := width - 4
-	if innerWidth < 10 {
-		innerWidth = 10
-	}
-
-	// Clamp scroll offset.
-	maxScroll := len(contentLines) - innerHeight
-	if maxScroll < 0 {
-		maxScroll = 0
-	}
-	scrollOffset := state.ScrollOffset
-	if scrollOffset < 0 {
-		scrollOffset = 0
-	}
-	if scrollOffset > maxScroll {
-		scrollOffset = maxScroll
+// View renders the full overlay with border, title, viewport content, and footer.
+func (ko *KeybindingOverlay) View() string {
+	if ko.width < 20 || ko.height < 5 {
+		return ""
 	}
 
-	// Slice visible content.
-	endIdx := scrollOffset + innerHeight
-	if endIdx > len(contentLines) {
-		endIdx = len(contentLines)
-	}
-	visible := contentLines[scrollOffset:endIdx]
+	innerWidth := ko.innerWidth()
 
-	// Build the inner body: title + blank line + visible content.
 	var body strings.Builder
 	title := overlayTitleStyle.Render(overlayTitle)
-	// Center the title within inner width using lipgloss.Place.
 	body.WriteString(lipgloss.Place(innerWidth, 1, lipgloss.Center, lipgloss.Top, title))
-	body.WriteString("\n")
-	body.WriteString("\n")
-	for i, line := range visible {
-		body.WriteString(line)
-		if i < len(visible)-1 {
-			body.WriteString("\n")
-		}
-	}
+	body.WriteString("\n\n")
 
-	// Pad remaining lines to fill the box.
-	linesWritten := len(visible)
-	for linesWritten < innerHeight {
-		body.WriteString("\n")
-		linesWritten++
-	}
+	body.WriteString(ko.viewport.View())
 
-	// Add scroll indicator if there's more content below.
-	hasMoreBelow := scrollOffset+innerHeight < len(contentLines)
-	hasMoreAbove := scrollOffset > 0
-
+	// Footer with scroll indicator.
+	scrollPct := ko.viewport.ScrollPercent()
 	footer := overlayFooterStyle.Render(overlayFooter)
-	if hasMoreBelow || hasMoreAbove {
+
+	// Show scroll indicators based on position.
+	if ko.viewport.TotalLineCount() > ko.viewport.Height {
 		var indicator string
-		if hasMoreAbove && hasMoreBelow {
+		atTop := scrollPct <= 0
+		atBottom := scrollPct >= 1
+		if !atTop && !atBottom {
 			indicator = "  ▲▼ more"
-		} else if hasMoreBelow {
+		} else if atTop {
 			indicator = "  ▼ more"
 		} else {
 			indicator = "  ▲ more"
@@ -138,48 +152,11 @@ func RenderKeybindingOverlay(state OverlayState, width, height int) string {
 	}
 	fmt.Fprintf(&body, "\n%s", footer)
 
-	// Apply the border.
 	bordered := overlayBorderStyle.
 		Width(innerWidth).
 		Render(body.String())
 
 	return bordered
-}
-
-// ClampScrollOffset clamps a scroll offset for the given overlay dimensions.
-func ClampScrollOffset(offset, height int) int {
-	groups := allKeyBindingGroups()
-	contentLines := countContentLines(groups)
-
-	innerHeight := height - 5
-	if innerHeight < 1 {
-		innerHeight = 1
-	}
-
-	maxScroll := contentLines - innerHeight
-	if maxScroll < 0 {
-		maxScroll = 0
-	}
-	if offset < 0 {
-		return 0
-	}
-	if offset > maxScroll {
-		return maxScroll
-	}
-	return offset
-}
-
-// countContentLines counts how many lines the overlay content occupies.
-func countContentLines(groups []KeyBindingGroup) int {
-	total := 0
-	for i, g := range groups {
-		if i > 0 {
-			total++ // blank separator line
-		}
-		total++ // category header
-		total += len(g.Bindings)
-	}
-	return total
 }
 
 // reorderGroupsForView returns a copy of groups with the current view's

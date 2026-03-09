@@ -92,8 +92,11 @@ func TestQuestionMark_OpensOverlay(t *testing.T) {
 	if !m.showKeybindingOverlay {
 		t.Error("expected overlay to open after pressing ?")
 	}
-	if m.overlayState.ViewMode != ViewDoors {
-		t.Errorf("expected overlay ViewMode to be ViewDoors, got %d", m.overlayState.ViewMode)
+	if m.keybindingOverlay == nil {
+		t.Fatal("expected keybindingOverlay to be created")
+	}
+	if m.keybindingOverlay.state.ViewMode != ViewDoors {
+		t.Errorf("expected overlay ViewMode to be ViewDoors, got %d", m.keybindingOverlay.state.ViewMode)
 	}
 }
 
@@ -103,14 +106,14 @@ func TestQuestionMark_ClosesOverlay(t *testing.T) {
 	m.width = 80
 	m.height = 24
 	m.showKeybindingOverlay = true
-	m.overlayState = OverlayState{ScrollOffset: 5, ViewMode: ViewDoors}
+	m.keybindingOverlay = NewKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
 
 	m.Update(keyMsg("?"))
 	if m.showKeybindingOverlay {
 		t.Error("expected overlay to close after pressing ?")
 	}
-	if m.overlayState.ScrollOffset != 0 {
-		t.Error("expected scroll offset to reset on overlay dismiss")
+	if m.keybindingOverlay != nil {
+		t.Error("expected keybindingOverlay to be nil on overlay dismiss")
 	}
 }
 
@@ -120,14 +123,14 @@ func TestEsc_ClosesOverlay(t *testing.T) {
 	m.width = 80
 	m.height = 24
 	m.showKeybindingOverlay = true
-	m.overlayState = OverlayState{ScrollOffset: 3, ViewMode: ViewDoors}
+	m.keybindingOverlay = NewKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
 
 	m.Update(keyMsg("esc"))
 	if m.showKeybindingOverlay {
 		t.Error("expected overlay to close after pressing esc")
 	}
-	if m.overlayState.ScrollOffset != 0 {
-		t.Error("expected scroll offset to reset on overlay dismiss")
+	if m.keybindingOverlay != nil {
+		t.Error("expected keybindingOverlay to be nil on overlay dismiss")
 	}
 }
 
@@ -153,34 +156,33 @@ func TestOverlay_ScrollKeys(t *testing.T) {
 	m.width = 80
 	m.height = 24
 	m.showKeybindingOverlay = true
-	m.overlayState = OverlayState{ScrollOffset: 0, ViewMode: ViewDoors}
+	m.keybindingOverlay = NewKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
+
+	initialOffset := m.keybindingOverlay.viewport.YOffset
 
 	// Scroll down.
 	m.Update(keyMsg("j"))
-	if m.overlayState.ScrollOffset != 1 {
-		t.Errorf("expected scroll offset 1 after j, got %d", m.overlayState.ScrollOffset)
+	if m.keybindingOverlay.viewport.YOffset <= initialOffset {
+		t.Error("expected viewport to scroll down after j")
 	}
 
+	offset1 := m.keybindingOverlay.viewport.YOffset
 	m.Update(keyMsg("down"))
-	if m.overlayState.ScrollOffset != 2 {
-		t.Errorf("expected scroll offset 2 after down, got %d", m.overlayState.ScrollOffset)
+	if m.keybindingOverlay.viewport.YOffset <= offset1 {
+		t.Error("expected viewport to scroll down after down")
 	}
 
 	// Scroll up.
+	offset2 := m.keybindingOverlay.viewport.YOffset
 	m.Update(keyMsg("k"))
-	if m.overlayState.ScrollOffset != 1 {
-		t.Errorf("expected scroll offset 1 after k, got %d", m.overlayState.ScrollOffset)
+	if m.keybindingOverlay.viewport.YOffset >= offset2 {
+		t.Error("expected viewport to scroll up after k")
 	}
 
+	offset3 := m.keybindingOverlay.viewport.YOffset
 	m.Update(keyMsg("up"))
-	if m.overlayState.ScrollOffset != 0 {
-		t.Errorf("expected scroll offset 0 after up, got %d", m.overlayState.ScrollOffset)
-	}
-
-	// Shouldn't go below 0.
-	m.Update(keyMsg("up"))
-	if m.overlayState.ScrollOffset != 0 {
-		t.Errorf("expected scroll offset clamped at 0, got %d", m.overlayState.ScrollOffset)
+	if m.keybindingOverlay.viewport.YOffset >= offset3 {
+		t.Error("expected viewport to scroll up after up")
 	}
 }
 
@@ -190,7 +192,7 @@ func TestOverlay_ConsumesOtherKeys(t *testing.T) {
 	m.width = 80
 	m.height = 24
 	m.showKeybindingOverlay = true
-	m.overlayState = OverlayState{ViewMode: ViewDoors}
+	m.keybindingOverlay = NewKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
 
 	// These keys should be consumed — no view change.
 	for _, key := range []string{"a", "w", "d", "s", "q", "n"} {
@@ -212,7 +214,7 @@ func TestView_OverlayReplacesNormalView(t *testing.T) {
 	m.width = 80
 	m.height = 24
 	m.showKeybindingOverlay = true
-	m.overlayState = OverlayState{ViewMode: ViewDoors}
+	m.keybindingOverlay = NewKeybindingOverlay(OverlayState{ViewMode: ViewDoors}, 80, 24)
 
 	view := m.View()
 	if !strings.Contains(view, "KEYBINDING REFERENCE") {
@@ -446,8 +448,11 @@ func TestOverlay_OpensWithCurrentViewContext(t *testing.T) {
 			m.height = 24
 			tt.setup(m)
 			m.Update(keyMsg("?"))
-			if m.overlayState.ViewMode != tt.wantMode {
-				t.Errorf("expected overlay ViewMode %d, got %d", tt.wantMode, m.overlayState.ViewMode)
+			if m.keybindingOverlay == nil {
+				t.Fatal("expected keybindingOverlay to be created")
+			}
+			if m.keybindingOverlay.state.ViewMode != tt.wantMode {
+				t.Errorf("expected overlay ViewMode %d, got %d", tt.wantMode, m.keybindingOverlay.state.ViewMode)
 			}
 		})
 	}
