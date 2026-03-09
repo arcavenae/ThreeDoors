@@ -320,6 +320,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.helpView != nil {
 			m.helpView.SetWidth(msg.Width)
+			m.helpView.SetHeight(msg.Height)
 		}
 		if m.snoozeView != nil {
 			m.snoozeView.SetWidth(msg.Width)
@@ -934,6 +935,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ShowHelpMsg:
 		hv := NewHelpView()
 		hv.SetWidth(m.width)
+		hv.SetHeight(m.height)
 		m.helpView = hv
 		m.previousView = m.viewMode
 		m.viewMode = ViewHelp
