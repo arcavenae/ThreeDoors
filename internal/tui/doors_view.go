@@ -331,13 +331,29 @@ func (dv *DoorsView) View() string {
 		}
 		content = statusIndicator + devBadge + "\n\n" + content
 
+		// Apply content emphasis based on selection state:
+		// - When a door is selected: bold/bright for selected, faint for unselected
+		// - When no door is selected (index -1): normal styling for all
+		isSelected := i == dv.selectedDoorIndex
+		hasSelection := dv.selectedDoorIndex >= 0
+		if hasSelection {
+			if isSelected {
+				content = selectedContentStyle.Render(content)
+			} else {
+				content = unselectedContentStyle.Render(content)
+			}
+		}
+
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
-			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, i == dv.selectedDoorIndex))
+			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected))
 		} else {
 			var style lipgloss.Style
-			if i == dv.selectedDoorIndex {
+			if isSelected {
 				style = selectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
+			} else if hasSelection {
+				// Another door is selected — dim this door's frame
+				style = unselectedDoorStyle.Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 			} else if usePerDoorColors && i < len(doorColors) {
 				style = doorStyle.BorderForeground(doorColors[i]).Width(doorWidth).Height(doorHeight).AlignVertical(lipgloss.Center)
 			} else {

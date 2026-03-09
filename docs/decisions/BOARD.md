@@ -86,6 +86,7 @@
 | D-057 | Alpha formula `threedoors-a.rb` in same tap | 2026-03-08 | Single tap; consistent UX; no `conflicts_with` needed | [Research](../research/dual-homebrew-distribution-research.md) |
 | D-058 | Manual planning doc reconciliation over automation | 2026-03-08 | Automation rejected — drift is infrequent, docs are heterogeneous, CLAUDE.md reminder sufficient | [Artifact](../../_bmad-output/planning-artifacts/planning-docs-reconciliation-triage-party-mode.md) |
 | D-059 | Universal quit via MainModel-level 'q' interception | 2026-03-08 | Centralizes quit logic; views don't need individual 'q' handlers; `isTextInputActive()` guards text input views | [Story 36.3](../stories/36.3.story.md) |
+| D-060 | Content pre-styling for door selection contrast | 2026-03-08 | Style content before theme Render(); avoids modifying each theme; uses Bold/Faint + DoubleBorder for structural emphasis | [Story 36.1](../../docs/stories/36.1.story.md) |
 
 ## Rejected
 
@@ -115,6 +116,7 @@
 | X-022 | `threedoors@alpha` formula naming | 2026-03-08 | `@` is for versioned formulae, not rolling channels; triggers keg_only expectations | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | X-023 | Separate tap for alpha (`homebrew-tap-alpha`) | 2026-03-08 | Unnecessary complexity; single tap with two formulae is standard | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | X-024 | Per-view 'q' handler for universal quit | 2026-03-08 | Would require modifying 10+ view files; higher maintenance burden; centralized interception is simpler | [Story 36.3](../stories/36.3.story.md) |
+| X-025 | Per-theme Render() modification for selection contrast | 2026-03-08 | Content pre-styling at DoorsView level is simpler and requires no theme changes | [Story 36.1](../../docs/stories/36.1.story.md) |
 
 ## Superseded
 

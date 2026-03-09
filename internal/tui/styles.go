@@ -33,10 +33,29 @@ var (
 			BorderForeground(colorAccent).
 			Padding(1, 2)
 
+	// unselectedDoorStyle dims unselected doors when a selection is active,
+	// creating a focus funnel toward the selected door.
+	unselectedDoorStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("240")).
+				Padding(1, 2).
+				Faint(true)
+
 	selectedDoorStyle = lipgloss.NewStyle().
-				Border(lipgloss.ThickBorder()).
+				Border(lipgloss.DoubleBorder()).
 				BorderForeground(colorDoorBright).
-				Padding(1, 2)
+				Padding(1, 2).
+				Bold(true).
+				Foreground(colorDoorBright)
+
+	// selectedContentStyle applies bold + bright foreground to door content text.
+	selectedContentStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(colorDoorBright)
+
+	// unselectedContentStyle dims door content when another door is selected.
+	unselectedContentStyle = lipgloss.NewStyle().
+				Faint(true)
 
 	// Detail view styles
 	detailBorder = lipgloss.NewStyle().
