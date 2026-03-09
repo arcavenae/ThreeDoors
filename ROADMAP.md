@@ -89,7 +89,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 |-------|-------|--------|----------|------------|
 | 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ### Epic 32: Undo Task Completion (P1) — COMPLETE
