@@ -86,13 +86,13 @@ Surfaces existing `StatusDeferred` as a first-class user action with date-based 
 | 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
 | 28.4 | Session Metrics Logging for Snooze Events | Not Started | P1 | 28.1 |
 
-### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 0/4 stories done
+### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 1/4 stories done
 
 Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Not Started | P1 | None |
+| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Not Started | P1 | 29.1 |
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
@@ -188,7 +188,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 11/13 |
+| 0 | Infrastructure & Process (Backfill) | 12/13 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
