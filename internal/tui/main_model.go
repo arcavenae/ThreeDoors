@@ -42,6 +42,7 @@ const (
 	ViewDevQueue
 	ViewProposals
 	ViewHelp
+	ViewDeferred
 	ViewSnooze
 )
 
@@ -68,6 +69,7 @@ type MainModel struct {
 	devQueueView          *DevQueueView
 	proposalsView         *ProposalsView
 	helpView              *HelpView
+	deferredListView      *DeferredListView
 	snoozeView            *SnoozeView
 	configPath            string
 	pool                  *core.TaskPool
@@ -328,6 +330,9 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.helpView.SetWidth(msg.Width)
 			m.helpView.SetHeight(msg.Height)
 		}
+		if m.deferredListView != nil {
+			m.deferredListView.SetWidth(msg.Width)
+		}
 		if m.snoozeView != nil {
 			m.snoozeView.SetWidth(msg.Width)
 		}
@@ -355,6 +360,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.healthView = nil
 		m.insightsView = nil
 		m.addTaskView = nil
+		m.deferredListView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
 
@@ -715,9 +721,17 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after snooze: %v\n", err)
 		}
-		m.viewMode = ViewDoors
-		m.doorsView.RefreshDoors()
-		m.flash = "Task snoozed"
+		if m.previousView == ViewDeferred {
+			if m.deferredListView != nil {
+				m.deferredListView.Refresh()
+			}
+			m.viewMode = ViewDeferred
+			m.flash = "Snooze date updated"
+		} else {
+			m.viewMode = ViewDoors
+			m.doorsView.RefreshDoors()
+			m.flash = "Task snoozed"
+		}
 		return m, ClearFlashCmd()
 
 	case SnoozeCancelledMsg:
@@ -951,6 +965,35 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewHelp
 		return m, nil
 
+	case ShowDeferredListMsg:
+		m.deferredListView = NewDeferredListView(m.pool)
+		m.deferredListView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewDeferred
+		return m, nil
+
+	case UnsnoozeTaskMsg:
+		if err := msg.Task.UpdateStatus(core.StatusTodo); err != nil {
+			m.flash = fmt.Sprintf("Cannot un-snooze: %v", err)
+			return m, ClearFlashCmd()
+		}
+		msg.Task.DeferUntil = nil
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.flash = "Task un-snoozed — returned to todo"
+		if m.deferredListView != nil {
+			m.deferredListView.Refresh()
+		}
+		return m, ClearFlashCmd()
+
+	case EditDeferDateMsg:
+		m.snoozeView = NewSnoozeView(msg.Task)
+		m.snoozeView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewSnooze
+		return m, nil
+
 	case ShowDevQueueMsg:
 		if m.devQueue == nil || m.dispatcher == nil {
 			m.flash = "Dev queue not available"
@@ -1082,6 +1125,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateProposals(msg)
 	case ViewHelp:
 		return m.updateHelp(msg)
+	case ViewDeferred:
+		return m.updateDeferred(msg)
 	case ViewSnooze:
 		return m.updateSnooze(msg)
 	}
@@ -1123,6 +1168,22 @@ func (m *MainModel) saveKeybindingBarCmd(show bool) tea.Cmd {
 		}
 		return nil
 	}
+}
+
+func (m *MainModel) updateDeferred(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.deferredListView == nil {
+		return m, nil
+	}
+	cmd := m.deferredListView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSnooze(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.snoozeView == nil {
+		return m, nil
+	}
+	cmd := m.snoozeView.Update(msg)
+	return m, cmd
 }
 
 func (m *MainModel) updateImprovement(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -1280,14 +1341,6 @@ func (m *MainModel) updateAvoidancePrompt(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.avoidancePromptView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateSnooze(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.snoozeView == nil {
-		return m, nil
-	}
-	cmd := m.snoozeView.Update(msg)
 	return m, cmd
 }
 
@@ -1812,6 +1865,10 @@ func (m *MainModel) View() string {
 	case ViewHelp:
 		if m.helpView != nil {
 			view = m.helpView.View()
+		}
+	case ViewDeferred:
+		if m.deferredListView != nil {
+			view = m.deferredListView.View()
 		}
 	case ViewSnooze:
 		if m.snoozeView != nil {
