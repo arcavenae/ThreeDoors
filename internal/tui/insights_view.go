@@ -76,7 +76,7 @@ func (iv *InsightsView) invalidateCache() {
 // Update handles messages for the insights view.
 func (iv *InsightsView) Update(msg tea.Msg) tea.Cmd {
 	if msg, ok := msg.(tea.KeyMsg); ok {
-		if msg.Type == tea.KeyEscape {
+		if msg.Type == tea.KeyEscape || msg.String() == "q" {
 			return func() tea.Msg { return ReturnToDoorsMsg{} }
 		}
 	}

@@ -268,7 +268,7 @@ func TestDetailView_HasRequiredBindings(t *testing.T) {
 	t.Parallel()
 	groups := viewKeyBindings(ViewDetail, false)
 	keys := collectKeys(groups)
-	for _, want := range []string{"esc", "c", "b", "e", "f", "?"} {
+	for _, want := range []string{"q/esc", "c", "b", "e", "f", "?"} {
 		if !keys[want] {
 			t.Errorf("DetailView missing key %q", want)
 		}

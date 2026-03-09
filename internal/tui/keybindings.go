@@ -194,7 +194,7 @@ func doorsSelectedBindings() []KeyBindingGroup {
 func detailBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 		}},
 		{Name: "Actions", Bindings: []KeyBinding{
 			{Key: "c", Description: "complete", Priority: PriorityAlways},
@@ -220,7 +220,7 @@ func detailBindings() []KeyBindingGroup {
 func moodBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 		}},
 		{Name: "Actions", Bindings: []KeyBinding{
 			{Key: "1-6", Description: "select mood", Priority: PriorityAlways},
@@ -248,7 +248,7 @@ func searchBindings() []KeyBindingGroup {
 func healthBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},
@@ -289,7 +289,7 @@ func valuesBindings() []KeyBindingGroup {
 func feedbackBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 		}},
 		{Name: "Actions", Bindings: []KeyBinding{
 			{Key: "1", Description: "blocked", Priority: PriorityAlways},
@@ -318,7 +318,7 @@ func improvementBindings() []KeyBindingGroup {
 func nextStepsBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "dismiss", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "dismiss", Priority: PriorityAlways},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},
@@ -329,7 +329,7 @@ func nextStepsBindings() []KeyBindingGroup {
 func avoidanceBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 		}},
 		{Name: "Actions", Bindings: []KeyBinding{
 			{Key: "r", Description: "reconsider", Priority: PriorityAlways},
@@ -346,7 +346,7 @@ func avoidanceBindings() []KeyBindingGroup {
 func insightsBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},
@@ -400,7 +400,7 @@ func themePickerBindings() []KeyBindingGroup {
 		{Name: "Navigation", Bindings: []KeyBinding{
 			{Key: "←/→", Description: "browse", Priority: PriorityAlways},
 			{Key: "enter", Description: "select", Priority: PriorityAlways},
-			{Key: "esc", Description: "cancel", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "cancel", Priority: PriorityAlways},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},
@@ -411,7 +411,7 @@ func themePickerBindings() []KeyBindingGroup {
 func devQueueBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
-			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
 			{Key: "j/k", Description: "navigate", Priority: PriorityAlways},
 		}},
 		{Name: "Actions", Bindings: []KeyBinding{

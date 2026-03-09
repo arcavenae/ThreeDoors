@@ -1058,12 +1058,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	// Universal quit: 'q' quits from any view unless text input is active
-	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "q" && !m.isTextInputActive() {
-		return m, func() tea.Msg { return RequestQuitMsg{} }
-	}
-
-	// Global '?' toggles keybinding overlay from any non-text-input view
+	// Global '?' opens help from any non-text-input view
 	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.String() == "?" && !m.isTextInputActive() {
 		m.showKeybindingOverlay = true
 		m.overlayState = OverlayState{
