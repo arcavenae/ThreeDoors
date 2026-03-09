@@ -45,12 +45,7 @@ func TestDoorsViewHintKeysPassedToRender(t *testing.T) {
 			t.Parallel()
 
 			dv := newHintsTestDoorsView(t)
-			cfg := &core.InlineHintsConfig{
-				ShowInlineHints: tt.hintsEnabled,
-				SessionCount:    0,
-				FadeThreshold:   5,
-			}
-			dv.SetInlineHintsConfig(cfg)
+			dv.SetShowKeyHints(tt.hintsEnabled)
 			dv.selectedDoorIndex = tt.selectedDoor
 			dv.SetThemeByName("classic")
 
@@ -79,18 +74,14 @@ func TestDoorsViewHintBrightnessWithSelection(t *testing.T) {
 
 	// Render with no selection
 	dvNoSel := newHintsTestDoorsView(t)
-	dvNoSel.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 0, FadeThreshold: 5,
-	})
+	dvNoSel.SetShowKeyHints(true)
 	dvNoSel.selectedDoorIndex = -1
 	dvNoSel.SetThemeByName("classic")
 	outNoSel := dvNoSel.View()
 
 	// Render with door 0 selected
 	dvSel := newHintsTestDoorsView(t)
-	dvSel.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 0, FadeThreshold: 5,
-	})
+	dvSel.SetShowKeyHints(true)
 	dvSel.selectedDoorIndex = 0
 	dvSel.SetThemeByName("classic")
 	outSel := dvSel.View()
@@ -147,12 +138,7 @@ func TestDoorsViewActionHints(t *testing.T) {
 			t.Parallel()
 
 			dv := newHintsTestDoorsView(t)
-			cfg := &core.InlineHintsConfig{
-				ShowInlineHints: tt.hintsEnabled,
-				SessionCount:    0,
-				FadeThreshold:   5,
-			}
-			dv.SetInlineHintsConfig(cfg)
+			dv.SetShowKeyHints(tt.hintsEnabled)
 			dv.selectedDoorIndex = tt.selectedDoor
 
 			out := dv.View()
@@ -200,12 +186,7 @@ func TestDoorsViewHelpTextSimplification(t *testing.T) {
 			t.Parallel()
 
 			dv := newHintsTestDoorsView(t)
-			cfg := &core.InlineHintsConfig{
-				ShowInlineHints: tt.hintsEnabled,
-				SessionCount:    0,
-				FadeThreshold:   5,
-			}
-			dv.SetInlineHintsConfig(cfg)
+			dv.SetShowKeyHints(tt.hintsEnabled)
 
 			out := dv.View()
 
@@ -231,41 +212,6 @@ func TestDoorsViewHelpTextSimplification(t *testing.T) {
 	}
 }
 
-func TestDoorsViewFadeMode(t *testing.T) {
-	t.Parallel()
-
-	// Normal mode (session 0, threshold 5)
-	dvNormal := newHintsTestDoorsView(t)
-	dvNormal.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 0, FadeThreshold: 5,
-	})
-	dvNormal.SetThemeByName("classic")
-	outNormal := dvNormal.View()
-
-	// Fade mode (session 4, threshold 5 → session == threshold-1)
-	dvFade := newHintsTestDoorsView(t)
-	dvFade.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 4, FadeThreshold: 5,
-	})
-	dvFade.SetThemeByName("classic")
-	outFade := dvFade.View()
-
-	// Both should have hints but with different styling
-	if outNormal == outFade {
-		t.Error("expected different output for normal vs fade mode")
-	}
-
-	// Both should contain hint keys
-	for _, key := range []string{"[a]", "[w]", "[d]"} {
-		if !strings.Contains(outNormal, key) {
-			t.Errorf("normal output missing hint key %q", key)
-		}
-		if !strings.Contains(outFade, key) {
-			t.Errorf("fade output missing hint key %q", key)
-		}
-	}
-}
-
 func TestRenderDoorHint(t *testing.T) {
 	t.Parallel()
 
@@ -273,7 +219,6 @@ func TestRenderDoorHint(t *testing.T) {
 		name         string
 		key          string
 		enabled      bool
-		fade         bool
 		isSelected   bool
 		hasSelection bool
 		wantEmpty    bool
@@ -307,21 +252,12 @@ func TestRenderDoorHint(t *testing.T) {
 			hasSelection: true,
 			wantContains: "[d]",
 		},
-		{
-			name:         "fade mode overrides",
-			key:          "a",
-			enabled:      true,
-			fade:         true,
-			isSelected:   true,
-			hasSelection: true,
-			wantContains: "[a]",
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := renderDoorHint(tt.key, tt.enabled, tt.fade, tt.isSelected, tt.hasSelection)
+			got := renderDoorHint(tt.key, tt.enabled, tt.isSelected, tt.hasSelection)
 			if tt.wantEmpty {
 				if got != "" {
 					t.Errorf("expected empty, got %q", got)
@@ -338,19 +274,18 @@ func TestRenderDoorHint(t *testing.T) {
 func TestRenderDoorHintBrightnessLevels(t *testing.T) {
 	lipgloss.SetColorProfile(termenv.TrueColor)
 
-	normal := renderDoorHint("a", true, false, false, false)
-	bright := renderDoorHint("a", true, false, true, true)
-	dim := renderDoorHint("a", true, false, false, true)
-	fade := renderDoorHint("a", true, true, false, false)
+	normal := renderDoorHint("a", true, false, false)
+	bright := renderDoorHint("a", true, true, true)
+	dim := renderDoorHint("a", true, false, true)
 
 	// All should contain the key text
-	for _, hint := range []string{normal, bright, dim, fade} {
+	for _, hint := range []string{normal, bright, dim} {
 		if !strings.Contains(hint, "[a]") {
 			t.Errorf("hint missing key text, got %q", hint)
 		}
 	}
 
-	// All four should produce different styled output
+	// All three should produce different styled output
 	if normal == bright {
 		t.Error("normal and bright should differ")
 	}
@@ -368,9 +303,7 @@ func TestGolden_DoorsViewHintsEnabled(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	dv := newGoldenDoorsView(t, "Buy groceries", "Read Go book", "Exercise for 30 min")
-	dv.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 0, FadeThreshold: 5,
-	})
+	dv.SetShowKeyHints(true)
 	out := dv.View()
 	golden.RequireEqual(t, []byte(out))
 }
@@ -380,9 +313,7 @@ func TestGolden_DoorsViewHintsSelected(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	dv := newGoldenDoorsView(t, "Buy groceries", "Read Go book", "Exercise for 30 min")
-	dv.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 0, FadeThreshold: 5,
-	})
+	dv.SetShowKeyHints(true)
 	dv.selectedDoorIndex = 1
 	out := dv.View()
 	golden.RequireEqual(t, []byte(out))
@@ -393,21 +324,7 @@ func TestGolden_DoorsViewHintsDisabled(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	dv := newGoldenDoorsView(t, "Buy groceries", "Read Go book", "Exercise for 30 min")
-	dv.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: false, SessionCount: 0, FadeThreshold: 5,
-	})
-	out := dv.View()
-	golden.RequireEqual(t, []byte(out))
-}
-
-func TestGolden_DoorsViewHintsFade(t *testing.T) {
-	lipgloss.SetColorProfile(termenv.Ascii)
-	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
-
-	dv := newGoldenDoorsView(t, "Buy groceries", "Read Go book", "Exercise for 30 min")
-	dv.SetInlineHintsConfig(&core.InlineHintsConfig{
-		ShowInlineHints: true, SessionCount: 4, FadeThreshold: 5,
-	})
+	dv.SetShowKeyHints(false)
 	out := dv.View()
 	golden.RequireEqual(t, []byte(out))
 }

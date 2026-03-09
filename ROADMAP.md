@@ -166,7 +166,7 @@ Parallel Homebrew distribution channels (stable + alpha) with signing parity, pu
 | 38.5 | Alpha Release Retention Cleanup | Done (PR #294) | P2 | None |
 | 38.6 | Fix Alpha Homebrew Formula Template DSL | Done (PR #312) | P1 | 38.1 |
 
-### Epic 39: Keybinding Display System (P1) — 11/13 stories done (1 cancelled)
+### Epic 39: Keybinding Display System (P1) — 12/13 stories done (1 cancelled) — COMPLETE
 
 Toggleable keybinding bar and full overlay for TUI discoverability. Context-sensitive bottom bar shows key actions per view; `?` opens comprehensive reference overlay. Global command mode accessibility, command autocomplete, and inline key hints on interactive elements. Door key indicators unified under `h` toggle (D-137).
 
@@ -184,7 +184,7 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.10 | Door View Inline Hints | Done (PR #387) | P1 | 39.9 |
 | 39.11 | Non-Door View Inline Hints | Done (PR #388) | P1 | 39.9 |
 | 39.12 | Auto-Fade After N Sessions | Cancelled (D-140) | ~~P2~~ | 39.9, 39.10 |
-| 39.13 | Unified Door Key Indicator Toggle | Not Started | P1 | 39.4, 39.9, 39.10 |
+| 39.13 | Unified Door Key Indicator Toggle | Done (PR #407) | P1 | 39.4, 39.9, 39.10 |
 
 ### Epic 40: Beautiful Stats Display (P1) — 10/10 stories done — COMPLETE
 

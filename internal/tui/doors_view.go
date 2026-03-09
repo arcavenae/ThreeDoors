@@ -75,7 +75,7 @@ type DoorsView struct {
 	duplicateTaskIDs  map[string]bool
 	doorAnimation     *DoorAnimation
 	planningTimestamp *time.Time
-	inlineHintsConfig *core.InlineHintsConfig
+	showKeyHints      bool
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -144,9 +144,9 @@ func (dv *DoorsView) SetPlanningTimestamp(t *time.Time) {
 	dv.planningTimestamp = t
 }
 
-// SetInlineHintsConfig sets the inline hints configuration for door key hints.
-func (dv *DoorsView) SetInlineHintsConfig(cfg *core.InlineHintsConfig) {
-	dv.inlineHintsConfig = cfg
+// SetShowKeyHints sets whether key hints are visible on doors.
+func (dv *DoorsView) SetShowKeyHints(show bool) {
+	dv.showKeyHints = show
 }
 
 // SetPendingConflicts sets the number of unresolved sync conflicts.
@@ -285,11 +285,7 @@ func (dv *DoorsView) View() string {
 		return s.String()
 	}
 
-	// Resolve inline hint state for this render.
-	hintsEnabled, hintsFade := false, false
-	if dv.inlineHintsConfig != nil {
-		hintsEnabled, hintsFade = core.ResolveInlineHintState(dv.inlineHintsConfig)
-	}
+	hintsEnabled := dv.showKeyHints
 
 	doorWidth := 30
 	if dv.width > 20 {
@@ -393,7 +389,7 @@ func (dv *DoorsView) View() string {
 		// Build inline hint for this door with selection-state awareness.
 		hint := ""
 		if hintsEnabled && i < len(doorHintKeys) {
-			hint = renderDoorHint(doorHintKeys[i], true, hintsFade, isSelected, hasSelection)
+			hint = renderDoorHint(doorHintKeys[i], true, isSelected, hasSelection)
 		}
 
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
@@ -446,10 +442,10 @@ func (dv *DoorsView) View() string {
 	// Action hints between doors and help text when inline hints are active.
 	if hintsEnabled {
 		var actionParts []string
-		actionParts = append(actionParts, renderInlineHint("s", true, hintsFade)+" re-roll")
-		actionParts = append(actionParts, renderInlineHint("n", true, hintsFade)+" add task")
+		actionParts = append(actionParts, renderInlineHint("s", true)+" re-roll")
+		actionParts = append(actionParts, renderInlineHint("n", true)+" add task")
 		if hasSelection {
-			actionParts = append(actionParts, renderInlineHint("enter", true, hintsFade)+" confirm")
+			actionParts = append(actionParts, renderInlineHint("enter", true)+" confirm")
 		}
 		s.WriteString("\n\n")
 		s.WriteString(helpStyle.Render(strings.Join(actionParts, "  ")))
@@ -459,7 +455,7 @@ func (dv *DoorsView) View() string {
 	if hintsEnabled {
 		s.WriteString(helpStyle.Render("/ search | m mood | : command | ? help | q quit"))
 		s.WriteString("\n")
-		s.WriteString(greetingStyle.Render("hints: on — :hints to hide"))
+		s.WriteString(greetingStyle.Render("hints: on — h to hide"))
 	} else {
 		s.WriteString(helpStyle.Render("a/left, w/up, d/right to select (again to deselect) | s/down to re-roll | Enter/Space to open | N feedback | / search | M mood | q quit"))
 		s.WriteString("\n")

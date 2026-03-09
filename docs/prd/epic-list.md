@@ -465,7 +465,7 @@
 **Epic 39: Keybinding Display System** (P1)
 - **Goal:** Add toggleable keybinding discoverability to the TUI: a concise context-sensitive bar at the bottom of every view, a full keybinding overlay accessible via `?` key, and default-on inline key hints rendered directly on interactive elements. Door key indicators unified under `h` toggle (D-137).
 - **Prerequisites:** None (all required infrastructure exists)
-- **Status:** In Progress (11/13 done, 1 cancelled)
+- **Status:** COMPLETE (12/13 done, 1 cancelled)
 - **Deliverables:**
   - Compile-time keybinding registry mapping each ViewMode to its available key bindings
   - Concise bottom bar showing 5-6 priority keys per view, with Lipgloss dim styling (non-door views)
@@ -563,7 +563,7 @@
 | Epic 36: Door Selection Feedback | 4 | Complete |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
 | Epic 38: Dual Homebrew Distribution | 6 | In Progress (2/6) |
-| Epic 39: Keybinding Display System | 13 | In Progress (11/13, 1 cancelled) |
+| Epic 39: Keybinding Display System | 13 | COMPLETE (12/13, 1 cancelled) |
 | Epic 40: Beautiful Stats Display | 10 | Complete |
 | Epic 41: Charm Ecosystem Adoption | 6 | Not Started |
 | **Total** | **216** | **146 complete, 4 epics in progress, 70 not started** |

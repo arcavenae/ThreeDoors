@@ -69,7 +69,6 @@ type SearchView struct {
 	commandSelectedIndex int
 	height               int
 	hintEnabled          bool
-	hintFade             bool
 }
 
 // NewSearchView creates a new SearchView.
@@ -93,9 +92,8 @@ func NewSearchView(pool *core.TaskPool, tracker *core.SessionTracker, hc *core.H
 }
 
 // SetInlineHints sets the inline hint display state.
-func (sv *SearchView) SetInlineHints(enabled, fade bool) {
+func (sv *SearchView) SetInlineHints(enabled bool) {
 	sv.hintEnabled = enabled
-	sv.hintFade = fade
 }
 
 // SetHeight sets the terminal height for bottom-anchored rendering.
@@ -579,7 +577,7 @@ func (sv *SearchView) View() string {
 	var footer strings.Builder
 	fmt.Fprintf(&footer, "%s\n\n", sv.textInput.View())
 	if sv.hintEnabled {
-		h := func(key string) string { return renderInlineHint(key, sv.hintEnabled, sv.hintFade) }
+		h := func(key string) string { return renderInlineHint(key, sv.hintEnabled) }
 		fmt.Fprintf(&footer, "%s", helpStyle.Render(h("↑/↓")+" navigate | "+h("enter")+" select | "+h("esc")+" close | : commands"))
 	} else {
 		fmt.Fprintf(&footer, "%s", helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))

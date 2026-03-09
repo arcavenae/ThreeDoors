@@ -49,7 +49,6 @@ type DetailView struct {
 	depAddCandidates    []*core.Task
 	depAddSelectedIndex int
 	hintEnabled         bool
-	hintFade            bool
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -99,9 +98,8 @@ func (dv *DetailView) SetDevDispatchInfo(enabled, available bool) {
 }
 
 // SetInlineHints sets the inline hint display state.
-func (dv *DetailView) SetInlineHints(enabled, fade bool) {
+func (dv *DetailView) SetInlineHints(enabled bool) {
 	dv.hintEnabled = enabled
-	dv.hintFade = fade
 }
 
 // SetWidth sets the terminal width.
@@ -706,7 +704,7 @@ func (dv *DetailView) View() string {
 		fmt.Fprintf(&s, "Dispatch '%s' to dev queue? [y/n]\n", truncated)
 	default:
 		if dv.hintEnabled {
-			h := func(key string) string { return renderInlineHint(key, dv.hintEnabled, dv.hintFade) }
+			h := func(key string) string { return renderInlineHint(key, dv.hintEnabled) }
 			var parts []string
 			parts = append(parts, h("esc")+" Back")
 			parts = append(parts, h("c")+" Complete")

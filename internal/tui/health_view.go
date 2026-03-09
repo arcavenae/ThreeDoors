@@ -14,7 +14,6 @@ type HealthView struct {
 	result      core.HealthCheckResult
 	width       int
 	hintEnabled bool
-	hintFade    bool
 }
 
 // NewHealthView creates a new HealthView with the given result.
@@ -23,9 +22,8 @@ func NewHealthView(result core.HealthCheckResult) *HealthView {
 }
 
 // SetInlineHints sets the inline hint display state.
-func (hv *HealthView) SetInlineHints(enabled, fade bool) {
+func (hv *HealthView) SetInlineHints(enabled bool) {
 	hv.hintEnabled = enabled
-	hv.hintFade = fade
 }
 
 // SetWidth sets the terminal width for rendering.
@@ -88,7 +86,7 @@ func (hv *HealthView) View() string {
 	fmt.Fprintf(&s, " | Completed in %s", hv.result.Duration.Round(time.Millisecond))
 	s.WriteString("\n\n")
 	if hv.hintEnabled {
-		s.WriteString(helpStyle.Render(renderInlineHint("esc", hv.hintEnabled, hv.hintFade) + " Back"))
+		s.WriteString(helpStyle.Render(renderInlineHint("esc", hv.hintEnabled) + " Back"))
 	} else {
 		s.WriteString(helpStyle.Render("Press Esc to return"))
 	}
