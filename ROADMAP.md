@@ -196,7 +196,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 40.9 | Theme-Matched Stats Color Palettes | Done (PR #380) | P2 | 40.1, 40.2, Epic 17 |
 | 40.10 | Milestone Celebrations | Not Started | P2 | 40.1 |
 
-### Epic 41: Charm Ecosystem Adoption & TUI Polish (P2) — 5/6 stories done
+### Epic 41: Charm Ecosystem Adoption & TUI Polish (P2) — 6/6 stories done — COMPLETE
 
 Systematically adopt underutilized charmbracelet ecosystem components to reduce custom code, improve UX consistency, and deliver on SOUL.md's "physical objects" promise.
 
@@ -207,7 +207,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.3 | Viewport Adoption for Help View | Done (PR #364) | P2 | None (sequence after Epic 39 overlay work) |
 | 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | Done (PR #379) | P2 | 41.3 |
 | 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
-| 41.6 | Adaptive Color Profile Support | In Review | P2 | None |
+| 41.6 | Adaptive Color Profile Support | Done (PR #373) | P2 | None |
 
 ## Completed Epics
 
@@ -249,6 +249,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 38 | Dual Homebrew Distribution | 6/6 |
 | 27 | Daily Planning Mode | 5/5 |
 | 28 | Snooze/Defer as First-Class Action | 4/4 |
+| 41 | Charm Ecosystem Adoption & TUI Polish | 6/6 |
 
 ## Icebox (Deferred Indefinitely)
 
