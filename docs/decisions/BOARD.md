@@ -238,6 +238,7 @@
 | D-135 | Proactive persistent agent restart policy | 2026-03-09 | Context exhaustion caused 30-min merge outage; restart every 4-6 hours or ~15-20 merges | [Ops Guide](../operations/persistent-agent-ops.md) |
 | D-136 | GO: Harmonica spring animations for door transitions | 2026-03-09 | Spike validated: spring physics works well for door selection emphasis; animation model is fully deterministic and testable; zero performance impact (~180 float ops/sec); testing pattern documented; recommend limited adoption (selection emphasis only, not view transitions). Rejected: full animation system (overkill for 3-door UI), mid-animation golden files (non-deterministic in CI) | [Testing Guide](../architecture/frame-animation-testing.md) |
 | D-137 | Space/Enter as toggle in DetailView (Story 36.4) | 2026-03-09 | Consistent with a/w/d toggle pattern (D-105, Story 36.2); SOUL.md "physical objects" — doors open AND close with same gesture; `isTextInputActive()` guard prevents text input conflicts; ~3-line change; preserves escape as alternative | [Party Mode](../../_bmad-output/planning-artifacts/space-enter-toggle-party-mode.md) |
+| D-141 | Adopt 5 proposals (B, C, D, F, G) for door-like doors (Epic 42) | 2026-03-09 | Selected proposals maximize door-feel with minimum friction, zero-to-minimal width cost (~200-250 LOC total). Rejected: Nested Frame (A, high width cost), Wall Context (E, 4 chars/side too expensive), Door Swing (H, high complexity/friction), Light Spill (I, achievable more simply via C). SOUL.md: "the UI should feel like physical objects" | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
 
 ## Rejected
 
@@ -282,6 +283,10 @@
 | X-071 | Exemption list for 'q' quit (Option A for #330) | 2026-03-09 | Growing maintenance list; wrong default (quit is dangerous, should require opt-in not opt-out) | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
 | X-072 | Sub-view consumes 'q' before universal handler (Option B for #330) | 2026-03-09 | Architecturally impossible — universal handler at line 910 fires before view delegation at line 921 | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
 | X-073 | Different key for universal quit (Option D for #330) | 2026-03-09 | 'q' is THE standard TUI quit key; problem is scope not key choice; changing it violates muscle memory | [Triage](../../_bmad-output/planning-artifacts/issue-330-dashboard-q-triage.md) |
+| X-080 | Nested Frame for doors (Proposal A, Epic 42) | 2026-03-09 | High width cost (-4 chars) at minimum 15-char doors leaves only 7 for content; benefits achievable through hinge marks + side handle at lower cost | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
+| X-081 | Wall Context with shade characters (Proposal E, Epic 42) | 2026-03-09 | 4 chars per side too expensive; threshold line achieves grounding at zero width cost; conflicts with some themes | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
+| X-082 | Door Swing perspective animation (Proposal H, Epic 42) | 2026-03-09 | Highest complexity (~200+ LOC), text reflow risk, adds animation latency = friction; SOUL.md prioritizes reducing friction | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
+| X-083 | Light Spill per-cell background colors (Proposal I, Epic 42) | 2026-03-09 | Per-cell background colors require theme-specific tuning; Crack of Light achieves similar effect more simply | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
 
 ## Epic Number Registry
 
@@ -290,7 +295,8 @@
 | Epic | Feature | Allocated | Status |
 |------|---------|-----------|--------|
 | 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Proposed (pending PM approval) |
-| 42 | *(next available)* | — | — |
+| 42 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Stories created |
+| 43 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number

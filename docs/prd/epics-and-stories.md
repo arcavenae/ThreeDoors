@@ -4345,3 +4345,81 @@ Terminal-aware color degradation via lipgloss color profiles. Replace hardcoded 
 ### Research
 
 - Audit & Party Mode: `_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md`
+
+---
+
+## Epic 42: Door-Like Doors — Visual Door Metaphor Enhancement
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** Epic 35 (Door Visual Appearance — complete), Epic 17 (Door Theme System — complete), Story 41.5 (Harmonica spike — complete, D-136 GO decision)
+
+### Epic Goal
+
+Transform rectangular card/panel doors into visually convincing doors by implementing 5 adopted proposals from the "doors more door-like" party mode research (5 rounds, 7 agents). The key insight: a door is defined by **asymmetry** (hinge vs opening side), **hardware** (a handle you can grab), **behavior** (it opens/closes), and **context** (it exists on a floor). Current rendering captures almost none of these.
+
+The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~6.5/7 across all themes, at a total cost of ~200-250 LOC and 0-1 character of width.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 42.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
+| 42.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
+| 42.3 | Crack of Light Effect on Selection | Not Started | P2 | 42.1 |
+| 42.4 | Handle Turn Micro-Animation | Not Started | P2 | 42.1 |
+
+**Dependency graph:**
+```
+Story 42.1 (Handle + Hinge) ──┬──→ Story 42.3 (Crack of Light)
+                               └──→ Story 42.4 (Handle Turn)
+Story 42.2 (Threshold) ──────────→ (independent)
+```
+
+Stories 42.1 & 42.2 can parallelize. Stories 42.3 & 42.4 can parallelize after 42.1.
+
+### Story Details
+
+#### Story 42.1: Side-Mounted Handle + Hinge Marks (Proposals B + G)
+
+Move doorknob from centered inline content to right edge at HandleRow. Add double-weight box-drawing characters on left border for hinge visual asymmetry. Update all 4 themes with per-theme hinge/handle characters. Extend DoorAnatomy with HingeCol. Zero width cost.
+
+**AC:** Handle at right edge in all themes, hinge marks (heavier left border) in all themes, DoorAnatomy has HingeCol, minimum width (15 chars) still works, golden files updated.
+
+#### Story 42.2: Continuous Threshold / Floor Line (Proposal F)
+
+Render continuous floor line after `JoinHorizontal()` in doors_view.go spanning full width. Uses `▔` or `─` character. Respects theme colors. ~15 LOC, very low risk.
+
+**AC:** Threshold line spans full door row width, uses theme colors, appears below shadow layer, renders at various widths.
+
+#### Story 42.3: Crack of Light Effect on Selection (Proposal C)
+
+Highest-scoring proposal (15/15). On selection, replace right border chars with crack chars (╎) and append shade (░). Synchronize with spring animation emphasis. Reverse on deselect. 1 character width cost when selected.
+
+**AC:** Crack effect on selection, reversed on deselect, synced with spring emphasis, minimum width works with crack, golden files updated.
+
+#### Story 42.4: Handle Turn Micro-Animation (Proposal D)
+
+4-frame handle character sequence synced with spring emphasis: ● (0.0) → ◐ (0.3) → ○ (0.6+). Reverse on deselect: ○ → ◑ → ●. ~20 LOC.
+
+**AC:** Handle animates on selection, reverses on deselect, deterministic frame selection based on emphasis value, all themes support animated handle.
+
+### Design Decisions
+
+- D-141: Adopt 5 proposals (B, C, D, F, G) for door-like doors; reject 4 (A, E, H, I)
+- X-080: Reject Nested Frame (A) — high width cost
+- X-081: Reject Wall Context (E) — 4 chars/side too expensive
+- X-082: Reject Door Swing (H) — high complexity, friction
+- X-083: Reject Light Spill (I) — achievable more simply via Crack of Light
+
+### Noted Opportunities (Out of Scope)
+
+1. Door-Opening Transition Animation (perspective shrink on Enter → detail view; ~200+ LOC, separate spike)
+2. Light Spill Enhancement (warm gradient layered on Crack of Light; future polish story)
+3. Nested Frame for Wide Terminals (frame-within-frame when width > 30; width-adaptive)
+4. Wall Context for Wide Terminals (shade characters flanking doors)
+
+### Research
+
+- Party Mode (5 rounds, 7 agents): `_bmad-output/planning-artifacts/doors-more-doorlike-research.md`
+- Prior: `_bmad-output/planning-artifacts/door-appearance-party-mode.md` (Epic 35)
