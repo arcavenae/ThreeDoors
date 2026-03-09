@@ -282,13 +282,13 @@ func (iv *InsightsView) buildCompletionTrends() string {
 		counts = append(counts, e.count)
 	}
 
-	spark := sparkline(counts)
+	styledChars := styledSparklineChars(counts)
 	for _, label := range labels {
 		fmt.Fprintf(&s, "%-5s", label)
 	}
 	s.WriteString("\n")
-	for _, ch := range spark {
-		fmt.Fprintf(&s, "%-5s", string(ch))
+	for _, ch := range styledChars {
+		fmt.Fprintf(&s, "%-5s", ch)
 	}
 	s.WriteString("\n")
 	for _, c := range counts {
@@ -359,6 +359,12 @@ func (iv *InsightsView) buildDoorPreferences() string {
 	return s.String()
 }
 
+// Gradient endpoint colors for the sparkline (color-blind safe: blue→yellow).
+var (
+	sparkColorStart = lipgloss.AdaptiveColor{Light: "#2563EB", Dark: "#3B82F6"} // blue
+	sparkColorEnd   = lipgloss.AdaptiveColor{Light: "#CA8A04", Dark: "#EAB308"} // yellow
+)
+
 // sparkline renders a text sparkline using Unicode block characters.
 func sparkline(values []int) string {
 	if len(values) == 0 {
@@ -382,4 +388,67 @@ func sparkline(values []int) string {
 		result.WriteRune(sparkChars[idx])
 	}
 	return result.String()
+}
+
+// styledSparklineChars returns individually styled sparkline characters
+// with a gradient from blue (low) to yellow (high).
+func styledSparklineChars(values []int) []string {
+	if len(values) == 0 {
+		return nil
+	}
+	maxVal := 0
+	for _, v := range values {
+		if v > maxVal {
+			maxVal = v
+		}
+	}
+
+	chars := make([]string, len(values))
+	for i, v := range values {
+		var idx int
+		var t float64
+		if maxVal > 0 {
+			t = float64(v) / float64(maxVal)
+			idx = int(t * float64(len(sparkChars)-1))
+			if idx >= len(sparkChars) {
+				idx = len(sparkChars) - 1
+			}
+		}
+		ch := string(sparkChars[idx])
+		blended := blendHexColors(sparkColorStart.Dark, sparkColorEnd.Dark, t)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color(blended))
+		chars[i] = style.Render(ch)
+	}
+	return chars
+}
+
+// styledSparkline renders a gradient-colored sparkline as a single string.
+func styledSparkline(values []int) string {
+	chars := styledSparklineChars(values)
+	return strings.Join(chars, "")
+}
+
+// blendHexColors linearly interpolates between two hex colors.
+// t is clamped to [0, 1]. Colors must be "#RRGGBB" format.
+func blendHexColors(from, to string, t float64) string {
+	if t <= 0 {
+		return from
+	}
+	if t >= 1 {
+		return to
+	}
+	r1, g1, b1 := parseHex(from)
+	r2, g2, b2 := parseHex(to)
+	r := uint8(float64(r1) + t*(float64(r2)-float64(r1)))
+	g := uint8(float64(g1) + t*(float64(g2)-float64(g1)))
+	b := uint8(float64(b1) + t*(float64(b2)-float64(b1)))
+	return fmt.Sprintf("#%02X%02X%02X", r, g, b)
+}
+
+// parseHex extracts RGB components from a "#RRGGBB" hex string.
+func parseHex(hex string) (r, g, b uint8) {
+	if len(hex) == 7 && hex[0] == '#' {
+		_, _ = fmt.Sscanf(hex[1:], "%02x%02x%02x", &r, &g, &b)
+	}
+	return
 }

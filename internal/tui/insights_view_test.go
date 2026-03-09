@@ -464,6 +464,148 @@ func updateGoldenFile(t *testing.T, path, content string) {
 	}
 }
 
+func TestSparkline(t *testing.T) {
+	tests := []struct {
+		name   string
+		values []int
+		want   string
+	}{
+		{"empty", nil, ""},
+		{"all zeros", []int{0, 0, 0}, "▁▁▁"},
+		{"single max", []int{5}, "█"},
+		{"single zero", []int{0}, "▁"},
+		{"ascending", []int{0, 1, 2, 3, 4, 5, 6, 7}, "▁▂▃▄▅▆▇█"},
+		{"mixed", []int{3, 0, 5, 1}, "▅▁█▂"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := sparkline(tt.values)
+			if got != tt.want {
+				t.Errorf("sparkline(%v) = %q, want %q", tt.values, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBlendHexColors(t *testing.T) {
+	tests := []struct {
+		name string
+		from string
+		to   string
+		t    float64
+		want string
+	}{
+		{"start color at 0.0", "#3B82F6", "#EAB308", 0.0, "#3B82F6"},
+		{"end color at 1.0", "#3B82F6", "#EAB308", 1.0, "#EAB308"},
+		{"midpoint", "#000000", "#FFFFFF", 0.5, "#7F7F7F"},
+		{"clamp below 0", "#000000", "#FFFFFF", -1.0, "#000000"},
+		{"clamp above 1", "#000000", "#FFFFFF", 2.0, "#FFFFFF"},
+		{"quarter", "#000000", "#FF0000", 0.25, "#3F0000"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := blendHexColors(tt.from, tt.to, tt.t)
+			if !strings.EqualFold(got, tt.want) {
+				t.Errorf("blendHexColors(%q, %q, %.1f) = %q, want %q", tt.from, tt.to, tt.t, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStyledSparkline(t *testing.T) {
+	t.Run("empty input returns empty string", func(t *testing.T) {
+		got := styledSparkline(nil)
+		if got != "" {
+			t.Errorf("styledSparkline(nil) = %q, want empty", got)
+		}
+	})
+
+	t.Run("all zeros produces styled output", func(t *testing.T) {
+		got := styledSparkline([]int{0, 0, 0})
+		if got == "" {
+			t.Error("styledSparkline([]int{0,0,0}) should not be empty")
+		}
+		// Each character should be ▁ (styled)
+		if !strings.Contains(got, "▁") {
+			t.Errorf("all-zero sparkline should contain ▁, got %q", got)
+		}
+	})
+
+	t.Run("single value produces output", func(t *testing.T) {
+		got := styledSparkline([]int{5})
+		if got == "" {
+			t.Error("styledSparkline single value should not be empty")
+		}
+		if !strings.Contains(got, "█") {
+			t.Errorf("single nonzero sparkline should contain █, got %q", got)
+		}
+	})
+
+	t.Run("output contains all sparkline characters", func(t *testing.T) {
+		values := []int{0, 3, 7}
+		got := styledSparkline(values)
+		// Should contain ▁ for 0, some mid char for 3, █ for 7
+		if !strings.Contains(got, "▁") {
+			t.Errorf("should contain ▁ for zero value, got %q", got)
+		}
+		if !strings.Contains(got, "█") {
+			t.Errorf("should contain █ for max value, got %q", got)
+		}
+	})
+
+	t.Run("uses ANSI color codes when color enabled", func(t *testing.T) {
+		lipgloss.SetColorProfile(termenv.TrueColor)
+		t.Cleanup(func() { lipgloss.SetColorProfile(termenv.Ascii) })
+
+		got := styledSparkline([]int{0, 5, 10})
+		if !strings.Contains(got, "\x1b[") {
+			t.Errorf("styled sparkline should contain ANSI codes with TrueColor, got %q", got)
+		}
+	})
+}
+
+func TestStyledSparklineChars(t *testing.T) {
+	t.Run("returns correct number of chars", func(t *testing.T) {
+		values := []int{1, 2, 3, 4, 5}
+		chars := styledSparklineChars(values)
+		if len(chars) != len(values) {
+			t.Errorf("styledSparklineChars returned %d chars, want %d", len(chars), len(values))
+		}
+	})
+
+	t.Run("nil returns nil", func(t *testing.T) {
+		chars := styledSparklineChars(nil)
+		if chars != nil {
+			t.Errorf("styledSparklineChars(nil) should return nil, got %v", chars)
+		}
+	})
+
+	t.Run("all zeros returns minimum height chars", func(t *testing.T) {
+		chars := styledSparklineChars([]int{0, 0, 0})
+		for i, ch := range chars {
+			if !strings.Contains(ch, "▁") {
+				t.Errorf("char %d should contain ▁ for zero value, got %q", i, ch)
+			}
+		}
+	})
+}
+
+func TestBuildCompletionTrends_ContainsSparklineChars(t *testing.T) {
+	iv := setupInsightsView(t)
+	content := iv.buildCompletionTrends()
+	// Should contain sparkline block characters
+	hasBlock := false
+	for _, ch := range sparkChars {
+		if strings.ContainsRune(content, ch) {
+			hasBlock = true
+			break
+		}
+	}
+	if !hasBlock {
+		t.Errorf("buildCompletionTrends() should contain sparkline block characters, got:\n%s", content)
+	}
+}
+
 // compareGoldenFile compares output against the golden file.
 func compareGoldenFile(t *testing.T, path, actual string) {
 	t.Helper()
