@@ -11,21 +11,62 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// commandDef defines a command with its name and description for autocomplete.
+type commandDef struct {
+	Name string
+	Desc string
+}
+
+// commandRegistry is the single source of truth for all available commands.
+var commandRegistry = []commandDef{
+	{"add", "Create a new task"},
+	{"add-ctx", "Add task with context (why it matters)"},
+	{"dashboard", "Open insights dashboard"},
+	{"deferred", "View deferred/snoozed tasks"},
+	{"devqueue", "View dev dispatch queue"},
+	{"dispatch", "Dev dispatch info"},
+	{"goals", "View or edit values/goals"},
+	{"health", "Run health check"},
+	{"help", "Show help screen"},
+	{"insights", "Show pattern insights"},
+	{"mood", "Record current mood"},
+	{"quit", "Quit application"},
+	{"stats", "Show session statistics"},
+	{"suggestions", "View AI task suggestions"},
+	{"synclog", "View sync operation log"},
+	{"tag", "Edit task categories/tags"},
+	{"theme", "Open theme picker"},
+}
+
+// filterCommands returns commands whose names match the given prefix (case-insensitive).
+func filterCommands(prefix string) []commandDef {
+	prefix = strings.ToLower(prefix)
+	var matched []commandDef
+	for _, cmd := range commandRegistry {
+		if strings.HasPrefix(cmd.Name, prefix) {
+			matched = append(matched, cmd)
+		}
+	}
+	return matched
+}
+
 // SearchView handles search and command palette functionality.
 type SearchView struct {
-	textInput          textinput.Model
-	results            []*core.Task
-	selectedIndex      int
-	pool               *core.TaskPool
-	tracker            *core.SessionTracker
-	healthChecker      *core.HealthChecker
-	completionCounter  *core.CompletionCounter
-	patternReport      *core.PatternReport
-	syncLog            *core.SyncLog
-	width              int
-	isCommandMode      bool
-	duplicateTaskIDs   map[string]bool
-	devDispatchEnabled bool
+	textInput            textinput.Model
+	results              []*core.Task
+	selectedIndex        int
+	pool                 *core.TaskPool
+	tracker              *core.SessionTracker
+	healthChecker        *core.HealthChecker
+	completionCounter    *core.CompletionCounter
+	patternReport        *core.PatternReport
+	syncLog              *core.SyncLog
+	width                int
+	isCommandMode        bool
+	duplicateTaskIDs     map[string]bool
+	devDispatchEnabled   bool
+	commandSuggestions   []commandDef
+	commandSelectedIndex int
 }
 
 // NewSearchView creates a new SearchView.
@@ -310,9 +351,23 @@ func (sv *SearchView) Update(msg tea.Msg) tea.Cmd {
 
 		case tea.KeyEnter:
 			if sv.isCommandMode {
+				// If a suggestion is highlighted and user hasn't typed a full command,
+				// execute the highlighted suggestion
+				if len(sv.commandSuggestions) > 0 && sv.commandSelectedIndex >= 0 &&
+					sv.commandSelectedIndex < len(sv.commandSuggestions) {
+					// Check if the current input matches the selected suggestion
+					cmd, _ := parseCommand(sv.textInput.Value())
+					selectedCmd := sv.commandSuggestions[sv.commandSelectedIndex].Name
+					if cmd != selectedCmd {
+						// Fill in the command and execute
+						sv.textInput.SetValue(":" + selectedCmd)
+					}
+				}
 				cmd := sv.executeCommand()
 				sv.textInput.SetValue("")
 				sv.isCommandMode = false
+				sv.commandSuggestions = nil
+				sv.commandSelectedIndex = 0
 				return cmd
 			}
 			if sv.selectedIndex >= 0 && sv.selectedIndex < len(sv.results) {
@@ -323,13 +378,39 @@ func (sv *SearchView) Update(msg tea.Msg) tea.Cmd {
 			}
 			return nil
 
+		case tea.KeyTab:
+			if sv.isCommandMode && len(sv.commandSuggestions) > 0 &&
+				sv.commandSelectedIndex >= 0 && sv.commandSelectedIndex < len(sv.commandSuggestions) {
+				selected := sv.commandSuggestions[sv.commandSelectedIndex]
+				sv.textInput.SetValue(":" + selected.Name)
+				sv.textInput.SetCursor(len(sv.textInput.Value()))
+				sv.updateCommandSuggestions()
+				return nil
+			}
+
 		case tea.KeyUp:
+			if sv.isCommandMode && len(sv.commandSuggestions) > 0 {
+				if sv.commandSelectedIndex > 0 {
+					sv.commandSelectedIndex--
+				} else {
+					sv.commandSelectedIndex = len(sv.commandSuggestions) - 1
+				}
+				return nil
+			}
 			if len(sv.results) > 0 && sv.selectedIndex > 0 {
 				sv.selectedIndex--
 			}
 			return nil
 
 		case tea.KeyDown:
+			if sv.isCommandMode && len(sv.commandSuggestions) > 0 {
+				if sv.commandSelectedIndex < len(sv.commandSuggestions)-1 {
+					sv.commandSelectedIndex++
+				} else {
+					sv.commandSelectedIndex = 0
+				}
+				return nil
+			}
 			if len(sv.results) > 0 {
 				if sv.selectedIndex < len(sv.results)-1 {
 					sv.selectedIndex++
@@ -362,10 +443,14 @@ func (sv *SearchView) Update(msg tea.Msg) tea.Cmd {
 	sv.textInput, cmd = sv.textInput.Update(msg)
 
 	// Update search results based on current input
-	oldQuery := sv.textInput.Value()
+	query := sv.textInput.Value()
 	sv.checkCommandMode()
-	if !sv.isCommandMode {
-		sv.results = sv.filterTasks(oldQuery)
+	if sv.isCommandMode {
+		sv.updateCommandSuggestions()
+	} else {
+		sv.commandSuggestions = nil
+		sv.commandSelectedIndex = 0
+		sv.results = sv.filterTasks(query)
 		// Reset selection when results change
 		if len(sv.results) > 0 {
 			if sv.selectedIndex < 0 {
@@ -382,24 +467,53 @@ func (sv *SearchView) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
+// updateCommandSuggestions refreshes the command suggestion list based on current input.
+func (sv *SearchView) updateCommandSuggestions() {
+	cmd, _ := parseCommand(sv.textInput.Value())
+	sv.commandSuggestions = filterCommands(cmd)
+	// Clamp selection index
+	if sv.commandSelectedIndex >= len(sv.commandSuggestions) {
+		if len(sv.commandSuggestions) > 0 {
+			sv.commandSelectedIndex = len(sv.commandSuggestions) - 1
+		} else {
+			sv.commandSelectedIndex = 0
+		}
+	}
+	// Default to first suggestion
+	if sv.commandSelectedIndex < 0 && len(sv.commandSuggestions) > 0 {
+		sv.commandSelectedIndex = 0
+	}
+}
+
 // View renders the search view.
 func (sv *SearchView) View() string {
 	s := strings.Builder{}
 
-	s.WriteString(headerStyle.Render("ThreeDoors - Search"))
-	s.WriteString("\n\n")
+	fmt.Fprintf(&s, "%s\n\n", headerStyle.Render("ThreeDoors - Search"))
 
 	query := sv.textInput.Value()
 
-	// Render results (bottom-up: best match closest to input)
+	// Render results
 	if sv.isCommandMode {
-		s.WriteString(commandModeStyle.Render("Command mode"))
-		s.WriteString("\n\n")
+		fmt.Fprintf(&s, "%s\n\n", commandModeStyle.Render("Command mode"))
+
+		if len(sv.commandSuggestions) > 0 {
+			for i, cmd := range sv.commandSuggestions {
+				name := fmt.Sprintf("  :%-14s", cmd.Name)
+				line := fmt.Sprintf("%s%s", name, cmd.Desc)
+				if i == sv.commandSelectedIndex {
+					fmt.Fprintf(&s, "%s\n", searchSelectedStyle.Render(line))
+				} else {
+					fmt.Fprintf(&s, "%s\n", searchResultStyle.Render(line))
+				}
+			}
+			s.WriteString("\n")
+		} else {
+			fmt.Fprintf(&s, "%s\n\n", helpStyle.Render("No matching commands"))
+		}
 	} else if query != "" && len(sv.results) == 0 {
-		s.WriteString(helpStyle.Render(fmt.Sprintf("No tasks match '%s'", query)))
-		s.WriteString("\n\n")
+		fmt.Fprintf(&s, "%s\n\n", helpStyle.Render(fmt.Sprintf("No tasks match '%s'", query)))
 	} else if len(sv.results) > 0 {
-		// Render results top to bottom (bottom-up display: last result closest to input)
 		for i, task := range sv.results {
 			statusColor := StatusColor(string(task.Status))
 			statusIndicator := lipgloss.NewStyle().
@@ -417,16 +531,14 @@ func (sv *SearchView) View() string {
 			} else {
 				line = searchResultStyle.Render(line)
 			}
-			s.WriteString(line)
-			s.WriteString("\n")
+			fmt.Fprintf(&s, "%s\n", line)
 		}
 		s.WriteString("\n")
 	}
 
 	// Render input at bottom
-	s.WriteString(sv.textInput.View())
-	s.WriteString("\n\n")
-	s.WriteString(helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))
+	fmt.Fprintf(&s, "%s\n\n", sv.textInput.View())
+	fmt.Fprintf(&s, "%s", helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))
 
 	return s.String()
 }
