@@ -362,7 +362,7 @@ func (dv *DoorsView) View() string {
 
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
-			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected))
+			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected, ""))
 		} else if animating {
 			// Spring-interpolated border color based on emphasis
 			emphasis := dv.doorAnimation.Emphasis(i)

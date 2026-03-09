@@ -270,6 +270,11 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 			return FlashMsg{Text: "Use 'x' in task detail view to dispatch a specific task."}
 		}
 
+	case "hints":
+		return func() tea.Msg {
+			return InlineHintsToggleMsg{Arg: args}
+		}
+
 	case "help":
 		return func() tea.Msg {
 			return ShowHelpMsg{}

@@ -84,6 +84,7 @@ type MainModel struct {
 	syncTracker           *core.SyncStatusTracker
 	agentService          *intelligence.AgentService
 	decomposing           bool
+	inlineHintsConfig     *core.InlineHintsConfig
 	syncLog               *core.SyncLog
 	dedupStore            *core.DedupStore
 	duplicateTaskIDs      map[string]bool
@@ -117,6 +118,31 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 	}
 	if valuesConfig == nil {
 		valuesConfig = &core.ValuesConfig{}
+	}
+
+	// Load inline hints config and increment session counter
+	var inlineHintsConfig *core.InlineHintsConfig
+	var inlineHintsFlash string
+	if configPath, err := core.GetConfigDirPath(); err == nil {
+		cfg, loadErr := core.LoadInlineHintsConfig(configPath)
+		if loadErr != nil {
+			cfg = core.DefaultInlineHintsConfig()
+		}
+		cfg.SessionCount++
+
+		// Check if auto-disable threshold reached
+		if cfg.ShowInlineHints && cfg.FadeThreshold > 0 && cfg.SessionCount >= cfg.FadeThreshold {
+			cfg.ShowInlineHints = false
+			inlineHintsFlash = "Key hints hidden — type :hints to bring them back"
+		}
+
+		if saveErr := core.SaveInlineHintsConfig(configPath, cfg); saveErr != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save inline hints config: %v\n", saveErr)
+		}
+		inlineHintsConfig = cfg
+	}
+	if inlineHintsConfig == nil {
+		inlineHintsConfig = core.DefaultInlineHintsConfig()
 	}
 
 	// Initialize completion counter for daily tracking
@@ -191,6 +217,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		patternAnalyzer:   pa,
 		enrichDB:          edb,
 		valuesConfig:      valuesConfig,
+		inlineHintsConfig: inlineHintsConfig,
 		syncTracker:       syncTracker,
 		syncLog:           syncLog,
 		dedupStore:        dedupStore,
@@ -206,6 +233,10 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 	if isFirstRun {
 		m.onboardingView = NewOnboardingView()
 		m.viewMode = ViewOnboarding
+	}
+
+	if inlineHintsFlash != "" {
+		m.flash = inlineHintsFlash
 	}
 
 	return m
@@ -776,6 +807,30 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case FlashMsg:
 		m.flash = msg.Text
+		return m, ClearFlashCmd()
+
+	case InlineHintsToggleMsg:
+		switch msg.Arg {
+		case "on":
+			m.inlineHintsConfig.ShowInlineHints = true
+			m.inlineHintsConfig.SessionCount = 0
+			m.flash = "Inline hints enabled"
+		case "off":
+			m.inlineHintsConfig.ShowInlineHints = false
+			m.flash = "Inline hints disabled"
+		default:
+			m.inlineHintsConfig.ShowInlineHints = !m.inlineHintsConfig.ShowInlineHints
+			if m.inlineHintsConfig.ShowInlineHints {
+				m.inlineHintsConfig.SessionCount = 0
+				m.flash = "Inline hints enabled"
+			} else {
+				m.flash = "Inline hints disabled"
+			}
+		}
+		if configDir, err := core.GetConfigDirPath(); err == nil {
+			_ = core.SaveInlineHintsConfig(configDir, m.inlineHintsConfig)
+		}
+		m.viewMode = ViewDoors
 		return m, ClearFlashCmd()
 
 	case DecomposeStartMsg:

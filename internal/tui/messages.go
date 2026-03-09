@@ -50,6 +50,11 @@ type FlashMsg struct {
 // ClearFlashMsg clears the flash message.
 type ClearFlashMsg struct{}
 
+// InlineHintsToggleMsg is sent when the :hints command is used.
+type InlineHintsToggleMsg struct {
+	Arg string // "on", "off", or "" (toggle)
+}
+
 // SearchResultSelectedMsg is sent when a user selects a task from search results.
 type SearchResultSelectedMsg struct {
 	Task *core.Task

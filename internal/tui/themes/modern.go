@@ -32,8 +32,8 @@ func NewModernTheme() *DoorTheme {
 	}
 }
 
-func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
-	return func(content string, width int, height int, selected bool) string {
+func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool, string) string {
+	return func(content string, width int, height int, selected bool, hint string) string {
 		color := frameColor
 		hChar := "─"
 		vChar := "│"
@@ -52,15 +52,15 @@ func modernRender(frameColor, selectedColor lipgloss.Color) func(string, int, in
 
 		// Compact mode: use original card style
 		if height < 12 {
-			return modernCompact(content, inner, hChar, vChar, style)
+			return modernCompact(content, inner, hChar, vChar, style, hint)
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return modernDoor(content, width, height, inner, hChar, vChar, style, selected)
+		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint)
 	}
 }
 
-func modernCompact(content string, inner int, hChar, vChar string, style lipgloss.Style) string {
+func modernCompact(content string, inner int, hChar, vChar string, style lipgloss.Style, hint string) string {
 	// Word-wrap content with 3-char left padding, 3-char right padding
 	contentWidth := inner - 6
 	if contentWidth < 1 {
@@ -97,12 +97,12 @@ func modernCompact(content string, inner int, hChar, vChar string, style lipglos
 	// Blank line after content
 	fmt.Fprintf(&b, "%s\n", blankLine)
 
-	// Doorknob line: ● placed near the right side
+	// Doorknob line: ● placed near the right side, with optional hint
 	knobPad := inner - 4
 	if knobPad < 1 {
 		knobPad = 1
 	}
-	knobLine := strings.Repeat(" ", knobPad) + "●" + strings.Repeat(" ", inner-knobPad-1)
+	knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
 	fmt.Fprintf(&b, "%s%s%s\n",
 		style.Render(vChar),
 		knobLine,
@@ -118,7 +118,7 @@ func modernCompact(content string, inner int, hChar, vChar string, style lipglos
 	return b.String()
 }
 
-func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool) string {
+func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string) string {
 	anatomy := NewDoorAnatomy(height)
 
 	// Word-wrap content with 3-char padding on each side
@@ -149,12 +149,12 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 			fmt.Fprintf(&b, "%s", style.Render(vChar+divBar+vChar))
 
 		case row == anatomy.HandleRow:
-			// Minimalist handle: ○ (open circle) on the right side
+			// Minimalist handle: ○ (open circle) on the right side, with optional hint
 			knobPad := inner - 4
 			if knobPad < 1 {
 				knobPad = 1
 			}
-			knobLine := strings.Repeat(" ", knobPad) + "○" + strings.Repeat(" ", inner-knobPad-1)
+			knobLine := renderHandleWithHint(inner, knobPad, "○", hint)
 			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
 
 		case row == anatomy.ThresholdRow:
