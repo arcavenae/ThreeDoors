@@ -2635,7 +2635,7 @@ So that doors appear to have dimension and stand out from the background.
 
 **Prerequisites:** None (complements Epic 35 but does not depend on it)
 **FRs covered:** FR148-FR151
-**Status:** Not Started
+**Status:** In Progress (3/4 done)
 
 ### Story 36.1: Enhanced Door Selection Visual Feedback
 
@@ -2703,15 +2703,41 @@ So that I never feel trapped in a screen.
 
 ---
 
+### Story 36.4: Space/Enter Toggle — Close Door by Pressing Same Key
+
+As a user,
+I want to press space or enter again to close an open door (return from DetailView to DoorsView),
+So that opening and closing a door uses the same natural gesture, like a real door.
+
+**Acceptance Criteria:**
+
+**Given** the user is in DetailView (viewing a task's details) and no text input is active
+**When** the user presses space or enter
+**Then** the view switches back to DoorsView with the door still selected
+
+**Given** the user is in DetailView with a text input active (feedback form, snooze picker)
+**When** the user presses space or enter
+**Then** the keypress is handled by the text input (not intercepted as toggle)
+
+**Given** the user presses Escape in DetailView
+**Then** the view switches back to DoorsView (existing behavior preserved)
+
+**Quality Gate:** AC-Q1 (formatting), AC-Q2 (lint), AC-Q3 (test coverage), AC-Q4 (rebase), AC-Q5 (scope)
+
+**Decision:** D-137 — Space/Enter as toggle in DetailView
+
+---
+
 ### Epic 36 Story Dependencies
 
 ```
 36.1 Enhanced Door Selection Visual Feedback (independent)
 36.2 Deselect Toggle (independent)
 36.3 Universal Quit (independent)
+36.4 Space/Enter Toggle (depends on 36.2 pattern, 39.6 spacebar alias)
 ```
 
-All three stories are independent and can be implemented in parallel.
+Stories 36.1-36.3 are independent. Story 36.4 extends the toggle pattern from 36.2.
 
 ---
 

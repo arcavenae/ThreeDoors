@@ -209,6 +209,17 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
 | 41.6 | Adaptive Color Profile Support | Done (PR #373) | P2 | None |
 
+### Epic 36: Door Selection Interaction Feedback (P1) — 3/4 stories done
+
+Make door selection feel responsive and satisfying. Reopened for Story 36.4 (space/enter toggle).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 36.1 | Enhanced Door Selection Visual Feedback | Done (PR #277) | P1 | None |
+| 36.2 | Deselect Toggle | Done (PR #272) | P1 | None |
+| 36.3 | Universal Quit | Done (PR #276) | P1 | None |
+| 36.4 | Space/Enter Toggle — Close Door by Pressing Same Key | Ready | P1 | 36.2, 39.6 |
+
 ## Completed Epics
 
 | Epic | Title | Stories |
@@ -242,7 +253,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 26 | GitHub Issues Integration | 4/4 |
 | 34 | SOUL.md + Custom Development Skills | 4/4 |
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
-| 36 | Door Selection Interaction Feedback | 3/3 |
+| 36 | Door Selection Interaction Feedback | 3/4 |
 | 37 | Persistent BMAD Agent Infrastructure | 4/4 |
 | 29 | Task Dependencies & Blocked-Task Filtering | 4/4 |
 | 32 | Undo Task Completion | 3/3 |
