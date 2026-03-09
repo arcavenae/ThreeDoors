@@ -163,6 +163,12 @@ func main() {
 
 	isFirstRun := configErr == nil && core.IsFirstRun(configDir)
 	model := tui.NewMainModel(pool, tracker, provider, hc, isFirstRun, enrichDB)
+	if cfg.ShowKeybindingBar != nil {
+		model.SetShowKeybindingBar(*cfg.ShowKeybindingBar)
+	}
+	if configErr == nil {
+		model.SetConfigPath(filepath.Join(configDir, "config.yaml"))
+	}
 	if proposalStore != nil {
 		model.SetProposalStore(proposalStore)
 	}
