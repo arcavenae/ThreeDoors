@@ -52,6 +52,9 @@ type ProviderConfig struct {
 	// In doors view: inline door hints [a] [w] [d]. In other views: keybinding bar.
 	// Uses *bool so we can distinguish "absent" (nil → default true) from "explicitly false".
 	ShowKeyHints *bool `yaml:"show_key_hints,omitempty"`
+	// SeasonalThemes controls automatic seasonal theme switching.
+	// Uses *bool so nil (absent) defaults to true; explicit false disables.
+	SeasonalThemes *bool `yaml:"seasonal_themes,omitempty"`
 }
 
 // CurrentSchemaVersion is the current config.yaml schema version.
@@ -65,6 +68,12 @@ func defaultProviderConfig() *ProviderConfig {
 		Provider:      "textfile",
 		NoteTitle:     "ThreeDoors Tasks",
 	}
+}
+
+// SeasonalThemesEnabled returns whether seasonal themes are enabled.
+// Returns true when SeasonalThemes is nil (absent from config) or explicitly true.
+func (c *ProviderConfig) SeasonalThemesEnabled() bool {
+	return c.SeasonalThemes == nil || *c.SeasonalThemes
 }
 
 // LoadProviderConfig reads provider configuration from a YAML file.

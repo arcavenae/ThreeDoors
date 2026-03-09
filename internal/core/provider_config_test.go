@@ -677,3 +677,74 @@ llm:
 	// Unknown sections (values, onboarding_complete, calendar) should be silently ignored
 	// by ProviderConfig — they are loaded by their own loaders
 }
+
+// --- Story 33.3: SeasonalThemes config field ---
+
+func TestSeasonalThemesEnabled_NilDefaultsTrue(t *testing.T) {
+	t.Parallel()
+	cfg := &ProviderConfig{}
+	if !cfg.SeasonalThemesEnabled() {
+		t.Error("nil SeasonalThemes should default to true")
+	}
+}
+
+func TestSeasonalThemesEnabled_ExplicitTrue(t *testing.T) {
+	t.Parallel()
+	v := true
+	cfg := &ProviderConfig{SeasonalThemes: &v}
+	if !cfg.SeasonalThemesEnabled() {
+		t.Error("explicit true should return true")
+	}
+}
+
+func TestSeasonalThemesEnabled_ExplicitFalse(t *testing.T) {
+	t.Parallel()
+	v := false
+	cfg := &ProviderConfig{SeasonalThemes: &v}
+	if cfg.SeasonalThemesEnabled() {
+		t.Error("explicit false should return false")
+	}
+}
+
+func TestLoadProviderConfig_SeasonalThemes_Roundtrip(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	v := false
+	cfg := &ProviderConfig{
+		SchemaVersion:  CurrentSchemaVersion,
+		Provider:       "textfile",
+		SeasonalThemes: &v,
+	}
+	if err := SaveProviderConfig(configPath, cfg); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	loaded, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if loaded.SeasonalThemesEnabled() {
+		t.Error("loaded config should have seasonal_themes: false")
+	}
+}
+
+func TestLoadProviderConfig_SeasonalThemes_Absent(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	content := []byte("provider: textfile\n")
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	loaded, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if !loaded.SeasonalThemesEnabled() {
+		t.Error("absent seasonal_themes should default to enabled")
+	}
+}

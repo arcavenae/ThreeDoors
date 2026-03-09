@@ -170,6 +170,11 @@ func main() {
 	if configErr == nil {
 		model.SetConfigPath(filepath.Join(configDir, "config.yaml"))
 	}
+	// Set base theme from config and resolve seasonal override.
+	if cfg.Theme != "" {
+		model.SetBaseThemeName(cfg.Theme)
+	}
+	model.SetSeasonalEnabled(cfg.SeasonalThemesEnabled())
 	if proposalStore != nil {
 		model.SetProposalStore(proposalStore)
 	}
