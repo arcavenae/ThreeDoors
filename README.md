@@ -30,11 +30,19 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 
 ## 📦 Installation
 
-### Option 1: Homebrew (macOS)
+### Option 1: Homebrew (recommended)
 
 ```bash
 brew install arcaven/tap/threedoors
 ```
+
+**Alpha channel** — latest development builds from `main`:
+
+```bash
+brew install arcaven/tap/threedoors-a
+```
+
+Both can be installed side-by-side. Stable runs as `threedoors`, alpha runs as `threedoors-a`.
 
 ### Option 2: Download Pre-built Binary
 
