@@ -4163,7 +4163,7 @@ Allow reversing accidental task completion via `complete -> todo` transition. Va
 |-------|-------|--------|----------|------------|
 | 32.1 | Status Model — Complete-to-Todo Transition | Done (PR #306) | P1 | None |
 | 32.2 | Session Metrics — Undo Complete Event Logging | Done (PR #322) | P1 | 32.1 |
-| 32.3 | TUI & CLI Undo Experience | Done (PR #TBD) | P1 | 32.1, 32.2 |
+| 32.3 | TUI & CLI Undo Experience | Done (PR #337) | P1 | 32.1, 32.2 |
 
 **FRs covered:** FR127-FR131
 
