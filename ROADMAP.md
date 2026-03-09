@@ -52,14 +52,14 @@ Replace broken `:help` flash message with dedicated scrollable help view. Conten
 
 ## Active Epics
 
-### Epic 25: Todoist Integration (P1) — 1/4 stories done
+### Epic 25: Todoist Integration (P1) — 2/4 stories done
 
 Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 25.1 | Todoist HTTP Client & Auth Configuration | Done (PR #308) | P1 | Epic 7 (done) |
-| 25.2 | Read-Only Todoist Adapter with Field Mapping | Not Started | P1 | 25.1 |
+| 25.2 | Read-Only Todoist Adapter with Field Mapping | Done (PR #321) | P1 | 25.1 |
 | 25.3 | Bidirectional Sync & WAL Integration | Not Started | P1 | 25.2 |
 | 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
 
@@ -69,7 +69,7 @@ Guided daily planning ritual for task review and focus selection. Transforms Thr
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 27.1 | Planning Data Model & Focus Tag | In Review | P1 | Epic 1 (done) |
+| 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
 | 27.2 | Review Incomplete Tasks Flow | Not Started | P1 | 27.1 |
 | 27.3 | Focus Selection Flow | Not Started | P1 | 27.1 |
 | 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
