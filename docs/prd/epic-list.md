@@ -452,14 +452,14 @@
 **Epic 38: Dual Homebrew Distribution** (P1)
 - **Goal:** Establish parallel Homebrew distribution channels (stable + alpha) with signing parity, publishing controls, verification, and retention management
 - **Prerequisites:** GoReleaser release pipeline (complete), Apple Developer ID signing infrastructure (complete)
-- **Status:** In Progress (1/5 in review)
+- **Status:** In Progress (2/6 done)
 - **Deliverables:**
   - Alpha Homebrew formula (`threedoors-a.rb`) auto-updated on every push to main
   - Publishing toggle (`vars.ALPHA_TAP_ENABLED`) for controlled activation
   - Code signing and notarization for stable GoReleaser releases
   - Alpha formula verification via tap CI monitoring
   - Alpha release retention cleanup (keep last 30)
-- **Stories:** 38.1-38.5 (5 stories)
+- **Stories:** 38.1-38.6 (6 stories)
 - **Research:** See `docs/research/dual-homebrew-distribution-research.md`, `_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md`
 
 **Epic 39: Keybinding Display System** (P1)
@@ -525,7 +525,7 @@
 | Epic 35: Door Visual Appearance | 7 | Complete |
 | Epic 36: Door Selection Feedback | 3 | Complete |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
-| Epic 38: Dual Homebrew Distribution | 5 | In Progress (1/5) |
+| Epic 38: Dual Homebrew Distribution | 6 | In Progress (2/6) |
 | Epic 39: Keybinding Display System | 5 | Not Started |
 | **Total** | **204** | **154 complete, 1 in progress, 49 not started** |
 ---

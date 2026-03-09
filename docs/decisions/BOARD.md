@@ -124,6 +124,7 @@
 | D-092 | Bar defaults ON for new users (Epic 39) | 2026-03-08 | Progressive disclosure; bridges onboarding-to-mastery gap; power users press h to hide | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 | D-093 | Bar is theme-independent, dim styling only (Epic 39) | 2026-03-08 | Bar is chrome, not content; themed bars would require updating every theme for non-core feature | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
 | D-094 | Auto-hide bar below 10 lines terminal height (Epic 39) | 2026-03-08 | Doors must have priority for screen space; bar is helpful but not essential | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-ux-review.md) |
+| D-095 | Fix alpha formula template with `if OS.mac? && Hardware::CPU.arm?` pattern | 2026-03-09 | Matches stable formula fix; addresses root cause in ci.yml not homebrew-tap; minimal change | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
 
 ## Rejected
 
@@ -166,6 +167,8 @@
 | X-035 | Single `?` key for both bar toggle and overlay (Epic 39) | 2026-03-08 | Conflates "persistent reference" with "help me now"; separate keys (h/?) are clearer | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-party-mode.md) |
 | X-036 | Overlay as new ViewMode (Epic 39) | 2026-03-08 | ViewMode transition clears previous view; overlay is ephemeral context-preserving layer | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
 | X-037 | Runtime keybinding registration / config-driven bindings (Epic 39) | 2026-03-08 | All bindings are known at compile time; runtime flexibility adds complexity for zero current benefit | [Artifact](../../_bmad-output/planning-artifacts/keybinding-display-architecture.md) |
+| X-038 | Shared formula template for stable and alpha (Issue #296) | 2026-03-09 | GoReleaser controls stable; prior decision X-028; YAGNI for two instances | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
+| X-039 | Fix alpha formula directly in homebrew-tap (Issue #296) | 2026-03-09 | Would be overwritten on next CI push; root cause is in ThreeDoors ci.yml | [Artifact](../../_bmad-output/planning-artifacts/issue-296-alpha-formula-ci-triage.md) |
 
 ## Superseded
 
