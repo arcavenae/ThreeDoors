@@ -224,6 +224,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
 | 36 | Door Selection Interaction Feedback | 3/3 |
 | 37 | Persistent BMAD Agent Infrastructure | 4/4 |
+| 32 | Undo Task Completion | 3/3 |
 | 38 | Dual Homebrew Distribution | 6/6 |
 
 ## Icebox (Deferred Indefinitely)
