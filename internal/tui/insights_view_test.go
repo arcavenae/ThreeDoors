@@ -571,6 +571,243 @@ func TestMoodBarWidth(t *testing.T) {
 	}
 }
 
+// ============================================================
+// Story 40.6 — Session Highlights Tests
+// ============================================================
+
+func setupInsightsViewWithHighlights(t *testing.T) *InsightsView {
+	t.Helper()
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 7, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	sessions := []core.SessionMetrics{
+		{
+			SessionID:           uuid.New().String(),
+			StartTime:           time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC),
+			EndTime:             time.Date(2026, 3, 5, 10, 30, 0, 0, time.UTC),
+			DurationSeconds:     1800,
+			TasksCompleted:      3,
+			DetailViews:         2,
+			NotesAdded:          1,
+			TimeToFirstDoorSecs: 8.0,
+			DoorSelections:      []core.DoorSelectionRecord{{DoorPosition: 0, TaskText: "t1", Timestamp: now}},
+			MoodEntries:         []core.MoodEntry{{Mood: "Focused", Timestamp: now}},
+			MoodEntryCount:      1,
+		},
+		{
+			SessionID:           uuid.New().String(),
+			StartTime:           time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC),
+			EndTime:             time.Date(2026, 3, 6, 11, 0, 0, 0, time.UTC),
+			DurationSeconds:     3600,
+			TasksCompleted:      5,
+			DetailViews:         3,
+			NotesAdded:          2,
+			TimeToFirstDoorSecs: 4.5,
+			DoorSelections:      []core.DoorSelectionRecord{{DoorPosition: 1, TaskText: "t2", Timestamp: now}, {DoorPosition: 2, TaskText: "t3", Timestamp: now}},
+			MoodEntries:         []core.MoodEntry{{Mood: "Tired", Timestamp: now}},
+			MoodEntryCount:      1,
+		},
+		{
+			SessionID:           uuid.New().String(),
+			StartTime:           time.Date(2026, 3, 7, 10, 0, 0, 0, time.UTC),
+			EndTime:             time.Date(2026, 3, 7, 10, 15, 0, 0, time.UTC),
+			DurationSeconds:     900,
+			TasksCompleted:      4,
+			DetailViews:         0,
+			NotesAdded:          0,
+			TimeToFirstDoorSecs: 2.0,
+			DoorSelections:      []core.DoorSelectionRecord{{DoorPosition: 0, TaskText: "t4", Timestamp: now}},
+			MoodEntries:         []core.MoodEntry{{Mood: "Focused", Timestamp: now}},
+			MoodEntryCount:      1,
+		},
+	}
+
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+
+	cc := core.NewCompletionCounterWithNow(frozen)
+	iv := NewInsightsView(pa, cc)
+	iv.SetWidth(80)
+	return iv
+}
+
+func TestInsightsView_SessionHighlights_PanelPresent(t *testing.T) {
+	iv := setupInsightsViewWithHighlights(t)
+	output := iv.View()
+
+	if !strings.Contains(output, "SESSION HIGHLIGHTS") {
+		t.Error("View() should contain 'SESSION HIGHLIGHTS' panel")
+	}
+}
+
+func TestInsightsView_SessionHighlights_MetricsShown(t *testing.T) {
+	iv := setupInsightsViewWithHighlights(t)
+	output := iv.View()
+
+	expectedMetrics := []string{
+		"Doors opened",
+		"Tasks completed",
+		"Avg session",
+		"Fastest first pick",
+		"Detail views",
+		"Notes added",
+		"Longest streak",
+		"Peak hour",
+	}
+
+	for _, metric := range expectedMetrics {
+		if !strings.Contains(output, metric) {
+			t.Errorf("View() missing metric %q", metric)
+		}
+	}
+}
+
+func TestInsightsView_SessionHighlights_Values(t *testing.T) {
+	iv := setupInsightsViewWithHighlights(t)
+	content := iv.buildSessionHighlights()
+
+	// Total doors: 1 + 2 + 1 = 4
+	if !strings.Contains(content, "4") {
+		t.Errorf("highlights should contain total doors 4, got:\n%s", content)
+	}
+	// Total tasks: 3 + 5 + 4 = 12
+	if !strings.Contains(content, "12") {
+		t.Errorf("highlights should contain total tasks 12, got:\n%s", content)
+	}
+	// Peak hour: 10 appears 3 times
+	if !strings.Contains(content, "10am") {
+		t.Errorf("highlights should contain peak hour '10am', got:\n%s", content)
+	}
+	// Longest streak: Mar 5, 6, 7 = 3 days
+	if !strings.Contains(content, "3 days") {
+		t.Errorf("highlights should contain '3 days' streak, got:\n%s", content)
+	}
+}
+
+func TestInsightsView_SessionHighlights_OmitsZeroData(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 7, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	// Session with no detail views, no notes, no first door time
+	sessions := []core.SessionMetrics{
+		{
+			SessionID:           uuid.New().String(),
+			StartTime:           time.Date(2026, 3, 5, 10, 0, 0, 0, time.UTC),
+			DurationSeconds:     600,
+			TasksCompleted:      1,
+			DetailViews:         0,
+			NotesAdded:          0,
+			TimeToFirstDoorSecs: 0,
+			DoorSelections:      []core.DoorSelectionRecord{{DoorPosition: 0, TaskText: "t1", Timestamp: now}},
+			MoodEntries:         []core.MoodEntry{{Mood: "Focused", Timestamp: now}},
+			MoodEntryCount:      1,
+		},
+		{
+			SessionID:           uuid.New().String(),
+			StartTime:           time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC),
+			DurationSeconds:     600,
+			TasksCompleted:      2,
+			DetailViews:         0,
+			NotesAdded:          0,
+			TimeToFirstDoorSecs: 0,
+			DoorSelections:      []core.DoorSelectionRecord{{DoorPosition: 1, TaskText: "t2", Timestamp: now}},
+			MoodEntries:         []core.MoodEntry{{Mood: "Tired", Timestamp: now}},
+			MoodEntryCount:      1,
+		},
+		{
+			SessionID:       uuid.New().String(),
+			StartTime:       time.Date(2026, 3, 7, 10, 0, 0, 0, time.UTC),
+			DurationSeconds: 600,
+			TasksCompleted:  1,
+			DoorSelections:  []core.DoorSelectionRecord{{DoorPosition: 2, TaskText: "t3", Timestamp: now}},
+			MoodEntries:     []core.MoodEntry{{Mood: "Focused", Timestamp: now}},
+			MoodEntryCount:  1,
+		},
+	}
+
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+
+	cc := core.NewCompletionCounterWithNow(frozen)
+	iv := NewInsightsView(pa, cc)
+	iv.SetWidth(80)
+
+	content := iv.buildSessionHighlights()
+
+	if strings.Contains(content, "Detail views") {
+		t.Error("should omit 'Detail views' when count is 0")
+	}
+	if strings.Contains(content, "Notes added") {
+		t.Error("should omit 'Notes added' when count is 0")
+	}
+	if strings.Contains(content, "Fastest first pick") {
+		t.Error("should omit 'Fastest first pick' when no valid data")
+	}
+
+	// Should still show metrics that have data
+	if !strings.Contains(content, "Doors opened") {
+		t.Error("should show 'Doors opened' when doors > 0")
+	}
+	if !strings.Contains(content, "Tasks completed") {
+		t.Error("should show 'Tasks completed' when tasks > 0")
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	tests := []struct {
+		name string
+		d    time.Duration
+		want string
+	}{
+		{"milliseconds", 500 * time.Millisecond, "500ms"},
+		{"seconds integer", 5 * time.Second, "5s"},
+		{"seconds fractional", 5500 * time.Millisecond, "5.5s"},
+		{"minutes only", 15 * time.Minute, "15m"},
+		{"minutes and seconds", 15*time.Minute + 30*time.Second, "15m 30s"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := formatDuration(tt.d)
+			if got != tt.want {
+				t.Errorf("formatDuration(%v) = %q, want %q", tt.d, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFormatHour(t *testing.T) {
+	tests := []struct {
+		hour int
+		want string
+	}{
+		{0, "12am"},
+		{1, "1am"},
+		{9, "9am"},
+		{11, "11am"},
+		{12, "12pm"},
+		{13, "1pm"},
+		{23, "11pm"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.want, func(t *testing.T) {
+			got := formatHour(tt.hour)
+			if got != tt.want {
+				t.Errorf("formatHour(%d) = %q, want %q", tt.hour, got, tt.want)
+			}
+		})
+	}
+}
+
 // Golden file tests for consistent rendering at standard widths.
 // Use Ascii profile for deterministic output regardless of test execution order.
 func TestInsightsView_GoldenFile_80col(t *testing.T) {
