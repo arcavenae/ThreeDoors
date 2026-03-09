@@ -1,0 +1,17 @@
+{
+  "updated": "2026-03-01",
+  "packages": {
+    "github.com/arcaven/ThreeDoors/internal/core": {
+      "coverage": 90.0,
+      "updated": "2026-03-01"
+    },
+    "github.com/arcaven/ThreeDoors/internal/tui": {
+      "coverage": 85.0,
+      "updated": "2026-03-01"
+    },
+    "github.com/arcaven/ThreeDoors/internal/removed-package": {
+      "coverage": 70.0,
+      "updated": "2026-03-01"
+    }
+  }
+}
