@@ -1109,3 +1109,128 @@ func TestQKey_TableDriven(t *testing.T) {
 		})
 	}
 }
+
+// --- Story 39.7: Global Command Mode Tests ---
+
+// Table-driven test for global ':' command mode from all views
+func TestGlobalCommandMode_TableDriven(t *testing.T) {
+	tests := []struct {
+		name             string
+		setup            func(*MainModel)
+		wantCommandMode  bool
+		wantPreviousView ViewMode
+	}{
+		{
+			name:             "colon from doors view opens command mode",
+			setup:            func(_ *MainModel) {},
+			wantCommandMode:  true,
+			wantPreviousView: ViewDoors,
+		},
+		{
+			name: "colon from help view opens command mode",
+			setup: func(m *MainModel) {
+				m.viewMode = ViewHelp
+			},
+			wantCommandMode:  true,
+			wantPreviousView: ViewHelp,
+		},
+		{
+			name: "colon from detail view (normal mode) opens command mode",
+			setup: func(m *MainModel) {
+				m.Update(keyMsg("w"))
+				m.Update(keyMsg("enter"))
+			},
+			wantCommandMode:  true,
+			wantPreviousView: ViewDetail,
+		},
+		{
+			name: "colon from insights view opens command mode",
+			setup: func(m *MainModel) {
+				m.viewMode = ViewInsights
+			},
+			wantCommandMode:  true,
+			wantPreviousView: ViewInsights,
+		},
+		{
+			name: "colon from health view opens command mode",
+			setup: func(m *MainModel) {
+				m.viewMode = ViewHealth
+			},
+			wantCommandMode:  true,
+			wantPreviousView: ViewHealth,
+		},
+		{
+			name: "colon from next steps view opens command mode",
+			setup: func(m *MainModel) {
+				m.viewMode = ViewNextSteps
+			},
+			wantCommandMode:  true,
+			wantPreviousView: ViewNextSteps,
+		},
+		{
+			name: "colon ignored in search view (text input active)",
+			setup: func(m *MainModel) {
+				m.searchView = m.newSearchView()
+				m.viewMode = ViewSearch
+			},
+			wantCommandMode: false,
+		},
+		{
+			name: "colon ignored in add task view (text input active)",
+			setup: func(m *MainModel) {
+				m.addTaskView = NewAddTaskView()
+				m.viewMode = ViewAddTask
+			},
+			wantCommandMode: false,
+		},
+		{
+			name: "colon ignored in improvement view (text input active)",
+			setup: func(m *MainModel) {
+				m.improvementView = NewImprovementView()
+				m.viewMode = ViewImprovement
+			},
+			wantCommandMode: false,
+		},
+		{
+			name: "colon ignored in detail blocker input mode",
+			setup: func(m *MainModel) {
+				m.Update(keyMsg("w"))
+				m.Update(keyMsg("enter"))
+				m.detailView.mode = DetailModeBlockerInput
+			},
+			wantCommandMode: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := makeModel("task1", "task2", "task3", "task4", "task5")
+			tt.setup(m)
+
+			beforeView := m.viewMode
+			m.Update(keyMsg(":"))
+
+			if tt.wantCommandMode {
+				if m.viewMode != ViewSearch {
+					t.Errorf("expected ViewSearch, got %v", m.viewMode)
+				}
+				if m.searchView == nil {
+					t.Fatal("searchView should not be nil")
+				}
+				if !m.searchView.isCommandMode {
+					t.Error("should be in command mode")
+				}
+				if m.searchView.textInput.Value() != ":" {
+					t.Errorf("text input should be ':', got %q", m.searchView.textInput.Value())
+				}
+				if m.previousView != tt.wantPreviousView {
+					t.Errorf("previousView = %v, want %v", m.previousView, tt.wantPreviousView)
+				}
+			} else {
+				if m.viewMode != beforeView {
+					t.Errorf("view should not change: got %v, want %v", m.viewMode, beforeView)
+				}
+			}
+		})
+	}
+}
