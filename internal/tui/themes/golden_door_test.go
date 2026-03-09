@@ -26,6 +26,10 @@ func TestGolden_DoorAllThemes(t *testing.T) {
 		{NewModernTheme(), 12},
 		{NewSciFiTheme(), 14},
 		{NewShojiTheme(), 14},
+		{NewWinterTheme(), 12},
+		{NewSpringTheme(), 12},
+		{NewSummerTheme(), 12},
+		{NewAutumnTheme(), 12},
 	}
 
 	heights := []struct {
@@ -106,6 +110,30 @@ func TestMonochromeDoorSignifiers(t *testing.T) {
 			[]string{"○"},
 			"▔",
 		},
+		{
+			NewWinterTheme(),
+			[]string{"─", "├"},
+			[]string{"◆"},
+			"▔",
+		},
+		{
+			NewSpringTheme(),
+			[]string{"─", "├"},
+			[]string{"○"},
+			"▔",
+		},
+		{
+			NewSummerTheme(),
+			[]string{"═", "╠"},
+			[]string{"■"},
+			"▀",
+		},
+		{
+			NewAutumnTheme(),
+			[]string{"─", "├"},
+			[]string{"●"},
+			"▒",
+		},
 	}
 
 	for _, c := range checks {
@@ -166,6 +194,10 @@ func TestCompactFallbackAllThemes(t *testing.T) {
 		"modern":  {"▔", "○"},      // threshold and open circle handle (door mode)
 		"scifi":   {"▓", "◈", "╞"}, // floor grating, access panel, bulkhead junction
 		"shoji":   {"▔", "○"},      // threshold and handle (lattice chars shared with compact)
+		"winter":  {"▔", "├"},      // threshold and panel divider junction
+		"spring":  {"▔", "├"},      // threshold and panel divider junction
+		"summer":  {"▀", "╠"},      // bold threshold and panel divider
+		"autumn":  {"▒", "├"},      // block threshold and panel divider junction
 	}
 
 	content := "Important task to complete"

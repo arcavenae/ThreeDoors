@@ -142,14 +142,14 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 33: Seasonal Door Theme Variants (P2) — 1/4 stories done
+### Epic 33: Seasonal Door Theme Variants (P2) — 2/4 stories done
 
 Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Done (PR #403) | P2 | Epic 17 (done) |
-| 33.2 | Four Seasonal Theme Implementations | Not Started | P2 | 33.1 |
+| 33.2 | Four Seasonal Theme Implementations | Done (PR #409) | P2 | 33.1 |
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
 

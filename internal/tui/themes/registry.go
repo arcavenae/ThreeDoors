@@ -33,6 +33,10 @@ func NewDefaultRegistry() *Registry {
 	r.Register(NewModernTheme())
 	r.Register(NewSciFiTheme())
 	r.Register(NewShojiTheme())
+	r.Register(NewWinterTheme())
+	r.Register(NewSpringTheme())
+	r.Register(NewSummerTheme())
+	r.Register(NewAutumnTheme())
 	return r
 }
 

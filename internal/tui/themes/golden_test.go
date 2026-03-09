@@ -19,13 +19,17 @@ func setAsciiProfile(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 }
 
-// allThemes returns the four built-in themes in a stable order.
+// allThemes returns all built-in themes in a stable order.
 func allThemes() []*DoorTheme {
 	return []*DoorTheme{
 		NewClassicTheme(),
 		NewModernTheme(),
 		NewSciFiTheme(),
 		NewShojiTheme(),
+		NewWinterTheme(),
+		NewSpringTheme(),
+		NewSummerTheme(),
+		NewAutumnTheme(),
 	}
 }
 

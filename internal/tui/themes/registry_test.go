@@ -78,8 +78,8 @@ func TestNewDefaultRegistry(t *testing.T) {
 
 	reg := NewDefaultRegistry()
 
-	// All four built-in themes should be registered
-	expected := []string{"classic", "modern", "scifi", "shoji"}
+	// All built-in themes should be registered
+	expected := []string{"autumn", "classic", "modern", "scifi", "shoji", "spring", "summer", "winter"}
 	names := reg.Names()
 	if len(names) != len(expected) {
 		t.Fatalf("got %d themes, want %d: %v", len(names), len(expected), names)
