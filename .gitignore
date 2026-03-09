@@ -3,6 +3,7 @@
 *.env.*
 *secret*
 *key*
+!**/keybinding*
 *token*
 *password*
 
