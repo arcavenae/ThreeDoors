@@ -2841,6 +2841,14 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 - **Depends on:** None (independent)
 - **ACs:** Keep last 30 alpha releases, delete older with `--cleanup-tag`, stable releases never affected, idempotent and safe
 
+### Story 38.6: Fix Alpha Homebrew Formula Template DSL
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** S (1-2 hours)
+- **Depends on:** 38.1
+- **Issue:** [#296](https://github.com/arcaven/ThreeDoors/issues/296)
+- **ACs:** Alpha formula template uses `if OS.mac? && Hardware::CPU.arm?` pattern, no `on_arm`/`on_intel`/`on_linux` with `url`/`sha256`, formula passes `brew audit --strict`, homebrew-tap CI green
+
 ---
 
 ### Epic 38 Story Dependencies
@@ -2851,6 +2859,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 38.3 Stable Release Signing (independent)
 38.4 Alpha Release Verification (depends on 38.1, 38.2)
 38.5 Alpha Release Retention (independent)
+38.6 Fix Alpha Formula Template DSL (depends on 38.1, fixes #296)
 ```
 
 ---
