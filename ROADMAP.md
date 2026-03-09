@@ -184,7 +184,7 @@ Toggleable keybinding bar and full overlay for TUI discoverability. Context-sens
 | 39.10 | Door View Inline Hints | Done (PR #387) | P1 | 39.9 |
 | 39.11 | Non-Door View Inline Hints | Done (PR #388) | P1 | 39.9 |
 | 39.12 | Auto-Fade After N Sessions | Cancelled (D-140) | ~~P2~~ | 39.9, 39.10 |
-| 39.13 | Unified Door Key Indicator Toggle | Done | P1 | 39.4, 39.9, 39.10 |
+| 39.13 | Unified Door Key Indicator Toggle | Done (PR #407) | P1 | 39.4, 39.9, 39.10 |
 
 ### Epic 40: Beautiful Stats Display (P1) — 10/10 stories done — COMPLETE
 
