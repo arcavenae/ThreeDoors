@@ -1,6 +1,9 @@
 package core
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestNewSessionTracker(t *testing.T) {
 	st := NewSessionTracker()
@@ -271,5 +274,83 @@ func TestSessionTracker_LatestMood_MultipleMoods(t *testing.T) {
 	mood := st.LatestMood()
 	if mood != "stressed" {
 		t.Errorf("Expected 'stressed' (last mood), got %q", mood)
+	}
+}
+
+// --- RecordUndoComplete Tests ---
+
+func TestSessionTracker_RecordUndoComplete(t *testing.T) {
+	st := NewSessionTracker()
+	completedAt := time.Date(2025, 3, 1, 10, 0, 0, 0, time.UTC)
+	st.RecordUndoComplete("task-123", completedAt)
+
+	if st.metrics.UndoCompleteCount != 1 {
+		t.Errorf("Expected UndoCompleteCount = 1, got %d", st.metrics.UndoCompleteCount)
+	}
+	if len(st.metrics.UndoCompletes) != 1 {
+		t.Fatalf("Expected 1 undo entry, got %d", len(st.metrics.UndoCompletes))
+	}
+	entry := st.metrics.UndoCompletes[0]
+	if entry.TaskID != "task-123" {
+		t.Errorf("Expected task ID 'task-123', got %q", entry.TaskID)
+	}
+	if entry.OriginalCompletedAt != completedAt {
+		t.Errorf("Expected OriginalCompletedAt = %v, got %v", completedAt, entry.OriginalCompletedAt)
+	}
+	if entry.ElapsedSeconds <= 0 {
+		// elapsed should be positive since completedAt is in the past
+		t.Errorf("Expected positive ElapsedSeconds, got %f", entry.ElapsedSeconds)
+	}
+	if entry.Timestamp.IsZero() {
+		t.Error("Expected non-zero timestamp")
+	}
+}
+
+func TestSessionTracker_RecordUndoComplete_Multiple(t *testing.T) {
+	st := NewSessionTracker()
+	completedAt1 := time.Date(2025, 3, 1, 10, 0, 0, 0, time.UTC)
+	completedAt2 := time.Date(2025, 3, 1, 11, 0, 0, 0, time.UTC)
+
+	st.RecordUndoComplete("task-1", completedAt1)
+	st.RecordUndoComplete("task-2", completedAt2)
+
+	if st.metrics.UndoCompleteCount != 2 {
+		t.Errorf("Expected UndoCompleteCount = 2, got %d", st.metrics.UndoCompleteCount)
+	}
+	if len(st.metrics.UndoCompletes) != 2 {
+		t.Fatalf("Expected 2 undo entries, got %d", len(st.metrics.UndoCompletes))
+	}
+	if st.metrics.UndoCompletes[0].TaskID != "task-1" {
+		t.Errorf("Expected first entry task ID 'task-1', got %q", st.metrics.UndoCompletes[0].TaskID)
+	}
+	if st.metrics.UndoCompletes[1].TaskID != "task-2" {
+		t.Errorf("Expected second entry task ID 'task-2', got %q", st.metrics.UndoCompletes[1].TaskID)
+	}
+}
+
+func TestSessionTracker_RecordUndoComplete_ElapsedTime(t *testing.T) {
+	st := NewSessionTracker()
+	// Use a time 1 hour in the past — elapsed should be roughly 3600s
+	completedAt := time.Now().UTC().Add(-1 * time.Hour)
+	st.RecordUndoComplete("task-abc", completedAt)
+
+	entry := st.metrics.UndoCompletes[0]
+	// Allow some tolerance for test execution time
+	if entry.ElapsedSeconds < 3590 || entry.ElapsedSeconds > 3610 {
+		t.Errorf("Expected ElapsedSeconds ~3600, got %f", entry.ElapsedSeconds)
+	}
+}
+
+func TestSessionTracker_RecordUndoComplete_IncludedInFinalize(t *testing.T) {
+	st := NewSessionTracker()
+	completedAt := time.Date(2025, 3, 1, 10, 0, 0, 0, time.UTC)
+	st.RecordUndoComplete("task-fin", completedAt)
+
+	metrics := st.Finalize()
+	if metrics.UndoCompleteCount != 1 {
+		t.Errorf("Expected finalized UndoCompleteCount = 1, got %d", metrics.UndoCompleteCount)
+	}
+	if len(metrics.UndoCompletes) != 1 {
+		t.Errorf("Expected finalized 1 undo entry, got %d", len(metrics.UndoCompletes))
 	}
 }

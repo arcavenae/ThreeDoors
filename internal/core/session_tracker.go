@@ -6,6 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// UndoCompleteEntry captures when a task completion is reversed.
+type UndoCompleteEntry struct {
+	Timestamp           time.Time `json:"timestamp"`
+	TaskID              string    `json:"task_id"`
+	OriginalCompletedAt time.Time `json:"original_completed_at"`
+	ElapsedSeconds      float64   `json:"elapsed_seconds"`
+}
+
 // DoorFeedbackEntry captures feedback on why a door/task was declined.
 type DoorFeedbackEntry struct {
 	Timestamp    time.Time `json:"timestamp"`
@@ -47,6 +55,8 @@ type SessionMetrics struct {
 	MoodEntries         []MoodEntry           `json:"mood_entries_detail,omitempty"`
 	DoorFeedback        []DoorFeedbackEntry   `json:"door_feedback,omitempty"`
 	DoorFeedbackCount   int                   `json:"door_feedback_count"`
+	UndoCompletes       []UndoCompleteEntry   `json:"undo_completes,omitempty"`
+	UndoCompleteCount   int                   `json:"undo_complete_count"`
 }
 
 // SessionTracker provides in-memory tracking of user behavior during an app session.
@@ -122,6 +132,18 @@ func (st *SessionTracker) RecordMood(mood string, customText string) {
 		CustomText: customText,
 	})
 	st.metrics.MoodEntryCount++
+}
+
+// RecordUndoComplete records when a task completion is reversed.
+func (st *SessionTracker) RecordUndoComplete(taskID string, originalCompletedAt time.Time) {
+	now := time.Now().UTC()
+	st.metrics.UndoCompletes = append(st.metrics.UndoCompletes, UndoCompleteEntry{
+		Timestamp:           now,
+		TaskID:              taskID,
+		OriginalCompletedAt: originalCompletedAt,
+		ElapsedSeconds:      now.Sub(originalCompletedAt).Seconds(),
+	})
+	st.metrics.UndoCompleteCount++
 }
 
 // RecordDoorFeedback records feedback on a task shown in a door.

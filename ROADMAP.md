@@ -97,14 +97,14 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Not Started | P1 | 29.1 |
 
-### Epic 32: Undo Task Completion (P1) — 1/3 stories done
+### Epic 32: Undo Task Completion (P1) — 2/3 stories done
 
 Allow reversing accidental task completion via `complete → todo` transition. Validated pain point from Phase 1 gate.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 32.1 | Status Model — Complete-to-Todo Transition | Done (PR #306) | P1 | None |
-| 32.2 | Session Metrics — Undo Complete Event Logging | Not Started | P1 | 32.1 |
+| 32.2 | Session Metrics — Undo Complete Event Logging | Done (PR #322) | P1 | 32.1 |
 | 32.3 | TUI & CLI Undo Experience | Not Started | P1 | 32.1, 32.2 |
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
