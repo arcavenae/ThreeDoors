@@ -42,19 +42,19 @@ type shojiChars struct {
 	tRght string // right T-junction
 }
 
-func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool) string {
-	return func(content string, width int, height int, selected bool) string {
+func shojiRender(frameColor, selectedColor lipgloss.Color) func(string, int, int, bool, string) string {
+	return func(content string, width int, height int, selected bool, hint string) string {
 		// Compact mode: use existing fixed layout
 		if height < 14 {
-			return shojiCompactRender(content, width, selected, frameColor, selectedColor)
+			return shojiCompactRender(content, width, selected, frameColor, selectedColor, hint)
 		}
 
-		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor)
+		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, hint)
 	}
 }
 
 // shojiCompactRender preserves the original fixed-layout rendering for compact mode.
-func shojiCompactRender(content string, width int, selected bool, frameColor, selectedColor lipgloss.Color) string {
+func shojiCompactRender(content string, width int, selected bool, frameColor, selectedColor lipgloss.Color, _ string) string {
 	color := frameColor
 	ch := shojiChars{
 		h: "─", v: "│", cross: "┼",
@@ -109,7 +109,7 @@ func shojiCompactRender(content string, width int, selected bool, frameColor, se
 }
 
 // shojiDoorRender renders the Shoji theme with door-like proportions using DoorAnatomy.
-func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.Color) string {
+func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.Color, hint string) string {
 	anatomy := NewDoorAnatomy(height)
 
 	color := frameColor
@@ -171,12 +171,12 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 			fmt.Fprintf(&b, "%s", shojiCrossBar(ch, innerW, crossPos, style))
 
 		case row == anatomy.HandleRow:
-			// Handle row: ○ on the right side
+			// Handle row: ○ on the right side, with optional hint
 			knobPad := innerW - 3
 			if knobPad < 1 {
 				knobPad = 1
 			}
-			knobLine := strings.Repeat(" ", knobPad) + "○" + strings.Repeat(" ", innerW-knobPad-1)
+			knobLine := renderHandleWithHint(innerW, knobPad, "○", hint)
 			fmt.Fprintf(&b, "%s%s%s", style.Render(ch.v), knobLine, style.Render(ch.v))
 
 		case row == latticeBar2Row:

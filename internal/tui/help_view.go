@@ -70,6 +70,7 @@ var helpContent = []helpSection{
 			{":suggestions", "View AI task suggestions"},
 			{":dispatch", "Dev dispatch info"},
 			{":goals [edit]", "View or edit values/goals"},
+			{":hints [on|off]", "Toggle inline key hints"},
 			{":quit / :exit", "Quit application"},
 			{":help", "Show this help screen"},
 		},

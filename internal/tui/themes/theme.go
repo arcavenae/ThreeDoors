@@ -1,6 +1,11 @@
 package themes
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
+)
 
 // ThemeColors holds the color palette for a door theme.
 type ThemeColors struct {
@@ -14,7 +19,7 @@ type ThemeColors struct {
 type DoorTheme struct {
 	Name        string
 	Description string
-	Render      func(content string, width int, height int, selected bool) string
+	Render      func(content string, width int, height int, selected bool, hint string) string
 	Colors      ThemeColors
 	MinWidth    int
 	MinHeight   int
@@ -22,3 +27,30 @@ type DoorTheme struct {
 
 // DefaultThemeName is the theme used when no theme is specified.
 const DefaultThemeName = "modern"
+
+// renderHandleWithHint builds a handle row line, placing hint text to the left
+// of the handle symbol when hint is non-empty. When hint is empty, renders the
+// handle in its standard position. innerWidth is the total interior width between
+// the vertical border characters. knobPad is the default left padding for the
+// handle symbol. handleSym is the handle character (e.g. "●", "○", "◈──┤").
+func renderHandleWithHint(innerWidth, knobPad int, handleSym, hint string) string {
+	if hint == "" {
+		rightPad := innerWidth - knobPad - 1
+		if rightPad < 0 {
+			rightPad = 0
+		}
+		return strings.Repeat(" ", knobPad) + handleSym + strings.Repeat(" ", rightPad)
+	}
+	hintWidth := ansi.StringWidth(hint)
+	handleWidth := ansi.StringWidth(handleSym)
+	// Layout: [padding] hint [space] handle [rightPad]
+	leftPad := innerWidth - hintWidth - 1 - handleWidth - 1
+	if leftPad < 1 {
+		leftPad = 1
+	}
+	rightPad := innerWidth - leftPad - hintWidth - 1 - handleWidth
+	if rightPad < 0 {
+		rightPad = 0
+	}
+	return strings.Repeat(" ", leftPad) + hint + " " + handleSym + strings.Repeat(" ", rightPad)
+}

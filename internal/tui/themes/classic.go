@@ -40,8 +40,8 @@ func NewClassicTheme() *DoorTheme {
 	}
 }
 
-func classicRender(frameColor, selectedColor lipgloss.Color, unselectedStyle, selectedStyle lipgloss.Style) func(string, int, int, bool) string {
-	return func(content string, width int, height int, selected bool) string {
+func classicRender(frameColor, selectedColor lipgloss.Color, unselectedStyle, selectedStyle lipgloss.Style) func(string, int, int, bool, string) string {
+	return func(content string, width int, height int, selected bool, hint string) string {
 		// Compact mode: use original Lipgloss card style
 		if height < 10 {
 			if selected {
@@ -109,7 +109,7 @@ func classicRender(frameColor, selectedColor lipgloss.Color, unselectedStyle, se
 				if knobPad < 1 {
 					knobPad = 1
 				}
-				knobLine := strings.Repeat(" ", knobPad) + "●" + strings.Repeat(" ", inner-knobPad-1)
+				knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
 				fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
 
 			case row == anatomy.ThresholdRow:
