@@ -141,7 +141,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Not Started | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
 
-### Epic 38: Dual Homebrew Distribution (P1) — 2/6 stories done
+### Epic 38: Dual Homebrew Distribution (P1) — 3/6 stories done
 
 Parallel Homebrew distribution channels (stable + alpha) with signing parity, publishing controls, verification, and retention.
 
@@ -149,7 +149,7 @@ Parallel Homebrew distribution channels (stable + alpha) with signing parity, pu
 |-------|-------|--------|----------|------------|
 | 38.1 | Alpha Homebrew Formula (`threedoors-a`) | Done (PR #273) | P1 | None |
 | 38.2 | Alpha Publishing Toggle | Done (PR #287) | P1 | 38.1 |
-| 38.3 | Stable Release Signing & Notarization | Not Started | P1 | None |
+| 38.3 | Stable Release Signing & Notarization | Done (PR #288) | P1 | None |
 | 38.4 | Alpha Release Verification | Not Started | P2 | 38.1, 38.2 |
 | 38.5 | Alpha Release Retention Cleanup | Not Started | P2 | None |
 | 38.6 | Fix Alpha Homebrew Formula Template DSL | Not Started | P1 | 38.1 |
