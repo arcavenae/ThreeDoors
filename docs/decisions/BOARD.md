@@ -147,6 +147,14 @@
 | D-111 | Implementation as separate story from research PR | 2026-03-08 | Unanimous; research PR should not apply changes | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | D-112 | Epic number reservation registry in BOARD.md | 2026-03-09 | Prevents parallel workers from claiming same epic number; lightweight alternative to persistent PM agent | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 | D-113 | No housekeeping epic for governance syncs | 2026-03-09 | Governance syncs are routine doc maintenance, not feature work; adding an epic creates overhead for non-deliverable work | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| D-114 | Use `tea.WithAltScreen()` for full-terminal ownership | 2026-03-09 | Standard TUI pattern (lazygit, k9s, soft-serve); clean terminal lifecycle; task picker doesn't need scrollback | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-115 | Fixed header + Flex middle + Fixed footer layout model | 2026-03-09 | Proven Bubbletea pattern; clean separation; enables keybinding bar footer slot (D-088) | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-116 | Door height capped at 25 lines: `min(max(10, available * 0.5), 25)` | 2026-03-09 | Door metaphor requires proportions that feel like doors (D-031); prevents skyscraper doors on tall terminals | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-117 | 40/60 top/bottom padding split for vertical centering | 2026-03-09 | Perceptual centering — content slightly above mathematical center feels natural; standard OS dialog placement | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-118 | Help/stats/search views use full available terminal height | 2026-03-09 | Hardcoded `helpPageSize = 20` is a bug; wastes space on tall terminals | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-119 | Breakpoint-based graceful degradation for small terminals | 2026-03-09 | Invisible to users; progressive collapse without error messages; respects D-094 bar hiding | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-120 | Two-story implementation (MVP layout + follow-up refactor) | 2026-03-09 | MVP delivers 80% value; refactor separates header/footer from DoorsView cleanly | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| D-121 | Layout engine is prerequisite for Story 39.2 (keybinding bar) | 2026-03-09 | Layout engine provides footer slot; building bar first would require rework | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
 
 ## Rejected
 
@@ -226,6 +234,13 @@
 | X-056 | `::` (GitLab-style) as label separator | 2026-03-08 | Looks unusual on GitHub; `.` is more universal | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-057 | `/` as label scope separator | 2026-03-08 | Conflicts with path references | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-058 | `process.party-mode` label | 2026-03-08 | Party mode is a process step, not an issue state; covered by `scope.needs-decision` | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
+| X-059 | Stay in normal scrollback buffer (no AltScreen) | 2026-03-09 | Scrollback not useful for task picker; every serious TUI uses AltScreen; dead space below app is accidental | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| X-060 | Unlimited door height growth (no cap) | 2026-03-09 | Produces absurd 60+ line "skyscraper" doors on tall terminals; violates door metaphor proportions (D-031) | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| X-061 | Fixed door height regardless of terminal size | 2026-03-09 | Ignores terminal size entirely; wastes space on normal terminals; proportional with cap is better | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| X-062 | Proportional zones layout (all regions scale) | 2026-03-09 | Over-complicated for the need; header/footer are fixed-size content; flex middle is sufficient | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| X-063 | Fill space below doors with new content (mini-stats, context) | 2026-03-09 | SOUL.md: "Show less"; filling space ≠ filling with stuff; whitespace IS the design | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| X-064 | "Terminal too small" warning messages | 2026-03-09 | Hostile UX; degradation should be invisible; users don't need to know about layout math | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
+| X-065 | Single large story for full layout implementation | 2026-03-09 | Too much scope risk; MVP (AltScreen + layout + door cap) delivers 80% value alone | [Artifact](../../_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md) |
 
 ## Epic Number Registry
 
