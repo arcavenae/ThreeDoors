@@ -463,21 +463,21 @@
 - **Research:** See `../../_bmad-output/planning-artifacts/dual-homebrew-distribution-research.md`, `_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md`
 
 **Epic 39: Keybinding Display System** (P1)
-- **Goal:** Add toggleable keybinding discoverability to the TUI: a concise context-sensitive bar at the bottom of every view, a full keybinding overlay accessible via `?` key, and default-on inline key hints rendered directly on interactive elements
+- **Goal:** Add toggleable keybinding discoverability to the TUI: a concise context-sensitive bar at the bottom of every view, a full keybinding overlay accessible via `?` key, and default-on inline key hints rendered directly on interactive elements. Door key indicators unified under `h` toggle (D-137).
 - **Prerequisites:** None (all required infrastructure exists)
-- **Status:** In Progress (4/12 done)
+- **Status:** In Progress (11/13 done, 1 cancelled)
 - **Deliverables:**
   - Compile-time keybinding registry mapping each ViewMode to its available key bindings
-  - Concise bottom bar showing 5-6 priority keys per view, with Lipgloss dim styling
+  - Concise bottom bar showing 5-6 priority keys per view, with Lipgloss dim styling (non-door views)
   - Full-screen keybinding overlay (`?` key) organized by category with scroll support
-  - `h` key toggles bar visibility, persisted to config.yaml
+  - `h` key toggles key hints: door key indicators in doors view, bar in non-door views (D-137, D-138)
   - Terminal size adaptation (auto-hide bar on small terminals, compact mode, width truncation)
   - Context-sensitive bar content (changes per view mode)
-  - Inline key hints on door frames (doorknob metaphor) and other interactive elements
-  - Auto-fade after N sessions with graceful dimming transition
-  - `:hints` command for manual re-enable/disable
-- **Stories:** 39.1-39.12 (12 stories)
-- **Research:** See `_bmad-output/planning-artifacts/keybinding-display-party-mode.md`, `_bmad-output/planning-artifacts/keybinding-display-ux-review.md`, `_bmad-output/planning-artifacts/keybinding-display-architecture.md`, `_bmad-output/planning-artifacts/default-tooltips-mode-party-mode.md`
+  - Inline key hints `[a]`/`[w]`/`[d]` on door frames (doorknob metaphor), controlled by unified `h` toggle
+  - ~~Auto-fade after N sessions~~ — Cancelled (D-140); manual toggle only
+  - `:hints` command as alias for `h` toggle
+- **Stories:** 39.1-39.13 (13 stories, 1 cancelled)
+- **Research:** See `_bmad-output/planning-artifacts/keybinding-display-party-mode.md`, `_bmad-output/planning-artifacts/keybinding-display-ux-review.md`, `_bmad-output/planning-artifacts/keybinding-display-architecture.md`, `_bmad-output/planning-artifacts/default-tooltips-mode-party-mode.md`, `_bmad-output/planning-artifacts/door-key-indicators-course-correction.md`
 
 **Epic 40: Beautiful Stats Display** (P1)
 - **Goal:** Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, fun facts, heatmaps, and milestone celebrations
@@ -563,7 +563,7 @@
 | Epic 36: Door Selection Feedback | 4 | In Progress (3/4) |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
 | Epic 38: Dual Homebrew Distribution | 6 | In Progress (2/6) |
-| Epic 39: Keybinding Display System | 12 | In Progress (4/12) |
+| Epic 39: Keybinding Display System | 13 | In Progress (11/13, 1 cancelled) |
 | Epic 40: Beautiful Stats Display | 10 | Not Started |
 | Epic 41: Charm Ecosystem Adoption | 6 | Not Started |
 | **Total** | **216** | **146 complete, 4 epics in progress, 70 not started** |

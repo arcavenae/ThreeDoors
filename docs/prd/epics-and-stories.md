@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 32, 34-38 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 27-31, 33, 39-41 are NOT STARTED or IN PROGRESS. 340+ merged PRs total. Last audit: 2026-03-09.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26-29, 32, 34-38, 41 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 30-31, 33, 39-40 are NOT STARTED or IN PROGRESS. 390+ merged PRs total. Last audit: 2026-03-09.
 
 ## Requirements Inventory
 
@@ -3007,11 +3007,18 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 - **ACs:** Detail view hints (esc/c/b/e/f), search view hints (enter/esc/arrows), mood view numbered labels, add task hints, consistent styling via renderInlineHint(), golden file tests, race detector passes
 
 ### Story 39.12: Auto-Fade After N Sessions
-- **Status:** Not Started
-- **Priority:** P2
-- **Estimate:** S (1-2 hours)
+- **Status:** Cancelled (superseded by D-140 — auto-fade removed in favor of manual `h` toggle)
+- **Priority:** ~~P2~~
+- **Estimate:** ~~S (1-2 hours)~~
 - **Depends on:** 39.9, 39.10
-- **ACs:** Graceful dimming at session N-1 (ANSI 240), auto-disable at session N with flash message, re-enable via :hints on resets counter, configurable threshold (default 5, 0 = never fade), unit tests
+- **ACs:** ~~Graceful dimming at session N-1 (ANSI 240), auto-disable at session N with flash message, re-enable via :hints on resets counter, configurable threshold (default 5, 0 = never fade), unit tests~~ — Cancelled per course correction D-137/D-140
+
+### Story 39.13: Unified Door Key Indicator Toggle
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.4, 39.9, 39.10
+- **ACs:** Unify `h` toggle and `:hints` under single `show_key_hints` config; door key indicators `[a]`/`[w]`/`[d]` on doors controlled by `h`; remove bottom bar in doors view; keep bar for non-door views; config migration from old field names; remove auto-fade mechanism; `:hints` becomes alias; table-driven tests; race detector passes
 
 ---
 
@@ -3029,7 +3036,8 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 39.9 Inline Hint Infrastructure (depends on 39.1)
 39.10 Door View Inline Hints (depends on 39.9)
 39.11 Non-Door View Inline Hints (depends on 39.9)
-39.12 Auto-Fade After N Sessions (depends on 39.9, 39.10)
+39.12 Auto-Fade After N Sessions — CANCELLED (D-140)
+39.13 Unified Door Key Indicator Toggle (depends on 39.4, 39.9, 39.10)
 ```
 
 ---
