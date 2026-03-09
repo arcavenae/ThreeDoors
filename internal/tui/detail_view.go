@@ -48,6 +48,8 @@ type DetailView struct {
 	depBrowseIndex      int
 	depAddCandidates    []*core.Task
 	depAddSelectedIndex int
+	hintEnabled         bool
+	hintFade            bool
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -94,6 +96,12 @@ func (dv *DetailView) SetDuplicateInfo(isDup bool, store *core.DedupStore, pair 
 func (dv *DetailView) SetDevDispatchInfo(enabled, available bool) {
 	dv.devDispatchEnabled = enabled
 	dv.dispatcherAvailable = available
+}
+
+// SetInlineHints sets the inline hint display state.
+func (dv *DetailView) SetInlineHints(enabled, fade bool) {
+	dv.hintEnabled = enabled
+	dv.hintFade = fade
 }
 
 // SetWidth sets the terminal width.
@@ -697,35 +705,74 @@ func (dv *DetailView) View() string {
 		}
 		fmt.Fprintf(&s, "Dispatch '%s' to dev queue? [y/n]\n", truncated)
 	default:
-		linkHint := ""
-		if dv.enrichDB != nil {
-			linkHint = " [L]ink"
+		if dv.hintEnabled {
+			h := func(key string) string { return renderInlineHint(key, dv.hintEnabled, dv.hintFade) }
+			var parts []string
+			parts = append(parts, h("esc")+" Back")
+			parts = append(parts, h("c")+" Complete")
+			parts = append(parts, h("b")+" Blocked")
+			parts = append(parts, h("i")+" In-progress")
+			parts = append(parts, h("e")+" Expand")
+			parts = append(parts, h("f")+" Fork")
+			parts = append(parts, h("p")+" Procrastinate")
+			parts = append(parts, h("r")+" Rework")
+			parts = append(parts, h("m")+" Mood")
+			parts = append(parts, h("z")+" Snooze")
+			if dv.task.Status == core.StatusComplete {
+				parts = append(parts, h("u")+" Undo")
+			}
+			if dv.enrichDB != nil {
+				parts = append(parts, h("l")+" Link")
+			}
+			if len(dv.crossRefs) > 0 {
+				parts = append(parts, h("x")+" Xrefs")
+			}
+			if dv.agentService != nil {
+				parts = append(parts, h("g")+" Decompose")
+			}
+			if dv.isDuplicate && dv.dedupStore != nil {
+				parts = append(parts, h("d")+" Dismiss-dup")
+				parts = append(parts, h("y")+" Merge-dup")
+			}
+			if dv.devDispatchEnabled && dv.dispatcherAvailable {
+				parts = append(parts, h("x")+" Dispatch")
+			}
+			if dv.pool != nil {
+				parts = append(parts, h("+")+" Dep")
+				parts = append(parts, h("-")+" Dep")
+			}
+			s.WriteString(helpStyle.Render(strings.Join(parts, " ")))
+		} else {
+			linkHint := ""
+			if dv.enrichDB != nil {
+				linkHint = " [L]ink"
+			}
+			browseHint := ""
+			if len(dv.crossRefs) > 0 {
+				browseHint = " [X]refs"
+			}
+			decomposeHint := ""
+			if dv.agentService != nil {
+				decomposeHint = " [G]enerate stories"
+			}
+			dupHint := ""
+			if dv.isDuplicate && dv.dedupStore != nil {
+				dupHint = " [D]ismiss-dup [Y]es-merge"
+			}
+			dispatchHint := ""
+			if dv.devDispatchEnabled && dv.dispatcherAvailable {
+				dispatchHint = " [X]dispatch"
+			}
+			undoHint := ""
+			if dv.task.Status == core.StatusComplete {
+				undoHint = " [U]ndo"
+			}
+			depHint := ""
+			if dv.pool != nil {
+				depHint = " [+]dep [-]dep"
+			}
+			s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
 		}
-		browseHint := ""
-		if len(dv.crossRefs) > 0 {
-			browseHint = " [X]refs"
-		}
-		decomposeHint := ""
-		if dv.agentService != nil {
-			decomposeHint = " [G]enerate stories"
-		}
-		dupHint := ""
-		if dv.isDuplicate && dv.dedupStore != nil {
-			dupHint = " [D]ismiss-dup [Y]es-merge"
-		}
-		dispatchHint := ""
-		if dv.devDispatchEnabled && dv.dispatcherAvailable {
-			dispatchHint = " [X]dispatch"
-		}
-		undoHint := ""
-		if dv.task.Status == core.StatusComplete {
-			undoHint = " [U]ndo"
-		}
-		depHint := ""
-		if dv.pool != nil {
-			depHint = " [+]dep [-]dep"
-		}
-		s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
 	}
 
 	return detailBorder.Width(w).Render(s.String())

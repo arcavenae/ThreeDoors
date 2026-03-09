@@ -67,6 +67,8 @@ type SearchView struct {
 	devDispatchEnabled   bool
 	commandSuggestions   []commandDef
 	commandSelectedIndex int
+	hintEnabled          bool
+	hintFade             bool
 }
 
 // NewSearchView creates a new SearchView.
@@ -87,6 +89,12 @@ func NewSearchView(pool *core.TaskPool, tracker *core.SessionTracker, hc *core.H
 		patternReport:     pr,
 		duplicateTaskIDs:  make(map[string]bool),
 	}
+}
+
+// SetInlineHints sets the inline hint display state.
+func (sv *SearchView) SetInlineHints(enabled, fade bool) {
+	sv.hintEnabled = enabled
+	sv.hintFade = fade
 }
 
 // SetWidth sets the terminal width for rendering.
@@ -548,7 +556,12 @@ func (sv *SearchView) View() string {
 
 	// Render input at bottom
 	fmt.Fprintf(&s, "%s\n\n", sv.textInput.View())
-	fmt.Fprintf(&s, "%s", helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))
+	if sv.hintEnabled {
+		h := func(key string) string { return renderInlineHint(key, sv.hintEnabled, sv.hintFade) }
+		fmt.Fprintf(&s, "%s", helpStyle.Render(h("↑/↓")+" navigate | "+h("enter")+" select | "+h("esc")+" close | : commands"))
+	} else {
+		fmt.Fprintf(&s, "%s", helpStyle.Render("↑/↓ navigate | Enter select | Esc close | : commands"))
+	}
 
 	return s.String()
 }

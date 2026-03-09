@@ -433,6 +433,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case HealthCheckMsg:
 		m.healthView = NewHealthView(msg.Result)
 		m.healthView.SetWidth(m.width)
+		m.healthView.SetInlineHints(m.resolveHints())
 		m.previousView = m.viewMode
 		m.viewMode = ViewHealth
 		return m, nil
@@ -478,6 +479,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case AddTaskPromptMsg:
 		m.addTaskView = NewAddTaskView()
 		m.addTaskView.SetWidth(m.width)
+		m.addTaskView.SetInlineHints(m.resolveHints())
 		m.previousView = m.viewMode
 		m.viewMode = ViewAddTask
 		return m, nil
@@ -485,6 +487,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case AddTaskWithContextPromptMsg:
 		m.addTaskView = NewAddTaskWithContextView()
 		m.addTaskView.SetWidth(m.width)
+		m.addTaskView.SetInlineHints(m.resolveHints())
 		if msg.PrefilledText != "" {
 			m.addTaskView.capturedText = msg.PrefilledText
 			m.addTaskView.step = stepContext
@@ -592,6 +595,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ShowMoodMsg:
 		m.moodView = NewMoodView()
 		m.moodView.SetWidth(m.width)
+		m.moodView.SetInlineHints(m.resolveHints())
 		m.viewMode = ViewMood
 		return m, nil
 
@@ -1621,10 +1625,16 @@ func (m *MainModel) findAvoidancePromptTask() *core.Task {
 	return nil
 }
 
+// resolveHints returns the current inline hint enabled/fade state.
+func (m *MainModel) resolveHints() (bool, bool) {
+	return core.ResolveInlineHintState(m.inlineHintsConfig)
+}
+
 func (m *MainModel) newDetailView(task *core.Task) *DetailView {
 	dv := NewDetailView(task, m.tracker, m.enrichDB, m.pool)
 	dv.SetWidth(m.width)
 	dv.SetAgentService(m.agentService)
+	dv.SetInlineHints(m.resolveHints())
 	if m.duplicateTaskIDs[task.ID] && m.dedupStore != nil {
 		pair := m.findDuplicatePair(task.ID)
 		dv.SetDuplicateInfo(true, m.dedupStore, pair)
@@ -1640,6 +1650,7 @@ func (m *MainModel) newSearchView() *SearchView {
 	sv := NewSearchView(m.pool, m.tracker, m.healthChecker, m.completionCounter, m.patternReport)
 	sv.SetSyncLog(m.syncLog)
 	sv.SetDuplicateTaskIDs(m.duplicateTaskIDs)
+	sv.SetInlineHints(m.resolveHints())
 	if m.devDispatchEnabled && m.dispatcher != nil {
 		if m.dispatcher.CheckAvailable(context.Background()) == nil {
 			sv.SetDevDispatchEnabled(true)
