@@ -222,7 +222,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR81-FR88 | Epic 24 ✅ | MCP/LLM Integration Server (COMPLETE) |
 | FR89-FR92 | Epic 25 | Todoist Integration (COMPLETE) |
 | FR93-FR96 | Epic 26 ✅ | GitHub Issues Integration (COMPLETE) |
-| FR97-FR103 | Epic 27 | Daily Planning Mode (NOT STARTED) |
+| FR97-FR103 | Epic 27 | Daily Planning Mode (COMPLETE) |
 | FR104-FR107 | Epic 28 | Snooze/Defer (NOT STARTED) |
 | FR108-FR111 | Epic 29 | Task Dependencies (NOT STARTED) |
 | FR116-FR119 | Epic 30 | Linear Integration (NOT STARTED) |
@@ -4051,7 +4051,7 @@ As a developer, I want the GitHub adapter to pass the contract test suite with c
 ## Epic 27: Daily Planning Mode
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** COMPLETE
 **Dependencies:** Epic 1 (session tracking) COMPLETE, Epic 3 (mood capture) COMPLETE, Epic 4 (task categorization) COMPLETE
 
 ### Epic Goal
@@ -4062,11 +4062,11 @@ Add a guided daily planning ritual that transforms ThreeDoors from a reactive ta
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 27.1 | Planning Data Model & Focus Tag | Not Started | P1 | Epic 1 (done) |
-| 27.2 | Review Incomplete Tasks Flow | Not Started | P1 | 27.1 |
-| 27.3 | Focus Selection Flow | Not Started | P1 | 27.1 |
-| 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
-| 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
+| 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
+| 27.2 | Review Incomplete Tasks Flow | Done (PR #339) | P1 | 27.1 |
+| 27.3 | Focus Selection Flow | Done (PR #352) | P1 | 27.1 |
+| 27.4 | Energy Level Matching & Time-of-Day Inference | Done (PR #354) | P1 | 27.1 |
+| 27.5 | Planning Session Metrics & CLI/TUI Commands | Done (PR #360) | P1 | 27.1-27.4 |
 
 **FRs covered:** FR97-FR103
 **Research:** See `../../_bmad-output/planning-artifacts/ux-workflow-improvements-research.md`

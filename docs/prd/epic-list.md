@@ -345,7 +345,7 @@
 **Epic 27: Daily Planning Mode** (P1)
 - **Goal:** Add a guided daily planning ritual that transforms ThreeDoors from a reactive task picker into a proactive morning engagement tool, driving long-term retention through structured planning sessions
 - **Prerequisites:** Epic 1 (session tracking), Epic 3 (mood capture, values/goals flow patterns), Epic 4 (task categorization)
-- **Status:** Not Started
+- **Status:** COMPLETE
 - **Deliverables:**
   - Planning data model with session-scoped `+focus` tag and energy level constants
   - Review incomplete tasks flow (continue/defer/drop quick triage)
@@ -551,7 +551,7 @@
 | Epic 24: MCP/LLM Integration | 8 | Complete |
 | Epic 25: Todoist Integration | 4 | Complete |
 | Epic 26: GitHub Issues Integration | 4 | Complete |
-| Epic 27: Daily Planning Mode | 5 | Not Started |
+| Epic 27: Daily Planning Mode | 5 | Complete |
 | Epic 28: Snooze/Defer | 4 | Not Started |
 | Epic 29: Task Dependencies | 4 | In Progress (3/4) |
 | Epic 30: Linear Integration | 4 | Not Started |

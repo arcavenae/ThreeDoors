@@ -247,6 +247,10 @@ var (
 				Foreground(lipgloss.Color("214")).
 				Bold(true)
 
+	focusBadgeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("82")).
+			Bold(true)
+
 	proposalTypeStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("39"))
 
