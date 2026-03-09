@@ -462,7 +462,21 @@
 - **Stories:** 38.1-38.5 (5 stories)
 - **Research:** See `docs/research/dual-homebrew-distribution-research.md`, `_bmad-output/planning-artifacts/homebrew-dual-publish-course-correction.md`
 
-**Epic 39+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 39: Keybinding Display System** (P1)
+- **Goal:** Add toggleable keybinding discoverability to the TUI: a concise context-sensitive bar at the bottom of every view, and a full keybinding overlay accessible via `?` key
+- **Prerequisites:** None (all required infrastructure exists)
+- **Status:** Not Started
+- **Deliverables:**
+  - Compile-time keybinding registry mapping each ViewMode to its available key bindings
+  - Concise bottom bar showing 5-6 priority keys per view, with Lipgloss dim styling
+  - Full-screen keybinding overlay (`?` key) organized by category with scroll support
+  - `h` key toggles bar visibility, persisted to config.yaml
+  - Terminal size adaptation (auto-hide bar on small terminals, compact mode, width truncation)
+  - Context-sensitive bar content (changes per view mode)
+- **Stories:** 39.1-39.5 (5 stories)
+- **Research:** See `_bmad-output/planning-artifacts/keybinding-display-party-mode.md`, `_bmad-output/planning-artifacts/keybinding-display-ux-review.md`, `_bmad-output/planning-artifacts/keybinding-display-architecture.md`
+
+**Epic 40+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -512,5 +526,6 @@
 | Epic 36: Door Selection Feedback | 3 | Complete |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
 | Epic 38: Dual Homebrew Distribution | 5 | In Progress (1/5) |
-| **Total** | **199** | **154 complete, 1 in progress, 44 not started** |
+| Epic 39: Keybinding Display System | 5 | Not Started |
+| **Total** | **204** | **154 complete, 1 in progress, 49 not started** |
 ---
