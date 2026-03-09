@@ -513,6 +513,20 @@
 - **Research:** See `_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md`
 - **Decisions:** D-128 (viewport), D-129 (spinner), D-130 (layout), D-131 (harmonica spike), D-132 (reject list), D-133 (reject textarea/table/etc.), D-134 (epic number 41)
 
+**Epic 42: Application Security Hardening** (P1)
+- **Goal:** Remediate all actionable findings from the application security audit — standardize file permissions, add symlink validation, enforce input size limits, protect credentials, and harden CI supply chain
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Deliverables:**
+  - Standardize all file permissions to 0o700 (dirs) / 0o600 (files) with startup migration for existing installs
+  - Symlink validation via `os.Lstat()` on startup and before file writes
+  - File size limits before YAML reads, explicit scanner buffer limits on all JSONL readers
+  - Credential exposure warning on startup, `yaml:"-"` on all token fields
+  - SHA-pinned third-party GitHub Actions, govulncheck in CI quality gate
+- **Stories:** 42.1-42.5 (5 stories)
+- **Research:** See `_bmad-output/planning-artifacts/security-audit-application.md`
+- **Decisions:** D-153 (epic creation and story grouping rationale)
+
 **Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement** (P2)
 - **Goal:** Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations
 - **Prerequisites:** Epic 35 (Door Visual Appearance — complete), Epic 17 (Door Theme System — complete)
@@ -594,7 +608,7 @@
 - **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
 - **Decisions:** D-151 (conflict resolution strategy)
 
-**Epic 48+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 49+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -647,11 +661,12 @@
 | Epic 39: Keybinding Display System | 13 | COMPLETE (12/13, 1 cancelled) |
 | Epic 40: Beautiful Stats Display | 10 | Complete |
 | Epic 41: Charm Ecosystem Adoption | 6 | Not Started |
-| Epic 48: Door-Like Doors | 4 | Not Started |
+| Epic 42: Application Security Hardening | 5 | Not Started |
 | Epic 43: Connection Manager Infrastructure | 6 | Not Started |
 | Epic 44: Sources TUI | 7 | Not Started |
 | Epic 45: Sources CLI | 5 | Not Started |
 | Epic 46: OAuth Device Code Flow | 4 | Not Started |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
-| **Total** | **246** | **146 complete, 4 epics in progress, 100 not started** |
+| Epic 48: Door-Like Doors | 4 | Not Started |
+| **Total** | **251** | **146 complete, 4 epics in progress, 105 not started** |
 ---
