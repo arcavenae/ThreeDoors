@@ -1,0 +1,41 @@
+[
+  {
+    "id": "task-001",
+    "content": "Buy groceries",
+    "description": "Milk, eggs, bread",
+    "project_id": "proj-1",
+    "section_id": "",
+    "priority": 1,
+    "labels": ["shopping", "errands"],
+    "due": null,
+    "is_completed": false,
+    "created_at": "2026-01-15T10:00:00Z",
+    "url": "https://todoist.com/showTask?id=task-001"
+  },
+  {
+    "id": "task-002",
+    "content": "Review pull request",
+    "description": "",
+    "project_id": "proj-2",
+    "section_id": "",
+    "priority": 4,
+    "labels": ["code-review"],
+    "due": null,
+    "is_completed": false,
+    "created_at": "2026-01-16T08:00:00Z",
+    "url": "https://todoist.com/showTask?id=task-002"
+  },
+  {
+    "id": "task-003",
+    "content": "Plan weekend trip",
+    "description": "Research destinations",
+    "project_id": "proj-1",
+    "section_id": "",
+    "priority": 2,
+    "labels": [],
+    "due": null,
+    "is_completed": true,
+    "created_at": "2026-01-14T12:00:00Z",
+    "url": "https://todoist.com/showTask?id=task-003"
+  }
+]

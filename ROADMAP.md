@@ -58,17 +58,6 @@ Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health,
 
 ## Active Epics
 
-### Epic 25: Todoist Integration (P1) — 3/4 stories done
-
-Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 25.1 | Todoist HTTP Client & Auth Configuration | Done (PR #308) | P1 | Epic 7 (done) |
-| 25.2 | Read-Only Todoist Adapter with Field Mapping | Done (PR #321) | P1 | 25.1 |
-| 25.3 | Bidirectional Sync & WAL Integration | In Review | P1 | 25.2 |
-| 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
-
 ### Epic 27: Daily Planning Mode (P1) — 2/5 stories done
 
 Guided daily planning ritual for task review and focus selection. Transforms ThreeDoors from reactive task picker into proactive morning engagement tool.
@@ -238,6 +227,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 22 | Self-Driving Development Pipeline | 8/8 |
 | 23 | CLI Interface | 11/11 |
 | 24 | MCP/LLM Integration Server | 8/8 |
+| 25 | Todoist Integration | 4/4 |
 | 26 | GitHub Issues Integration | 4/4 |
 | 34 | SOUL.md + Custom Development Skills | 4/4 |
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |

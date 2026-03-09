@@ -1,0 +1,14 @@
+[
+  {
+    "id": "proj-1",
+    "name": "Personal",
+    "color": "blue",
+    "order": 1
+  },
+  {
+    "id": "proj-2",
+    "name": "Work",
+    "color": "red",
+    "order": 2
+  }
+]

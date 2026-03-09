@@ -330,10 +330,10 @@
   - Integration with existing TaskProvider infrastructure
 - **Stories:** 24.1-24.8 (8 stories)
 
-**Epic 25: Todoist Integration** (P1)
+**Epic 25: Todoist Integration** COMPLETE
 - **Goal:** Integrate Todoist as a task source via REST API v1 with thin HTTP client, read-only then bidirectional sync
 - **Prerequisites:** Epic 7 (Adapter SDK -- complete)
-- **Status:** Not Started
+- **Status:** COMPLETE -- All 4 stories implemented and merged (PRs #308, #321, plus Stories 25.3 & 25.4)
 - **Stories:** 25.1-25.4 (4 stories)
 
 **Epic 26: GitHub Issues Integration** COMPLETE
@@ -549,7 +549,7 @@
 | Epic 22: Self-Driving Dev Pipeline | 8 | Complete |
 | Epic 23: CLI Interface | 11 | Complete |
 | Epic 24: MCP/LLM Integration | 8 | Complete |
-| Epic 25: Todoist Integration | 4 | Not Started |
+| Epic 25: Todoist Integration | 4 | Complete |
 | Epic 26: GitHub Issues Integration | 4 | Complete |
 | Epic 27: Daily Planning Mode | 5 | Not Started |
 | Epic 28: Snooze/Defer | 4 | Not Started |

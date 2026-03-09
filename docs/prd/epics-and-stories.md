@@ -220,7 +220,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR70-FR72 | Epic 21 ✅ | Sync Protocol Hardening (COMPLETE) |
 | FR73-FR80 | Epic 22 ✅ | Self-Driving Development Pipeline (COMPLETE) |
 | FR81-FR88 | Epic 24 ✅ | MCP/LLM Integration Server (COMPLETE) |
-| FR89-FR92 | Epic 25 | Todoist Integration (NOT STARTED) |
+| FR89-FR92 | Epic 25 | Todoist Integration (COMPLETE) |
 | FR93-FR96 | Epic 26 ✅ | GitHub Issues Integration (COMPLETE) |
 | FR97-FR103 | Epic 27 | Daily Planning Mode (NOT STARTED) |
 | FR104-FR107 | Epic 28 | Snooze/Defer (NOT STARTED) |
@@ -371,11 +371,11 @@ Expose ThreeDoors task management to LLMs via Model Context Protocol. Read-only 
 **Prerequisites:** Epic 13 ✅ (Multi-Source Aggregation), Epic 6 ✅ (Enrichment DB)
 **Status:** All 8 stories complete (PRs #164-#196). Research at `../../_bmad-output/planning-artifacts/llm-integration-mcp.md`.
 
-### Epic 25: Todoist Integration — NOT STARTED
+### Epic 25: Todoist Integration ✅ COMPLETE
 Todoist as a task source with thin HTTP client against REST API v1, read-only adapter, bidirectional sync.
 **FRs covered:** FR89-FR92
 **Prerequisites:** Epic 7 ✅ (Adapter SDK), Epic 13 ✅ (Multi-Source Aggregation), Epic 21 ✅ (Sync Protocol Hardening)
-**Status:** Not Started. 4 stories planned (25.1-25.4). Research at `../../_bmad-output/planning-artifacts/task-source-expansion-research.md`.
+**Status:** All 4 stories complete (PRs #308, #321, plus Stories 25.3 & 25.4). Research at `../../_bmad-output/planning-artifacts/task-source-expansion-research.md`.
 
 ### Epic 26: GitHub Issues Integration ✅ COMPLETE
 GitHub Issues as a task source for developer workflows using the official go-github SDK. Label-based priority/status conventions.
@@ -3824,7 +3824,7 @@ So that I don't experience a panic on first run.
 ## Epic 25: Todoist Integration
 
 **Priority:** P1 — High value, all infrastructure in place
-**Status:** Not Started (0/4 stories)
+**Status:** COMPLETE (4/4 stories)
 **Dependencies:** Epic 7 (Adapter SDK) COMPLETE, Epic 13 (Multi-Source Aggregation) COMPLETE, Epic 21 (Sync Protocol Hardening) COMPLETE
 
 ### Epic Goal
