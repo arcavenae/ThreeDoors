@@ -45,6 +45,9 @@ type ProviderConfig struct {
 	Theme string `yaml:"theme,omitempty"`
 	// DevDispatchEnabled enables the dev dispatch feature (x key and :dispatch command).
 	DevDispatchEnabled bool `yaml:"dev_dispatch_enabled,omitempty"`
+	// ShowKeybindingBar controls whether the keybinding bar is visible.
+	// Uses *bool so we can distinguish "absent" (nil → default true) from "explicitly false".
+	ShowKeybindingBar *bool `yaml:"show_keybinding_bar,omitempty"`
 }
 
 // CurrentSchemaVersion is the current config.yaml schema version.
