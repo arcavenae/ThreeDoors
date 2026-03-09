@@ -1202,6 +1202,11 @@ func (m *MainModel) updateImprovement(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case animationFrameMsg:
+		if m.doorsView.doorAnimation != nil && m.doorsView.doorAnimation.Update() {
+			return m, AnimationTickCmd()
+		}
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -1212,18 +1217,24 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.doorsView.selectedDoorIndex = 0
 			}
+			m.doorsView.doorAnimation.SetSelection(m.doorsView.selectedDoorIndex)
+			return m, AnimationTickCmd()
 		case "w", "up":
 			if m.doorsView.selectedDoorIndex == 1 {
 				m.doorsView.selectedDoorIndex = -1
 			} else {
 				m.doorsView.selectedDoorIndex = 1
 			}
+			m.doorsView.doorAnimation.SetSelection(m.doorsView.selectedDoorIndex)
+			return m, AnimationTickCmd()
 		case "d", "right":
 			if m.doorsView.selectedDoorIndex == 2 {
 				m.doorsView.selectedDoorIndex = -1
 			} else {
 				m.doorsView.selectedDoorIndex = 2
 			}
+			m.doorsView.doorAnimation.SetSelection(m.doorsView.selectedDoorIndex)
+			return m, AnimationTickCmd()
 		case "s", "down":
 			if m.tracker != nil {
 				m.tracker.RecordRefresh(m.doorsView.GetCurrentDoorTexts())
