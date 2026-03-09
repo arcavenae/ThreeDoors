@@ -446,7 +446,7 @@ jobs:
           rm -rf unsigned-binaries
 
       - name: List release files
-        run: ls -la threedoors-* *.pkg *.dmg 2>/dev/null || true
+        run: ls -la threedoors-* 2>/dev/null || true
 
       - name: Create GitHub Release
         env:
@@ -483,7 +483,7 @@ jobs:
           **Homebrew (alpha):** \`brew install arcaven/tap/threedoors-a\`"
 
           ASSETS=()
-          for f in threedoors-* *.pkg *.dmg; do
+          for f in threedoors-*; do
             [ -f "$f" ] && ASSETS+=("$f")
           done
 
