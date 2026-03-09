@@ -24,6 +24,12 @@ type ThemeColors struct {
 	StatsGradientEnd   string // sparkline high end (#RRGGBB)
 }
 
+// MonthDay represents a calendar day within any year (month + day).
+type MonthDay struct {
+	Month int
+	Day   int
+}
+
 // DoorTheme defines the visual frame for a door.
 type DoorTheme struct {
 	Name        string
@@ -32,6 +38,11 @@ type DoorTheme struct {
 	Colors      ThemeColors
 	MinWidth    int
 	MinHeight   int
+
+	// Seasonal metadata. Zero-value Season ("") indicates a non-seasonal theme.
+	Season      string
+	SeasonStart MonthDay
+	SeasonEnd   MonthDay
 }
 
 // DefaultThemeName is the theme used when no theme is specified.
