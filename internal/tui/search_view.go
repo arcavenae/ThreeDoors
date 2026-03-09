@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
@@ -93,6 +94,9 @@ func (sv *SearchView) filterTasks(query string) []*core.Task {
 			matched = append(matched, t)
 		}
 	}
+	slices.SortFunc(matched, func(a, b *core.Task) int {
+		return strings.Compare(a.Text, b.Text)
+	})
 	return matched
 }
 
