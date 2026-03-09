@@ -1,0 +1,49 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    "group:recommended"
+  ],
+  "schedule": ["before 8am on weekday"],
+  "timezone": "UTC",
+  "enabledManagers": ["gomod"],
+  "labels": ["dependencies"],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["dependencies", "security"]
+  },
+  "packageRules": [
+    {
+      "description": "Group all patch updates weekly",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "patch updates",
+      "schedule": ["before 8am on monday"],
+      "automerge": true
+    },
+    {
+      "description": "Group charmbracelet ecosystem",
+      "matchPackagePatterns": ["^github\\.com/charmbracelet/"],
+      "groupName": "charmbracelet ecosystem"
+    },
+    {
+      "description": "Auto-merge minor updates",
+      "matchUpdateTypes": ["minor"],
+      "automerge": true
+    },
+    {
+      "description": "Never auto-merge major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "breaking-change"]
+    },
+    {
+      "description": "Security updates: immediate, individual PRs",
+      "matchCategories": ["security"],
+      "groupName": null,
+      "schedule": ["at any time"],
+      "automerge": true,
+      "labels": ["dependencies", "security"]
+    }
+  ]
+}

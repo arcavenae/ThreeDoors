@@ -20,6 +20,12 @@ Door selection lacks tactile feedback and intuitive interaction patterns.
 
 ## Infrastructure Backlog
 
+### Story 0.24: Renovate + Dependabot Automated Dependency Management (P1)
+
+**Status:** Done (PR #402).
+
+Renovate manages Go module dependencies (grouping, auto-merge, OSV vulnerability scanning). Dependabot manages GitHub Actions version pinning. Merge-queue integration via `dependencies` label.
+
 ### Story 0.20: CI Churn Reduction (P1)
 
 **Status:** Story created (PR #231). Research complete (PR #233). Implementation not started.
