@@ -3,6 +3,7 @@ package core
 import (
 	"math/rand/v2"
 	"testing"
+	"time"
 )
 
 func TestDiversityScore(t *testing.T) {
@@ -90,7 +91,7 @@ func TestSelectDoorsWithRand_PrefersDiversity(t *testing.T) {
 	)
 
 	rng := rand.New(rand.NewPCG(42, 0))
-	selected := selectDoorsWithRand(pool, 3, rng)
+	selected := selectDoorsWithRand(pool, 3, rng, nil)
 
 	if len(selected) != 3 {
 		t.Fatalf("expected 3 doors, got %d", len(selected))
@@ -109,7 +110,7 @@ func TestSelectDoorsWithRand_FallbackFewTasks(t *testing.T) {
 	)
 
 	rng := rand.New(rand.NewPCG(42, 0))
-	selected := selectDoorsWithRand(pool, 3, rng)
+	selected := selectDoorsWithRand(pool, 3, rng, nil)
 
 	if len(selected) != 2 {
 		t.Errorf("expected 2 doors (all available), got %d", len(selected))
@@ -119,7 +120,7 @@ func TestSelectDoorsWithRand_FallbackFewTasks(t *testing.T) {
 func TestSelectDoorsWithRand_EmptyPool(t *testing.T) {
 	pool := NewTaskPool()
 	rng := rand.New(rand.NewPCG(42, 0))
-	selected := selectDoorsWithRand(pool, 3, rng)
+	selected := selectDoorsWithRand(pool, 3, rng, nil)
 
 	if selected != nil {
 		t.Errorf("expected nil for empty pool, got %v", selected)
@@ -135,7 +136,7 @@ func TestSelectDoorsWithRand_AllSameCategories(t *testing.T) {
 	)
 
 	rng := rand.New(rand.NewPCG(42, 0))
-	selected := selectDoorsWithRand(pool, 3, rng)
+	selected := selectDoorsWithRand(pool, 3, rng, nil)
 
 	if len(selected) != 3 {
 		t.Fatalf("expected 3 doors, got %d", len(selected))
@@ -167,7 +168,7 @@ func TestSelectDoors_Integration_DiversePool(t *testing.T) {
 		testPool := poolFromTasks(pool.GetAllTasks()...)
 
 		rng := rand.New(rand.NewPCG(seed, 0))
-		selected := selectDoorsWithRand(testPool, 3, rng)
+		selected := selectDoorsWithRand(testPool, 3, rng, nil)
 
 		if len(selected) != 3 {
 			t.Fatalf("seed %d: expected 3 doors, got %d", seed, len(selected))
@@ -181,5 +182,61 @@ func TestSelectDoors_Integration_DiversePool(t *testing.T) {
 			}
 			t.Errorf("seed %d: low diversity score %d (types: %v)", seed, score, types)
 		}
+	}
+}
+
+func TestSelectDoorsWithRand_FocusBoost(t *testing.T) {
+	// Create a pool where one task has +focus — it should be strongly preferred
+	pool := poolFromTasks(
+		newCategorizedTestTask("focus1", "Important +focus", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+		newCategorizedTestTask("t2", "Task 2", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+		newCategorizedTestTask("t3", "Task 3", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+		newCategorizedTestTask("t4", "Task 4", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+		newCategorizedTestTask("t5", "Task 5", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+	)
+
+	recentPlanning := time.Now().UTC().Add(-1 * time.Hour)
+	focusSelected := 0
+	trials := 50
+
+	for seed := uint64(0); seed < uint64(trials); seed++ {
+		testPool := poolFromTasks(pool.GetAllTasks()...)
+		rng := rand.New(rand.NewPCG(seed, 0))
+		selected := selectDoorsWithRand(testPool, 3, rng, &recentPlanning)
+
+		for _, s := range selected {
+			if s.ID == "focus1" {
+				focusSelected++
+				break
+			}
+		}
+	}
+
+	// With FocusBoost=5.0, the focus task should be selected most of the time
+	if focusSelected < trials/2 {
+		t.Errorf("focus task selected %d/%d times, expected at least %d", focusSelected, trials, trials/2)
+	}
+}
+
+func TestSelectDoorsWithRand_FocusBoostExpired(t *testing.T) {
+	// When focus is expired, boost should not apply
+	pool := poolFromTasks(
+		newCategorizedTestTask("focus1", "Important +focus", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+		newCategorizedTestTask("t2", "Task 2", StatusTodo, TypeCreative, EffortDeepWork, LocationHome),
+		newCategorizedTestTask("t3", "Task 3", StatusTodo, TypeAdministrative, EffortQuickWin, LocationErrands),
+		newCategorizedTestTask("t4", "Task 4", StatusTodo, TypePhysical, EffortMedium, LocationAnywhere),
+	)
+
+	expiredPlanning := time.Now().UTC().Add(-17 * time.Hour)
+	rng := rand.New(rand.NewPCG(42, 0))
+	selected := selectDoorsWithRand(pool, 3, rng, &expiredPlanning)
+
+	if len(selected) != 3 {
+		t.Fatalf("expected 3 doors, got %d", len(selected))
+	}
+	// With expired focus, selection should still work normally (diversity-based)
+	score := DiversityScore(selected)
+	if score < 3 {
+		t.Errorf("expected reasonable diversity score, got %d", score)
 	}
 }

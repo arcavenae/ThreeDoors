@@ -59,7 +59,7 @@ func SelectDoorsWithTimeContext(pool *TaskPool, count int, timeCtx *TimeContext)
 func selectDoorsWithTimeContextAndRand(pool *TaskPool, count int, timeCtx *TimeContext, rng *rand.Rand) []*Task {
 	// Fallback: no calendar data → standard diversity selection
 	if timeCtx == nil || !timeCtx.HasCalendar {
-		return selectDoorsWithRand(pool, count, rng)
+		return selectDoorsWithRand(pool, count, rng, nil)
 	}
 
 	available := pool.GetAvailableForDoors()

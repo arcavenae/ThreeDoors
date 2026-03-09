@@ -29,12 +29,20 @@ func DiversityScore(tasks []*Task) int {
 // SelectDoors picks up to count tasks from the pool, preferring diversity.
 func SelectDoors(pool *TaskPool, count int) []*Task {
 	rng := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
-	return selectDoorsWithRand(pool, count, rng)
+	return selectDoorsWithRand(pool, count, rng, nil)
+}
+
+// SelectDoorsWithFocus picks up to count tasks, boosting focus-tagged tasks.
+// planningTimestamp controls focus expiry; if nil, no focus boost is applied.
+func SelectDoorsWithFocus(pool *TaskPool, count int, planningTimestamp *time.Time) []*Task {
+	rng := rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), 0))
+	return selectDoorsWithRand(pool, count, rng, planningTimestamp)
 }
 
 // selectDoorsWithRand picks up to count tasks from the pool using the provided RNG.
 // It generates N=10 random candidate sets and picks the one with the highest diversity score.
-func selectDoorsWithRand(pool *TaskPool, count int, rng *rand.Rand) []*Task {
+// If planningTimestamp is non-nil, focus-tagged tasks receive a scoring boost.
+func selectDoorsWithRand(pool *TaskPool, count int, rng *rand.Rand, planningTimestamp *time.Time) []*Task {
 	available := pool.GetAvailableForDoors()
 	if len(available) == 0 {
 		return nil
@@ -61,6 +69,9 @@ func selectDoorsWithRand(pool *TaskPool, count int, rng *rand.Rand) []*Task {
 		}
 		candidate := perm[:count]
 		score := DiversityScore(candidate)
+		if planningTimestamp != nil {
+			score += int(FocusScoreBoost(candidate, *planningTimestamp))
+		}
 
 		if score > bestScore {
 			bestScore = score
