@@ -67,7 +67,7 @@ Guided daily planning ritual for task review and focus selection. Transforms Thr
 | 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
 | 27.2 | Review Incomplete Tasks Flow | Done (PR #339) | P1 | 27.1 |
 | 27.3 | Focus Selection Flow | Done (PR #352) | P1 | 27.1 |
-| 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
+| 27.4 | Energy Level Matching & Time-of-Day Inference | In Review | P1 | 27.1 |
 | 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
 
 ### Epic 28: Snooze/Defer as First-Class Action (P1) — 2/4 stories done
@@ -81,7 +81,7 @@ Surfaces existing `StatusDeferred` as a first-class user action with date-based 
 | 28.3 | Deferred List View and :deferred Command | Not Started | P1 | 28.1 |
 | 28.4 | Session Metrics Logging for Snooze Events | Not Started | P1 | 28.1 |
 
-### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 3/4 stories done
+### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 4/4 stories done — COMPLETE
 
 Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
 
@@ -89,7 +89,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 |-------|-------|--------|----------|------------|
 | 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | Done (PR #340) | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ### Epic 32: Undo Task Completion (P1) — COMPLETE
@@ -233,6 +233,7 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
 | 36 | Door Selection Interaction Feedback | 3/3 |
 | 37 | Persistent BMAD Agent Infrastructure | 4/4 |
+| 29 | Task Dependencies & Blocked-Task Filtering | 4/4 |
 | 32 | Undo Task Completion | 3/3 |
 | 38 | Dual Homebrew Distribution | 6/6 |
 

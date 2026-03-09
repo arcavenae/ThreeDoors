@@ -218,6 +218,110 @@ func TestSelectDoorsWithRand_FocusBoost(t *testing.T) {
 	}
 }
 
+func TestSelectDoorsWithEnergyRand_PrefersEnergyMatch(t *testing.T) {
+	// Pool with varied effort levels — high energy should prefer deep-work tasks
+	pool := poolFromTasks(
+		newCategorizedTestTask("deep1", "Deep work 1", StatusTodo, TypeTechnical, EffortDeepWork, LocationWork),
+		newCategorizedTestTask("deep2", "Deep work 2", StatusTodo, TypeCreative, EffortDeepWork, LocationHome),
+		newCategorizedTestTask("med1", "Medium task", StatusTodo, TypeAdministrative, EffortMedium, LocationWork),
+		newCategorizedTestTask("quick1", "Quick win", StatusTodo, TypePhysical, EffortQuickWin, LocationErrands),
+		newCategorizedTestTask("quick2", "Quick win 2", StatusTodo, TypeTechnical, EffortQuickWin, LocationHome),
+	)
+
+	deepWorkCount := 0
+	trials := 50
+
+	for seed := uint64(0); seed < uint64(trials); seed++ {
+		testPool := poolFromTasks(pool.GetAllTasks()...)
+		rng := rand.New(rand.NewPCG(seed, 0))
+		selected := selectDoorsWithEnergyRand(testPool, 3, EnergyHigh, rng, nil)
+
+		for _, s := range selected {
+			if s.Effort == EffortDeepWork {
+				deepWorkCount++
+			}
+		}
+	}
+
+	// With energy scoring, deep-work should be selected more than average
+	avgDeepWork := float64(deepWorkCount) / float64(trials)
+	if avgDeepWork < 1.0 {
+		t.Errorf("avg deep-work tasks per selection = %.2f, expected >= 1.0 with high energy", avgDeepWork)
+	}
+}
+
+func TestSelectDoorsWithEnergyRand_EmptyEnergy(t *testing.T) {
+	pool := poolFromTasks(
+		newCategorizedTestTask("t1", "Task 1", StatusTodo, TypeTechnical, EffortMedium, LocationWork),
+		newCategorizedTestTask("t2", "Task 2", StatusTodo, TypeCreative, EffortDeepWork, LocationHome),
+		newCategorizedTestTask("t3", "Task 3", StatusTodo, TypeAdministrative, EffortQuickWin, LocationErrands),
+		newCategorizedTestTask("t4", "Task 4", StatusTodo, TypePhysical, EffortMedium, LocationAnywhere),
+	)
+
+	rng := rand.New(rand.NewPCG(42, 0))
+	selected := selectDoorsWithEnergyRand(pool, 3, "", rng, nil)
+
+	if len(selected) != 3 {
+		t.Fatalf("expected 3 doors, got %d", len(selected))
+	}
+}
+
+func TestSelectDoorsWithEnergyRand_EmptyPool(t *testing.T) {
+	pool := NewTaskPool()
+	rng := rand.New(rand.NewPCG(42, 0))
+	selected := selectDoorsWithEnergyRand(pool, 3, EnergyHigh, rng, nil)
+
+	if selected != nil {
+		t.Errorf("expected nil for empty pool, got %v", selected)
+	}
+}
+
+func TestSelectDoorsWithEnergyRand_FewTasks(t *testing.T) {
+	pool := poolFromTasks(
+		newTestTask("t1", "Task 1", StatusTodo, baseTime),
+	)
+
+	rng := rand.New(rand.NewPCG(42, 0))
+	selected := selectDoorsWithEnergyRand(pool, 3, EnergyHigh, rng, nil)
+
+	if len(selected) != 1 {
+		t.Errorf("expected 1 door (all available), got %d", len(selected))
+	}
+}
+
+func TestSelectDoorsWithEnergyRand_CombinesEnergyAndFocus(t *testing.T) {
+	// Focused deep-work task at high energy should be strongly preferred
+	pool := poolFromTasks(
+		newCategorizedTestTask("focus-deep", "Focused deep +focus", StatusTodo, TypeTechnical, EffortDeepWork, LocationWork),
+		newCategorizedTestTask("quick1", "Quick 1", StatusTodo, TypePhysical, EffortQuickWin, LocationErrands),
+		newCategorizedTestTask("quick2", "Quick 2", StatusTodo, TypeAdministrative, EffortQuickWin, LocationHome),
+		newCategorizedTestTask("quick3", "Quick 3", StatusTodo, TypeCreative, EffortQuickWin, LocationAnywhere),
+		newCategorizedTestTask("quick4", "Quick 4", StatusTodo, TypeTechnical, EffortQuickWin, LocationWork),
+	)
+
+	recentPlanning := time.Now().UTC().Add(-1 * time.Hour)
+	focusSelected := 0
+	trials := 50
+
+	for seed := uint64(0); seed < uint64(trials); seed++ {
+		testPool := poolFromTasks(pool.GetAllTasks()...)
+		rng := rand.New(rand.NewPCG(seed, 0))
+		selected := selectDoorsWithEnergyRand(testPool, 3, EnergyHigh, rng, &recentPlanning)
+
+		for _, s := range selected {
+			if s.ID == "focus-deep" {
+				focusSelected++
+				break
+			}
+		}
+	}
+
+	// With both energy and focus boost, the task should be selected almost every time
+	if focusSelected < trials*3/4 {
+		t.Errorf("focus+energy task selected %d/%d times, expected at least %d", focusSelected, trials, trials*3/4)
+	}
+}
+
 func TestSelectDoorsWithRand_FocusBoostExpired(t *testing.T) {
 	// When focus is expired, boost should not apply
 	pool := poolFromTasks(

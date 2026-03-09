@@ -85,6 +85,14 @@ git checkout main && git merge --ff-only upstream/main
 git push origin main
 ```
 
+## Context Exhaustion Risk
+
+**WARNING:** This agent is vulnerable to context window exhaustion during long sessions.
+After ~12 hours or ~20+ rebase/CI cycles, the context fills and the agent silently stops responding.
+See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md) for diagnosis and recovery.
+
+The supervisor should restart this agent proactively every 4-6 hours.
+
 ## Authority
 
 ### CAN (Autonomous)
