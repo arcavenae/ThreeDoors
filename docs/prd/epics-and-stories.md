@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34, 35 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epics 25, 27-33, 36, 37 are NOT STARTED. 267+ merged PRs total. Last audit: 2026-03-08.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26, 34-37 are COMPLETE. Epic 0 is partial (10/12). Epic 16 is ICEBOX. Epic 38 is IN PROGRESS (1/5). Epics 25, 27-33, 39 are NOT STARTED. 275+ merged PRs total. Last audit: 2026-03-08.
 
 ## Requirements Inventory
 
@@ -2851,6 +2851,75 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 38.3 Stable Release Signing (independent)
 38.4 Alpha Release Verification (depends on 38.1, 38.2)
 38.5 Alpha Release Retention (independent)
+```
+
+---
+
+## Epic 39: Keybinding Display System
+
+**Epic Goal:** Add toggleable keybinding discoverability to the ThreeDoors TUI — a concise context-sensitive bar at the bottom of every view showing available keys, and a full keybinding overlay (`?` key) as a comprehensive reference. Improves discoverability without adding decision complexity, aligning with SOUL.md's friction-reduction philosophy.
+
+**Prerequisites:** None (all required infrastructure exists — Lipgloss, config.yaml persistence, MainModel composition, isTextInputActive() guard)
+**Status:** Not Started (0/5)
+
+**Deliverables:**
+- Compile-time keybinding registry mapping each ViewMode to available key bindings with priority levels
+- Concise bottom bar showing 5-6 priority keys per view with dim Lipgloss styling
+- Full-screen keybinding overlay organized by category with scroll support
+- `h` key toggles bar visibility (persisted to config.yaml), `?` key opens/closes overlay
+- Terminal size adaptation: auto-hide bar < 10 lines, compact mode 10-15 lines, width truncation
+- Context-sensitive bar content (changes per view mode, sub-mode aware)
+
+**Design References:**
+- Party mode: `_bmad-output/planning-artifacts/keybinding-display-party-mode.md`
+- UX review: `_bmad-output/planning-artifacts/keybinding-display-ux-review.md`
+- Architecture: `_bmad-output/planning-artifacts/keybinding-display-architecture.md`
+
+### Story 39.1: Keybinding Registry Model
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** S (1-2 hours)
+- **Depends on:** None
+- **ACs:** KeyBinding/KeyBindingGroup types, per-view registry functions (all 18 ViewModes), barBindings() convenience function (priority-1 only, max 8 per view), allKeyBindingGroups() for overlay, comprehensive table-driven tests
+
+### Story 39.2: Concise Keybinding Bar Component
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.1
+- **ACs:** RenderKeybindingBar() function, context-sensitive content from registry, terminal width adaptation (4 breakpoints), terminal height adaptation (3 breakpoints), dim Lipgloss styling with separator line, golden file tests, unit tests
+
+### Story 39.3: Full Keybinding Overlay
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.1
+- **ACs:** RenderKeybindingOverlay() function, bordered box with categorized bindings, context highlighting (current view first), scroll support with j/k/arrows, fixed footer, golden file tests, unit tests
+
+### Story 39.4: Toggle Behavior, Config Persistence, and MainModel Integration
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.2, 39.3
+- **ACs:** MainModel fields and config initialization, `h` toggle with async config write, `?` overlay toggle, overlay key interception, View() composition with height adjustment, config.yaml persistence, integration tests, race detector pass
+
+### Story 39.5: View-Specific Keybinding Completeness and Polish
+- **Status:** Not Started
+- **Priority:** P1
+- **Estimate:** M (3-5 hours)
+- **Depends on:** 39.4
+- **ACs:** Full keybinding audit (every case handler registered), sub-mode awareness (confirm-delete, expand input, command mode), overlay includes `:` commands section, visual polish, comprehensive golden files for all major views, edge case tests
+
+---
+
+### Epic 39 Story Dependencies
+
+```
+39.1 Keybinding Registry Model (independent)
+39.2 Concise Bar Component (depends on 39.1)
+39.3 Full Keybinding Overlay (depends on 39.1)
+39.4 Toggle + Integration (depends on 39.2, 39.3)
+39.5 Completeness + Polish (depends on 39.4)
 ```
 
 ---
