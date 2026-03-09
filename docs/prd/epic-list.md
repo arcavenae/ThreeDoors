@@ -434,7 +434,7 @@
 **Epic 36: Door Selection Interaction Feedback** (P1)
 - **Goal:** Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit. Addresses GitHub Issue #219.
 - **Prerequisites:** None (complements Epic 35 but does not depend on it)
-- **Status:** Not Started
+- **Status:** COMPLETE (PRs #272, #276, #277 merged)
 - **Stories:** 36.1-36.3 (3 stories)
 - **FRs covered:** FR148-FR151
 
@@ -496,7 +496,7 @@
 | Epic 33: Seasonal Theme Variants | 4 | Not Started |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
 | Epic 35: Door Visual Appearance | 7 | Complete |
-| Epic 36: Door Selection Feedback | 3 | Not Started |
+| Epic 36: Door Selection Feedback | 3 | Complete |
 | Epic 37: Persistent BMAD Agents | 4 | Complete |
-| **Total** | **194** | **151 complete, 1 partial, 42 not started** |
+| **Total** | **194** | **154 complete, 0 partial, 40 not started** |
 ---
