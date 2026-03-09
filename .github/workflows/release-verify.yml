@@ -2,7 +2,7 @@ name: Release Verify
 
 on:
   workflow_run:
-    workflows: ["Release"]
+    workflows: ["Release", "CI"]
     types: [completed]
 
 permissions:
@@ -12,7 +12,9 @@ permissions:
 jobs:
   verify-tap:
     name: Verify Homebrew Tap CI
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      github.event.workflow_run.name == 'Release'
+      && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -101,5 +103,122 @@ jobs:
           4. Tag a patch release to regenerate the formula
 
           See \`agents/release-manager.md\` for detailed recovery procedures.
+          EOF
+          )"
+
+  verify-alpha-tap:
+    name: Verify Alpha Homebrew Tap CI
+    if: >-
+      github.event.workflow_run.name == 'CI'
+      && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.head_branch == 'main'
+      && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check alpha tap toggle
+        id: toggle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Respect the ALPHA_TAP_ENABLED toggle — if alpha publishing is off,
+          # no formula was pushed so there is nothing to verify.
+          ENABLED=$(gh api "repos/${{ github.repository }}/actions/variables/ALPHA_TAP_ENABLED" \
+            --jq '.value' 2>/dev/null || echo "")
+          if [ "$ENABLED" != "true" ]; then
+            echo "ALPHA_TAP_ENABLED is not 'true' (value: '${ENABLED:-<unset>}'), skipping alpha verification"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ALPHA_TAP_ENABLED is true, proceeding with verification"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find alpha formula tap commit
+        if: steps.toggle.outputs.skip != 'true'
+        id: find-commit
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          # Wait for the alpha formula commit to appear in the tap repo.
+          # The CI workflow pushes a commit with the message pattern:
+          # "chore(formula): update threedoors-a to <tag>"
+          for i in $(seq 1 6); do
+            SHA=$(gh api repos/arcaven/homebrew-tap/commits \
+              --jq 'map(select(.commit.message | startswith("chore(formula): update threedoors-a"))) | .[0].sha // empty' \
+              2>/dev/null)
+            if [ -n "$SHA" ]; then
+              echo "Found alpha tap commit: $SHA"
+              echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+              echo "found=true" >> "$GITHUB_OUTPUT"
+              break
+            fi
+            echo "Waiting for alpha tap commit... ($i/6)"
+            sleep 30
+          done
+          if [ -z "$SHA" ]; then
+            echo "::warning::Alpha formula commit not found after 3 minutes — formula may not have been pushed"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for tap CI result
+        if: steps.toggle.outputs.skip != 'true' && steps.find-commit.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          SHA="${{ steps.find-commit.outputs.sha }}"
+          echo "Monitoring alpha tap CI for commit $SHA"
+          for i in $(seq 1 15); do
+            STATUS=$(gh api "repos/arcaven/homebrew-tap/commits/$SHA/status" \
+              --jq '.state' 2>/dev/null)
+            case "$STATUS" in
+              success)
+                echo "Alpha tap CI passed"
+                exit 0
+                ;;
+              failure|error)
+                echo "::error::Alpha tap CI failed for commit $SHA"
+                exit 1
+                ;;
+              pending)
+                echo "Alpha tap CI pending... ($i/15)"
+                sleep 60
+                ;;
+              *)
+                echo "Unknown status: $STATUS, treating as pending ($i/15)"
+                sleep 60
+                ;;
+            esac
+          done
+          echo "::error::Alpha tap CI timed out after 15 minutes for commit $SHA"
+          exit 1
+
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAP_SHA="${{ steps.find-commit.outputs.sha }}"
+          CI_RUN_URL="${{ github.event.workflow_run.html_url }}"
+
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Alpha release verification failed: tap CI did not pass" \
+            --label "bug,release" \
+            --body "$(cat <<EOF
+          ## Alpha Release Verification Failure
+
+          The homebrew tap CI failed or timed out after the latest alpha formula push.
+
+          **CI workflow run:** $CI_RUN_URL
+          **Tap commit:** $TAP_SHA
+          **Tap CI:** https://github.com/arcaven/homebrew-tap/actions
+
+          ### Next Steps
+
+          1. Check the [tap CI logs](https://github.com/arcaven/homebrew-tap/actions) for the specific failure
+          2. Identify whether the failure is in \`brew audit\`, \`brew install\`, or \`brew test\`
+          3. Fix the root cause in ThreeDoors (the next push to main will regenerate the alpha formula)
+
+          Alpha formula failures do not affect stable releases.
           EOF
           )"
