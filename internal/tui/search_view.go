@@ -280,6 +280,11 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 			return ShowHelpMsg{}
 		}
 
+	case "plan":
+		return func() tea.Msg {
+			return ShowPlanningMsg{}
+		}
+
 	case "quit", "exit":
 		return func() tea.Msg { return RequestQuitMsg{} }
 

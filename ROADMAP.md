@@ -58,7 +58,18 @@ Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health,
 
 ## Active Epics
 
-### Epic 27: Daily Planning Mode (P1) — 4/5 stories done
+### Epic 25: Todoist Integration (P1) — 3/4 stories done
+
+Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 25.1 | Todoist HTTP Client & Auth Configuration | Done (PR #308) | P1 | Epic 7 (done) |
+| 25.2 | Read-Only Todoist Adapter with Field Mapping | Done (PR #321) | P1 | 25.1 |
+| 25.3 | Bidirectional Sync & WAL Integration | In Review | P1 | 25.2 |
+| 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
+
+### Epic 27: Daily Planning Mode (P1) — COMPLETE
 
 Guided daily planning ritual for task review and focus selection. Transforms ThreeDoors from reactive task picker into proactive morning engagement tool.
 
@@ -68,7 +79,7 @@ Guided daily planning ritual for task review and focus selection. Transforms Thr
 | 27.2 | Review Incomplete Tasks Flow | Done (PR #339) | P1 | 27.1 |
 | 27.3 | Focus Selection Flow | Done (PR #352) | P1 | 27.1 |
 | 27.4 | Energy Level Matching & Time-of-Day Inference | Done (PR #354) | P1 | 27.1 |
-| 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
+| 27.5 | Planning Session Metrics & CLI/TUI Commands | Done (PR #360) | P1 | 27.1-27.4 |
 
 ### Epic 28: Snooze/Defer as First-Class Action (P1) — 4/4 stories done — COMPLETE
 

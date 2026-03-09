@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand/v2"
 	"strings"
+	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
@@ -70,6 +71,7 @@ type DoorsView struct {
 	themeRegistry     *themes.Registry
 	duplicateTaskIDs  map[string]bool
 	doorAnimation     *DoorAnimation
+	planningTimestamp *time.Time
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -131,6 +133,11 @@ func (dv *DoorsView) TimeContext() *core.TimeContext {
 // SetDuplicateTaskIDs sets the set of task IDs flagged as potential duplicates.
 func (dv *DoorsView) SetDuplicateTaskIDs(ids map[string]bool) {
 	dv.duplicateTaskIDs = ids
+}
+
+// SetPlanningTimestamp sets the planning session timestamp for focus boost.
+func (dv *DoorsView) SetPlanningTimestamp(t *time.Time) {
+	dv.planningTimestamp = t
 }
 
 // SetPendingConflicts sets the number of unresolved sync conflicts.
@@ -206,10 +213,13 @@ func (dv *DoorsView) RotateFooterMessage() {
 }
 
 // RefreshDoors selects new random doors from the pool.
-// Uses time-contextual selection when calendar data is available.
+// Uses time-contextual selection when calendar data is available,
+// and applies focus boost when a valid planning timestamp exists.
 func (dv *DoorsView) RefreshDoors() {
 	if dv.timeContext != nil && dv.timeContext.HasCalendar {
 		dv.currentDoors = core.SelectDoorsWithTimeContext(dv.pool, 3, dv.timeContext)
+	} else if dv.planningTimestamp != nil && !core.IsFocusExpired(*dv.planningTimestamp) {
+		dv.currentDoors = core.SelectDoorsWithFocus(dv.pool, 3, dv.planningTimestamp)
 	} else {
 		dv.currentDoors = core.SelectDoors(dv.pool, 3)
 	}
@@ -314,6 +324,11 @@ func (dv *DoorsView) View() string {
 		// PR status badge
 		if prBadge := DevDispatchBadge(task); prBadge != "" {
 			parts = append(parts, prBadge)
+		}
+
+		// Focus badge — show when task has +focus tag and planning is active
+		if core.HasFocusTag(task) && dv.planningTimestamp != nil && !core.IsFocusExpired(*dv.planningTimestamp) {
+			parts = append(parts, focusBadgeStyle.Render("focus"))
 		}
 
 		// Category badges

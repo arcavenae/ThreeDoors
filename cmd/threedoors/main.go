@@ -36,8 +36,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Route to CLI if the first arg is a known subcommand
-	if len(os.Args) > 1 && isSubcommand(os.Args[1]) {
+	// Route to CLI if the first arg is a known subcommand (except "plan" which uses TUI)
+	isPlanMode := len(os.Args) > 1 && os.Args[1] == "plan"
+	if len(os.Args) > 1 && isSubcommand(os.Args[1]) && !isPlanMode {
 		os.Exit(cli.Execute())
 	}
 
@@ -174,6 +175,9 @@ func main() {
 	}
 	if agentSvc != nil {
 		model.SetAgentService(agentSvc)
+	}
+	if isPlanMode {
+		model.SetPlanningMode(true)
 	}
 
 	p := tea.NewProgram(model)

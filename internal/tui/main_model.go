@@ -44,6 +44,7 @@ const (
 	ViewHelp
 	ViewDeferred
 	ViewSnooze
+	ViewPlanning
 )
 
 // MainModel is the root Bubbletea model that orchestrates view transitions.
@@ -71,6 +72,9 @@ type MainModel struct {
 	helpView              *HelpView
 	deferredListView      *DeferredListView
 	snoozeView            *SnoozeView
+	planningView          *PlanningView
+	planningMode          bool // CLI --plan: exit after planning instead of showing doors
+	planningTimestamp     *time.Time
 	configPath            string
 	pool                  *core.TaskPool
 	tracker               *core.SessionTracker
@@ -199,11 +203,20 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		}
 	}
 
+	// Load planning timestamp for focus boost
+	var planningTs *time.Time
+	if configPath, err := core.GetConfigDirPath(); err == nil {
+		planningTs = LoadPlanningTimestamp(configPath)
+	}
+
 	doorsView := NewDoorsView(pool, tracker)
 	doorsView.SetAvoidanceData(patternReport)
 	doorsView.SetInsightsData(pa, cc)
 	doorsView.SetSyncTracker(syncTracker)
 	doorsView.SetDuplicateTaskIDs(duplicateTaskIDs)
+	if planningTs != nil {
+		doorsView.SetPlanningTimestamp(planningTs)
+	}
 
 	m := &MainModel{
 		viewMode:          ViewDoors,
@@ -224,6 +237,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		duplicateTaskIDs:  duplicateTaskIDs,
 		duplicatePairs:    duplicatePairs,
 		syncSpinner:       NewSyncSpinner(),
+		planningTimestamp: planningTs,
 		promptedTasks:     make(map[string]bool),
 		showKeybindingBar: true, // default: bar visible
 	}
@@ -257,6 +271,19 @@ func (m *MainModel) SetDevDispatch(enabled bool, d dispatch.Dispatcher, q *dispa
 	m.devDispatchEnabled = enabled
 	m.dispatcher = d
 	m.devQueue = q
+}
+
+// SetPlanningMode enables planning mode — launches directly into PlanningView
+// and exits after planning completes (used by CLI `plan` subcommand).
+func (m *MainModel) SetPlanningMode(enabled bool) {
+	m.planningMode = enabled
+	if enabled {
+		pv := NewPlanningView(m.pool, m.provider)
+		pv.SetWidth(m.width)
+		pv.SetHeight(m.height)
+		m.planningView = pv
+		m.viewMode = ViewPlanning
+	}
 }
 
 // SetAgentService sets the agent service for LLM task decomposition.
@@ -293,7 +320,11 @@ func (m *MainModel) Init() tea.Cmd {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after defer return: %v\n", err)
 		}
 	}
-	return deferReturnTickCmd()
+	cmds := []tea.Cmd{deferReturnTickCmd()}
+	if m.planningView != nil && m.viewMode == ViewPlanning {
+		cmds = append(cmds, m.planningView.Init())
+	}
+	return tea.Batch(cmds...)
 }
 
 // Update implements tea.Model.
@@ -366,6 +397,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.snoozeView != nil {
 			m.snoozeView.SetWidth(msg.Width)
+		}
+		if m.planningView != nil {
+			m.planningView.SetWidth(msg.Width)
+			m.planningView.SetHeight(msg.Height)
 		}
 		return m, nil
 
@@ -1011,6 +1046,42 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.doorsView.SetPendingProposals(PendingProposalCount(m.proposalStore))
 		return m, ClearFlashCmd()
 
+	case ShowPlanningMsg:
+		pv := NewPlanningView(m.pool, m.provider)
+		pv.SetWidth(m.width)
+		pv.SetHeight(m.height)
+		m.planningView = pv
+		m.previousView = m.viewMode
+		m.viewMode = ViewPlanning
+		return m, pv.Init()
+
+	case PlanningCompleteMsg:
+		m.planningTimestamp = &msg.Timestamp
+		m.doorsView.SetPlanningTimestamp(&msg.Timestamp)
+		m.doorsView.RefreshDoors()
+		m.doorsView.RotateFooterMessage()
+		if m.planningMode {
+			// CLI plan mode: exit after planning
+			return m, tea.Quit
+		}
+		m.viewMode = ViewDoors
+		m.planningView = nil
+		focusCount := len(msg.FocusTasks)
+		if focusCount > 0 {
+			m.flash = fmt.Sprintf("Planning complete! %d focus task(s) set.", focusCount)
+		} else {
+			m.flash = "Planning complete!"
+		}
+		return m, ClearFlashCmd()
+
+	case PlanningCancelledMsg:
+		if m.planningMode {
+			return m, tea.Quit
+		}
+		m.viewMode = ViewDoors
+		m.planningView = nil
+		return m, nil
+
 	case ShowHelpMsg:
 		hv := NewHelpView()
 		hv.SetWidth(m.width)
@@ -1190,6 +1261,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateDeferred(msg)
 	case ViewSnooze:
 		return m.updateSnooze(msg)
+	case ViewPlanning:
+		return m.updatePlanning(msg)
 	}
 
 	return m, nil
@@ -1437,6 +1510,14 @@ func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.syncLogView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updatePlanning(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.planningView == nil {
+		return m, nil
+	}
+	cmd := m.planningView.Update(msg)
 	return m, cmd
 }
 
@@ -1954,6 +2035,10 @@ func (m *MainModel) View() string {
 	case ViewSnooze:
 		if m.snoozeView != nil {
 			view = m.snoozeView.View()
+		}
+	case ViewPlanning:
+		if m.planningView != nil {
+			view = m.planningView.View()
 		}
 	default:
 		view = m.doorsView.View()
