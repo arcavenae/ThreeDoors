@@ -23,6 +23,7 @@
 
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
+| P-006 | In-app bug reporting via `:bug` command — browser URL primary, PAT upgrade, file fallback | 2026-03-09 | Party mode (4 rounds: PM, Architect, UX, Dev) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md), [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) | Epic/story creation |
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
 | P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | ⚠️ Artifact missing — was never committed; see prior audit | Story creation |
@@ -200,6 +201,22 @@
 | X-047 | Spacebar as quick-complete from doors view | 2026-03-08 | Destructive action behind most easily-hit key; accidental completions; requires undo infrastructure that doesn't exist | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
 | X-048 | Spacebar as knock/peek tooltip | 2026-03-08 | Adds step between user and task; new rendering mode needed; scope disproportionate to value | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
 | X-049 | Spacebar as door cycle (tab equivalent) | 2026-03-08 | Adds parallel selection system alongside a/w/d; new cycle state tracking; confusing with existing positional keys | [Artifact](../../_bmad-output/planning-artifacts/spacebar-action-debate.md) |
+| D-112 | Browser URL as primary bug report submission (zero-auth) | 2026-03-09 | Zero-config; uses existing browser session; URL query params for pre-filled issue | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
+| D-113 | Ring buffer breadcrumbs (50 entries, count-bounded) | 2026-03-09 | Fixed memory; sufficient context for bug reports; no persistence without user action | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
+| D-114 | Allowlist-only privacy for bug reports (capture-level filtering) | 2026-03-09 | Defense in depth — can't leak what was never captured; tea.KeyRunes never recorded | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
+| D-115 | Mandatory preview before bug report submission | 2026-03-09 | SOUL.md trust alignment; user sees exactly what will be sent; friend-helping-friend feel | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
+| D-116 | Bug report target repo hardcoded to arcaven/ThreeDoors | 2026-03-09 | Single-product reporter; YAGNI for configuration; forks can change in code | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
+
+## Rejected
+
+| ID | Option | Date | Why Rejected | Link |
+|----|--------|------|--------------|------|
+| X-059 | OAuth device flow for bug report auth | 2026-03-09 | Too complex for bug reports; browser URL achieves zero-auth goal without token management | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
+| X-060 | gh CLI for bug report submission | 2026-03-09 | External dependency; SOUL.md discourages requiring external tools | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
+| X-061 | Time-bounded breadcrumb buffer | 2026-03-09 | Variable memory; hard to reason about edge cases (idle vs active); count-bounded is simpler | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
+| X-062 | Blocklist approach for bug report privacy | 2026-03-09 | Blocklists risk leaks from new data types; allowlist at capture level is defense in depth | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
+| X-063 | Configurable target repo for bug reports | 2026-03-09 | YAGNI; ThreeDoors reports to ThreeDoors; adds config complexity for no validated need | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
+
 | X-050 | `epic.N` per-epic labels | 2026-03-08 | GitHub milestones serve this purpose; 40+ labels is bloat | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-051 | `sprint.*` labels | 2026-03-08 | No fixed sprints in ThreeDoors workflow | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-052 | `effort.*` Fibonacci labels | 2026-03-08 | Effort tracked in story files, not issues | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
