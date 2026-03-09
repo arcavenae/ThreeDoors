@@ -66,7 +66,7 @@ Guided daily planning ritual for task review and focus selection. Transforms Thr
 |-------|-------|--------|----------|------------|
 | 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
 | 27.2 | Review Incomplete Tasks Flow | In Review | P1 | 27.1 |
-| 27.3 | Focus Selection Flow | Not Started | P1 | 27.1 |
+| 27.3 | Focus Selection Flow | In Review | P1 | 27.1 |
 | 27.4 | Energy Level Matching & Time-of-Day Inference | Not Started | P1 | 27.1 |
 | 27.5 | Planning Session Metrics & CLI/TUI Commands | Not Started | P1 | 27.1-27.4 |
 

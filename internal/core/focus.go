@@ -41,7 +41,7 @@ func GetFocusTasks(pool *TaskPool) []*Task {
 func ClearFocusTags(pool *TaskPool) {
 	for _, t := range pool.GetAllTasks() {
 		if HasFocusTag(t) {
-			t.Text = removeFocusTag(t.Text)
+			t.Text = RemoveFocusTagFromText(t.Text)
 			t.UpdatedAt = time.Now().UTC()
 		}
 	}
@@ -69,8 +69,8 @@ func FocusScoreBoost(tasks []*Task, planningTimestamp time.Time) float64 {
 	return boost
 }
 
-// removeFocusTag removes all occurrences of +focus (case-insensitive) from text.
-func removeFocusTag(text string) string {
+// RemoveFocusTagFromText removes all occurrences of +focus (case-insensitive) from text.
+func RemoveFocusTagFromText(text string) string {
 	words := strings.Fields(text)
 	var remaining []string
 	for _, w := range words {
