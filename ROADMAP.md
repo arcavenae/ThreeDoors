@@ -189,7 +189,7 @@ Transform the insights dashboard from plain text into a visually delightful, SOU
 | 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Done (PR #366) | P1 | 40.1 |
 | 40.3 | Fun Facts Engine | Done (PR #371) | P1 | 40.1 |
 | 40.4 | Horizontal Bar Charts for Mood Correlation | Done (PR #362) | P1 | 40.1 |
-| 40.5 | GitHub-Style Activity Heatmap | Not Started | P2 | 40.1, 40.8 |
+| 40.5 | GitHub-Style Activity Heatmap | Done (PR #391) | P2 | 40.1, 40.8 |
 | 40.6 | Surface Hidden Session Metrics | Done (PR #368) | P1 | 40.1 |
 | 40.7 | Animated Counter Reveals | Not Started | P2 | 40.1 |
 | 40.8 | Tab Navigation for Detail View | Done (PR #367) | P1 | 40.1 |

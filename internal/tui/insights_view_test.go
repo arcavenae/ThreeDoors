@@ -1177,17 +1177,17 @@ func TestInsightsView_TabInvalidatesCache(t *testing.T) {
 	}
 }
 
-func TestInsightsView_DetailTabShowsPlaceholder(t *testing.T) {
+func TestInsightsView_DetailTabShowsHeatmap(t *testing.T) {
 	lipgloss.SetColorProfile(termenv.Ascii)
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	iv := setupInsightsView(t)
-	iv.SetHeight(24)
+	iv.SetHeight(30)
 	iv.activeTab = 1
 
 	output := iv.View()
-	if !strings.Contains(output, "Coming soon") {
-		t.Errorf("Detail tab should show placeholder content, got:\n%s", output)
+	if !strings.Contains(output, "ACTIVITY HEATMAP") {
+		t.Errorf("Detail tab should show heatmap, got:\n%s", output)
 	}
 }
 
@@ -1221,6 +1221,256 @@ func TestInsightsView_OverviewTabStillShowsPanels(t *testing.T) {
 		if !strings.Contains(output, section) {
 			t.Errorf("Overview tab missing section %q", section)
 		}
+	}
+}
+
+// ============================================================
+// Story 40.5 — Activity Heatmap Tests
+// ============================================================
+
+func TestHeatmapLevel(t *testing.T) {
+	tests := []struct {
+		name  string
+		count int
+		want  int
+	}{
+		{"zero", 0, 0},
+		{"one", 1, 1},
+		{"two", 2, 1},
+		{"three", 3, 2},
+		{"four", 4, 2},
+		{"five", 5, 3},
+		{"six", 6, 3},
+		{"seven", 7, 4},
+		{"ten", 10, 4},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := heatmapLevel(tt.count)
+			if got != tt.want {
+				t.Errorf("heatmapLevel(%d) = %d, want %d", tt.count, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHeatmapGrid_EmptyData(t *testing.T) {
+	grid, weeks := heatmapGrid(map[string]int{})
+	if weeks != 0 {
+		t.Errorf("empty data should return 0 weeks, got %d", weeks)
+	}
+	for d := 0; d < 7; d++ {
+		if len(grid[d]) != 0 {
+			t.Errorf("empty data grid[%d] should be empty", d)
+		}
+	}
+}
+
+func TestHeatmapGrid_SingleWeek(t *testing.T) {
+	daily := map[string]int{
+		"2026-03-02": 3, // Monday
+		"2026-03-04": 5, // Wednesday
+		"2026-03-06": 1, // Friday
+	}
+	grid, weeks := heatmapGrid(daily)
+	if weeks != 1 {
+		t.Errorf("single week data should return 1 week, got %d", weeks)
+	}
+	// Monday (index 0) = 3
+	if grid[0][0] != 3 {
+		t.Errorf("Monday should be 3, got %d", grid[0][0])
+	}
+	// Wednesday (index 2) = 5
+	if grid[2][0] != 5 {
+		t.Errorf("Wednesday should be 5, got %d", grid[2][0])
+	}
+	// Friday (index 4) = 1
+	if grid[4][0] != 1 {
+		t.Errorf("Friday should be 1, got %d", grid[4][0])
+	}
+	// Tuesday (index 1) = 0 (no data)
+	if grid[1][0] != 0 {
+		t.Errorf("Tuesday should be 0, got %d", grid[1][0])
+	}
+}
+
+func TestHeatmapGrid_MultipleWeeks(t *testing.T) {
+	daily := map[string]int{
+		"2026-02-23": 2, // Monday week 1
+		"2026-03-02": 4, // Monday week 2
+		"2026-03-09": 6, // Monday week 3
+	}
+	grid, weeks := heatmapGrid(daily)
+	if weeks != 3 {
+		t.Errorf("three weeks should return 3, got %d", weeks)
+	}
+	// Monday values across weeks
+	if grid[0][0] != 2 {
+		t.Errorf("week 1 Monday should be 2, got %d", grid[0][0])
+	}
+	if grid[0][1] != 4 {
+		t.Errorf("week 2 Monday should be 4, got %d", grid[0][1])
+	}
+	if grid[0][2] != 6 {
+		t.Errorf("week 3 Monday should be 6, got %d", grid[0][2])
+	}
+}
+
+func TestHeatmapGrid_CapsAt8Weeks(t *testing.T) {
+	daily := make(map[string]int)
+	// Create 12 weeks of data
+	start := time.Date(2026, 1, 5, 0, 0, 0, 0, time.UTC) // Monday
+	for w := 0; w < 12; w++ {
+		day := start.AddDate(0, 0, w*7)
+		daily[day.Format("2006-01-02")] = w + 1
+	}
+	_, weeks := heatmapGrid(daily)
+	if weeks != 8 {
+		t.Errorf("should cap at 8 weeks, got %d", weeks)
+	}
+}
+
+func TestMondayOf(t *testing.T) {
+	tests := []struct {
+		name string
+		date string
+		want string
+	}{
+		{"monday stays", "2026-03-02", "2026-03-02"},
+		{"tuesday", "2026-03-03", "2026-03-02"},
+		{"wednesday", "2026-03-04", "2026-03-02"},
+		{"sunday", "2026-03-08", "2026-03-02"},
+		{"next monday", "2026-03-09", "2026-03-09"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, _ := time.Parse("2006-01-02", tt.date)
+			got := mondayOf(d).Format("2006-01-02")
+			if got != tt.want {
+				t.Errorf("mondayOf(%s) = %s, want %s", tt.date, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRenderHeatmap_NarrowTerminalHidesHeatmap(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetWidth(50) // compact mode
+	var s strings.Builder
+	iv.renderHeatmap(&s)
+	output := s.String()
+
+	if !strings.Contains(output, "Widen terminal") {
+		t.Errorf("compact mode should show widen message, got: %q", output)
+	}
+	if strings.Contains(output, "ACTIVITY HEATMAP") {
+		t.Errorf("compact mode should NOT show heatmap grid")
+	}
+}
+
+func TestRenderHeatmap_ShowsGridAndLegend(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsView(t)
+	iv.SetWidth(80)
+	var s strings.Builder
+	iv.renderHeatmap(&s)
+	output := s.String()
+
+	// Should have title
+	if !strings.Contains(output, "ACTIVITY HEATMAP") {
+		t.Errorf("heatmap should contain title, got:\n%s", output)
+	}
+
+	// Should have day labels
+	for _, day := range []string{"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"} {
+		if !strings.Contains(output, day) {
+			t.Errorf("heatmap should contain day label %q", day)
+		}
+	}
+
+	// Should have week column headers
+	if !strings.Contains(output, "W1") {
+		t.Errorf("heatmap should contain week header W1")
+	}
+
+	// Should have legend
+	if !strings.Contains(output, "Less") || !strings.Contains(output, "More") {
+		t.Errorf("heatmap should contain legend with Less/More")
+	}
+}
+
+func setupInsightsViewWithHeatmapData(t *testing.T) *InsightsView {
+	t.Helper()
+	dir := t.TempDir()
+	now := time.Date(2026, 3, 9, 14, 0, 0, 0, time.UTC)
+	frozen := func() time.Time { return now }
+
+	// Create sessions spanning 3 weeks
+	var sessions []core.SessionMetrics
+	for i := 0; i < 21; i++ {
+		day := now.AddDate(0, 0, -i)
+		completions := (i % 5) + 1
+		sessions = append(sessions, makeInsightsTestSession(day, completions, []string{"Focused"}, []int{0}))
+	}
+
+	paPath := writeInsightsSessionsFile(t, dir, sessions)
+	pa := core.NewPatternAnalyzerWithNow(frozen)
+	if err := pa.LoadSessions(paPath); err != nil {
+		t.Fatalf("LoadSessions() error: %v", err)
+	}
+
+	cc := core.NewCompletionCounterWithNow(frozen)
+	iv := NewInsightsView(pa, cc, nil)
+	iv.SetWidth(80)
+	iv.SetHeight(30)
+	return iv
+}
+
+func TestRenderHeatmap_WithMultiWeekData(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsViewWithHeatmapData(t)
+	var s strings.Builder
+	iv.renderHeatmap(&s)
+	output := s.String()
+
+	// Should show heatmap with shade characters or dots
+	hasShade := false
+	for _, ch := range heatmapChars {
+		if ch != ' ' && strings.ContainsRune(output, ch) {
+			hasShade = true
+			break
+		}
+	}
+	if !hasShade && !strings.Contains(output, "·") {
+		t.Errorf("heatmap should contain shade characters or dots, got:\n%s", output)
+	}
+}
+
+func TestInsightsView_DetailTabHeatmapIntegration(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
+
+	iv := setupInsightsViewWithHeatmapData(t)
+	iv.activeTab = 1
+
+	output := iv.View()
+
+	// Should contain heatmap content
+	if !strings.Contains(output, "ACTIVITY HEATMAP") {
+		t.Errorf("Detail tab should show heatmap, got:\n%s", output)
+	}
+	// Should still have tab indicator
+	if !strings.Contains(output, "[Detail]") {
+		t.Errorf("Detail tab should show tab indicator")
 	}
 }
 
