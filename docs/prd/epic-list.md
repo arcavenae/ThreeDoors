@@ -694,7 +694,7 @@
 | Epic 30: Linear Integration | 4 | Not Started |
 | Epic 31: Expand/Fork Key | 5 | Not Started |
 | Epic 32: Undo Task Completion | 3 | Complete |
-| Epic 33: Seasonal Theme Variants | 4 | Not Started |
+| Epic 33: Seasonal Theme Variants | 4 | Complete |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
 | Epic 35: Door Visual Appearance | 7 | Complete |
 | Epic 36: Door Selection Feedback | 4 | Complete |

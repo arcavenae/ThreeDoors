@@ -16,11 +16,14 @@ type ThemePicker struct {
 	cursor       int
 	currentTheme string
 	width        int
+	title        string
+	seasonal     bool
 }
 
-// NewThemePicker creates a ThemePicker with cursor positioned on the current theme.
+// NewThemePicker creates a ThemePicker showing non-seasonal themes,
+// with cursor positioned on the current theme.
 func NewThemePicker(registry *themes.Registry, currentTheme string) *ThemePicker {
-	names := registry.Names()
+	names := registry.NonSeasonalNames()
 	cursor := 0
 	for i, name := range names {
 		if name == currentTheme {
@@ -33,7 +36,34 @@ func NewThemePicker(registry *themes.Registry, currentTheme string) *ThemePicker
 		themeNames:   names,
 		cursor:       cursor,
 		currentTheme: currentTheme,
+		title:        "Select Door Theme",
 	}
+}
+
+// NewSeasonalThemePicker creates a ThemePicker showing only seasonal themes
+// (themes where Season != ""), with cursor positioned on the current theme.
+func NewSeasonalThemePicker(registry *themes.Registry, currentTheme string) *ThemePicker {
+	names := registry.SeasonalNames()
+	cursor := 0
+	for i, name := range names {
+		if name == currentTheme {
+			cursor = i
+			break
+		}
+	}
+	return &ThemePicker{
+		registry:     registry,
+		themeNames:   names,
+		cursor:       cursor,
+		currentTheme: currentTheme,
+		title:        "Select Seasonal Theme",
+		seasonal:     true,
+	}
+}
+
+// IsSeasonal reports whether this picker shows seasonal themes.
+func (tp *ThemePicker) IsSeasonal() bool {
+	return tp.seasonal
 }
 
 // SetWidth sets the available width for rendering.
@@ -72,7 +102,7 @@ func (tp *ThemePicker) View() string {
 	var s strings.Builder
 
 	titleStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("63"))
-	fmt.Fprintf(&s, "%s\n\n", titleStyle.Render("Select Door Theme"))
+	fmt.Fprintf(&s, "%s\n\n", titleStyle.Render(tp.title))
 
 	for i, name := range tp.themeNames {
 		theme, _ := tp.registry.Get(name)
