@@ -203,6 +203,18 @@ Remediate findings from the application security audit. Fix permissive file perm
 | 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
 
+### Epic 50: In-App Bug Reporting (P2) — 0/3 stories done
+
+In-app `:bug` command for frictionless bug reporting without leaving the TUI. Breadcrumb navigation trail, environment data collection with strict privacy allowlist, mandatory preview, and tiered submission (browser URL, GitHub API, local file).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 50.1 | Breadcrumb Tracking System | Not Started | P2 | None |
+| 50.2 | Bug Report View & Environment Collection | Not Started | P2 | 50.1 |
+| 50.3 | Submission Methods (Browser, API, File) | Not Started | P2 | 50.2 |
+
+**Dependency graph:** Linear chain: 50.1 → 50.2 → 50.3.
+
 ## Completed Epics
 
 | Epic | Title | Stories |

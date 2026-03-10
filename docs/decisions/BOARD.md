@@ -23,7 +23,7 @@
 
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
-| P-006 | In-app bug reporting via `:bug` command — browser URL primary, PAT upgrade, file fallback | 2026-03-09 | Party mode (4 rounds: PM, Architect, UX, Dev) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md), [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) | Epic/story creation |
+| P-006 | In-app bug reporting via `:bug` command — browser URL primary, PAT upgrade, file fallback | 2026-03-09 | Party mode (4 rounds: PM, Architect, UX, Dev) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md), [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) | **Done** — Epic 50 created (3 stories) |
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
 | P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Artifact](../../_bmad-output/planning-artifacts/envoy-scope-and-firewall-design.md) | Story creation |
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | Story creation |
@@ -326,7 +326,8 @@
 | 46 | OAuth Device Code Flow | 2026-03-09 | Allocated (4 stories) |
 | 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Allocated (4 stories) |
 | 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | Allocated (10 stories) |
-| 50 | *(next available)* | — | — |
+| 50 | In-App Bug Reporting | 2026-03-10 | Allocated (3 stories) |
+| 51 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number

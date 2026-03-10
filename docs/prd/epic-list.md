@@ -624,7 +624,20 @@
 - **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
 - **Decisions:** D-151 (conflict resolution strategy)
 
-**Epic 50+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 50: In-App Bug Reporting** (P2)
+- **Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission (browser URL, GitHub API, local file)
+- **Prerequisites:** None (standalone feature)
+- **Status:** Not Started
+- **Deliverables:**
+  - Ring buffer breadcrumb tracking (50 entries, view transitions + non-text keys, privacy-safe)
+  - Bug report view with text description input, environment summary, and mandatory preview
+  - Three submission paths: browser URL (zero-auth), GitHub API (PAT upgrade), local file (offline)
+  - Strict privacy allowlist at capture level — task content, search queries, and personal data never collected
+- **Stories:** 50.1-50.3 (3 stories)
+- **Research:** See `../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md`, `../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md`
+- **Decisions:** D-112 (browser URL primary), D-113 (ring buffer), D-114 (allowlist privacy), D-115 (mandatory preview), D-116 (hardcoded target repo)
+
+**Epic 51+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -685,5 +698,6 @@
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
 | Epic 48: Door-Like Doors | 4 | Not Started |
 | Epic 49: ThreeDoors Doctor | 10 | Not Started |
-| **Total** | **261** | **146 complete, 4 epics in progress, 115 not started** |
+| Epic 50: In-App Bug Reporting | 3 | Not Started |
+| **Total** | **264** | **146 complete, 4 epics in progress, 118 not started** |
 ---

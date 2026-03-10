@@ -4909,3 +4909,72 @@ GitHub Releases API with 24h cache. Channel-aware comparison. Opt-out controls. 
 ### Research
 
 - Doctor Research: `_bmad-output/planning-artifacts/threedoors-doctor-research.md`
+
+---
+
+## Epic 50: In-App Bug Reporting
+
+**Epic Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission methods.
+
+**Prerequisites:** None (standalone feature)
+**Status:** Not Started
+**Priority:** P2
+
+### Overview
+
+When ThreeDoors users encounter a bug, reporting friction is high: leave the TUI, open browser, navigate to GitHub Issues, manually describe environment, reconstruct steps from memory. By step 3, most users give up. The `:bug` command makes bug reporting a natural part of the TUI conversation, aligned with SOUL.md's "friend helping you" philosophy.
+
+The implementation follows strict privacy principles: a ring buffer captures navigation breadcrumbs (view transitions, non-text keys, command names) in memory only. Text input (`tea.KeyRunes`) is never captured — the privacy firewall is at the capture level, not the report level. Users see a mandatory preview of exactly what will be sent before any data leaves their machine.
+
+### Stories
+
+#### Story 50.1: Breadcrumb Tracking System
+
+**Status:** Not Started
+**Priority:** P2
+**Depends On:** None
+**Effort:** Small
+
+Ring buffer breadcrumb system tracking the last 50 user navigation actions in memory. Captures view transitions, non-text key events, and command names (arguments stripped). Text input (`tea.KeyRunes`) is never recorded — this is the privacy firewall. Integrated at top of `MainModel.Update()`.
+
+**AC:** Ring buffer records view transitions with timestamps. Non-text keys recorded (`key:Enter`). Text input never captured. Commands recorded without args (`cmd:stats`). Buffer wraps at 50 entries. `Format()` returns chronological human-readable output.
+
+#### Story 50.2: Bug Report View & Environment Collection
+
+**Status:** Not Started
+**Priority:** P2
+**Depends On:** 50.1
+**Effort:** Medium
+
+New `ViewBugReport` mode with text description input, automatic environment data collection (version, OS, terminal, theme, task count — strict allowlist), breadcrumb trail integration, and mandatory preview screen. Wired via `:bug` command in `search_view.executeCommand()`.
+
+**AC:** `:bug` opens bug report view. Environment shows only allowlisted data. Blocklist disclaimer displayed. Enter shows full markdown preview. Esc cancels and returns to previous view. No task content, file paths, or personal data in output.
+
+#### Story 50.3: Submission Methods (Browser, API, File)
+
+**Status:** Not Started
+**Priority:** P2
+**Depends On:** 50.2
+**Effort:** Medium
+
+Three tiered submission methods from the preview screen: (1) Browser URL — opens GitHub issue creation with pre-filled title/body via URL query params, zero auth needed; (2) GitHub API — direct submission if `GITHUB_TOKEN` configured; (3) Local file — saves to `~/.threedoors/bug-reports/` as GitHub-flavored markdown. Error cascading between methods.
+
+**AC:** `[b]` opens browser with pre-filled issue URL. `[s]` (if token) creates issue via API, shows URL. `[f]` saves to `~/.threedoors/bug-reports/bug-<timestamp>.md`. Browser failure offers clipboard fallback. API failure offers browser/file alternatives. Success returns to previous view.
+
+### Design Decisions
+
+- D-112: Browser URL as primary bug report submission (zero-auth)
+- D-113: Ring buffer breadcrumbs (50 entries, count-bounded)
+- D-114: Allowlist-only privacy for bug reports (capture-level filtering)
+- D-115: Mandatory preview before bug report submission
+- D-116: Bug report target repo hardcoded to arcaven/ThreeDoors
+- X-059: Rejected OAuth device flow for bug report auth
+- X-060: Rejected gh CLI for bug report submission
+- X-061: Rejected time-bounded breadcrumb buffer
+- X-062: Rejected blocklist approach for bug report privacy
+- X-063: Rejected configurable target repo for bug reports
+
+### Research
+
+- Research: `_bmad-output/planning-artifacts/in-app-bug-reporting-research.md`
+- Party Mode: `_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md`
