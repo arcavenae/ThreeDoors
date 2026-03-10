@@ -259,6 +259,27 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 40 | Beautiful Stats Display | 10/10 |
 | 41 | Charm Ecosystem Adoption & TUI Polish | 6/6 |
 
+### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 0/10 stories done
+
+Continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality (did we build the right thing?) and operational efficiency (are we building efficiently?).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | Not Started | P1 | None |
+| 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Not Started | P1 | None |
+| 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | Not Started | P1 | 51.1 |
+| 51.4 | Saga Detection (Dispatch Waste Alerting) | Not Started | P1 | 51.1 |
+| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | Not Started | P1 | 51.1 |
+| 51.6 | BOARD.md Recommendation Pipeline | Not Started | P1 | 51.3, 51.4, 51.5 |
+| 51.7 | Merge Conflict Rate Analysis | Not Started | P2 | 51.3, 51.6 |
+| 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Not Started | P2 | 51.3, 51.6 |
+| 51.9 | Research Lifecycle Tracking | Not Started | P2 | 51.3, 51.6 |
+| 51.10 | PR Creation Authority & Trend Reporting | Not Started | P2 | 51.1-51.9 |
+
+**Phasing:** Phase 0 (stories 51.1-51.2): Bootstrap — rewrite agent definitions. Phase 1 (stories 51.3-51.6): MVP monitoring. Phase 2 (stories 51.7-51.10): Advanced analysis after 2 weeks of MVP validation.
+
+**Dependency graph:** Stories 51.1 & 51.2 can parallelize. Stories 51.3-51.5 can parallelize after 51.1. Story 51.6 depends on 51.3-51.5. Phase 2 stories depend on Phase 1 validation.
+
 ## Icebox (Deferred Indefinitely)
 
 | Epic | Title | Stories | Decision Date | Rationale |
