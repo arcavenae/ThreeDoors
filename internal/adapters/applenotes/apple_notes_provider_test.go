@@ -200,6 +200,7 @@ func TestAppleNotesProvider_LoadTasks_NoteNotFound(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for note not found, got nil")
+		return
 	}
 	if !strings.Contains(err.Error(), "not found") {
 		t.Errorf("error should contain 'not found', got: %v", err)
@@ -213,6 +214,7 @@ func TestAppleNotesProvider_LoadTasks_PermissionDenied(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for permission denied, got nil")
+		return
 	}
 	if !strings.Contains(err.Error(), "permission denied") {
 		t.Errorf("error should contain 'permission denied', got: %v", err)
@@ -225,6 +227,7 @@ func TestAppleNotesProvider_LoadTasks_Timeout(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for timeout, got nil")
+		return
 	}
 	if !strings.Contains(err.Error(), "timed out") {
 		t.Errorf("error should contain 'timed out', got: %v", err)
@@ -295,6 +298,7 @@ func TestAppleNotesProvider_ReadRawNoteBody_Error(t *testing.T) {
 	_, err := provider.readRawNoteBody()
 	if err == nil {
 		t.Fatal("readRawNoteBody() expected error, got nil")
+		return
 	}
 	if !strings.Contains(err.Error(), "not found") {
 		t.Errorf("error should contain 'not found', got: %v", err)

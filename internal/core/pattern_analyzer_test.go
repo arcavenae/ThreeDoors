@@ -145,6 +145,7 @@ func TestNewPatternAnalyzerWithNow(t *testing.T) {
 	pa := NewPatternAnalyzerWithNow(frozen)
 	if pa == nil {
 		t.Fatal("NewPatternAnalyzerWithNow() returned nil")
+		return
 	}
 }
 

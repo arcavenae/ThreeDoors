@@ -307,6 +307,7 @@ func TestBuildTaskPool_NilProvider(t *testing.T) {
 	pool, provider, err := buildTaskPool(nil)
 	if err == nil {
 		t.Fatal("expected error when provider is nil, got nil")
+		return
 	}
 	if pool != nil {
 		t.Errorf("expected nil pool, got %v", pool)
@@ -357,6 +358,7 @@ func TestBuildTaskPool_LoadError(t *testing.T) {
 	_, _, err := buildTaskPool(mock)
 	if err == nil {
 		t.Fatal("expected error when LoadTasks fails, got nil")
+		return
 	}
 
 	wantSubstr := "load tasks"

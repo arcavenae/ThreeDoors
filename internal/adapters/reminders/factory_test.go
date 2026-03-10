@@ -33,6 +33,7 @@ func TestNewFactory_NonDarwinReturnsError(t *testing.T) {
 	_, err := factory(cfg)
 	if err == nil {
 		t.Fatal("expected error on non-darwin platform")
+		return
 	}
 
 	if got := err.Error(); got == "" {

@@ -219,6 +219,7 @@ func TestParseConfig_Validation(t *testing.T) {
 			_, err := ParseConfig(tt.settings)
 			if err == nil {
 				t.Fatalf("ParseConfig() expected error containing %q, got nil", tt.wantErr)
+				return
 			}
 			if got := err.Error(); !contains(got, tt.wantErr) {
 				t.Errorf("error = %q, want to contain %q", got, tt.wantErr)

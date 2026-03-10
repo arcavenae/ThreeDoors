@@ -21,6 +21,7 @@ func TestNewTextFileProvider(t *testing.T) {
 	p := NewTextFileProvider()
 	if p == nil {
 		t.Fatal("expected non-nil provider")
+		return
 	}
 }
 

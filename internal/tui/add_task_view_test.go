@@ -14,6 +14,7 @@ func TestAddTaskView_New(t *testing.T) {
 	av := NewAddTaskView()
 	if av == nil {
 		t.Fatal("NewAddTaskView should not return nil")
+		return
 	}
 }
 
@@ -154,6 +155,7 @@ func TestAddTaskWithContextView_New(t *testing.T) {
 	av := NewAddTaskWithContextView()
 	if av == nil {
 		t.Fatal("NewAddTaskWithContextView should not return nil")
+		return
 	}
 	if !av.withContext {
 		t.Error("withContext should be true")

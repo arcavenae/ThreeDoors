@@ -309,6 +309,7 @@ func TestPlanningTimestamp_SaveAndLoad(t *testing.T) {
 	loaded := LoadPlanningTimestamp(dir)
 	if loaded == nil {
 		t.Fatal("should load timestamp")
+		return
 	}
 	if !loaded.Equal(now) {
 		t.Errorf("loaded %v != saved %v", loaded, now)

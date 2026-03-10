@@ -20,6 +20,7 @@ func TestNewThemePicker(t *testing.T) {
 
 	if tp == nil {
 		t.Fatal("NewThemePicker returned nil")
+		return
 	}
 	if len(tp.themeNames) == 0 {
 		t.Fatal("expected theme names to be populated")
