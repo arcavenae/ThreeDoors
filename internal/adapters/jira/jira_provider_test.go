@@ -139,6 +139,7 @@ func TestLoadTasks_SinglePage(t *testing.T) {
 	task1 := findTask(tasks, "PROJ-1")
 	if task1 == nil {
 		t.Fatal("task PROJ-1 not found")
+		return
 	}
 	if task1.Text != "First task" {
 		t.Errorf("task1.Text = %q, want %q", task1.Text, "First task")
@@ -159,6 +160,7 @@ func TestLoadTasks_SinglePage(t *testing.T) {
 	task2 := findTask(tasks, "PROJ-2")
 	if task2 == nil {
 		t.Fatal("task PROJ-2 not found")
+		return
 	}
 	if task2.Status != core.StatusInProgress {
 		t.Errorf("task2.Status = %q, want %q", task2.Status, core.StatusInProgress)

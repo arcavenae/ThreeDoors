@@ -423,6 +423,7 @@ func TestLoadTasks_SingleRepo(t *testing.T) {
 	task1 := findTaskByID(tasks, "github:owner/repo#1")
 	if task1 == nil {
 		t.Fatal("task github:owner/repo#1 not found")
+		return
 	}
 	if task1.Text != "First issue" {
 		t.Errorf("task1.Text = %q, want %q", task1.Text, "First issue")
