@@ -4798,46 +4798,6 @@ Pin third-party GitHub Actions (golangci-lint-action, paths-filter, goreleaser-a
 
 ---
 
-## Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement
-
-**Priority:** P2
-**Status:** Not Started
-**Dependencies:** Epic 35 (Door Visual Appearance — complete), Epic 17 (Door Theme System — complete), Story 41.5 (Harmonica spike — complete, D-136 GO decision)
-
-### Epic Goal
-
-Transform rectangular card/panel doors into visually convincing doors by implementing 5 adopted proposals from the "doors more door-like" party mode research (5 rounds, 7 agents).
-
-The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~6.5/7 across all themes, at a total cost of ~200-250 LOC and 0-1 character of width.
-
-### Stories
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 48.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
-| 48.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
-| 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
-| 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
-
-### Design Decisions
-
-- D-141: Adopt 5 proposals (B, C, D, F, G) for door-like doors; reject 4 (A, E, H, I)
-- X-080 through X-083: Rejected alternatives
-
-### Noted Opportunities (Out of Scope)
-
-1. Door-Opening Transition Animation
-2. Light Spill Enhancement
-3. Nested Frame for Wide Terminals
-4. Wall Context for Wide Terminals
-
-### Research
-
-- Party Mode (5 rounds, 7 agents): `_bmad-output/planning-artifacts/doors-more-doorlike-research.md`
-- Prior: `_bmad-output/planning-artifacts/door-appearance-party-mode.md` (Epic 35)
-
----
-
 ## Epic 49: ThreeDoors Doctor — Self-Diagnosis Command
 
 **Priority:** P1
