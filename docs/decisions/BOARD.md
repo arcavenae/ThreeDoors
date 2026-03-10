@@ -246,6 +246,11 @@
 | D-137 | Space/Enter as toggle in DetailView (Story 36.4) | 2026-03-09 | Consistent with a/w/d toggle pattern (D-105, Story 36.2); SOUL.md "physical objects" — doors open AND close with same gesture; `isTextInputActive()` guard prevents text input conflicts; ~3-line change; preserves escape as alternative | [Party Mode](../../_bmad-output/planning-artifacts/space-enter-toggle-party-mode.md) |
 | D-141 | Adopt 5 proposals (B, C, D, F, G) for door-like doors (Epic 48) | 2026-03-09 | Selected proposals maximize door-feel with minimum friction, zero-to-minimal width cost (~200-250 LOC total). Rejected: Nested Frame (A, high width cost), Wall Context (E, 4 chars/side too expensive), Door Swing (H, high complexity/friction), Light Spill (I, achievable more simply via C). SOUL.md: "the UI should feel like physical objects" | [Research](../../_bmad-output/planning-artifacts/doors-more-doorlike-research.md) |
 | D-153 | New Epic 42: Application Security Hardening (5 stories) | 2026-03-09 | Security audit found 2 HIGH (permissive file perms, no symlink validation), 4 MEDIUM (scanner limits, YAML bombs, inconsistent perms, credential exposure), 3 LOW findings. MCP subsystem already exemplary (0o700/0o600). Grouped into 5 stories: permissions (42.1), symlinks (42.2), input limits (42.3), credentials (42.4), CI supply chain (42.5). Rejected: bundling all into one story (too large, different risk profiles); ignoring LOW findings (easy wins that eliminate attack surface). Overall risk: LOW-MEDIUM for a local TUI app. | [Security Audit](../../_bmad-output/planning-artifacts/security-audit-application.md) |
+| D-154 | Command name `doctor`; supersedes existing `health` command (Epic 49) | 2026-03-10 | Most widely recognized pattern (brew, flutter, npm); `health` too new to have scripting dependents; absorb into doctor, keep `health` as alias | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| D-155 | Flutter-style icon output as default format (Epic 49) | 2026-03-10 | Best scanability; `[✓]`/`[!]`/`[✗]`/`[i]` well-established UX pattern; rejected: npm table (harder to scan), brew paragraphs (too verbose) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| D-156 | Conservative auto-fix with `--fix` flag (Epic 49) | 2026-03-10 | Only fix safe, reversible operations (temp files, derived caches, permissions); user data never auto-modified; rejected: aggressive auto-fix (risky), no auto-fix (misses easy wins) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| D-157 | 24-hour cached version check, gh CLI pattern (Epic 49) | 2026-03-10 | Proven pattern; respects rate limits; non-blocking; opt-out via env var and config; rejected: check every run (chatty), weekly (too stale) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| D-158 | Channel-aware version: show within channel + cross-channel if higher (Epic 49) | 2026-03-10 | Alpha users should know about newer stable releases; matches rustup approach; rejected: strict isolation (misses important releases), all channels (noisy) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 
 ## Rejected
 
@@ -301,6 +306,11 @@
 | X-091 | Apple Notes as task integration target | 2026-03-09 | No task model, fragile AppleScript, macOS-only, extremely poor ROI | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 | X-092 | In-app settings editor (like lazygit) for source config | 2026-03-09 | Setup wizard is better UX for initial config; config file editing fine for power users | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 | X-093 | Webhook receiver for change detection | 2026-03-09 | Adds HTTP server complexity; polling is simpler, works universally; revisit as future optimization | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| X-094 | Interactive repair wizard for doctor command (Epic 49) | 2026-03-10 | Too complex for v1; doctor should be non-interactive; if repair needs user input, print instructions | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| X-095 | Doctor as part of every command startup (Epic 49) | 2026-03-10 | Too slow; version check is background-only via cache; doctor is explicit command | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| X-096 | Telemetry/crash reporting in doctor (Epic 49) | 2026-03-10 | Out of scope; doctor is local-only diagnostics; telemetry is a separate concern | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| X-097 | `health` and `doctor` coexist as separate commands (Epic 49) | 2026-03-10 | User confusion about which to run; health is new enough to absorb into doctor | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| X-098 | Command name `check` or `diagnose` instead of `doctor` (Epic 49) | 2026-03-10 | `check` too generic (conflicts with linter terminology); `diagnose` too verbose; `doctor` is the established pattern | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 
 ## Epic Number Registry
 
@@ -315,7 +325,8 @@
 | 45 | Sources CLI | 2026-03-09 | Allocated (5 stories) |
 | 46 | OAuth Device Code Flow | 2026-03-09 | Allocated (4 stories) |
 | 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Allocated (4 stories) |
-| 48 | *(next available)* | — | — |
+| 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | Allocated (10 stories) |
+| 50 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
