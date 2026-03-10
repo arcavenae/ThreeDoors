@@ -174,6 +174,52 @@ func TestAppendCompleted(t *testing.T) {
 	}
 }
 
+func TestSaveTasks_FilePermissions(t *testing.T) {
+	tempDir := t.TempDir()
+	core.SetHomeDir(tempDir)
+	defer core.SetHomeDir("")
+
+	tasks := []*core.Task{core.NewTask("Test task")}
+	if err := SaveTasks(tasks); err != nil {
+		t.Fatalf("SaveTasks() error: %v", err)
+	}
+
+	configPath := filepath.Join(tempDir, ".threedoors")
+	yamlPath := filepath.Join(configPath, tasksYAMLFile)
+
+	info, err := os.Stat(yamlPath)
+	if err != nil {
+		t.Fatalf("stat tasks.yaml: %v", err)
+	}
+
+	perm := info.Mode().Perm()
+	if perm&0o077 != 0 {
+		t.Errorf("tasks.yaml permissions = %04o, want no group/other access (got group/other bits: %04o)", perm, perm&0o077)
+	}
+}
+
+func TestAppendCompleted_FilePermissions(t *testing.T) {
+	tempDir := t.TempDir()
+	core.SetHomeDir(tempDir)
+	defer core.SetHomeDir("")
+
+	task := core.NewTask("Perm check task")
+	if err := AppendCompleted(task); err != nil {
+		t.Fatalf("AppendCompleted() error: %v", err)
+	}
+
+	completedPath := filepath.Join(tempDir, ".threedoors", completedFile)
+	info, err := os.Stat(completedPath)
+	if err != nil {
+		t.Fatalf("stat completed.txt: %v", err)
+	}
+
+	perm := info.Mode().Perm()
+	if perm&0o077 != 0 {
+		t.Errorf("completed.txt permissions = %04o, want no group/other access", perm)
+	}
+}
+
 func TestLoadTasks_EmptyYAML(t *testing.T) {
 	tempDir := t.TempDir()
 	core.SetHomeDir(tempDir)

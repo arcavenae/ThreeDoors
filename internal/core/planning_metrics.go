@@ -31,7 +31,7 @@ func LogPlanningSession(sessionsPath string, event PlanningSessionEvent) error {
 		return fmt.Errorf("marshal planning session event: %w", err)
 	}
 
-	f, err := os.OpenFile(sessionsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(sessionsPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("open sessions file: %w", err)
 	}

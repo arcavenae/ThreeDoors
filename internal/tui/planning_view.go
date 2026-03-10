@@ -335,7 +335,7 @@ func (pv *PlanningView) markGuidanceShown() {
 		return
 	}
 	guidancePath := filepath.Join(pv.configPath, "planning_guidance_shown")
-	f, err := os.Create(guidancePath)
+	f, err := os.OpenFile(guidancePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return
 	}
@@ -345,7 +345,7 @@ func (pv *PlanningView) markGuidanceShown() {
 // savePlanningTimestamp writes the planning session timestamp for focus expiry.
 func savePlanningTimestamp(configDir string, t time.Time) {
 	path := filepath.Join(configDir, "planning_timestamp")
-	_ = os.WriteFile(path, []byte(t.Format(time.RFC3339)), 0o644)
+	_ = os.WriteFile(path, []byte(t.Format(time.RFC3339)), 0o600)
 }
 
 // LoadPlanningTimestamp reads the last planning session timestamp.

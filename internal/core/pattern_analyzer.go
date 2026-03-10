@@ -538,10 +538,10 @@ func (pa *PatternAnalyzer) SavePatterns(report *PatternReport, path string) erro
 	}
 
 	tmpPath := path + ".tmp"
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return fmt.Errorf("creating patterns directory: %w", err)
 	}
-	if err := os.WriteFile(tmpPath, data, 0o644); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o600); err != nil {
 		return fmt.Errorf("writing patterns temp file: %w", err)
 	}
 	if err := os.Rename(tmpPath, path); err != nil {

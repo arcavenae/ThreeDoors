@@ -29,7 +29,7 @@ type DedupStore struct {
 // NewDedupStore creates or loads a DedupStore from the given file path.
 func NewDedupStore(path string) (*DedupStore, error) {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create dedup store directory: %w", err)
 	}
 
@@ -113,7 +113,7 @@ func (s *DedupStore) save() error {
 	}
 
 	tmpPath := s.path + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o644); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o600); err != nil {
 		return fmt.Errorf("write dedup store tmp: %w", err)
 	}
 	if err := os.Rename(tmpPath, s.path); err != nil {

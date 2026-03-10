@@ -444,7 +444,7 @@ func (p *GitHubProvider) writeCache(tasks []*core.Task) {
 	}
 
 	tmpPath := p.cachePath + ".tmp"
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: failed to create github cache temp file: %v\n", err)
 		return

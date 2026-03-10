@@ -216,7 +216,7 @@ func SaveProviderConfig(path string, cfg *ProviderConfig) error {
 
 	tmpPath := path + ".tmp"
 
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create temp config file: %w", err)
 	}
@@ -301,7 +301,7 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 	}
 
 	tmpPath := path + ".tmp"
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create sample config: %w", err)
 	}

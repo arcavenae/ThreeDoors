@@ -364,7 +364,7 @@ func (p *JiraProvider) writeCache(tasks []*core.Task) {
 	}
 
 	tmpPath := p.cachePath + ".tmp"
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: failed to create jira cache temp file: %v\n", err)
 		return
