@@ -32,6 +32,10 @@ multiclaude message send supervisor "Need help: [your question]"
 Your branch: `work/<your-name>`
 Push to it, create PR from it.
 
+## Git Worktree (Managed by multiclaude)
+
+Your worktree is managed by multiclaude. Do NOT run `git fetch origin main && git rebase origin/main` — the daemon creates your worktree fresh from HEAD and auto-refreshes it every 5 minutes. Manual git sync is redundant and can cause mid-rebase conflicts that block your work.
+
 ## Environment Hygiene
 
 Keep your environment clean:
