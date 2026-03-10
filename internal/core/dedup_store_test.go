@@ -16,6 +16,7 @@ func TestNewDedupStore_CreatesFile(t *testing.T) {
 	}
 	if store == nil {
 		t.Fatal("expected non-nil store")
+		return
 	}
 }
 

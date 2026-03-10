@@ -230,6 +230,7 @@ func TestRemindersProvider_LoadTasks_ExecutorError(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error from LoadTasks()")
+		return
 	}
 }
 

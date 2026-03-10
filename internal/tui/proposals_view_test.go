@@ -172,6 +172,7 @@ func TestProposalsView_ApproveSelected(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("approve should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -210,6 +211,7 @@ func TestProposalsView_RejectSelected(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyBackspace})
 	if cmd == nil {
 		t.Fatal("reject should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -260,6 +262,7 @@ func TestProposalsView_StaleDetection(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("approve of stale should return a command")
+		return
 	}
 	msg := cmd()
 	if fm, ok := msg.(FlashMsg); !ok {
@@ -311,6 +314,7 @@ func TestProposalsView_EscReturns(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -353,6 +357,7 @@ func TestProposalsView_ApproveAll(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyCtrlA})
 	if cmd == nil {
 		t.Fatal("Ctrl+A should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -561,6 +566,7 @@ func TestSearchView_SuggestionsCommand(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":suggestions should return a command")
+		return
 	}
 
 	msg := cmd()

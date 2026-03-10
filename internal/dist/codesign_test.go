@@ -76,6 +76,7 @@ func TestCodeSigner_Sign_ErrorWrapsOutput(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error, got nil")
+		return
 	}
 	if !errors.Is(err, stub.Responses["codesign"].Err) {
 		// The error should wrap the original
@@ -123,6 +124,7 @@ func TestCodeSigner_Verify_FailureReturnsError(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for invalid signature, got nil")
+		return
 	}
 }
 

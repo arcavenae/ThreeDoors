@@ -58,11 +58,13 @@ func TestToolVersionConsistency(t *testing.T) {
 			docMatches := tt.docPattern.FindSubmatch(docContent)
 			if docMatches == nil {
 				t.Fatalf("version pattern not found in %s", tt.docFile)
+				return
 			}
 
 			cfgMatches := tt.cfgPattern.FindSubmatch(cfgContent)
 			if cfgMatches == nil {
 				t.Fatalf("version pattern not found in %s", tt.configFile)
+				return
 			}
 
 			docVer := strings.TrimSpace(string(docMatches[1]))

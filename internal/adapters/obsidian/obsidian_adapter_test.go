@@ -544,6 +544,7 @@ func TestValidateVaultPath_NonExistent(t *testing.T) {
 	err := ValidateVaultPath("/nonexistent/vault/path")
 	if err == nil {
 		t.Fatal("expected error for nonexistent path")
+		return
 	}
 	if !strings.Contains(err.Error(), "does not exist") {
 		t.Errorf("expected 'does not exist' in error, got: %v", err)
@@ -560,6 +561,7 @@ func TestValidateVaultPath_NotADirectory(t *testing.T) {
 	err := ValidateVaultPath(filePath)
 	if err == nil {
 		t.Fatal("expected error for file path")
+		return
 	}
 	if !strings.Contains(err.Error(), "not a directory") {
 		t.Errorf("expected 'not a directory' in error, got: %v", err)
@@ -582,6 +584,7 @@ func TestValidateVaultPath_NotWritable(t *testing.T) {
 	err := ValidateVaultPath(readonlyDir)
 	if err == nil {
 		t.Fatal("expected error for read-only directory")
+		return
 	}
 	if !strings.Contains(err.Error(), "not writable") {
 		t.Errorf("expected 'not writable' in error, got: %v", err)

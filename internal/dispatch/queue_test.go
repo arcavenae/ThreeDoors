@@ -110,6 +110,7 @@ func TestDevQueueGetNotFound(t *testing.T) {
 	_, err := q.Get("dq-nonexist")
 	if err == nil {
 		t.Fatal("Get should return error for non-existent ID")
+		return
 	}
 	if !errors.Is(err, ErrQueueItemNotFound) {
 		t.Errorf("err = %v, want ErrQueueItemNotFound", err)
@@ -156,6 +157,7 @@ func TestDevQueueUpdateNotFound(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("Update should return error for non-existent ID")
+		return
 	}
 	if !errors.Is(err, ErrQueueItemNotFound) {
 		t.Errorf("err = %v, want ErrQueueItemNotFound", err)

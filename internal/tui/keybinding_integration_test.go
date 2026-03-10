@@ -97,6 +97,7 @@ func TestQuestionMark_OpensOverlay(t *testing.T) {
 	}
 	if m.keybindingOverlay == nil {
 		t.Fatal("expected keybindingOverlay to be created")
+		return
 	}
 	if m.keybindingOverlay.state.ViewMode != ViewDoors {
 		t.Errorf("expected overlay ViewMode to be ViewDoors, got %d", m.keybindingOverlay.state.ViewMode)
@@ -345,6 +346,7 @@ func TestSaveKeyHintsCmd_PersistsToConfig(t *testing.T) {
 	cmd := m.saveKeyHintsCmd(show)
 	if cmd == nil {
 		t.Fatal("expected non-nil command")
+		return
 	}
 
 	// Execute the command (it returns a tea.Msg).
@@ -357,6 +359,7 @@ func TestSaveKeyHintsCmd_PersistsToConfig(t *testing.T) {
 	}
 	if loaded.ShowKeyHints == nil {
 		t.Fatal("expected ShowKeyHints to be set in config")
+		return
 	}
 	if *loaded.ShowKeyHints != false {
 		t.Error("expected ShowKeyHints to be false")
@@ -370,6 +373,7 @@ func TestSaveKeyHintsCmd_NilWhenNoConfigPath(t *testing.T) {
 	cmd := m.saveKeyHintsCmd(true)
 	if cmd == nil {
 		t.Fatal("expected non-nil command")
+		return
 	}
 	// Execute should return nil (no-op).
 	result := cmd()
@@ -479,6 +483,7 @@ func TestOverlay_OpensWithCurrentViewContext(t *testing.T) {
 			m.Update(keyMsg("?"))
 			if m.keybindingOverlay == nil {
 				t.Fatal("expected keybindingOverlay to be created")
+				return
 			}
 			if m.keybindingOverlay.state.ViewMode != tt.wantMode {
 				t.Errorf("expected overlay ViewMode %d, got %d", tt.wantMode, m.keybindingOverlay.state.ViewMode)

@@ -78,6 +78,7 @@ func TestNotarizer_Submit_ErrorWrapsOutput(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error, got nil")
+		return
 	}
 }
 
@@ -143,6 +144,7 @@ func TestNotarizer_Assess_FailureReturnsError(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for rejected binary, got nil")
+		return
 	}
 }
 

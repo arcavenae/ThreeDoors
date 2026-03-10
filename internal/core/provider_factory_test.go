@@ -30,6 +30,7 @@ func TestNewProviderFromConfig_TextFile(t *testing.T) {
 	provider := NewProviderFromConfig(cfg)
 	if provider == nil {
 		t.Fatal("NewProviderFromConfig() returned nil")
+		return
 	}
 
 	_, ok := provider.(*inMemoryProvider)
@@ -46,6 +47,7 @@ func TestNewProviderFromConfig_AppleNotes(t *testing.T) {
 	provider := NewProviderFromConfig(cfg)
 	if provider == nil {
 		t.Fatal("NewProviderFromConfig() returned nil")
+		return
 	}
 
 	_, ok := provider.(*FallbackProvider)
@@ -62,6 +64,7 @@ func TestNewProviderFromConfig_EmptyProvider_DefaultsToTextFile(t *testing.T) {
 	provider := NewProviderFromConfig(cfg)
 	if provider == nil {
 		t.Fatal("NewProviderFromConfig() returned nil")
+		return
 	}
 
 	_, ok := provider.(*inMemoryProvider)
@@ -78,6 +81,7 @@ func TestNewProviderFromConfig_UnknownProvider_DefaultsToTextFile(t *testing.T) 
 	provider := NewProviderFromConfig(cfg)
 	if provider == nil {
 		t.Fatal("NewProviderFromConfig() returned nil")
+		return
 	}
 
 	_, ok := provider.(*inMemoryProvider)

@@ -157,6 +157,7 @@ func TestSyncSchedulerStartStop(t *testing.T) {
 	results := sched.Start(ctx)
 	if results == nil {
 		t.Fatal("Start() returned nil channel")
+		return
 	}
 
 	// Let it run a couple polls
@@ -205,6 +206,7 @@ func TestSyncSchedulerNoProviders(t *testing.T) {
 	results := sched.Start(ctx)
 	if results == nil {
 		t.Fatal("Start() returned nil channel even with no providers")
+		return
 	}
 
 	sched.Stop()

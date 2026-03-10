@@ -231,6 +231,7 @@ func TestTextFileProvider_MarkComplete_NotFound(t *testing.T) {
 	err := provider.MarkComplete("nonexistent-id")
 	if err == nil {
 		t.Fatal("MarkComplete() expected error for nonexistent ID")
+		return
 	}
 }
 
@@ -258,5 +259,6 @@ func TestTextFileProvider_MarkComplete_InvalidTransition(t *testing.T) {
 	err := provider.MarkComplete(task.ID)
 	if err == nil {
 		t.Fatal("MarkComplete() expected error for invalid transition from complete")
+		return
 	}
 }

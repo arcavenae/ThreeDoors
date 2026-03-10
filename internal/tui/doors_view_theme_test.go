@@ -23,6 +23,7 @@ func TestDoorsView_SetThemeByName_Valid(t *testing.T) {
 	dv.SetThemeByName("classic")
 	if dv.Theme() == nil {
 		t.Fatal("theme should not be nil after SetThemeByName")
+		return
 	}
 	if dv.Theme().Name != "classic" {
 		t.Errorf("expected classic, got %s", dv.Theme().Name)
@@ -34,6 +35,7 @@ func TestDoorsView_SetThemeByName_Modern(t *testing.T) {
 	dv.SetThemeByName("modern")
 	if dv.Theme() == nil {
 		t.Fatal("theme should not be nil")
+		return
 	}
 	if dv.Theme().Name != "modern" {
 		t.Errorf("expected modern, got %s", dv.Theme().Name)
@@ -47,6 +49,7 @@ func TestDoorsView_SetThemeByName_InvalidFallsBack(t *testing.T) {
 	dv.SetThemeByName("nonexistent")
 	if dv.Theme() == nil {
 		t.Fatal("theme should fall back, not be nil")
+		return
 	}
 	if dv.Theme().Name != themes.DefaultThemeName {
 		t.Errorf("expected fallback to %s, got %s", themes.DefaultThemeName, dv.Theme().Name)
@@ -58,6 +61,7 @@ func TestDoorsView_SetThemeByName_EmptyFallsBack(t *testing.T) {
 	dv.SetThemeByName("")
 	if dv.Theme() == nil {
 		t.Fatal("theme should fall back, not be nil")
+		return
 	}
 	if dv.Theme().Name != themes.DefaultThemeName {
 		t.Errorf("expected fallback to %s, got %s", themes.DefaultThemeName, dv.Theme().Name)

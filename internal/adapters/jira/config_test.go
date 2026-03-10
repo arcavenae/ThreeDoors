@@ -159,6 +159,7 @@ func TestParseConfig_NilSettings(t *testing.T) {
 	_, err := ParseConfig(nil)
 	if err == nil {
 		t.Fatal("ParseConfig(nil) should fail when auth_type is missing")
+		return
 	}
 }
 
@@ -219,6 +220,7 @@ func TestParseConfig_Validation(t *testing.T) {
 			_, err := ParseConfig(tt.settings)
 			if err == nil {
 				t.Fatalf("ParseConfig() expected error containing %q, got nil", tt.wantErr)
+				return
 			}
 			if got := err.Error(); !contains(got, tt.wantErr) {
 				t.Errorf("error = %q, want to contain %q", got, tt.wantErr)
@@ -233,6 +235,7 @@ func TestParseConfig_EmptySettings(t *testing.T) {
 	_, err := ParseConfig(map[string]string{})
 	if err == nil {
 		t.Fatal("ParseConfig(empty) should fail")
+		return
 	}
 }
 

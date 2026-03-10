@@ -109,6 +109,7 @@ func TestNewAgentService(t *testing.T) {
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("expected error containing %q, got nil", tt.errMsg)
+					return
 				}
 				if tt.errMsg != "" && !contains(err.Error(), tt.errMsg) {
 					t.Errorf("error %q does not contain %q", err.Error(), tt.errMsg)
@@ -120,6 +121,7 @@ func TestNewAgentService(t *testing.T) {
 			}
 			if svc == nil {
 				t.Fatal("expected non-nil service")
+				return
 			}
 		})
 	}
@@ -245,6 +247,7 @@ func TestDecomposeAndWrite(t *testing.T) {
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("expected error containing %q, got nil", tt.errContains)
+					return
 				}
 				if tt.errContains != "" && !contains(err.Error(), tt.errContains) {
 					t.Errorf("error %q does not contain %q", err.Error(), tt.errContains)
@@ -256,6 +259,7 @@ func TestDecomposeAndWrite(t *testing.T) {
 			}
 			if result == nil {
 				t.Fatal("expected non-nil result")
+				return
 			}
 			if len(result.Stories) != tt.wantStories {
 				t.Errorf("got %d stories, want %d", len(result.Stories), tt.wantStories)
@@ -282,6 +286,7 @@ func TestDecomposeAndWriteContextCancellation(t *testing.T) {
 	_, err := svc.DecomposeAndWrite(ctx, "Some task")
 	if err == nil {
 		t.Fatal("expected error from cancelled context")
+		return
 	}
 }
 

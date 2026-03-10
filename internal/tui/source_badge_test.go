@@ -357,6 +357,7 @@ func TestDetailView_DismissDuplicate(t *testing.T) {
 	cmd := dv.Update(keyMsg("d"))
 	if cmd == nil {
 		t.Fatal("expected command from dismiss action")
+		return
 	}
 
 	// Verify decision was persisted
@@ -397,6 +398,7 @@ func TestDetailView_MergeDuplicate(t *testing.T) {
 	cmd := dv.Update(keyMsg("y"))
 	if cmd == nil {
 		t.Fatal("expected command from merge action")
+		return
 	}
 
 	// Execute the command and check the message

@@ -42,6 +42,7 @@ func TestRateLimiter_GlobalLimit(t *testing.T) {
 	resp := handler(&Request{ID: reqID, Method: "test"})
 	if resp.Error == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 	if resp.Error.Code != CodeRateLimited {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeRateLimited)
@@ -69,6 +70,7 @@ func TestRateLimiter_RetryAfterHint(t *testing.T) {
 	resp := handler(&Request{ID: reqID, Method: "test"})
 	if resp.Error == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 
 	data, ok := resp.Error.Data.(map[string]any)
@@ -109,6 +111,7 @@ func TestRateLimiter_QueryLimit(t *testing.T) {
 	resp := handler(&Request{ID: reqID, Method: "tools/list"})
 	if resp.Error == nil {
 		t.Fatal("expected query rate limit error")
+		return
 	}
 	if resp.Error.Code != CodeRateLimited {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeRateLimited)
@@ -140,6 +143,7 @@ func TestRateLimiter_NonQueryPassesQueryLimit(t *testing.T) {
 	qResp := handler(&Request{ID: reqID, Method: "resources/list"})
 	if qResp.Error == nil {
 		t.Fatal("expected query rate limit error")
+		return
 	}
 
 	// Non-query should still pass.
@@ -378,6 +382,7 @@ func TestSchemaValidator_InvalidUUID(t *testing.T) {
 
 	if resp.Error == nil {
 		t.Fatal("expected error for invalid UUID")
+		return
 	}
 	if resp.Error.Code != CodeInvalidParams {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeInvalidParams)
@@ -403,6 +408,7 @@ func TestSchemaValidator_TextTooLong(t *testing.T) {
 
 	if resp.Error == nil {
 		t.Fatal("expected error for text too long")
+		return
 	}
 	if !strings.Contains(resp.Error.Message, "500 character limit") {
 		t.Errorf("error message should mention limit: %q", resp.Error.Message)
@@ -492,6 +498,7 @@ func TestSchemaValidator_FutureTimestamp(t *testing.T) {
 
 	if resp.Error == nil {
 		t.Fatal("expected error for future timestamp")
+		return
 	}
 	if !strings.Contains(resp.Error.Message, "future") {
 		t.Errorf("error should mention future: %q", resp.Error.Message)
@@ -608,6 +615,7 @@ func TestReadOnlyEnforcer_ErrorCode(t *testing.T) {
 
 	if resp.Error == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if resp.Error.Code != CodeReadOnly {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeReadOnly)
@@ -676,6 +684,7 @@ func TestApplyDefaultMiddleware(t *testing.T) {
 	al := ApplyDefaultMiddleware(server, dir)
 	if al == nil {
 		t.Fatal("ApplyDefaultMiddleware returned nil audit logger")
+		return
 	}
 
 	if len(server.middleware) != 4 {

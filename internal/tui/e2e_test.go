@@ -40,6 +40,7 @@ func finalMainModel(t *testing.T, tm *teatest.TestModel) *MainModel {
 	fm := tm.FinalModel(t, teatest.WithFinalTimeout(5*time.Second))
 	if fm == nil {
 		t.Fatal("expected non-nil final model")
+		return nil
 	}
 	mm, ok := fm.(*MainModel)
 	if !ok {
@@ -80,6 +81,7 @@ func TestE2E_FullWorkflow_LaunchViewSelectManageExit(t *testing.T) {
 	// Verify session tracker recorded the workflow.
 	if mm.tracker == nil {
 		t.Fatal("expected tracker to be initialized")
+		return
 	}
 	metrics := mm.tracker.Finalize()
 	if metrics.TasksCompleted < 1 {

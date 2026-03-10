@@ -91,6 +91,7 @@ func TestDetailView_EscKey_ReturnsToDoorsMsg(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -103,6 +104,7 @@ func TestDetailView_CKey_CompletesTask(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("c")})
 	if cmd == nil {
 		t.Fatal("'c' should return a command")
+		return
 	}
 	msg := cmd()
 	if tcm, ok := msg.(TaskCompletedMsg); !ok {
@@ -117,6 +119,7 @@ func TestDetailView_IKey_SetsInProgress(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("i")})
 	if cmd == nil {
 		t.Fatal("'i' should return a command")
+		return
 	}
 	msg := cmd()
 	if tum, ok := msg.(TaskUpdatedMsg); !ok {
@@ -143,6 +146,7 @@ func TestDetailView_PKey_ReturnsToDoors(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("p")})
 	if cmd == nil {
 		t.Fatal("'p' should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -155,6 +159,7 @@ func TestDetailView_RKey_ReturnsToDoors(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("r")})
 	if cmd == nil {
 		t.Fatal("'r' should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -167,6 +172,7 @@ func TestDetailView_MKey_ShowsMoodMsg(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("m")})
 	if cmd == nil {
 		t.Fatal("'m' should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ShowMoodMsg); !ok {
@@ -199,6 +205,7 @@ func TestDetailView_ExpandInput_EnterWithTextSendsExpandMsg(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter with text should return a command")
+		return
 	}
 	msg := cmd()
 	em, ok := msg.(ExpandTaskMsg)
@@ -220,6 +227,7 @@ func TestDetailView_ExpandInput_EnterEmptyShowsFlash(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter with empty text should return a command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -276,6 +284,7 @@ func TestDetailView_FKey_SendsTaskAddedMsg(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("f")})
 	if cmd == nil {
 		t.Fatal("'f' should return a command")
+		return
 	}
 	msg := cmd()
 	tam, ok := msg.(TaskAddedMsg)
@@ -371,6 +380,7 @@ func TestDetailView_BlockerInput_EnterSubmits(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter in blocker input should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(TaskUpdatedMsg); !ok {
@@ -455,6 +465,7 @@ func TestDetailView_UKey_UndoComplete_SendsTaskUndoneMsg(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("u")})
 	if cmd == nil {
 		t.Fatal("'u' on completed task should return a command")
+		return
 	}
 	msg := cmd()
 	tum, ok := msg.(TaskUndoneMsg)
@@ -513,6 +524,7 @@ func TestDetailView_UKey_DoesNotSendTaskCompletedMsg(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("u")})
 	if cmd == nil {
 		t.Fatal("expected command from undo")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(TaskCompletedMsg); ok {
@@ -563,6 +575,7 @@ func TestDetailView_SpaceEnterToggle(t *testing.T) {
 			cmd := dv.Update(tt.key)
 			if cmd == nil {
 				t.Fatal("expected a command to return to doors")
+				return
 			}
 			msg := cmd()
 			if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -624,6 +637,7 @@ func TestDetailView_RapidToggle(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeySpace})
 	if cmd == nil {
 		t.Fatal("first space should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -635,6 +649,7 @@ func TestDetailView_RapidToggle(t *testing.T) {
 	cmd = dv2.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("enter should return a command")
+		return
 	}
 	msg = cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -648,6 +663,7 @@ func TestDetailView_EscapeStillWorks(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -666,6 +682,7 @@ func TestDetailView_IKey_InvalidTransition_ShowsError(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("i")})
 	if cmd == nil {
 		t.Fatal("expected a flash command for invalid transition")
+		return
 	}
 	msg := cmd()
 	if fm, ok := msg.(FlashMsg); !ok {

@@ -58,6 +58,7 @@ func TestDeferUntilFieldSerializationRoundTrip(t *testing.T) {
 			} else {
 				if loaded.DeferUntil == nil {
 					t.Fatal("expected non-nil DeferUntil, got nil")
+					return
 				}
 				if !loaded.DeferUntil.Equal(*tt.deferUntil) {
 					t.Errorf("DeferUntil = %v, want %v", loaded.DeferUntil, tt.deferUntil)

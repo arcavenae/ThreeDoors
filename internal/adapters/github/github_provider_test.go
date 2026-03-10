@@ -195,6 +195,7 @@ func TestMarkComplete_APIError(t *testing.T) {
 	err := p.MarkComplete("github:owner/repo#42")
 	if err == nil {
 		t.Fatal("MarkComplete() expected error, got nil")
+		return
 	}
 }
 
@@ -239,6 +240,7 @@ func TestMarkComplete_RateLimitExhausted(t *testing.T) {
 	err := p.MarkComplete("github:owner/repo#42")
 	if err == nil {
 		t.Fatal("MarkComplete() expected error after exhausted retries, got nil")
+		return
 	}
 
 	if callCount != maxRateLimitRetries {
@@ -423,6 +425,7 @@ func TestLoadTasks_SingleRepo(t *testing.T) {
 	task1 := findTaskByID(tasks, "github:owner/repo#1")
 	if task1 == nil {
 		t.Fatal("task github:owner/repo#1 not found")
+		return
 	}
 	if task1.Text != "First issue" {
 		t.Errorf("task1.Text = %q, want %q", task1.Text, "First issue")
@@ -499,6 +502,7 @@ func TestLoadTasks_APIError(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error, got nil")
+		return
 	}
 }
 
@@ -705,6 +709,7 @@ func TestLoadTasks_AtMeResolutionError(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error for failed @me resolution, got nil")
+		return
 	}
 }
 
@@ -837,6 +842,7 @@ func TestLoadTasks_FailsWithoutCache(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error when API fails and no cache, got nil")
+		return
 	}
 }
 
@@ -963,6 +969,7 @@ func TestFactory_NoGitHubSettings(t *testing.T) {
 	_, err := Factory(config)
 	if err == nil {
 		t.Fatal("Factory() expected error for missing github settings, got nil")
+		return
 	}
 }
 

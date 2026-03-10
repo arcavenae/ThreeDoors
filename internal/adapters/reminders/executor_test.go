@@ -514,6 +514,7 @@ func TestUpdateReminder_ErrorContextWrapped(t *testing.T) {
 	err := UpdateReminder(context.Background(), mock, "x-apple-reminder://ABC", "name", "body", 0)
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if !strings.Contains(err.Error(), "x-apple-reminder://ABC") {
 		t.Errorf("error does not contain reminder ID: %v", err)
@@ -549,6 +550,7 @@ func TestCompleteReminder_ErrorContextWrapped(t *testing.T) {
 	err := CompleteReminder(context.Background(), mock, "x-apple-reminder://ABC")
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if !strings.Contains(err.Error(), "x-apple-reminder://ABC") {
 		t.Errorf("error does not contain reminder ID: %v", err)

@@ -141,6 +141,7 @@ func TestClientGetTasksWithDueDate(t *testing.T) {
 	}
 	if tasks[0].Due == nil {
 		t.Fatal("expected due date, got nil")
+		return
 	}
 	if tasks[0].Due.Date != "2026-03-15" {
 		t.Errorf("unexpected due date: %s", tasks[0].Due.Date)
@@ -180,6 +181,7 @@ func TestClientCloseTaskError(t *testing.T) {
 	err := client.CloseTask(context.Background(), "nonexistent")
 	if err == nil {
 		t.Fatal("expected error for 404 response")
+		return
 	}
 }
 
@@ -236,6 +238,7 @@ func TestClientRateLimitHandling(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 
 	var rle *RateLimitError
@@ -309,6 +312,7 @@ func TestClientGetTasksServerError(t *testing.T) {
 	_, err := client.GetTasks(context.Background(), "", "")
 	if err == nil {
 		t.Fatal("expected error for 500 response")
+		return
 	}
 }
 
@@ -324,6 +328,7 @@ func TestClientGetProjectsServerError(t *testing.T) {
 	_, err := client.GetProjects(context.Background())
 	if err == nil {
 		t.Fatal("expected error for 500 response")
+		return
 	}
 }
 

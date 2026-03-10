@@ -36,6 +36,7 @@ func TestNewReviewView(t *testing.T) {
 	rv := NewReviewView(tasks)
 	if rv == nil {
 		t.Fatal("NewReviewView returned nil")
+		return
 	}
 }
 
@@ -205,6 +206,7 @@ func TestReviewCompletesWhenAllProcessed(t *testing.T) {
 
 	if cmd == nil {
 		t.Fatal("expected a command when review completes")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReviewCompleteMsg); !ok {
@@ -261,6 +263,7 @@ func TestReviewEmptyStateAutoAdvances(t *testing.T) {
 	cmd := rv.Init()
 	if cmd == nil {
 		t.Fatal("expected Init to return a tick command for empty state")
+		return
 	}
 }
 
@@ -272,6 +275,7 @@ func TestReviewEmptyStateTickCompletes(t *testing.T) {
 	cmd := rv.Update(reviewAutoAdvanceMsg{})
 	if cmd == nil {
 		t.Fatal("expected command on auto-advance tick")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReviewCompleteMsg); !ok {
@@ -336,6 +340,7 @@ func TestReviewEscSkipsRemaining(t *testing.T) {
 	cmd := rv.Update(reviewSpecialKeyMsg(tea.KeyEscape))
 	if cmd == nil {
 		t.Fatal("expected command on Esc skip")
+		return
 	}
 	msg := cmd()
 	completeMsg, ok := msg.(ReviewCompleteMsg)
@@ -446,6 +451,7 @@ func TestReviewCannotAdvancePastEnd(t *testing.T) {
 	// Should complete, not advance further
 	if cmd == nil {
 		t.Fatal("expected completion command")
+		return
 	}
 }
 

@@ -340,6 +340,7 @@ func TestRateLimitHandling(t *testing.T) {
 		_, err := client.GetTasks(context.Background(), "", "")
 		if err == nil {
 			t.Fatal("expected error for 429 response")
+			return
 		}
 		var rle *RateLimitError
 		if !errors.As(err, &rle) {
@@ -356,6 +357,7 @@ func TestRateLimitHandling(t *testing.T) {
 		_, err := client.GetProjects(context.Background())
 		if err == nil {
 			t.Fatal("expected error for 429 response")
+			return
 		}
 		if !IsRateLimitError(err) {
 			t.Errorf("IsRateLimitError() = false, want true")
@@ -368,6 +370,7 @@ func TestRateLimitHandling(t *testing.T) {
 		err := client.CloseTask(context.Background(), "task-1")
 		if err == nil {
 			t.Fatal("expected error for 429 response")
+			return
 		}
 		if !IsRateLimitError(err) {
 			t.Errorf("IsRateLimitError() = false, want true")
@@ -388,6 +391,7 @@ func TestRateLimitHandling(t *testing.T) {
 		_, err := p.LoadTasks()
 		if err == nil {
 			t.Fatal("expected error from rate-limited API")
+			return
 		}
 	})
 }
@@ -410,6 +414,7 @@ func TestEmptyResponseReturnsEmptySlice(t *testing.T) {
 	}
 	if tasks == nil {
 		t.Fatal("LoadTasks() returned nil, want non-nil empty slice")
+		return
 	}
 	if len(tasks) != 0 {
 		t.Errorf("LoadTasks() returned %d tasks, want 0", len(tasks))

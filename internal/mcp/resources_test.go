@@ -157,6 +157,7 @@ func TestReadTaskByIDNotFound(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/nonexistent")
 	if resp.Error == nil {
 		t.Fatal("expected error for nonexistent task")
+		return
 	}
 }
 
@@ -202,6 +203,7 @@ func TestReadTasksByStatusInvalid(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/status/bogus")
 	if resp.Error == nil {
 		t.Fatal("expected error for invalid status")
+		return
 	}
 }
 
@@ -328,6 +330,7 @@ func TestReadUnknownURI(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://unknown")
 	if resp.Error == nil {
 		t.Fatal("expected error for unknown URI")
+		return
 	}
 }
 
@@ -342,6 +345,7 @@ func TestReadMissingURI(t *testing.T) {
 	})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing URI")
+		return
 	}
 }
 

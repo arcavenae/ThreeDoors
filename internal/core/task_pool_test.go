@@ -10,6 +10,7 @@ func TestTaskPool_AddAndGet(t *testing.T) {
 	got := pool.GetTask(task.ID)
 	if got == nil {
 		t.Fatal("Expected to get task back")
+		return
 	}
 	if got.Text != task.Text {
 		t.Errorf("Expected %q, got %q", task.Text, got.Text)

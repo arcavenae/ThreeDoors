@@ -117,6 +117,7 @@ func TestLoadDevDispatchConfigInvalidYAML(t *testing.T) {
 	_, err := LoadDevDispatchConfig(path)
 	if err == nil {
 		t.Fatal("should return error for invalid YAML")
+		return
 	}
 }
 

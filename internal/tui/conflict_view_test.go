@@ -76,6 +76,7 @@ func TestConflictView_ResolveLocal(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'l'}})
 	if cmd == nil {
 		t.Fatal("expected command after resolving last conflict")
+		return
 	}
 
 	msg := cmd()
@@ -98,6 +99,7 @@ func TestConflictView_ResolveRemote(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}})
 	if cmd == nil {
 		t.Fatal("expected command after resolving")
+		return
 	}
 
 	msg := cmd()
@@ -129,6 +131,7 @@ func TestConflictView_ResolveBoth(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}})
 	if cmd == nil {
 		t.Fatal("expected command after resolving")
+		return
 	}
 
 	msg := cmd()
@@ -157,6 +160,7 @@ func TestConflictView_EscReturns(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("expected command on Esc")
+		return
 	}
 
 	msg := cmd()

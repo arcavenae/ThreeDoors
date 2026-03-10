@@ -21,6 +21,7 @@ func TestNewTextFileProvider(t *testing.T) {
 	p := NewTextFileProvider()
 	if p == nil {
 		t.Fatal("expected non-nil provider")
+		return
 	}
 }
 
@@ -282,6 +283,7 @@ func TestTextFileProvider_MarkComplete_NotFound(t *testing.T) {
 	err = p.MarkComplete("nonexistent-id")
 	if err == nil {
 		t.Fatal("expected error for nonexistent task")
+		return
 	}
 }
 
@@ -304,5 +306,6 @@ func TestTextFileProvider_MarkComplete_InvalidTransition(t *testing.T) {
 	err = p.MarkComplete(target.ID)
 	if err == nil {
 		t.Fatal("expected error for invalid transition from deferred to complete")
+		return
 	}
 }

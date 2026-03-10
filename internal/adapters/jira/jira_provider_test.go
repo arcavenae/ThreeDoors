@@ -139,6 +139,7 @@ func TestLoadTasks_SinglePage(t *testing.T) {
 	task1 := findTask(tasks, "PROJ-1")
 	if task1 == nil {
 		t.Fatal("task PROJ-1 not found")
+		return
 	}
 	if task1.Text != "First task" {
 		t.Errorf("task1.Text = %q, want %q", task1.Text, "First task")
@@ -159,6 +160,7 @@ func TestLoadTasks_SinglePage(t *testing.T) {
 	task2 := findTask(tasks, "PROJ-2")
 	if task2 == nil {
 		t.Fatal("task PROJ-2 not found")
+		return
 	}
 	if task2.Status != core.StatusInProgress {
 		t.Errorf("task2.Status = %q, want %q", task2.Status, core.StatusInProgress)
@@ -207,6 +209,7 @@ func TestLoadTasks_SearchError(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error, got nil")
+		return
 	}
 }
 
@@ -536,6 +539,7 @@ func TestMarkComplete_GetTransitionsError(t *testing.T) {
 	err := p.MarkComplete("TEST-1")
 	if err == nil {
 		t.Fatal("MarkComplete() expected error, got nil")
+		return
 	}
 }
 
@@ -554,6 +558,7 @@ func TestMarkComplete_DoTransitionError(t *testing.T) {
 	err := p.MarkComplete("TEST-1")
 	if err == nil {
 		t.Fatal("MarkComplete() expected error, got nil")
+		return
 	}
 
 	// Non-conflict error should not retry
@@ -609,6 +614,7 @@ func TestMarkComplete_ConflictExhaustsRetries(t *testing.T) {
 	err := p.MarkComplete("TEST-1")
 	if err == nil {
 		t.Fatal("MarkComplete() expected error after exhausting retries")
+		return
 	}
 	if !IsConflictError(err) {
 		t.Errorf("expected ConflictError in chain, got: %v", err)
@@ -707,6 +713,7 @@ func TestLoadTasks_FailsWithoutCache(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error when API fails and no cache, got nil")
+		return
 	}
 }
 
@@ -720,6 +727,7 @@ func TestLoadTasks_FailsWithoutCachePath(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error when API fails and no cache path, got nil")
+		return
 	}
 }
 

@@ -133,6 +133,7 @@ func TestNewPatternAnalyzer(t *testing.T) {
 	pa := NewPatternAnalyzer()
 	if pa == nil {
 		t.Fatal("NewPatternAnalyzer() returned nil")
+		return
 	}
 	if pa.HasSufficientData() {
 		t.Error("new analyzer should not have sufficient data")
@@ -144,6 +145,7 @@ func TestNewPatternAnalyzerWithNow(t *testing.T) {
 	pa := NewPatternAnalyzerWithNow(frozen)
 	if pa == nil {
 		t.Fatal("NewPatternAnalyzerWithNow() returned nil")
+		return
 	}
 }
 
@@ -887,6 +889,7 @@ func TestAnalyze_ColdStartGuard_FiveSessions(t *testing.T) {
 	}
 	if report == nil {
 		t.Fatal("Analyze() with 5 sessions should return a report")
+		return
 	}
 	if report.SessionCount != 5 {
 		t.Errorf("report.SessionCount = %d, want 5", report.SessionCount)
@@ -1216,6 +1219,7 @@ func TestSaveAndLoadPatterns_RoundTrip(t *testing.T) {
 	}
 	if loaded == nil {
 		t.Fatal("LoadPatterns() returned nil")
+		return
 	}
 	if loaded.SessionCount != 10 {
 		t.Errorf("loaded.SessionCount = %d, want 10", loaded.SessionCount)
@@ -1418,6 +1422,7 @@ func TestPatternAnalyzer_EndToEnd(t *testing.T) {
 	}
 	if report == nil {
 		t.Fatal("Analyze() returned nil with 7 sessions")
+		return
 	}
 
 	if report.DoorPositionBias.PreferredPosition != "left" {
@@ -1494,6 +1499,7 @@ func TestAnalyzeMoodCorrelations_PopulatesPreferredType(t *testing.T) {
 	}
 	if report == nil {
 		t.Fatal("Analyze() returned nil with 5 sessions")
+		return
 	}
 
 	var focusedCorrelation *MoodCorrelation
@@ -1505,6 +1511,7 @@ func TestAnalyzeMoodCorrelations_PopulatesPreferredType(t *testing.T) {
 	}
 	if focusedCorrelation == nil {
 		t.Fatal("Expected mood correlation for 'focused'")
+		return
 	}
 	if focusedCorrelation.PreferredType != string(TypeTechnical) {
 		t.Errorf("Expected PreferredType 'technical', got %q", focusedCorrelation.PreferredType)
@@ -1550,6 +1557,7 @@ func TestAnalyzeMoodCorrelations_MixedTypes_MostFrequentWins(t *testing.T) {
 	}
 	if calmCorrelation == nil {
 		t.Fatal("Expected mood correlation for 'calm'")
+		return
 	}
 	if calmCorrelation.PreferredType != string(TypeTechnical) {
 		t.Errorf("Expected PreferredType 'technical' (most frequent), got %q", calmCorrelation.PreferredType)
@@ -1591,6 +1599,7 @@ func TestAnalyzeMoodCorrelations_NoCategoryMap_EmptyPreferredType(t *testing.T) 
 	}
 	if focusedCorrelation == nil {
 		t.Fatal("Expected mood correlation for 'focused'")
+		return
 	}
 	if focusedCorrelation.PreferredType != "" {
 		t.Errorf("Expected empty PreferredType without category map, got %q", focusedCorrelation.PreferredType)
@@ -1635,6 +1644,7 @@ func TestAnalyzeMoodCorrelations_TaskNotInMap_Skipped(t *testing.T) {
 	}
 	if focusedCorrelation == nil {
 		t.Fatal("Expected mood correlation for 'focused'")
+		return
 	}
 	if focusedCorrelation.PreferredType != string(TypeTechnical) {
 		t.Errorf("Expected PreferredType 'technical' (skipping unknown tasks), got %q", focusedCorrelation.PreferredType)

@@ -193,6 +193,7 @@ func TestToolGetTaskMissingID(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_task", map[string]string{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing task_id")
+		return
 	}
 }
 
@@ -268,6 +269,7 @@ func TestToolSearchTasksEmptyQuery(t *testing.T) {
 	resp := dispatchToolCall(t, s, "search_tasks", map[string]string{"query": ""})
 	if resp.Error == nil {
 		t.Fatal("expected error for empty query")
+		return
 	}
 }
 
@@ -278,6 +280,7 @@ func TestToolUnknown(t *testing.T) {
 	resp := dispatchToolCall(t, s, "nonexistent_tool", nil)
 	if resp.Error == nil {
 		t.Fatal("expected error for unknown tool")
+		return
 	}
 	if resp.Error.Code != CodeMethodNotFound {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeMethodNotFound)

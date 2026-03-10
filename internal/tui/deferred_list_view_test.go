@@ -263,6 +263,7 @@ func TestDeferredListViewUnsnooze(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'u'}})
 	if cmd == nil {
 		t.Fatal("u key should produce a command")
+		return
 	}
 
 	msg := cmd()
@@ -289,6 +290,7 @@ func TestDeferredListViewEditDate(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'e'}})
 	if cmd == nil {
 		t.Fatal("e key should produce a command")
+		return
 	}
 
 	msg := cmd()
@@ -311,6 +313,7 @@ func TestDeferredListViewEscReturns(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("esc should produce a command")
+		return
 	}
 
 	msg := cmd()

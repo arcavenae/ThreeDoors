@@ -116,6 +116,7 @@ func TestFallbackProvider_BothFail_ReturnsError(t *testing.T) {
 	_, err := fp.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error when both providers fail, got nil")
+		return
 	}
 }
 

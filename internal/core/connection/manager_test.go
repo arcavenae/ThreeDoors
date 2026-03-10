@@ -190,6 +190,7 @@ func TestConnectionManager_Transition(t *testing.T) {
 		err := m.Transition(conn.ID, StateSyncing)
 		if err == nil {
 			t.Fatal("Transition Disconnected→Syncing should return error")
+			return
 		}
 		if !errors.Is(err, ErrInvalidTransition) {
 			t.Errorf("error = %v, want ErrInvalidTransition", err)

@@ -61,6 +61,7 @@ func TestWorkflow_DoorSelection(t *testing.T) {
 			}
 			if m.detailView == nil {
 				t.Fatal("expected detailView to be set")
+				return
 			}
 		})
 	}
@@ -249,6 +250,7 @@ func TestWorkflow_DoorFeedback(t *testing.T) {
 
 			if m.feedbackView == nil {
 				t.Fatal("expected feedbackView to be set")
+				return
 			}
 
 			// Select feedback option.
@@ -256,6 +258,7 @@ func TestWorkflow_DoorFeedback(t *testing.T) {
 
 			if feedbackCmd == nil {
 				t.Fatal("expected feedback command to be returned")
+				return
 			}
 
 			msg := feedbackCmd()
@@ -324,6 +327,7 @@ func TestWorkflow_SearchAndOpenTask(t *testing.T) {
 	}
 	if m.detailView == nil {
 		t.Fatal("expected detailView to be set")
+		return
 	}
 	if m.detailView.task.Text != "Alpha task" {
 		t.Errorf("expected task 'Alpha task', got %q", m.detailView.task.Text)
@@ -489,6 +493,7 @@ func TestWorkflow_FeedbackCustomComment(t *testing.T) {
 
 	if m.feedbackView == nil {
 		t.Fatal("expected feedbackView to be set")
+		return
 	}
 
 	// Press 4 for custom comment.
@@ -507,6 +512,7 @@ func TestWorkflow_FeedbackCustomComment(t *testing.T) {
 	feedbackCmd := m.feedbackView.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if feedbackCmd == nil {
 		t.Fatal("expected feedback command")
+		return
 	}
 
 	msg := feedbackCmd()
@@ -551,6 +557,7 @@ func TestWorkflow_Teatest_DoorSelectAndQuit(t *testing.T) {
 	fm := tm.FinalModel(t, teatest.WithFinalTimeout(5*time.Second))
 	if fm == nil {
 		t.Fatal("expected non-nil final model")
+		return
 	}
 }
 

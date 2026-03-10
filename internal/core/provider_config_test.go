@@ -341,6 +341,7 @@ func TestResolveActiveProvider_WithProvidersList(t *testing.T) {
 	}
 	if provider == nil {
 		t.Fatal("ResolveActiveProvider() returned nil")
+		return
 	}
 
 	_, ok := provider.(*inMemoryProvider)
@@ -369,6 +370,7 @@ func TestResolveActiveProvider_FallbackToFlatProvider(t *testing.T) {
 	}
 	if provider == nil {
 		t.Fatal("ResolveActiveProvider() returned nil")
+		return
 	}
 }
 
@@ -389,6 +391,7 @@ func TestResolveActiveProvider_NoConfig_DefaultsToTextFile(t *testing.T) {
 	}
 	if provider == nil {
 		t.Fatal("ResolveActiveProvider() returned nil")
+		return
 	}
 
 	_, ok := provider.(*inMemoryProvider)
@@ -448,6 +451,7 @@ func TestResolveActiveProvider_SettingsPassedToFactory(t *testing.T) {
 
 	if receivedSettings == nil {
 		t.Fatal("factory did not receive settings")
+		return
 	}
 	if receivedSettings["path"] != "/custom/path" {
 		t.Errorf("settings[path] = %q, want %q", receivedSettings["path"], "/custom/path")

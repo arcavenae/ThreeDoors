@@ -96,6 +96,7 @@ func TestStartPollingIfNeeded(t *testing.T) {
 	cmd := m.startPollingIfNeeded()
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd when dispatched items exist")
+		return
 	}
 	if !m.pollingActive {
 		t.Error("expected pollingActive to be true")
@@ -178,6 +179,7 @@ func TestHandleWorkerStatus_MatchesAndUpdatesQueue(t *testing.T) {
 	updated := pool.GetTask(task.ID)
 	if updated.DevDispatch == nil {
 		t.Fatal("task DevDispatch is nil")
+		return
 	}
 	if updated.DevDispatch.PRNumber != 42 {
 		t.Errorf("task DevDispatch.PRNumber = %d, want 42", updated.DevDispatch.PRNumber)
@@ -304,6 +306,7 @@ func TestHandleWorkerStatus_MergedStatus(t *testing.T) {
 	updated := pool.GetTask(task.ID)
 	if updated.DevDispatch == nil {
 		t.Fatal("DevDispatch is nil")
+		return
 	}
 	if updated.DevDispatch.PRStatus != "merged" {
 		t.Errorf("PRStatus = %q, want %q", updated.DevDispatch.PRStatus, "merged")
@@ -477,6 +480,7 @@ func TestHandleWorkerStatus_ReviewTaskHasDevDispatch(t *testing.T) {
 		if t2.Text == "Review PR #200: build widget" {
 			if t2.DevDispatch == nil {
 				t.Fatal("review task DevDispatch is nil")
+				return
 			}
 			if t2.DevDispatch.PRNumber != 200 {
 				t.Errorf("review task DevDispatch.PRNumber = %d, want 200", t2.DevDispatch.PRNumber)

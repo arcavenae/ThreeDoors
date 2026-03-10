@@ -65,6 +65,7 @@ func TestSearchView_Transition(t *testing.T) {
 	}
 	if m.searchView == nil {
 		t.Fatal("searchView should not be nil")
+		return
 	}
 }
 
@@ -119,6 +120,7 @@ func TestFeedbackView_Transition(t *testing.T) {
 
 	if m.feedbackView == nil {
 		t.Fatal("feedbackView should not be nil")
+		return
 	}
 }
 

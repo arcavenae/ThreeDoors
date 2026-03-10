@@ -298,6 +298,7 @@ func TestWalkGraphNotFound(t *testing.T) {
 	_, err := WalkGraph(pool, nil, WalkGraphOptions{TaskID: "missing"})
 	if err == nil {
 		t.Fatal("expected error for missing task")
+		return
 	}
 }
 
@@ -333,6 +334,7 @@ func TestFindPathsNotFound(t *testing.T) {
 	_, err := FindPaths(pool, nil, "missing", "also-missing", 5)
 	if err == nil {
 		t.Fatal("expected error for missing task")
+		return
 	}
 }
 
@@ -371,6 +373,7 @@ func TestGetCriticalPathNotFound(t *testing.T) {
 	_, err := GetCriticalPath(pool, nil, "missing")
 	if err == nil {
 		t.Fatal("expected error for missing task")
+		return
 	}
 }
 
@@ -586,6 +589,7 @@ func TestToolWalkGraphMissingID(t *testing.T) {
 	resp := dispatchToolCall(t, s, "walk_graph", map[string]any{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing task_id")
+		return
 	}
 }
 
@@ -616,6 +620,7 @@ func TestToolFindPathsMissingParams(t *testing.T) {
 	resp := dispatchToolCall(t, s, "find_paths", map[string]any{"from_id": "a"})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing to_id")
+		return
 	}
 }
 
@@ -649,6 +654,7 @@ func TestToolGetCriticalPathMissingID(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_critical_path", map[string]any{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing root_id")
+		return
 	}
 }
 
@@ -719,6 +725,7 @@ func TestToolGetProviderOverlapMissingParams(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_provider_overlap", map[string]any{"provider_a": "local"})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing provider_b")
+		return
 	}
 }
 
@@ -753,6 +760,7 @@ func TestToolGetUnifiedViewMissingTopic(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_unified_view", map[string]any{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing topic")
+		return
 	}
 }
 

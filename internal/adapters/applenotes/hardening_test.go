@@ -131,6 +131,7 @@ func TestRetry_TransientErrorRetriesUpToMax(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error after retries exhausted, got nil")
+		return
 	}
 
 	// 1 initial + 3 retries = 4 total calls
@@ -161,6 +162,7 @@ func TestRetry_PermanentErrorDoesNotRetry(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error, got nil")
+		return
 	}
 
 	got := atomic.LoadInt32(&callCount)
@@ -190,6 +192,7 @@ func TestRetry_ConfigurationErrorDoesNotRetry(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("LoadTasks() expected error, got nil")
+		return
 	}
 
 	got := atomic.LoadInt32(&callCount)
@@ -296,6 +299,7 @@ func TestErrorCategory_Timeout(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 
 	var adapterErr *AdapterError

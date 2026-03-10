@@ -42,6 +42,7 @@ func TestNewCompletionCounter(t *testing.T) {
 	cc := NewCompletionCounter()
 	if cc == nil {
 		t.Fatal("NewCompletionCounter() returned nil")
+		return
 	}
 	if cc.GetTodayCount() != 0 {
 		t.Errorf("new counter GetTodayCount() = %d, want 0", cc.GetTodayCount())
@@ -59,6 +60,7 @@ func TestNewCompletionCounterWithNow(t *testing.T) {
 	cc := NewCompletionCounterWithNow(frozen)
 	if cc == nil {
 		t.Fatal("NewCompletionCounterWithNow() returned nil")
+		return
 	}
 	if cc.GetTodayCount() != 0 {
 		t.Errorf("new counter GetTodayCount() = %d, want 0", cc.GetTodayCount())

@@ -88,6 +88,7 @@ func TestCapabilityAdvertisement(t *testing.T) {
 	caps := result.Capabilities
 	if caps.Resources == nil {
 		t.Fatal("resources capability is nil")
+		return
 	}
 	if !caps.Resources.Subscribe {
 		t.Error("resources.subscribe should be true")
@@ -97,9 +98,11 @@ func TestCapabilityAdvertisement(t *testing.T) {
 	}
 	if caps.Tools == nil {
 		t.Fatal("tools capability is nil")
+		return
 	}
 	if caps.Prompts == nil {
 		t.Fatal("prompts capability is nil")
+		return
 	}
 	if !caps.Prompts.ListChanged {
 		t.Error("prompts.listChanged should be true")
@@ -181,6 +184,7 @@ func TestMethodNotFound(t *testing.T) {
 
 	if resp.Error == nil {
 		t.Fatal("expected error for unknown method")
+		return
 	}
 	if resp.Error.Code != CodeMethodNotFound {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeMethodNotFound)
@@ -203,6 +207,7 @@ func TestInvalidJSON(t *testing.T) {
 	}
 	if resp.Error == nil {
 		t.Fatal("expected parse error")
+		return
 	}
 	if resp.Error.Code != CodeParseError {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeParseError)
@@ -232,6 +237,7 @@ func TestInvalidJSONRPCVersion(t *testing.T) {
 	}
 	if resp.Error == nil {
 		t.Fatal("expected invalid request error")
+		return
 	}
 	if resp.Error.Code != CodeInvalidRequest {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeInvalidRequest)

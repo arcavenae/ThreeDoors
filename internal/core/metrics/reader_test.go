@@ -138,6 +138,7 @@ func TestReadAll(t *testing.T) {
 			if tt.wantErr {
 				if err == nil {
 					t.Fatal("expected error, got nil")
+					return
 				}
 				return
 			}

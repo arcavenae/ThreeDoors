@@ -74,6 +74,7 @@ func TestCompletionInvalidShell(t *testing.T) {
 	err := root.Execute()
 	if err == nil {
 		t.Fatal("expected error for invalid shell")
+		return
 	}
 }
 
@@ -89,5 +90,6 @@ func TestCompletionNoArgs(t *testing.T) {
 	err := root.Execute()
 	if err == nil {
 		t.Fatal("expected error when no shell specified")
+		return
 	}
 }

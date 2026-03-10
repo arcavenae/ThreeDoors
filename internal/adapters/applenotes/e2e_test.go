@@ -614,6 +614,7 @@ func TestE2E_Error_NoteNotFound(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error for missing note")
+		return
 	}
 	if !strings.Contains(err.Error(), "not found") {
 		t.Errorf("error should indicate 'not found', got: %v", err)
@@ -633,6 +634,7 @@ func TestE2E_Error_PermissionDenied(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error for permission denied")
+		return
 	}
 	if !strings.Contains(err.Error(), "permission denied") {
 		t.Errorf("error should indicate 'permission denied', got: %v", err)
@@ -650,6 +652,7 @@ func TestE2E_Error_Timeout(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error for timeout")
+		return
 	}
 	if !strings.Contains(err.Error(), "timed out") {
 		t.Errorf("error should indicate 'timed out', got: %v", err)
@@ -682,6 +685,7 @@ func TestE2E_Error_WriteFailure_OnSave(t *testing.T) {
 	err := provider.SaveTask(task)
 	if err == nil {
 		t.Fatal("expected error when write fails")
+		return
 	}
 }
 
@@ -697,6 +701,7 @@ func TestE2E_Error_ReadFailure_OnSave(t *testing.T) {
 	err := provider.SaveTask(task)
 	if err == nil {
 		t.Fatal("expected error when read fails during save")
+		return
 	}
 }
 
@@ -711,6 +716,7 @@ func TestE2E_Error_ReadFailure_OnDelete(t *testing.T) {
 	err := provider.DeleteTask("some-id")
 	if err == nil {
 		t.Fatal("expected error when read fails during delete")
+		return
 	}
 }
 
@@ -734,6 +740,7 @@ func TestE2E_Error_WriteFailure_OnDelete(t *testing.T) {
 	err := provider.DeleteTask(loaded[0].ID)
 	if err == nil {
 		t.Fatal("expected error when write fails during delete")
+		return
 	}
 }
 
@@ -753,6 +760,7 @@ func TestE2E_ConnectivityFailure_OsascriptNotFound(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error when osascript is unavailable")
+		return
 	}
 }
 
@@ -843,6 +851,7 @@ func TestE2E_PartialSync_WriteFailsAfterRead(t *testing.T) {
 	err := provider.SaveTask(loaded[0])
 	if err == nil {
 		t.Fatal("expected error from write failure")
+		return
 	}
 
 	// Re-read should still return original data (no corruption)
@@ -884,6 +893,7 @@ func TestE2E_PartialSync_BatchUpdatePartialFailure(t *testing.T) {
 	err := provider.SaveTasks([]*core.Task{loaded[0], loaded[2]})
 	if err == nil {
 		t.Fatal("expected error from batch write failure")
+		return
 	}
 }
 

@@ -128,6 +128,7 @@ func TestPkgBuilder_Build_MissingBinaryErrors(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for missing binary, got nil")
+		return
 	}
 }
 

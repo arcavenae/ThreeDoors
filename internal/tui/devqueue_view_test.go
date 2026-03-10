@@ -157,6 +157,7 @@ func TestDevQueueViewEscReturns(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("expected command from Esc, got nil")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -176,6 +177,7 @@ func TestDevQueueViewRejectPending(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("n")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd from reject, got nil")
+		return
 	}
 
 	if len(dv.items) != 1 {
@@ -199,6 +201,7 @@ func TestDevQueueViewRejectNonPending(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("n")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd, got nil")
+		return
 	}
 	if !strings.Contains(dv.flash, "Only pending") {
 		t.Errorf("expected 'Only pending' in flash, got %q", dv.flash)
@@ -218,6 +221,7 @@ func TestDevQueueViewApproveNonPending(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd, got nil")
+		return
 	}
 	if !strings.Contains(dv.flash, "Only pending") {
 		t.Errorf("expected 'Only pending' in flash, got %q", dv.flash)
@@ -234,6 +238,7 @@ func TestDevQueueViewKillNonDispatched(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("K")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd, got nil")
+		return
 	}
 	if !strings.Contains(dv.flash, "Only dispatched") {
 		t.Errorf("expected 'Only dispatched' in flash, got %q", dv.flash)
@@ -378,6 +383,7 @@ func TestDevQueueViewApproveCmd(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("expected tea.Cmd from approve, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -416,6 +422,7 @@ func TestDevQueueViewApproveError(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("expected tea.Cmd, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -458,6 +465,7 @@ func TestDevQueueViewKillCmd(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("K")})
 	if cmd == nil {
 		t.Fatal("expected tea.Cmd from kill, got nil")
+		return
 	}
 
 	msg := cmd()

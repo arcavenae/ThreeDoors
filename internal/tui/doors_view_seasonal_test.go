@@ -32,6 +32,7 @@ func TestDoorsView_ResolveSeasonalTheme_OverridesBase(t *testing.T) {
 
 	if dv.Theme() == nil {
 		t.Fatal("theme should not be nil after seasonal resolution")
+		return
 	}
 	if dv.Theme().Name != "summer-beach" {
 		t.Errorf("expected summer-beach, got %s", dv.Theme().Name)
@@ -61,6 +62,7 @@ func TestDoorsView_ResolveSeasonalTheme_NoMatch_KeepsBase(t *testing.T) {
 
 	if dv.Theme() == nil {
 		t.Fatal("theme should not be nil")
+		return
 	}
 	if dv.Theme().Name != "classic" {
 		t.Errorf("expected classic (base), got %s", dv.Theme().Name)
@@ -131,6 +133,7 @@ func TestDoorsView_SeasonalDisabled_UsesBaseTheme(t *testing.T) {
 
 	if dv.Theme() == nil {
 		t.Fatal("theme should not be nil")
+		return
 	}
 	if dv.Theme().Name != "modern" {
 		t.Errorf("expected modern (base), got %s", dv.Theme().Name)

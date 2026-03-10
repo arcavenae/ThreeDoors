@@ -101,6 +101,7 @@ func TestDispatchEngine_RequireStoryTrue_CallsGenerator(t *testing.T) {
 	}
 	if result.StoryResult == nil {
 		t.Fatal("StoryResult should not be nil")
+		return
 	}
 	if result.StoryResult.Branch != "stories/dq-1234" {
 		t.Errorf("Branch = %q, want %q", result.StoryResult.Branch, "stories/dq-1234")
@@ -180,6 +181,7 @@ func TestDispatchEngine_WorkerCreationFailure_Fatal(t *testing.T) {
 	_, err := engine.Dispatch(context.Background(), item)
 	if err == nil {
 		t.Fatal("Dispatch() should fail when worker creation fails")
+		return
 	}
 	if !errors.Is(err, disp.createErr) {
 		t.Errorf("error should wrap worker creation error, got: %v", err)

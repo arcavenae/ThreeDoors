@@ -460,6 +460,7 @@ func TestGetTaskMetadataReturnsWrappedError(t *testing.T) {
 	_, err := edb.GetTaskMetadata("nonexistent")
 	if err == nil {
 		t.Fatal("expected error, got nil")
+		return
 	}
 	// The error should contain the task ID for debugging.
 	if got := err.Error(); got == "" {

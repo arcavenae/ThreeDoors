@@ -16,6 +16,7 @@ func TestHelpView_NewHelpView(t *testing.T) {
 
 	if hv == nil {
 		t.Fatal("NewHelpView returned nil")
+		return
 	}
 	if len(hv.content) == 0 {
 		t.Error("help view should have pre-rendered content")
@@ -94,6 +95,7 @@ func TestHelpView_Update_QuitKeys(t *testing.T) {
 			cmd := hv.Update(tt.key)
 			if cmd == nil {
 				t.Fatal("expected command, got nil")
+				return
 			}
 			msg := cmd()
 			if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -278,6 +280,7 @@ func TestHelpCommand_ProducesShowHelpMsg(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal("expected command from :help")
+		return
 	}
 
 	msg := cmd()

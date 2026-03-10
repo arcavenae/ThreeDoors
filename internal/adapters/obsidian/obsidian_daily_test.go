@@ -880,6 +880,7 @@ func TestQuickAddToDailyNote(t *testing.T) {
 
 	if task == nil {
 		t.Fatal("expected non-nil task")
+		return
 	}
 	if task.Text != "Buy groceries" {
 		t.Errorf("task text = %q, want %q", task.Text, "Buy groceries")

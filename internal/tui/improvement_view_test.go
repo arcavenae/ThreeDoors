@@ -76,6 +76,7 @@ func TestImprovementView_SubmitWithText(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter with text should produce a command")
+		return
 	}
 
 	msg := cmd()
@@ -95,6 +96,7 @@ func TestImprovementView_SubmitEmpty(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter on empty should produce a skip command")
+		return
 	}
 
 	msg := cmd()
@@ -112,6 +114,7 @@ func TestImprovementView_EscSkips(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should produce a skip command")
+		return
 	}
 
 	msg := cmd()
@@ -127,6 +130,7 @@ func TestImprovementView_CtrlCSkips(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyCtrlC})
 	if cmd == nil {
 		t.Fatal("Ctrl+C should produce a skip command")
+		return
 	}
 
 	msg := cmd()
@@ -167,6 +171,7 @@ func TestImprovementView_TrimsWhitespace(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter should produce a command")
+		return
 	}
 
 	msg := cmd()

@@ -262,6 +262,7 @@ func TestConfigGetJSON_UnknownKey(t *testing.T) {
 	}
 	if env.Error == nil {
 		t.Fatal("expected error in envelope")
+		return
 	}
 	if env.Error.Code != ExitValidation {
 		t.Errorf("error code = %d, want %d", env.Error.Code, ExitValidation)

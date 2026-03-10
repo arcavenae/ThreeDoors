@@ -277,6 +277,7 @@ func TestClientRateLimitHandling(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 
 	var rle *RateLimitError

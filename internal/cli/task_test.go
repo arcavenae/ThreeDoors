@@ -589,6 +589,7 @@ func TestResolveOneTask(t *testing.T) {
 	got := resolveOneTask(ctx, formatter, "test", "resolve-test", false)
 	if got == nil {
 		t.Fatal("expected task, got nil")
+		return
 	}
 	if got.ID != "resolve-test-id" {
 		t.Errorf("ID = %q, want %q", got.ID, "resolve-test-id")

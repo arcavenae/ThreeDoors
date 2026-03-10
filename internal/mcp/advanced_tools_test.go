@@ -535,6 +535,7 @@ func TestToolWhatIfMissingIDs(t *testing.T) {
 	})
 	if resp.Error == nil {
 		t.Fatal("expected error for empty complete_task_ids")
+		return
 	}
 }
 
