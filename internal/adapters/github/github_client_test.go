@@ -373,6 +373,7 @@ func TestNewGitHubClientNoToken(t *testing.T) {
 	client := NewGitHubClient(cfg)
 	if client == nil {
 		t.Fatal("expected non-nil client")
+		return
 	}
 	if client.client == nil {
 		t.Fatal("expected non-nil underlying go-github client")

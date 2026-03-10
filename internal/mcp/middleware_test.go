@@ -676,6 +676,7 @@ func TestApplyDefaultMiddleware(t *testing.T) {
 	al := ApplyDefaultMiddleware(server, dir)
 	if al == nil {
 		t.Fatal("ApplyDefaultMiddleware returned nil audit logger")
+		return
 	}
 
 	if len(server.middleware) != 4 {

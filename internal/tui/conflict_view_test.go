@@ -76,6 +76,7 @@ func TestConflictView_ResolveLocal(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'l'}})
 	if cmd == nil {
 		t.Fatal("expected command after resolving last conflict")
+		return
 	}
 
 	msg := cmd()

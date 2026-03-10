@@ -106,6 +106,7 @@ func TestMilestoneChecker_CheckMilestones(t *testing.T) {
 			}
 			if got == nil {
 				t.Fatalf("expected milestone %q, got nil", tt.wantID)
+				return
 			}
 			if got.ID != tt.wantID {
 				t.Errorf("expected milestone %q, got %q", tt.wantID, got.ID)
@@ -241,6 +242,7 @@ func TestMilestoneChecker_OnlyHighestPriorityShown(t *testing.T) {
 	got := mc.CheckMilestones(100, 10, 5)
 	if got == nil {
 		t.Fatal("expected a milestone")
+		return
 	}
 
 	// First-session is highest priority
@@ -253,6 +255,7 @@ func TestMilestoneChecker_OnlyHighestPriorityShown(t *testing.T) {
 	got = mc.CheckMilestones(100, 10, 5)
 	if got == nil {
 		t.Fatal("expected a milestone after marking first-session")
+		return
 	}
 	if got.ID != "100-tasks" {
 		t.Errorf("expected 100-tasks, got %q", got.ID)

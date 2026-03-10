@@ -614,6 +614,7 @@ func TestE2E_Error_NoteNotFound(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error for missing note")
+		return
 	}
 	if !strings.Contains(err.Error(), "not found") {
 		t.Errorf("error should indicate 'not found', got: %v", err)
@@ -633,6 +634,7 @@ func TestE2E_Error_PermissionDenied(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error for permission denied")
+		return
 	}
 	if !strings.Contains(err.Error(), "permission denied") {
 		t.Errorf("error should indicate 'permission denied', got: %v", err)
@@ -650,6 +652,7 @@ func TestE2E_Error_Timeout(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error for timeout")
+		return
 	}
 	if !strings.Contains(err.Error(), "timed out") {
 		t.Errorf("error should indicate 'timed out', got: %v", err)

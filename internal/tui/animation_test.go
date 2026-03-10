@@ -10,6 +10,7 @@ func TestNewDoorAnimation(t *testing.T) {
 
 	if da == nil {
 		t.Fatal("NewDoorAnimation returned nil")
+		return
 	}
 	if da.active {
 		t.Error("new animation should not be active")

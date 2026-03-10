@@ -307,6 +307,7 @@ func TestBuildTaskPool_NilProvider(t *testing.T) {
 	pool, provider, err := buildTaskPool(nil)
 	if err == nil {
 		t.Fatal("expected error when provider is nil, got nil")
+		return
 	}
 	if pool != nil {
 		t.Errorf("expected nil pool, got %v", pool)
@@ -336,9 +337,11 @@ func TestBuildTaskPool_ValidProvider(t *testing.T) {
 	}
 	if pool == nil {
 		t.Fatal("expected non-nil pool")
+		return
 	}
 	if provider == nil {
 		t.Fatal("expected non-nil provider")
+		return
 	}
 	if len(pool.GetAvailableForDoors()) != 1 {
 		t.Errorf("pool has %d available tasks, want 1", len(pool.GetAvailableForDoors()))
@@ -355,6 +358,7 @@ func TestBuildTaskPool_LoadError(t *testing.T) {
 	_, _, err := buildTaskPool(mock)
 	if err == nil {
 		t.Fatal("expected error when LoadTasks fails, got nil")
+		return
 	}
 
 	wantSubstr := "load tasks"

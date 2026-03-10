@@ -114,6 +114,7 @@ func TestNewFunFactGenerator(t *testing.T) {
 	gen := NewFunFactGenerator(pa, cc)
 	if gen == nil {
 		t.Fatal("NewFunFactGenerator() returned nil")
+		return
 	}
 }
 

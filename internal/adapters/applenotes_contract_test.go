@@ -233,6 +233,7 @@ func TestAppleNotesProvider_ContractSubset(t *testing.T) {
 		err := provider.MarkComplete("any-id")
 		if err == nil {
 			t.Fatal("MarkComplete() should return error")
+			return
 		}
 		if err.Error() != "provider is read-only" {
 			t.Errorf("MarkComplete() error = %q, want 'provider is read-only'", err.Error())

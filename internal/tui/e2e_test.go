@@ -40,6 +40,7 @@ func finalMainModel(t *testing.T, tm *teatest.TestModel) *MainModel {
 	fm := tm.FinalModel(t, teatest.WithFinalTimeout(5*time.Second))
 	if fm == nil {
 		t.Fatal("expected non-nil final model")
+		return nil
 	}
 	mm, ok := fm.(*MainModel)
 	if !ok {

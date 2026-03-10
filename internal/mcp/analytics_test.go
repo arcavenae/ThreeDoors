@@ -87,6 +87,7 @@ func TestMoodCorrelationAnalysis(t *testing.T) {
 
 	if result == nil {
 		t.Fatal("expected non-nil result")
+		return
 	}
 
 	if len(result.Entries) == 0 {
@@ -139,6 +140,7 @@ func TestProductivityProfileAnalysis(t *testing.T) {
 
 	if result == nil {
 		t.Fatal("expected non-nil result")
+		return
 	}
 
 	if len(result.HourlyData) != 24 {
@@ -176,6 +178,7 @@ func TestStreakAnalysis(t *testing.T) {
 
 	if result == nil {
 		t.Fatal("expected non-nil result")
+		return
 	}
 
 	if result.LongestStreak <= 0 {
@@ -224,6 +227,7 @@ func TestBurnoutRisk(t *testing.T) {
 
 	if result == nil {
 		t.Fatal("expected non-nil result")
+		return
 	}
 
 	if result.Score < 0 || result.Score > 1 {
@@ -266,6 +270,7 @@ func TestWeeklySummaryAnalysis(t *testing.T) {
 
 	if result == nil {
 		t.Fatal("expected non-nil result")
+		return
 	}
 
 	if result.Velocity < 0 {

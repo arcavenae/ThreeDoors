@@ -13,6 +13,7 @@ func TestNewSyncSpinner(t *testing.T) {
 	s := NewSyncSpinner()
 	if s == nil {
 		t.Fatal("NewSyncSpinner returned nil")
+		return
 	}
 	if s.Active() {
 		t.Error("spinner should not be active initially")

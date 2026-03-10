@@ -57,6 +57,7 @@ func TestNewSelectView(t *testing.T) {
 	sv := NewSelectView(tasks, core.EnergyHigh)
 	if sv == nil {
 		t.Fatal("NewSelectView returned nil")
+		return
 	}
 }
 

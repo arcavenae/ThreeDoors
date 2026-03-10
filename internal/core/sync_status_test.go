@@ -82,6 +82,7 @@ func TestSyncStatusTrackerRegisterAndGet(t *testing.T) {
 	got := tracker.Get("Local")
 	if got == nil {
 		t.Fatal("expected status for 'Local', got nil")
+		return
 	}
 	if got.Name != "Local" {
 		t.Errorf("Name = %q, want %q", got.Name, "Local")

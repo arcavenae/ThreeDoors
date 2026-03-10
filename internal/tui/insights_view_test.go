@@ -87,6 +87,7 @@ func TestNewInsightsView(t *testing.T) {
 	iv := setupInsightsView(t)
 	if iv == nil {
 		t.Fatal("NewInsightsView() returned nil")
+		return
 	}
 }
 

@@ -14,6 +14,7 @@ func TestAddTaskView_New(t *testing.T) {
 	av := NewAddTaskView()
 	if av == nil {
 		t.Fatal("NewAddTaskView should not return nil")
+		return
 	}
 }
 
@@ -46,6 +47,7 @@ func TestAddTaskView_Enter_WithText_EmitsTaskAddedMsg(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -68,6 +70,7 @@ func TestAddTaskView_Esc_ReturnsToDoorsMsg(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected a command from Esc, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -85,6 +88,7 @@ func TestAddTaskView_Enter_EmptyText_ShowsError(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter with empty text, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -107,6 +111,7 @@ func TestAddTaskView_Enter_WhitespaceOnly_ShowsError(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter with whitespace, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -150,6 +155,7 @@ func TestAddTaskWithContextView_New(t *testing.T) {
 	av := NewAddTaskWithContextView()
 	if av == nil {
 		t.Fatal("NewAddTaskWithContextView should not return nil")
+		return
 	}
 	if !av.withContext {
 		t.Error("withContext should be true")

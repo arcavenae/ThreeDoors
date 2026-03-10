@@ -36,6 +36,7 @@ func TestNewReviewView(t *testing.T) {
 	rv := NewReviewView(tasks)
 	if rv == nil {
 		t.Fatal("NewReviewView returned nil")
+		return
 	}
 }
 

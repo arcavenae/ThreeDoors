@@ -33,6 +33,7 @@ func TestNewFactory_NonDarwinReturnsError(t *testing.T) {
 	_, err := factory(cfg)
 	if err == nil {
 		t.Fatal("expected error on non-darwin platform")
+		return
 	}
 
 	if got := err.Error(); got == "" {
@@ -63,6 +64,7 @@ func TestNewFactory_DarwinCreatesProvider(t *testing.T) {
 	}
 	if provider == nil {
 		t.Fatal("factory returned nil provider")
+		return
 	}
 
 	rp, ok := provider.(*RemindersProvider)
