@@ -93,6 +93,7 @@ temp/
 .claude/credentials/
 .claude/session/
 .claude/cache/
+.claude/worktrees/
 
 # Windsurf specific (keep project files, exclude credentials)
 .windsurf/api-keys.json
@@ -107,3 +108,6 @@ temp/
 # BMAD (local only)
 .bmad-core/
 .bmad-*/
+
+# multiclaude enhancements repo (local subproject)
+multiclaude-enhancements/
