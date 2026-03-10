@@ -37,15 +37,28 @@ func GetConfigDirPath() (string, error) {
 // EnsureConfigDir creates the config directory if it doesn't exist.
 // Uses 0o700 permissions so other local users cannot read task data.
 // If the directory exists with more permissive permissions, it tightens them.
+// It validates the directory is not a symlink and is owned by the current user.
 func EnsureConfigDir() (string, error) {
 	configPath, err := GetConfigDirPath()
 	if err != nil {
 		return "", err
 	}
+
+	// Validate before creating — reject symlinked paths
+	if err := ValidateDir(configPath); err != nil {
+		return "", fmt.Errorf("config directory validation failed: %w", err)
+	}
+
 	if err := os.MkdirAll(configPath, 0o700); err != nil {
 		return "", fmt.Errorf("failed to create config directory: %w", err)
 	}
 	migrateDirectoryPermissions(configPath)
+
+	// Re-validate after creation to check ownership
+	if err := ValidateDir(configPath); err != nil {
+		return "", fmt.Errorf("config directory validation failed: %w", err)
+	}
+
 	return configPath, nil
 }
 
