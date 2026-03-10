@@ -545,6 +545,7 @@ func TestTaskPool_CRUD_Lifecycle(t *testing.T) {
 	got := pool.GetTask("crud-1")
 	if got == nil {
 		t.Fatal("expected to get task back")
+		return
 	}
 	if got.Text != "CRUD test task" {
 		t.Errorf("expected text %q, got %q", "CRUD test task", got.Text)
