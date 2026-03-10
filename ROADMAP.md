@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-09
+> Last updated: 2026-03-10
 
 ## Priority Legend
 
@@ -64,61 +64,6 @@ Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health,
 
 ## Active Epics
 
-### Epic 25: Todoist Integration (P1) — 3/4 stories done
-
-Todoist as task source via REST API v1. Thin HTTP client, read-only then bidirectional sync.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 25.1 | Todoist HTTP Client & Auth Configuration | Done (PR #308) | P1 | Epic 7 (done) |
-| 25.2 | Read-Only Todoist Adapter with Field Mapping | Done (PR #321) | P1 | 25.1 |
-| 25.3 | Bidirectional Sync & WAL Integration | In Review | P1 | 25.2 |
-| 25.4 | Contract Tests & Integration Testing | Not Started | P1 | 25.2 |
-
-### Epic 27: Daily Planning Mode (P1) — COMPLETE
-
-Guided daily planning ritual for task review and focus selection. Transforms ThreeDoors from reactive task picker into proactive morning engagement tool.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 27.1 | Planning Data Model & Focus Tag | Done (PR #323) | P1 | Epic 1 (done) |
-| 27.2 | Review Incomplete Tasks Flow | Done (PR #339) | P1 | 27.1 |
-| 27.3 | Focus Selection Flow | Done (PR #352) | P1 | 27.1 |
-| 27.4 | Energy Level Matching & Time-of-Day Inference | Done (PR #354) | P1 | 27.1 |
-| 27.5 | Planning Session Metrics & CLI/TUI Commands | Done (PR #360) | P1 | 27.1-27.4 |
-
-### Epic 28: Snooze/Defer as First-Class Action (P1) — 4/4 stories done — COMPLETE
-
-Surfaces existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 28.1 | DeferUntil Field, Status Transitions, and Auto-Return Logic | Done (PR #310) | P1 | None |
-| 28.2 | Snooze TUI View and Z-Key Binding | Done (PR #338) | P1 | 28.1 |
-| 28.3 | Deferred List View and :deferred Command | Done (PR #358) | P1 | 28.1 |
-| 28.4 | Session Metrics Logging for Snooze Events | Done (PR #355) | P1 | 28.1 |
-
-### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 4/4 stories done — COMPLETE
-
-Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
-| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | Done (PR #340) | P1 | 29.1 |
-| 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
-
-### Epic 32: Undo Task Completion (P1) — COMPLETE
-
-Allow reversing accidental task completion via `complete → todo` transition. Validated pain point from Phase 1 gate.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 32.1 | Status Model — Complete-to-Todo Transition | Done (PR #306) | P1 | None |
-| 32.2 | Session Metrics — Undo Complete Event Logging | Done (PR #322) | P1 | 32.1 |
-| 32.3 | TUI & CLI Undo Experience | Done (PR #337) | P1 | 32.1, 32.2 |
-
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
 
 Linear as task source via GraphQL API. Best task model alignment of all evaluated services.
@@ -152,69 +97,6 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 33.2 | Four Seasonal Theme Implementations | Done (PR #409) | P2 | 33.1 |
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Done (PR #410) | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Not Started | P2 | 33.2, 33.3 |
-
-### Epic 38: Dual Homebrew Distribution (P1) — 6/6 stories done — COMPLETE
-
-Parallel Homebrew distribution channels (stable + alpha) with signing parity, publishing controls, verification, and retention.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 38.1 | Alpha Homebrew Formula (`threedoors-a`) | Done (PR #273) | P1 | None |
-| 38.2 | Alpha Publishing Toggle | Done (PR #287) | P1 | 38.1 |
-| 38.3 | Stable Release Signing & Notarization | Done (PR #288) | P1 | None |
-| 38.4 | Alpha Release Verification | Done (PR #295) | P2 | 38.1, 38.2 |
-| 38.5 | Alpha Release Retention Cleanup | Done (PR #294) | P2 | None |
-| 38.6 | Fix Alpha Homebrew Formula Template DSL | Done (PR #312) | P1 | 38.1 |
-
-### Epic 39: Keybinding Display System (P1) — 12/13 stories done (1 cancelled) — COMPLETE
-
-Toggleable keybinding bar and full overlay for TUI discoverability. Context-sensitive bottom bar shows key actions per view; `?` opens comprehensive reference overlay. Global command mode accessibility, command autocomplete, and inline key hints on interactive elements. Door key indicators unified under `h` toggle (D-137).
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 39.1 | Keybinding Registry Model | Done (PR #305) | P1 | None |
-| 39.2 | Concise Keybinding Bar Component | Done (PR #318) | P1 | 39.1 |
-| 39.3 | Full Keybinding Overlay | Done (PR #320) | P1 | 39.1 |
-| 39.4 | Toggle Behavior, Config Persistence, and MainModel Integration | Done (PR #346) | P1 | 39.2, 39.3 |
-| 39.5 | View-Specific Keybinding Completeness and Polish | Done (PR #384) | P1 | 39.4 |
-| 39.6 | Spacebar as Enter Alias in Doors View | Done (PR #303) | P1 | None |
-| 39.7 | Global `:` Command Mode | Done (PR #365) | P1 | None |
-| 39.8 | Command Autocomplete/Completion | Done (PR #381) | P1 | None |
-| 39.9 | Inline Hint Rendering Infrastructure | Done (PR #374) | P1 | 39.1 |
-| 39.10 | Door View Inline Hints | Done (PR #387) | P1 | 39.9 |
-| 39.11 | Non-Door View Inline Hints | Done (PR #388) | P1 | 39.9 |
-| 39.12 | Auto-Fade After N Sessions | Cancelled (D-140) | ~~P2~~ | 39.9, 39.10 |
-| 39.13 | Unified Door Key Indicator Toggle | Done (PR #407) | P1 | 39.4, 39.9, 39.10 |
-
-### Epic 40: Beautiful Stats Display (P1) — 10/10 stories done — COMPLETE
-
-Transform the insights dashboard from plain text into a visually delightful, SOUL-aligned celebration of user activity using Lipgloss styled panels, gradient sparklines, bar charts, and fun facts.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 40.1 | Stats Dashboard Shell with Lipgloss Panels | Done (PR #343) | P1 | None |
-| 40.2 | Gradient Sparkline with Color-Blind Safe Palette | Done (PR #366) | P1 | 40.1 |
-| 40.3 | Fun Facts Engine | Done (PR #371) | P1 | 40.1 |
-| 40.4 | Horizontal Bar Charts for Mood Correlation | Done (PR #362) | P1 | 40.1 |
-| 40.5 | GitHub-Style Activity Heatmap | Done (PR #391) | P2 | 40.1, 40.8 |
-| 40.6 | Surface Hidden Session Metrics | Done (PR #368) | P1 | 40.1 |
-| 40.7 | Animated Counter Reveals | Done (PR #392) | P2 | 40.1 |
-| 40.8 | Tab Navigation for Detail View | Done (PR #367) | P1 | 40.1 |
-| 40.9 | Theme-Matched Stats Color Palettes | Done (PR #380) | P2 | 40.1, 40.2, Epic 17 |
-| 40.10 | Milestone Celebrations | Done (PR #393) | P2 | 40.1 |
-
-### Epic 41: Charm Ecosystem Adoption & TUI Polish (P2) — 6/6 stories done — COMPLETE
-
-Systematically adopt underutilized charmbracelet ecosystem components to reduce custom code, improve UX consistency, and deliver on SOUL.md's "physical objects" promise.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 41.1 | Spinner Component for Async Provider Operations | Done (PR #372) | P2 | None |
-| 41.2 | Lipgloss Layout Utilities Adoption | Done (PR #370) | P2 | None |
-| 41.3 | Viewport Adoption for Help View | Done (PR #364) | P2 | None (sequence after Epic 39 overlay work) |
-| 41.4 | Viewport Adoption for Synclog and Keybinding Overlay | Done (PR #379) | P2 | 41.3 |
-| 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
-| 41.6 | Adaptive Color Profile Support | Done (PR #373) | P2 | None |
 
 ### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done
 
@@ -292,17 +174,6 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
-### Epic 36: Door Selection Interaction Feedback (P1) — 4/4 stories done — COMPLETE
-
-Make door selection feel responsive and satisfying. Reopened for Story 36.4 (space/enter toggle).
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 36.1 | Enhanced Door Selection Visual Feedback | Done (PR #277) | P1 | None |
-| 36.2 | Deselect Toggle | Done (PR #272) | P1 | None |
-| 36.3 | Universal Quit | Done (PR #276) | P1 | None |
-| 36.4 | Space/Enter Toggle — Close Door by Pressing Same Key | Done (PR #405) | P1 | 36.2, 39.6 |
-
 ### Epic 42: Application Security Hardening (P1) — 0/5 stories done
 
 Remediate findings from the application security audit. Fix permissive file permissions, add symlink validation, enforce input size limits, protect credentials in config, and harden CI supply chain.
@@ -355,6 +226,7 @@ Remediate findings from the application security audit. Fix permissive file perm
 | 38 | Dual Homebrew Distribution | 6/6 |
 | 27 | Daily Planning Mode | 5/5 |
 | 28 | Snooze/Defer as First-Class Action | 4/4 |
+| 39 | Keybinding Display System | 12/13 (1 cancelled) |
 | 40 | Beautiful Stats Display | 10/10 |
 | 41 | Charm Ecosystem Adoption & TUI Polish | 6/6 |
 
