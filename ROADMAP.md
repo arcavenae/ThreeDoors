@@ -216,18 +216,18 @@ Systematically adopt underutilized charmbracelet ecosystem components to reduce 
 | 41.5 | Harmonica Door Transition Spike | Done (PR #369) | P2 | None |
 | 41.6 | Adaptive Color Profile Support | Done (PR #373) | P2 | None |
 
-### Epic 42: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done
+### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done
 
 Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations. Based on 5-round party mode research with 7 agents.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 42.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
-| 42.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
-| 42.3 | Crack of Light Effect on Selection | Not Started | P2 | 42.1 |
-| 42.4 | Handle Turn Micro-Animation | Not Started | P2 | 42.1 |
+| 48.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
+| 48.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
+| 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
+| 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
 
-**Dependency graph:** Stories 42.1 & 42.2 can parallelize. Stories 42.3 & 42.4 can parallelize after 42.1 completes.
+**Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
 ### Epic 43: Connection Manager Infrastructure (P1) — 0/6 stories done
 
