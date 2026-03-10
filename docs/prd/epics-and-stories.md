@@ -4978,3 +4978,105 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 
 - Research: `_bmad-output/planning-artifacts/in-app-bug-reporting-research.md`
 - Party Mode: `_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md`
+
+---
+
+## Epic 51: SLAES — Self-Learning Agentic Engineering System (P1)
+
+**Goal:** Build a continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, analyzes CI/conflict patterns, and files improvement recommendations to BOARD.md.
+
+**Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
+
+**Status:** Not Started (0/10 stories)
+
+**Phasing:**
+- Phase 0 (Bootstrap): Stories 51.1-51.2 — Agent definition rewrites
+- Phase 1 (MVP): Stories 51.3-51.6 — Core monitoring and recommendations
+- Phase 2 (After 2-week validation): Stories 51.7-51.10 — Advanced analysis and PR creation
+
+### Stories
+
+#### Story 51.1: Retrospector Agent Definition (Responsibility+WHY Format)
+
+Create `agents/retrospector.md` — the SLAES primary agent — using responsibility+WHY format from day one. Persistent agent with 15-minute polling, Level 2 authority (read + BOARD.md for MVP), dual-loop architecture, 5 Watchmen safeguards, and context exhaustion mitigation.
+
+**AC:** Definition uses responsibility+WHY format (no procedural instructions). Incident-hardened guardrails reference INC-001/002/003. Includes authority table (CAN/CANNOT), operational mode rotation, self-restart trigger (20 PRs or 8 hours), consumer model for project-watchdog/arch-watchdog interaction.
+
+#### Story 51.2: Rewrite Operational Agent Definitions (Responsibility+WHY Format)
+
+Rewrite 5 operational agent definitions (merge-queue, pr-shepherd, worker, project-watchdog, supervisor) in responsibility+WHY format with incident-hardened guardrails. Phase 0 bootstrap task.
+
+**AC:** All 5 definitions rewritten with WHY rationale and incident citations. merge-queue owns merge integrity. pr-shepherd has INC-001 isolation guardrail. worker has INC-002 no-manual-sync guardrail. project-watchdog has INC-003 mutex guardrail. supervisor has subagent abuse guardrail. All agents restarted and verified operational.
+
+#### Story 51.3: JSONL Findings Log & Per-Merge Lightweight Retro
+
+Implement the data collection foundation: every merged PR generates a JSONL entry with AC match checking, CI first-pass rate, conflict data, and rebase count. Rolling retention with archival.
+
+**AC:** Per-PR JSONL entries appended on merge detection. Fields: pr, story, ac_match (full/partial/none/no-story), ci_first_pass, conflicts, rebase_count, timestamp. Rolling retention at 1000 entries with monthly archive. Idempotent processing with last_processed_pr marker.
+
+#### Story 51.4: Saga Detection (Dispatch Waste Alerting)
+
+Detect when 2+ workers are dispatched for the same fix within 4 hours. Alert supervisor with failure chain analysis and recommended action.
+
+**AC:** Same-branch dispatch detection within 4-hour window. Supervisor alert with branch name, worker names, failure chain. Escalation trap pattern detection (fix-A-break-B chain). JSONL logging with type "saga_detected". Recurrence tracking with BOARD.md recommendation after 3+ occurrences.
+
+#### Story 51.5: Doc Consistency Audit (Periodic Cross-Check)
+
+Periodically cross-check epic-list, epics-and-stories, ROADMAP, and story files for drift. Runs as a rotating deep analysis mode every 4 hours.
+
+**AC:** Detects status mismatches across all 4 planning doc layers. Detects orphaned stories and ghost entries. Messages supervisor only on inconsistencies (no noise on clean runs). JSONL logging with type "doc_inconsistency" or "doc_audit_clean". Runs in 4-hour rotation with other deep analysis modes.
+
+#### Story 51.6: BOARD.md Recommendation Pipeline
+
+Unified output layer: aggregate findings into BOARD.md recommendations with confidence scoring (High/Medium/Low), evidence trails, and kill switch safeguard.
+
+**AC:** Recommendations filed in BOARD.md "Pending Recommendations" section with auto-assigned P-NNN ID. Confidence scoring: High (5+ data points), Medium (2-4), Low (1). Kill switch: 3 consecutive rejections → read-only mode. Rate-limited to 3 recommendations per batch cycle.
+
+#### Story 51.7: Merge Conflict Rate Analysis (Phase 2)
+
+Analyze merge conflict patterns: hot file detection, epic collision zones, parallel dispatch safety scoring, rebase churn analysis.
+
+**AC:** Hot file detection (3+ concurrent PRs). Epic collision zone identification. Rebase churn flagging (3+ rebases). BOARD.md recommendations with specific file paths and sequencing suggestions. Depends on Phase 1 validation.
+
+#### Story 51.8: CI Failure Rate Analysis & Coding Standard Proposals (Phase 2)
+
+Classify CI failures by taxonomy (race condition, lint, flakiness, build, coverage) and trace to fixable spec-chain layer. Propose CLAUDE.md rule changes and coding standard updates.
+
+**AC:** Failure taxonomy classification. Spec-chain layer tracing (Code → Story → PRD → Architecture → CLAUDE.md). Pattern detection across 3+ PRs triggers BOARD.md recommendation. Unclassified failures flagged for human review. Depends on Phase 1 validation.
+
+#### Story 51.9: Research Lifecycle Tracking (Phase 2)
+
+Track research artifacts through lifecycle: active → formalized → stale → abandoned. Alert on unformalized research older than 2 weeks.
+
+**AC:** Scan `_bmad-output/planning-artifacts/`. Classify by lifecycle state. Flag stale research (>2 weeks, no stories). Report total/active/formalized/stale counts. Depends on Phase 1 validation.
+
+#### Story 51.10: PR Creation Authority & Trend Reporting (Phase 2)
+
+Expand retrospector authority to create PRs proposing improvements. Generate weekly trend reports with project health metrics.
+
+**AC:** PR creation on `slaes/` branches for high-confidence recommendations pending >48 hours. Self-modification safeguard (never touch own definition). Weekly trend report with CI first-pass rate, rebase count, saga count, recommendation acceptance rate. Metric regression detection. Depends on all Phase 1 + Phase 2 stories.
+
+### Design Decisions
+
+- D-1: Single agent (not 3 separate agents) — avoids pushing agent count to 8
+- D-2: System name SLAES, agent name `retrospector`
+- D-3: Persistent agent with 15-minute polling (not 5-minute, not cron)
+- D-4: Level 2 authority (read + propose, not read-only or auto-apply)
+- D-5: Consumer model — consumes project-watchdog/arch-watchdog outputs, never duplicates
+- D-6: Dual-loop architecture (spec-chain quality + operational efficiency)
+- D-7: Per-PR lightweight data collection + periodic batch analysis
+- D-8: 5 Watchmen safeguards (no self-mod, audit trail, confidence scoring, human review, kill switch)
+- D-9: Operational mode rotation for context management
+- D-10: Prevention over detection — responsibility+WHY definition methodology
+- X-A1: Rejected three focused agents (agent count → 8)
+- X-A2: Rejected two agents (duplicate analytical pipeline)
+- X-A3: Rejected `kaizen-agent` name (potentially pretentious)
+- X-A9: Rejected ephemeral/cron-based (loses state, saga detection needs continuity)
+- X-A10: Rejected 5-minute polling (unnecessary, budget impact)
+- X-A12: Rejected read-only recommend-only (advisory doesn't work — registry precedent)
+- X-A13: Rejected auto-apply (INC-001 precedent)
+
+### Research
+
+- SLAES Party Mode: `_bmad-output/planning-artifacts/agentic-engineering-agent-party-mode.md`
+- Subagent Abuse Investigation: `_bmad-output/planning-artifacts/subagent-abuse-investigation.md`
