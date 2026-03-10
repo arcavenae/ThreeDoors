@@ -4741,8 +4741,95 @@ Predictive warnings: token expiring within 7 days, rate limit >80%, 3+ consecuti
 ### Research
 
 - Sync patterns: `_bmad-output/planning-artifacts/data-source-setup-ux-research.md` (Section 5.3)
-3. Nested Frame for Wide Terminals (frame-within-frame when width > 30; width-adaptive)
-4. Wall Context for Wide Terminals (shade characters flanking doors)
+
+---
+
+## Epic 42: Application Security Hardening
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** None
+
+### Epic Goal
+
+Remediate all actionable findings from the application security audit — standardize file permissions, add symlink validation, enforce input size limits, protect credentials, and harden CI supply chain.
+
+### Stories
+
+**Stories:** 42.1-42.5 (5 stories)
+
+#### Story 42.1: File Permission Standardization (0o700/0o600)
+
+Standardize all file and directory permissions across the codebase. Change `~/.threedoors/` from `0o755` to `0o700`, all data files from `0o644` to `0o600`, and temp files from `os.Create()` to `os.OpenFile(..., 0o600)`. Add startup migration to fix existing permissive directories. Addresses HIGH-1, MEDIUM-3, LOW-2.
+
+**AC:** Directory created with 0o700, all data files 0o600, temp files 0o600, existing directories migrated on startup, consistent across all subsystems.
+
+#### Story 42.2: Symlink Validation for File Operations
+
+Add symlink detection before all file read/write operations. Verify `~/.threedoors/` is not a symlink on startup via `os.Lstat()`. Check file paths before atomic writes. Optionally check directory ownership. Create reusable `ValidatePath()` helper modeled on Obsidian adapter's `sanitizeDailyNotePath()`. Addresses HIGH-2.
+
+**AC:** Startup rejects symlinked data directory, writes reject symlinked target files, ownership check warns on mismatch, reusable validation helper exists.
+
+#### Story 42.3: Input Size Limits for YAML and JSONL Readers
+
+Add file size validation before YAML reads (10MB limit) and explicit scanner buffer limits to all JSONL readers. Create `ReadFileWithLimit()` helper. Set scanner buffer to 1MB max (matching MCP transport). Addresses MEDIUM-1, MEDIUM-2, LOW-3.
+
+**AC:** Oversized YAML files rejected with clear error, all JSONL scanners have explicit buffer limits, oversized lines logged and skipped gracefully.
+
+#### Story 42.4: Credential Protection in Config Files
+
+Warn on startup if config.yaml is world-readable and contains non-empty token fields. Ensure all credential struct fields use `yaml:"-"` to prevent accidental serialization. Improve sample config documentation with env var recommendations. Addresses MEDIUM-4.
+
+**AC:** Warning on startup for exposed credentials, yaml:"-" on all token fields, sample config recommends env vars for all credentials.
+
+#### Story 42.5: CI Supply Chain Hardening
+
+Pin third-party GitHub Actions (golangci-lint-action, paths-filter, goreleaser-action) to SHA hashes with version comments. Add `govulncheck ./...` as a CI quality gate step. Verify Dependabot compatibility with SHA-pinned actions.
+
+**AC:** Third-party actions SHA-pinned, first-party actions remain tag-pinned, govulncheck runs in CI and blocks on findings, Dependabot can still propose updates.
+
+### Design Decisions
+
+- D-153: New Epic 42 for application security hardening (5 stories from security audit)
+
+### Research
+
+- Security Audit: `_bmad-output/planning-artifacts/security-audit-application.md`
+
+---
+
+## Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement
+
+**Priority:** P2
+**Status:** Not Started
+**Dependencies:** Epic 35 (Door Visual Appearance — complete), Epic 17 (Door Theme System — complete), Story 41.5 (Harmonica spike — complete, D-136 GO decision)
+
+### Epic Goal
+
+Transform rectangular card/panel doors into visually convincing doors by implementing 5 adopted proposals from the "doors more door-like" party mode research (5 rounds, 7 agents).
+
+The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~6.5/7 across all themes, at a total cost of ~200-250 LOC and 0-1 character of width.
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 48.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
+| 48.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
+| 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
+| 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
+
+### Design Decisions
+
+- D-141: Adopt 5 proposals (B, C, D, F, G) for door-like doors; reject 4 (A, E, H, I)
+- X-080 through X-083: Rejected alternatives
+
+### Noted Opportunities (Out of Scope)
+
+1. Door-Opening Transition Animation
+2. Light Spill Enhancement
+3. Nested Frame for Wide Terminals
+4. Wall Context for Wide Terminals
 
 ### Research
 
