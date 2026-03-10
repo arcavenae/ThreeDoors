@@ -44,7 +44,10 @@ multiclaude work "Task description"
 ## Standing Orders
 
 1. **All story work via `/implement-story <story-id>`** — no exceptions
-2. **All agents must sync git** before starting work (`git fetch origin main && git rebase origin/main`)
+2. **Git sync rules differ by agent type:**
+   - **Persistent agents** (merge-queue, pr-shepherd): MAY sync git before major operations — they share the main checkout
+   - **Workers**: Do NOT manually sync. multiclaude creates fresh worktrees from HEAD and auto-refreshes them every 5 minutes via the daemon. Manual git fetch/rebase in workers is redundant at best, destructive at worst (causes mid-rebase conflicts).
+   - **NEVER prepend `git fetch origin main && git rebase origin/main` to worker task descriptions.**
 3. **ROADMAP.md is the scope gate** — merge-queue rejects out-of-scope PRs
 4. **Issue triage via BMAD pipeline** — never jump straight to code. Acknowledge on issue, PM examination, party mode, PRD/arch, story creation, docs PR, report back on issue. Implementation comes later via `/implement-story`.
 5. **Workers do NOT touch ROADMAP.md** — roadmap updates are supervisor/BMAD PM level only
@@ -58,8 +61,9 @@ Every implementation worker task MUST include these requirements:
 
 1. **Story file update** — After implementation, update `docs/stories/X.Y.story.md` with `Status: Done (PR #NNN)`
 2. **Tests required** — Every implementation must include tests (TDD red-green). Verify test files exist before creating PR.
-3. **Prerequisite files** — When PRs are unmerged, include explicit `git fetch` + `git checkout` commands for all dependency branches
-4. **PR chain awareness** — When multiple stories modify the same files, rebase onto the previous story's branch, not main. This prevents merge conflicts.
+3. **PR chain awareness** — When multiple stories modify the same files, rebase onto the previous story's branch, not main. This prevents merge conflicts.
+
+> **WARNING:** Do NOT include `git fetch origin main && git rebase origin/main` in worker task descriptions. multiclaude manages worker worktrees automatically (fresh from HEAD at creation, auto-refreshed every 5 min). Manual git sync in workers has caused mid-rebase conflicts and stuck workers.
 
 ## The Merge Queue
 
