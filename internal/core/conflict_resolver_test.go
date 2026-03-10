@@ -40,6 +40,7 @@ func TestConflictSet_CurrentConflict(t *testing.T) {
 	ic := cs.CurrentConflict()
 	if ic == nil {
 		t.Fatal("CurrentConflict returned nil")
+		return
 	}
 	if ic.Conflict.LocalTask.Text != "local" {
 		t.Errorf("LocalTask.Text = %q, want %q", ic.Conflict.LocalTask.Text, "local")
@@ -164,6 +165,7 @@ func TestConflictSet_MultipleConflicts(t *testing.T) {
 	ic := cs.CurrentConflict()
 	if ic == nil {
 		t.Fatal("CurrentConflict returned nil for second conflict")
+		return
 	}
 	if ic.Conflict.LocalTask.Text != "second local" {
 		t.Errorf("second conflict LocalTask.Text = %q, want %q", ic.Conflict.LocalTask.Text, "second local")
