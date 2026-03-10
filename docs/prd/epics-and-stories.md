@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26-29, 32, 34-38, 41 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 30-31, 33, 39-40 are NOT STARTED or IN PROGRESS. 390+ merged PRs total. Last audit: 2026-03-09.
+**Implementation Status:** Epics 1-15, 3.5, 17-24, 26-29, 32, 34-38, 41 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 30-31, 33, 39-40, 42-49 are NOT STARTED or IN PROGRESS. 390+ merged PRs total. Last audit: 2026-03-10.
 
 ## Requirements Inventory
 
@@ -4835,3 +4835,117 @@ The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~
 
 - Party Mode (5 rounds, 7 agents): `_bmad-output/planning-artifacts/doors-more-doorlike-research.md`
 - Prior: `_bmad-output/planning-artifacts/door-appearance-party-mode.md` (Epic 35)
+
+---
+
+## Epic 49: ThreeDoors Doctor — Self-Diagnosis Command
+
+**Priority:** P1
+**Status:** Not Started
+**Dependencies:** Epic 23 (CLI Interface — complete)
+
+### Epic Goal
+
+Comprehensive self-diagnosis command (`threedoors doctor`) with flutter-style category-based output, conservative auto-repair via `--fix`, and channel-aware version checking. Supersedes existing `health` command (`internal/cli/health.go`).
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 49.1 | Doctor Command Skeleton & Health Alias | Not Started | P1 | None |
+| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
+| 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
+| 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
+| 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
+| 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
+| 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
+| 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
+| 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
+| 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
+
+**Dependency graph:**
+```
+49.1 (skeleton) → 49.2-49.7 (check categories, parallelizable)
+49.2-49.7 → 49.8 (--fix needs checks)
+49.1 → 49.9 (version check, independent)
+49.2-49.9 → 49.10 (polish)
+```
+
+### Story Details
+
+#### Story 49.1: Doctor Command Skeleton & Health Alias
+
+Create `internal/cli/doctor.go` with cobra command, `internal/core/doctor.go` with `DoctorChecker` struct and result types. Implement category-based output with flutter-style icons (`[✓]`/`[!]`/`[✗]`/`[i]`/`[ ]`). Register `doctor` as primary, `health` as alias. Support `--json` output. Implement Environment category only.
+
+**AC:** `threedoors doctor` runs and shows Environment category. `threedoors health` is an alias. `--json` produces valid JSON with envelope pattern.
+
+#### Story 49.2: Environment Checks
+
+Expand environment checks: config directory existence/permissions, config file YAML validation + schema version, terminal capability detection (size, color profile), Go runtime version.
+
+**AC:** Environment category shows config dir, config file, terminal info. Missing dir = FAIL. Bad schema = FAIL. Narrow terminal = WARN. ASCII color = INFO.
+
+#### Story 49.3: Task Data Integrity Checks
+
+Task file existence and YAML validity. Per-task `Validate()`. Duplicate ID detection. Dependency reference validation. Blocker/CompletedAt consistency. Legacy migration detection (`tasks.txt`, `source_provider`).
+
+**AC:** Task Data shows task count by status. Duplicate IDs = FAIL. Dangling deps = WARN. Inconsistent fields = WARN. Legacy files = WARN.
+
+#### Story 49.4: Provider Health Checks
+
+Check each configured provider for health. Integrate existing `HealthChecker` methods. Multi-provider iteration with timeout protection.
+
+**AC:** Each provider checked and reported. No provider = FAIL. One failing = category WARN. Obsidian missing vault = FAIL.
+
+#### Story 49.5: Session & Analytics Checks
+
+Validate `sessions.jsonl` line-by-line. Check `patterns.json` integrity. Report session statistics.
+
+**AC:** Corrupt JSONL lines reported with line numbers. Corrupt patterns.json = WARN. No sessions = INFO. Missing fields = WARN.
+
+#### Story 49.6: Sync & Offline Queue Checks
+
+Validate sync state staleness, WAL queue health, orphaned temp files.
+
+**AC:** Stale sync (>24h) = WARN. Stuck ops (retries ≥ 10) = WARN. Excessive backlog = WARN. Orphaned .tmp files = WARN. No sync history = INFO.
+
+#### Story 49.7: Enrichment Database Checks
+
+SQLite integrity check, schema version verification, existence check.
+
+**AC:** Missing DB = WARN. Failed integrity = FAIL. Schema mismatch = WARN. Healthy = OK with version.
+
+#### Story 49.8: Auto-Repair (`--fix` flag)
+
+Conservative auto-repair for safe, reversible issues only. Never auto-modify user data.
+
+**AC:** Fix orphaned .tmp, corrupt patterns.json, missing config.yaml, stale version cache, incorrect permissions, legacy migration. Never fix corrupt tasks/sessions/DB.
+
+#### Story 49.9: Channel-Aware Version Checking
+
+GitHub Releases API with 24h cache. Channel-aware comparison. Opt-out controls. CI auto-disable.
+
+**AC:** Cached check, channel-aware updates, cross-channel for alpha, dev build skip, env var opt-out, CI detection.
+
+#### Story 49.10: Verbose Mode, Category Filter & Polish
+
+`--verbose`, `--category`, `--skip-version` flags. Colored icons. Summary line. Exit codes for scripting.
+
+**AC:** Verbose shows detail. Category filter works. Colors respect --no-color. Exit codes: 0/1/2.
+
+### Design Decisions
+
+- D-154: Command name `doctor`; supersedes existing `health` command
+- D-155: Flutter-style icon output as default format
+- D-156: Conservative auto-fix with `--fix` flag
+- D-157: 24-hour cached version check (gh CLI pattern)
+- D-158: Channel-aware version: show within channel + cross-channel if higher
+- X-094: Rejected interactive repair wizard
+- X-095: Rejected doctor as part of every command startup
+- X-096: Rejected telemetry/crash reporting in doctor
+- X-097: Rejected `health` and `doctor` coexisting as separate commands
+- X-098: Rejected command name `check` or `diagnose`
+
+### Research
+
+- Doctor Research: `_bmad-output/planning-artifacts/threedoors-doctor-research.md`

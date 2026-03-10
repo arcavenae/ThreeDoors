@@ -174,6 +174,23 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
+### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 0/10 stories done
+
+Comprehensive self-diagnosis command with flutter-style category-based output, conservative auto-repair, and channel-aware version checking. Supersedes existing `health` command.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 49.1 | Doctor Command Skeleton & Health Alias | Not Started | P1 | None |
+| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
+| 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
+| 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
+| 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
+| 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
+| 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
+| 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
+| 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
+| 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
+
 ### Epic 42: Application Security Hardening (P1) — 0/5 stories done
 
 Remediate findings from the application security audit. Fix permissive file permissions, add symlink validation, enforce input size limits, protect credentials in config, and harden CI supply chain.

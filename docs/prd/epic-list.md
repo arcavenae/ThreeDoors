@@ -513,6 +513,22 @@
 - **Research:** See `_bmad-output/planning-artifacts/bubbletea-feature-audit-party-mode.md`
 - **Decisions:** D-128 (viewport), D-129 (spinner), D-130 (layout), D-131 (harmonica spike), D-132 (reject list), D-133 (reject textarea/table/etc.), D-134 (epic number 41)
 
+**Epic 49: ThreeDoors Doctor — Self-Diagnosis Command** (P1)
+- **Goal:** Comprehensive self-diagnosis command (`threedoors doctor`) with flutter-style category-based output, conservative auto-repair, and channel-aware version checking. Supersedes existing `health` command.
+- **Prerequisites:** Epic 23 (CLI Interface — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - Doctor command skeleton with DoctorChecker framework and `health` alias
+  - 6 check categories: Environment, Task Data, Providers, Sessions, Sync, Database
+  - Channel-aware version checking with 24h cache (gh CLI pattern)
+  - Conservative auto-repair via `--fix` flag (safe/reversible ops only)
+  - Verbose mode (`-v`), category filter (`--category`), JSON output (`--json`)
+  - flutter-style icons: `[✓]` pass, `[!]` warn, `[✗]` fail, `[i]` info, `[ ]` skip
+- **Stories:** 49.1-49.10 (10 stories)
+- **Estimated Effort:** 2-3 weeks at 2-4 hrs/week
+- **Research:** See `_bmad-output/planning-artifacts/threedoors-doctor-research.md`
+- **Decisions:** D-154 (doctor supersedes health), D-155 (flutter-style icons), D-156 (conservative auto-fix), D-157 (24h cached version check), D-158 (channel-aware version)
+
 **Epic 42: Application Security Hardening** (P1)
 - **Goal:** Remediate all actionable findings from the application security audit — standardize file permissions, add symlink validation, enforce input size limits, protect credentials, and harden CI supply chain
 - **Prerequisites:** None
@@ -608,7 +624,7 @@
 - **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
 - **Decisions:** D-151 (conflict resolution strategy)
 
-**Epic 49+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 50+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -668,5 +684,6 @@
 | Epic 46: OAuth Device Code Flow | 4 | Not Started |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
 | Epic 48: Door-Like Doors | 4 | Not Started |
-| **Total** | **251** | **146 complete, 4 epics in progress, 105 not started** |
+| Epic 49: ThreeDoors Doctor | 10 | Not Started |
+| **Total** | **261** | **146 complete, 4 epics in progress, 115 not started** |
 ---
