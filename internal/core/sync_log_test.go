@@ -29,6 +29,7 @@ func TestSyncLog_AppendAndRead(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 
 	if len(entries) != 1 {
@@ -70,6 +71,7 @@ func TestSyncLog_MultipleEntries(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 5 {
 		t.Fatalf("got %d entries, want 5", len(entries))
@@ -97,6 +99,7 @@ func TestSyncLog_ReadRecentEntries(t *testing.T) {
 	entries, err := sl.ReadRecentEntries(3)
 	if err != nil {
 		t.Fatalf("ReadRecentEntries: %v", err)
+		return
 	}
 	if len(entries) != 3 {
 		t.Fatalf("got %d entries, want 3", len(entries))
@@ -115,6 +118,7 @@ func TestSyncLog_ReadEmpty(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 0 {
 		t.Fatalf("got %d entries, want 0", len(entries))
@@ -140,6 +144,7 @@ func TestSyncLog_LogSyncResult(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 1 {
 		t.Fatalf("got %d entries, want 1", len(entries))
@@ -164,6 +169,7 @@ func TestSyncLog_LogConflictResolution(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 1 {
 		t.Fatalf("got %d entries, want 1", len(entries))
@@ -188,6 +194,7 @@ func TestSyncLog_LogError(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 1 {
 		t.Fatalf("got %d entries, want 1", len(entries))
@@ -210,6 +217,7 @@ func TestSyncLog_Rotation(t *testing.T) {
 	f, err := os.Create(logPath)
 	if err != nil {
 		t.Fatalf("create: %v", err)
+		return
 	}
 	// Write ~1.1MB of data (enough to trigger rotation)
 	bigEntry := `{"timestamp":"2025-01-01T00:00:00Z","provider":"Test","operation":"sync","summary":"` +
@@ -240,6 +248,7 @@ func TestSyncLog_Rotation(t *testing.T) {
 	info, err := os.Stat(logPath)
 	if err != nil {
 		t.Fatalf("stat: %v", err)
+		return
 	}
 	if info.Size() >= maxSyncLogSize {
 		t.Errorf("log size after rotation = %d, want < %d", info.Size(), maxSyncLogSize)

@@ -216,6 +216,7 @@ func TestDetailView_PlusKey_NoPool_ShowsFlash(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("+")})
 	if cmd == nil {
 		t.Fatal("'+' without pool should return a flash command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -234,6 +235,7 @@ func TestDetailView_PlusKey_NoCandidates_ShowsFlash(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("+")})
 	if cmd == nil {
 		t.Fatal("'+' with no candidates should return a flash command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -277,6 +279,7 @@ func TestDetailView_DepAdd_EnterAddsDependency(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter should return a command")
+		return
 	}
 	msg := cmd()
 	dam, ok := msg.(DependencyAddedMsg)
@@ -322,6 +325,7 @@ func TestDetailView_DepAdd_CycleRejected(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("cycle rejection should return a command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -361,6 +365,7 @@ func TestDetailView_MinusKey_NoDeps_ShowsFlash(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("-")})
 	if cmd == nil {
 		t.Fatal("'-' with no deps should return a flash command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -406,6 +411,7 @@ func TestDetailView_DepBrowse_DeleteRemovesDep(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("-")})
 	if cmd == nil {
 		t.Fatal("remove should return a command")
+		return
 	}
 	msg := cmd()
 	drm, ok := msg.(DependencyRemovedMsg)
@@ -467,6 +473,7 @@ func TestDetailView_DepBrowse_EnterNavigates(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("enter in dep browse should navigate")
+		return
 	}
 	msg := cmd()
 	nav, ok := msg.(NavigateToLinkedMsg)

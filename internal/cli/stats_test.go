@@ -71,6 +71,7 @@ func TestStatsSummary_JSON(t *testing.T) {
 	data, err := json.Marshal(summary)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
+		return
 	}
 
 	var decoded map[string]interface{}
@@ -108,6 +109,7 @@ func TestRunStatsSummary_HumanReadable(t *testing.T) {
 	err := runStatsSummary(formatter, analyzer, sessions)
 	if err != nil {
 		t.Fatalf("runStatsSummary: %v", err)
+		return
 	}
 
 	output := buf.String()
@@ -130,6 +132,7 @@ func TestRunStatsSummary_JSON(t *testing.T) {
 	err := runStatsSummary(formatter, analyzer, sessions)
 	if err != nil {
 		t.Fatalf("runStatsSummary: %v", err)
+		return
 	}
 
 	var env JSONEnvelope
@@ -151,6 +154,7 @@ func TestRunStatsDaily_HumanReadable(t *testing.T) {
 	err := runStatsDaily(formatter, analyzer, false)
 	if err != nil {
 		t.Fatalf("runStatsDaily: %v", err)
+		return
 	}
 
 	output := buf.String()
@@ -169,6 +173,7 @@ func TestRunStatsWeekly_HumanReadable(t *testing.T) {
 	err := runStatsWeekly(formatter, analyzer, false)
 	if err != nil {
 		t.Fatalf("runStatsWeekly: %v", err)
+		return
 	}
 
 	output := buf.String()
@@ -192,6 +197,7 @@ func TestRunStatsPatterns_InsufficientData(t *testing.T) {
 	err := runStatsPatterns(formatter, analyzer, sessions, false)
 	if err != nil {
 		t.Fatalf("runStatsPatterns: %v", err)
+		return
 	}
 
 	output := buf.String()

@@ -124,6 +124,7 @@ func TestParseConfigEnvVarOverridesConfig(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if cfg.APIToken != "env-token" {
 		t.Errorf("expected env-token, got %s", cfg.APIToken)
@@ -138,6 +139,7 @@ func TestParseConfigEnvVarProvidesToken(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if cfg.APIToken != "env-only-token" {
 		t.Errorf("expected env-only-token, got %s", cfg.APIToken)
@@ -153,6 +155,7 @@ func TestParseConfigEmptyProjectIDs(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(cfg.ProjectIDs) != 0 {
 		t.Errorf("expected 0 project IDs from whitespace-only list, got %d: %v", len(cfg.ProjectIDs), cfg.ProjectIDs)

@@ -81,6 +81,7 @@ func TestE2E_FullWorkflow_LaunchViewSelectManageExit(t *testing.T) {
 	// Verify session tracker recorded the workflow.
 	if mm.tracker == nil {
 		t.Fatal("expected tracker to be initialized")
+		return
 	}
 	metrics := mm.tracker.Finalize()
 	if metrics.TasksCompleted < 1 {

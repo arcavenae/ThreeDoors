@@ -164,6 +164,7 @@ func TestNextStepsView_NumberKeySelects(t *testing.T) {
 	cmd := nv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("1")})
 	if cmd == nil {
 		t.Fatal("pressing '1' should return a command")
+		return
 	}
 	msg := cmd()
 	nsm, ok := msg.(NextStepSelectedMsg)
@@ -194,6 +195,7 @@ func TestNextStepsView_EscDismisses(t *testing.T) {
 	cmd := nv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(NextStepDismissedMsg); !ok {

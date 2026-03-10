@@ -10,6 +10,7 @@ func TestGetValuesConfigPath(t *testing.T) {
 	path, err := GetValuesConfigPath()
 	if err != nil {
 		t.Fatalf("GetValuesConfigPath: %v", err)
+		return
 	}
 	if path == "" {
 		t.Error("expected non-empty path")

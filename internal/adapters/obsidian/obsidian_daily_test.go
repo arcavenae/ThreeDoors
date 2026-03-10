@@ -293,6 +293,7 @@ func TestAppendTaskToDailyNote_CreatesFile(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "2026-03-15.md"))
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	got := string(data)
@@ -339,6 +340,7 @@ Some notes.
 	data, err := os.ReadFile(filepath.Join(dir, "2026-03-15.md"))
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	got := string(data)
 
@@ -389,6 +391,7 @@ func TestAppendTaskToDailyNote_NoHeadingInFile(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "2026-03-15.md"))
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	got := string(data)
 
@@ -524,6 +527,7 @@ func TestSaveTask_RoutesToDailyNote(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, dailyFilename))
 	if err != nil {
 		t.Fatalf("daily note should exist: %v", err)
+		return
 	}
 	if !strings.Contains(string(data), "Quick add task") {
 		t.Error("task should be in daily note")
@@ -689,6 +693,7 @@ func TestAppendTaskToDailyNote_DefaultHeading(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "2026-03-15.md"))
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	if !strings.Contains(string(data), defaultDailyNotesHeading) {
@@ -895,6 +900,7 @@ func TestQuickAddToDailyNote(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, dailyFilename))
 	if err != nil {
 		t.Fatalf("daily note should exist: %v", err)
+		return
 	}
 	if !strings.Contains(string(data), "Buy groceries") {
 		t.Error("daily note should contain task")

@@ -10,6 +10,7 @@ func TestLoadValuesConfig_FileNotFound(t *testing.T) {
 	cfg, err := LoadValuesConfig("/nonexistent/path/config.yaml")
 	if err != nil {
 		t.Fatalf("expected no error for missing file, got: %v", err)
+		return
 	}
 	if cfg.HasValues() {
 		t.Error("expected empty values for missing file")
@@ -26,6 +27,7 @@ func TestLoadValuesConfig_EmptyFile(t *testing.T) {
 	cfg, err := LoadValuesConfig(path)
 	if err != nil {
 		t.Fatalf("expected no error for empty file, got: %v", err)
+		return
 	}
 	if cfg.HasValues() {
 		t.Error("expected empty values for empty file")
@@ -43,6 +45,7 @@ func TestLoadValuesConfig_ValidFile(t *testing.T) {
 	cfg, err := LoadValuesConfig(path)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(cfg.Values) != 3 {
 		t.Fatalf("expected 3 values, got %d", len(cfg.Values))
@@ -77,6 +80,7 @@ func TestSaveValuesConfig(t *testing.T) {
 	loaded, err := LoadValuesConfig(path)
 	if err != nil {
 		t.Fatalf("unexpected error loading: %v", err)
+		return
 	}
 	if len(loaded.Values) != 2 {
 		t.Fatalf("expected 2 values, got %d", len(loaded.Values))

@@ -70,6 +70,7 @@ func TestListIssues(t *testing.T) {
 	issues, err := client.ListIssues(context.Background(), "testowner", "testrepo", "testuser")
 	if err != nil {
 		t.Fatalf("ListIssues: %v", err)
+		return
 	}
 
 	if len(issues) != 2 {
@@ -145,6 +146,7 @@ func TestListIssuesSkipsPRs(t *testing.T) {
 	issues, err := client.ListIssues(context.Background(), "o", "r", "")
 	if err != nil {
 		t.Fatalf("ListIssues: %v", err)
+		return
 	}
 
 	if len(issues) != 1 {
@@ -200,6 +202,7 @@ func TestListIssuesPagination(t *testing.T) {
 	issues, err := client.ListIssues(context.Background(), "o", "r", "")
 	if err != nil {
 		t.Fatalf("ListIssues: %v", err)
+		return
 	}
 
 	if len(issues) != 2 {
@@ -247,6 +250,7 @@ func TestCloseIssue(t *testing.T) {
 	err := client.CloseIssue(context.Background(), "testowner", "testrepo", 42)
 	if err != nil {
 		t.Fatalf("CloseIssue: %v", err)
+		return
 	}
 }
 
@@ -269,6 +273,7 @@ func TestCloseIssueNotFound(t *testing.T) {
 	err := client.CloseIssue(context.Background(), "o", "r", 999)
 	if err == nil {
 		t.Fatal("expected error for 404")
+		return
 	}
 }
 
@@ -298,6 +303,7 @@ func TestGetAuthenticatedUser(t *testing.T) {
 	login, err := client.GetAuthenticatedUser(context.Background())
 	if err != nil {
 		t.Fatalf("GetAuthenticatedUser: %v", err)
+		return
 	}
 	if login != "testuser" {
 		t.Errorf("login = %q, want %q", login, "testuser")
@@ -327,6 +333,7 @@ func TestRateLimitHandling(t *testing.T) {
 	_, err := client.ListIssues(context.Background(), "o", "r", "")
 	if err == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 
 	var rle *RateLimitError
@@ -377,6 +384,7 @@ func TestNewGitHubClientNoToken(t *testing.T) {
 	}
 	if client.client == nil {
 		t.Fatal("expected non-nil underlying go-github client")
+		return
 	}
 }
 
@@ -390,6 +398,7 @@ func TestNewGitHubClientWithToken(t *testing.T) {
 	client := NewGitHubClient(cfg)
 	if client == nil {
 		t.Fatal("expected non-nil client")
+		return
 	}
 }
 
@@ -417,6 +426,7 @@ func TestMapIssueTimestampsUTC(t *testing.T) {
 	issues, err := client.ListIssues(context.Background(), "o", "r", "")
 	if err != nil {
 		t.Fatalf("ListIssues: %v", err)
+		return
 	}
 
 	if len(issues) != 1 {

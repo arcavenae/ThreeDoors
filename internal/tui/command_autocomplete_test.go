@@ -269,6 +269,7 @@ func TestSearchView_CommandAutocomplete_EnterExecutesHighlighted(t *testing.T) {
 	cmd := sv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter on highlighted suggestion should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ShowHelpMsg); !ok {

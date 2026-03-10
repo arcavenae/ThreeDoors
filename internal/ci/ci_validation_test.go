@@ -48,21 +48,25 @@ func TestToolVersionConsistency(t *testing.T) {
 			docContent, err := os.ReadFile(filepath.Join(root, tt.docFile))
 			if err != nil {
 				t.Fatalf("failed to read %s: %v", tt.docFile, err)
+				return
 			}
 
 			cfgContent, err := os.ReadFile(filepath.Join(root, tt.configFile))
 			if err != nil {
 				t.Fatalf("failed to read %s: %v", tt.configFile, err)
+				return
 			}
 
 			docMatches := tt.docPattern.FindSubmatch(docContent)
 			if docMatches == nil {
 				t.Fatalf("version pattern not found in %s", tt.docFile)
+				return
 			}
 
 			cfgMatches := tt.cfgPattern.FindSubmatch(cfgContent)
 			if cfgMatches == nil {
 				t.Fatalf("version pattern not found in %s", tt.configFile)
+				return
 			}
 
 			docVer := strings.TrimSpace(string(docMatches[1]))

@@ -212,6 +212,7 @@ func TestSourceRefYAMLRoundTrip(t *testing.T) {
 	data, err := yaml.Marshal(task)
 	if err != nil {
 		t.Fatalf("yaml.Marshal: %v", err)
+		return
 	}
 
 	var restored Task
@@ -239,6 +240,7 @@ func TestSourceRefJSONRoundTrip(t *testing.T) {
 	data, err := json.Marshal(task)
 	if err != nil {
 		t.Fatalf("json.Marshal: %v", err)
+		return
 	}
 
 	var restored Task
@@ -261,6 +263,7 @@ func TestSourceRefOmittedWhenEmpty(t *testing.T) {
 	data, err := yaml.Marshal(task)
 	if err != nil {
 		t.Fatalf("yaml.Marshal: %v", err)
+		return
 	}
 
 	yamlStr := string(data)

@@ -16,6 +16,7 @@ func newTestQueue(t *testing.T) *DevQueue {
 	q, err := NewDevQueue(path)
 	if err != nil {
 		t.Fatalf("NewDevQueue: %v", err)
+		return nil
 	}
 	return q
 }
@@ -66,6 +67,7 @@ func TestDevQueueAddWithExplicitID(t *testing.T) {
 	got, err := q.Get("dq-custom01")
 	if err != nil {
 		t.Fatalf("Get: %v", err)
+		return
 	}
 	if got.ID != "dq-custom01" {
 		t.Errorf("ID = %q, want %q", got.ID, "dq-custom01")
@@ -97,6 +99,7 @@ func TestDevQueueGet(t *testing.T) {
 	got, err := q.Get("dq-get00001")
 	if err != nil {
 		t.Fatalf("Get: %v", err)
+		return
 	}
 	if got.TaskID != "task-1" {
 		t.Errorf("TaskID = %q, want %q", got.TaskID, "task-1")
@@ -110,6 +113,7 @@ func TestDevQueueGetNotFound(t *testing.T) {
 	_, err := q.Get("dq-nonexist")
 	if err == nil {
 		t.Fatal("Get should return error for non-existent ID")
+		return
 	}
 	if !errors.Is(err, ErrQueueItemNotFound) {
 		t.Errorf("err = %v, want ErrQueueItemNotFound", err)
@@ -133,11 +137,13 @@ func TestDevQueueUpdate(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("Update: %v", err)
+		return
 	}
 
 	got, err := q.Get("dq-upd00001")
 	if err != nil {
 		t.Fatalf("Get after Update: %v", err)
+		return
 	}
 	if got.Status != QueueItemDispatched {
 		t.Errorf("Status = %q, want %q", got.Status, QueueItemDispatched)
@@ -156,6 +162,7 @@ func TestDevQueueUpdateNotFound(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("Update should return error for non-existent ID")
+		return
 	}
 	if !errors.Is(err, ErrQueueItemNotFound) {
 		t.Errorf("err = %v, want ErrQueueItemNotFound", err)
@@ -197,6 +204,7 @@ func TestDevQueueListReturnsCopy(t *testing.T) {
 	original, err := q.Get(items[0].ID)
 	if err != nil {
 		t.Fatalf("Get: %v", err)
+		return
 	}
 	if original.TaskText == "mutated" {
 		t.Error("List() should return a copy, not a reference to internal state")
@@ -211,6 +219,7 @@ func TestDevQueuePersistence(t *testing.T) {
 	q1, err := NewDevQueue(path)
 	if err != nil {
 		t.Fatalf("NewDevQueue: %v", err)
+		return
 	}
 
 	item := QueueItem{ID: "dq-persist1", TaskID: "task-1", TaskText: "Persist test"}
@@ -221,11 +230,13 @@ func TestDevQueuePersistence(t *testing.T) {
 	q2, err := NewDevQueue(path)
 	if err != nil {
 		t.Fatalf("NewDevQueue reload: %v", err)
+		return
 	}
 
 	got, err := q2.Get("dq-persist1")
 	if err != nil {
 		t.Fatalf("Get after reload: %v", err)
+		return
 	}
 	if got.TaskText != "Persist test" {
 		t.Errorf("TaskText = %q, want %q", got.TaskText, "Persist test")
@@ -240,6 +251,7 @@ func TestDevQueueAtomicWriteCleanup(t *testing.T) {
 	q, err := NewDevQueue(path)
 	if err != nil {
 		t.Fatalf("NewDevQueue: %v", err)
+		return
 	}
 
 	item := QueueItem{TaskID: "task-1", TaskText: "Atomic test"}
@@ -269,6 +281,7 @@ func TestDevQueueEmptyFile(t *testing.T) {
 	q, err := NewDevQueue(path)
 	if err != nil {
 		t.Fatalf("NewDevQueue with empty file: %v", err)
+		return
 	}
 
 	items := q.List()

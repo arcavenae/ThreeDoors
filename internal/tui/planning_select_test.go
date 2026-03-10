@@ -335,6 +335,7 @@ func TestSelectViewEnterConfirmsSelection(t *testing.T) {
 	cmd := sv.Update(selectSpecialKeyMsg(tea.KeyEnter))
 	if cmd == nil {
 		t.Fatal("expected command on Enter with selections")
+		return
 	}
 	msg := cmd()
 	completeMsg, ok := msg.(SelectCompleteMsg)
@@ -499,6 +500,7 @@ func TestSelectViewZeroSelectionConfirmYes(t *testing.T) {
 	cmd := sv.Update(selectKeyMsg("y"))
 	if cmd == nil {
 		t.Fatal("expected command on Y confirmation")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(SelectCompleteMsg); !ok {
@@ -534,6 +536,7 @@ func TestSelectViewEscReturnsToReview(t *testing.T) {
 	cmd := sv.Update(selectSpecialKeyMsg(tea.KeyEscape))
 	if cmd == nil {
 		t.Fatal("expected command on Esc")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(SelectCancelMsg); !ok {

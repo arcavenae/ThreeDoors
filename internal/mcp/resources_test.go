@@ -41,6 +41,7 @@ func TestResourcesListPopulated(t *testing.T) {
 
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -85,6 +86,7 @@ func TestReadAllTasks(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -129,6 +131,7 @@ func TestReadTaskByID(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/abc-123")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -157,6 +160,7 @@ func TestReadTaskByIDNotFound(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/nonexistent")
 	if resp.Error == nil {
 		t.Fatal("expected error for nonexistent task")
+		return
 	}
 }
 
@@ -172,6 +176,7 @@ func TestReadTasksByStatus(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/status/todo")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -202,6 +207,7 @@ func TestReadTasksByStatusInvalid(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/status/bogus")
 	if resp.Error == nil {
 		t.Fatal("expected error for invalid status")
+		return
 	}
 }
 
@@ -216,6 +222,7 @@ func TestReadTasksByProvider(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://tasks/provider/textfile")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -242,6 +249,7 @@ func TestReadProviders(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://providers")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -270,6 +278,7 @@ func TestReadCurrentSession(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://session/current")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -300,6 +309,7 @@ func TestReadSessionHistory(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://session/history")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -328,6 +338,7 @@ func TestReadUnknownURI(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://unknown")
 	if resp.Error == nil {
 		t.Fatal("expected error for unknown URI")
+		return
 	}
 }
 
@@ -342,6 +353,7 @@ func TestReadMissingURI(t *testing.T) {
 	})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing URI")
+		return
 	}
 }
 

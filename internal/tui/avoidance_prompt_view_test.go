@@ -60,6 +60,7 @@ func TestAvoidancePromptView_Update(t *testing.T) {
 			cmd := v.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(tt.key)})
 			if cmd == nil {
 				t.Fatal("expected non-nil cmd")
+				return
 			}
 
 			msg := cmd()
@@ -84,6 +85,7 @@ func TestAvoidancePromptView_Update_Escape(t *testing.T) {
 	cmd := v.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd from Escape")
+		return
 	}
 
 	msg := cmd()

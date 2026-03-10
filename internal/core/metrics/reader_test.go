@@ -17,12 +17,14 @@ func writeJSONL(t *testing.T, dir string, sessions []core.SessionMetrics) string
 	f, err := os.Create(path)
 	if err != nil {
 		t.Fatalf("creating test file: %v", err)
+		return ""
 	}
 	t.Cleanup(func() { _ = f.Close() })
 	for _, s := range sessions {
 		data, err := json.Marshal(s)
 		if err != nil {
 			t.Fatalf("marshaling session: %v", err)
+			return ""
 		}
 		if _, err := f.Write(append(data, '\n')); err != nil {
 			t.Fatalf("writing session: %v", err)
@@ -38,6 +40,7 @@ func writeRaw(t *testing.T, dir string, lines []string) string {
 	f, err := os.Create(path)
 	if err != nil {
 		t.Fatalf("creating test file: %v", err)
+		return ""
 	}
 	t.Cleanup(func() { _ = f.Close() })
 	for _, line := range lines {
@@ -138,11 +141,13 @@ func TestReadAll(t *testing.T) {
 			if tt.wantErr {
 				if err == nil {
 					t.Fatal("expected error, got nil")
+					return
 				}
 				return
 			}
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+				return
 			}
 			if len(sessions) != tt.wantCount {
 				t.Errorf("got %d sessions, want %d", len(sessions), tt.wantCount)
@@ -211,6 +216,7 @@ func TestReadSince(t *testing.T) {
 			result, err := r.ReadSince(tt.since)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+				return
 			}
 			if len(result) != tt.wantCount {
 				t.Errorf("got %d sessions, want %d", len(result), tt.wantCount)
@@ -284,6 +290,7 @@ func TestReadLast(t *testing.T) {
 			result, err := r.ReadLast(tt.n)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+				return
 			}
 			if len(result) != tt.wantCount {
 				t.Errorf("got %d sessions, want %d", len(result), tt.wantCount)
@@ -309,6 +316,7 @@ func TestReadLastEmptyFile(t *testing.T) {
 	result, err := r.ReadLast(5)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(result) != 0 {
 		t.Errorf("got %d sessions from empty file, want 0", len(result))
@@ -324,6 +332,7 @@ func TestReadSinceMissingFile(t *testing.T) {
 	result, err := r.ReadSince(time.Now())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(result) != 0 {
 		t.Errorf("got %d sessions from missing file, want 0", len(result))
@@ -339,6 +348,7 @@ func TestReadLastMissingFile(t *testing.T) {
 	result, err := r.ReadLast(5)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(result) != 0 {
 		t.Errorf("got %d sessions from missing file, want 0", len(result))
@@ -368,6 +378,7 @@ func TestCorruptedLinesPreserveValidSessions(t *testing.T) {
 	all, err := r.ReadAll()
 	if err != nil {
 		t.Fatalf("ReadAll: unexpected error: %v", err)
+		return
 	}
 	if len(all) != 2 {
 		t.Errorf("ReadAll: got %d sessions, want 2", len(all))
@@ -391,6 +402,7 @@ func TestCorruptedLinesPreserveValidSessions(t *testing.T) {
 	since, err := r.ReadSince(time.Date(2025, 1, 1, 12, 0, 0, 0, time.UTC))
 	if err != nil {
 		t.Fatalf("ReadSince: unexpected error: %v", err)
+		return
 	}
 	if len(since) != 1 {
 		t.Errorf("ReadSince: got %d sessions, want 1", len(since))
@@ -400,6 +412,7 @@ func TestCorruptedLinesPreserveValidSessions(t *testing.T) {
 	last, err := r.ReadLast(1)
 	if err != nil {
 		t.Fatalf("ReadLast: unexpected error: %v", err)
+		return
 	}
 	if len(last) != 1 {
 		t.Errorf("ReadLast: got %d sessions, want 1", len(last))
@@ -437,6 +450,7 @@ func TestUndoCompleteEventsParsedCorrectly(t *testing.T) {
 	result, err := r.ReadAll()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(result) != 1 {
 		t.Fatalf("got %d sessions, want 1", len(result))
@@ -495,6 +509,7 @@ func TestSessionFieldsParsedCorrectly(t *testing.T) {
 	result, err := r.ReadAll()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(result) != 1 {
 		t.Fatalf("got %d sessions, want 1", len(result))

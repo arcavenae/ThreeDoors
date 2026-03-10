@@ -107,6 +107,7 @@ func TestTask_YAML_RoundTrip_WithCategories(t *testing.T) {
 	data, err := yaml.Marshal(original)
 	if err != nil {
 		t.Fatalf("Marshal failed: %v", err)
+		return
 	}
 
 	var loaded tasksFile
@@ -143,6 +144,7 @@ func TestTask_YAML_RoundTrip_Uncategorized(t *testing.T) {
 	data, err := yaml.Marshal(original)
 	if err != nil {
 		t.Fatalf("Marshal failed: %v", err)
+		return
 	}
 
 	// Verify omitempty: category fields should not appear in YAML

@@ -59,6 +59,7 @@ func TestTask_UpdateStatus_CompleteToTodo(t *testing.T) {
 	}
 	if task.CompletedAt == nil {
 		t.Fatal("Expected CompletedAt to be set after completion")
+		return
 	}
 
 	if err := task.UpdateStatus(StatusTodo); err != nil {

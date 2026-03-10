@@ -143,6 +143,7 @@ func TestOutputFormatter_WriteJSONError(t *testing.T) {
 			}
 			if env.Error == nil {
 				t.Fatal("error should not be nil")
+				return
 			}
 			if env.Error.Code != tt.wantCode {
 				t.Errorf("error.code = %d, want %d", env.Error.Code, tt.wantCode)

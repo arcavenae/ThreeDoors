@@ -67,6 +67,7 @@ func TestCheckTaskFile_DirNotWritable(t *testing.T) {
 	configPath, err := GetConfigDirPath()
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	if err := os.Chmod(configPath, 0o555); err != nil {
 		t.Fatal(err)

@@ -27,7 +27,7 @@ type DevQueue struct {
 // The file and its parent directory are created if they don't exist.
 func NewDevQueue(path string) (*DevQueue, error) {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create queue directory: %w", err)
 	}
 
@@ -72,7 +72,7 @@ func (q *DevQueue) Save(path string) error {
 	}
 
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return fmt.Errorf("create queue directory: %w", err)
 	}
 
@@ -178,7 +178,7 @@ func generateQueueID() string {
 func atomicWrite(path string, data []byte) error {
 	tmpPath := path + ".tmp"
 
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create temp file %s: %w", tmpPath, err)
 	}

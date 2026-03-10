@@ -49,6 +49,7 @@ func writeSessionsFile(t *testing.T, dir string, sessions []SessionMetrics) stri
 		data, err := json.Marshal(s)
 		if err != nil {
 			t.Fatalf("writeSessionsFile: marshal error: %v", err)
+			return ""
 		}
 		buf.Write(data)
 		buf.WriteByte('\n')
@@ -91,12 +92,14 @@ func writeReportSessionsFile(t *testing.T, dir string, sessions []SessionMetrics
 	f, err := os.Create(path)
 	if err != nil {
 		t.Fatalf("failed to create sessions file: %v", err)
+		return ""
 	}
 	defer func() { _ = f.Close() }()
 	for _, s := range sessions {
 		data, err := json.Marshal(s)
 		if err != nil {
 			t.Fatalf("failed to marshal session: %v", err)
+			return ""
 		}
 		_, _ = f.Write(data)
 		_, _ = f.Write([]byte("\n"))

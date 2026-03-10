@@ -2,6 +2,8 @@ package core
 
 import (
 	"fmt"
+	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -33,15 +35,35 @@ func GetConfigDirPath() (string, error) {
 }
 
 // EnsureConfigDir creates the config directory if it doesn't exist.
+// Uses 0o700 permissions so other local users cannot read task data.
+// If the directory exists with more permissive permissions, it tightens them.
 func EnsureConfigDir() (string, error) {
 	configPath, err := GetConfigDirPath()
 	if err != nil {
 		return "", err
 	}
-	if err := os.MkdirAll(configPath, 0o755); err != nil {
+	if err := os.MkdirAll(configPath, 0o700); err != nil {
 		return "", fmt.Errorf("failed to create config directory: %w", err)
 	}
+	migrateDirectoryPermissions(configPath)
 	return configPath, nil
+}
+
+// migrateDirectoryPermissions tightens the config directory to 0o700
+// if it has more permissive permissions (e.g. 0o755 from older versions).
+func migrateDirectoryPermissions(path string) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return
+	}
+	perm := info.Mode().Perm()
+	if perm&(fs.FileMode(0o077)) != 0 {
+		if err := os.Chmod(path, 0o700); err != nil {
+			log.Printf("Warning: failed to tighten directory permissions on %s: %v", path, err)
+			return
+		}
+		log.Printf("Migrated directory permissions on %s from %o to 0700", path, perm)
+	}
 }
 
 // GetTasksFilePath returns the path to tasks.yaml.

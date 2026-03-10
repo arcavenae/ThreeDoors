@@ -40,6 +40,7 @@ func TestOpen_CreatesDirectory(t *testing.T) {
 	edb, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("Open with nested dirs: %v", err)
+		return
 	}
 	t.Cleanup(func() { _ = edb.Close() })
 
@@ -55,6 +56,7 @@ func TestGetCrossReferences_NoMatches(t *testing.T) {
 	refs, err := edb.GetCrossReferences("nonexistent-task")
 	if err != nil {
 		t.Fatalf("GetCrossReferences: %v", err)
+		return
 	}
 	if len(refs) != 0 {
 		t.Errorf("expected 0 refs, got %d", len(refs))
@@ -79,6 +81,7 @@ func TestUpsertTaskMetadata_MultipleTimes(t *testing.T) {
 	got, err := edb.GetTaskMetadata("upsert-test")
 	if err != nil {
 		t.Fatalf("GetTaskMetadata: %v", err)
+		return
 	}
 	if got.TaskID != "upsert-test" {
 		t.Errorf("TaskID = %q, want %q", got.TaskID, "upsert-test")

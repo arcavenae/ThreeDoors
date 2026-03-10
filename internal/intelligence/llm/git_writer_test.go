@@ -79,6 +79,7 @@ func TestGitOutputWriter_WriteStories(t *testing.T) {
 		content, err := os.ReadFile(storyPath)
 		if err != nil {
 			t.Fatalf("story file not written: %v", err)
+			return
 		}
 		if !strings.Contains(string(content), "# Story 14.1: Auth Spike") {
 			t.Error("story file missing expected content")

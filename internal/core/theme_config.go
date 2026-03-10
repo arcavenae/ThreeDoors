@@ -33,7 +33,7 @@ func SaveThemeConfig(configDir string, themeName string) error {
 	}
 
 	tmpPath := configPath + ".tmp"
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create temp file: %w", err)
 	}

@@ -98,6 +98,7 @@ func TestNewMainModel_DoorsViewCreated(t *testing.T) {
 	m := makeModel("task1", "task2", "task3")
 	if m.doorsView == nil {
 		t.Fatal("doorsView should not be nil")
+		return
 	}
 }
 
@@ -251,6 +252,7 @@ func TestEnterKey_WithSelection_OpensDetail(t *testing.T) {
 	}
 	if m.detailView == nil {
 		t.Fatal("detailView should not be nil after Enter")
+		return
 	}
 }
 
@@ -292,6 +294,7 @@ func TestSpacebar_OpensSelectedDoor(t *testing.T) {
 			}
 			if m.detailView == nil {
 				t.Fatal("detailView should not be nil after spacebar")
+				return
 			}
 		})
 	}
@@ -360,6 +363,7 @@ func TestQKey_QuitsFromDoors(t *testing.T) {
 	_, cmd := m.Update(keyMsg("q"))
 	if cmd == nil {
 		t.Fatal("expected quit command")
+		return
 	}
 }
 
@@ -368,6 +372,7 @@ func TestCtrlC_QuitsFromDoors(t *testing.T) {
 	_, cmd := m.Update(keyMsg("ctrl+c"))
 	if cmd == nil {
 		t.Fatal("expected quit command from Ctrl+C")
+		return
 	}
 }
 
@@ -666,6 +671,7 @@ func TestTaskCompleted_CallsProviderMarkComplete(t *testing.T) {
 	m.Update(keyMsg("enter"))
 	if m.detailView == nil {
 		t.Fatal("should be in detail view")
+		return
 	}
 	taskID := m.detailView.task.ID
 
@@ -778,6 +784,7 @@ func TestColonKey_OpensSearchInCommandMode(t *testing.T) {
 	}
 	if m.searchView == nil {
 		t.Fatal("searchView should be created")
+		return
 	}
 	val := m.searchView.textInput.Value()
 	if val != ":" {
@@ -1216,6 +1223,7 @@ func TestGlobalCommandMode_TableDriven(t *testing.T) {
 				}
 				if m.searchView == nil {
 					t.Fatal("searchView should not be nil")
+					return
 				}
 				if !m.searchView.isCommandMode {
 					t.Error("should be in command mode")

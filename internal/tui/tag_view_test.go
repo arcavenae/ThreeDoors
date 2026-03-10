@@ -68,6 +68,7 @@ func TestTagView_EscapeRestoresOriginals(t *testing.T) {
 	cmd := tv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd from Escape")
+		return
 	}
 
 	msg := cmd()
@@ -126,6 +127,7 @@ func TestTagView_SelectDone(t *testing.T) {
 	cmd := tv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd from Done")
+		return
 	}
 
 	msg := cmd()

@@ -172,6 +172,7 @@ func TestParseConfigEnvTokenOverride(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("ParseConfig: %v", err)
+		return
 	}
 	if cfg.Token != "env-token" {
 		t.Errorf("token = %q, want %q (env override)", cfg.Token, "env-token")

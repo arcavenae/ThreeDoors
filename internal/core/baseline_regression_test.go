@@ -393,6 +393,7 @@ func TestStatusTransition_CompletedAtSetForTerminalStates(t *testing.T) {
 			err := task.UpdateStatus(tt.to)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+				return
 			}
 			if tt.wantCompleted && task.CompletedAt == nil {
 				t.Error("CompletedAt should be set for terminal state")

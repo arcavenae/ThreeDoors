@@ -59,6 +59,7 @@ func loadTestdata(t *testing.T, filename string) []byte {
 	data, err := os.ReadFile("testdata/" + filename)
 	if err != nil {
 		t.Fatalf("load testdata %s: %v", filename, err)
+		return nil
 	}
 	return data
 }
@@ -155,6 +156,7 @@ func TestPriorityMappingViaHTTP(t *testing.T) {
 			tasksJSON, err := json.Marshal([]TodoistTask{task})
 			if err != nil {
 				t.Fatalf("marshal tasks: %v", err)
+				return
 			}
 
 			handler := &httpMockHandler{
@@ -227,6 +229,7 @@ func TestDeletedTaskFiltering(t *testing.T) {
 			tasksJSON, err := json.Marshal(tt.tasks)
 			if err != nil {
 				t.Fatalf("marshal: %v", err)
+				return
 			}
 
 			handler := &httpMockHandler{
@@ -340,6 +343,7 @@ func TestRateLimitHandling(t *testing.T) {
 		_, err := client.GetTasks(context.Background(), "", "")
 		if err == nil {
 			t.Fatal("expected error for 429 response")
+			return
 		}
 		var rle *RateLimitError
 		if !errors.As(err, &rle) {
@@ -356,6 +360,7 @@ func TestRateLimitHandling(t *testing.T) {
 		_, err := client.GetProjects(context.Background())
 		if err == nil {
 			t.Fatal("expected error for 429 response")
+			return
 		}
 		if !IsRateLimitError(err) {
 			t.Errorf("IsRateLimitError() = false, want true")
@@ -368,6 +373,7 @@ func TestRateLimitHandling(t *testing.T) {
 		err := client.CloseTask(context.Background(), "task-1")
 		if err == nil {
 			t.Fatal("expected error for 429 response")
+			return
 		}
 		if !IsRateLimitError(err) {
 			t.Errorf("IsRateLimitError() = false, want true")
@@ -388,6 +394,7 @@ func TestRateLimitHandling(t *testing.T) {
 		_, err := p.LoadTasks()
 		if err == nil {
 			t.Fatal("expected error from rate-limited API")
+			return
 		}
 	})
 }

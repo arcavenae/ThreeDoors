@@ -101,6 +101,7 @@ func TestDispatchEngine_RequireStoryTrue_CallsGenerator(t *testing.T) {
 	}
 	if result.StoryResult == nil {
 		t.Fatal("StoryResult should not be nil")
+		return
 	}
 	if result.StoryResult.Branch != "stories/dq-1234" {
 		t.Errorf("Branch = %q, want %q", result.StoryResult.Branch, "stories/dq-1234")

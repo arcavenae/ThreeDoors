@@ -83,6 +83,7 @@ func TestDisplayDoors_JSON(t *testing.T) {
 	dataBytes, err := json.Marshal(env.Data)
 	if err != nil {
 		t.Fatalf("marshal data: %v", err)
+		return
 	}
 	var entries []doorEntry
 	if err := json.Unmarshal(dataBytes, &entries); err != nil {
@@ -103,6 +104,7 @@ func TestDisplayDoors_JSON(t *testing.T) {
 	metaBytes, err := json.Marshal(env.Metadata)
 	if err != nil {
 		t.Fatalf("marshal metadata: %v", err)
+		return
 	}
 	var meta map[string]interface{}
 	if err := json.Unmarshal(metaBytes, &meta); err != nil {
@@ -191,6 +193,7 @@ func TestHandlePick_JSON(t *testing.T) {
 	dataBytes, err := json.Marshal(env.Data)
 	if err != nil {
 		t.Fatalf("marshal data: %v", err)
+		return
 	}
 	var entry doorEntry
 	if err := json.Unmarshal(dataBytes, &entry); err != nil {
@@ -334,6 +337,7 @@ func TestBuildTaskPool_ValidProvider(t *testing.T) {
 	pool, provider, err := buildTaskPool(mock)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if pool == nil {
 		t.Fatal("expected non-nil pool")

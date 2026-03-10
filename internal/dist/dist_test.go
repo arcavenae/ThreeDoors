@@ -12,6 +12,7 @@ func TestStubRunner_RecordsCalls(t *testing.T) {
 	out, err := stub.Run("echo", "hello", "world")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if string(out) != "hello" {
 		t.Errorf("output = %q, want %q", out, "hello")
@@ -35,6 +36,7 @@ func TestStubRunner_ReturnsError(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error, got nil")
+		return
 	}
 	if string(out) != "oops" {
 		t.Errorf("output = %q, want %q", out, "oops")
@@ -48,6 +50,7 @@ func TestStubRunner_UnconfiguredCommandErrors(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for unconfigured command, got nil")
+		return
 	}
 }
 

@@ -49,6 +49,7 @@ func writeInsightsSessionsFile(t *testing.T, dir string, sessions []core.Session
 		data, err := json.Marshal(s)
 		if err != nil {
 			t.Fatalf("marshal error: %v", err)
+			return ""
 		}
 		buf.Write(data)
 		buf.WriteByte('\n')
@@ -191,6 +192,7 @@ func TestInsightsView_Update_EscReturns(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("Esc should produce a command")
+		return
 	}
 
 	msg := cmd()
@@ -992,6 +994,7 @@ func TestInsightsView_EscReturnsFromEitherTab(t *testing.T) {
 			cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 			if cmd == nil {
 				t.Fatal("Esc should produce a command")
+				return
 			}
 			msg := cmd()
 			if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -1482,6 +1485,7 @@ func compareGoldenFile(t *testing.T, path, actual string) {
 	expected, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read golden file %s: %v", path, err)
+		return
 	}
 	if string(expected) != actual {
 		t.Errorf("output does not match golden file %s.\nRun with UPDATE_GOLDEN=1 to update.\n\nExpected:\n%s\n\nActual:\n%s",
@@ -1662,6 +1666,7 @@ func TestInsightsView_AnimationProgressIncrements(t *testing.T) {
 	cmd = iv.Update(StatsAnimationTickMsg{})
 	if cmd == nil {
 		t.Fatal("expected tick command while animating")
+		return
 	}
 	expectedProgress := animationStep
 	if iv.animationProgress < expectedProgress-0.001 || iv.animationProgress > expectedProgress+0.001 {
@@ -1679,6 +1684,7 @@ func TestInsightsView_AnimationStopsAfterCompletion(t *testing.T) {
 	cmd := iv.Update(StatsAnimationTickMsg{})
 	if cmd != nil {
 		t.Fatal("expected nil command after animation completes")
+		return
 	}
 	if iv.animating {
 		t.Fatal("expected animating=false after completion")
@@ -1721,6 +1727,7 @@ func TestInsightsView_EscDuringAnimationStopsCleanly(t *testing.T) {
 	cmd := iv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected ReturnToDoorsMsg command")
+		return
 	}
 	if iv.animating {
 		t.Fatal("expected animating=false after Esc")
@@ -1813,6 +1820,7 @@ func TestInsightsView_TickAfterAnimationComplete(t *testing.T) {
 	cmd := iv.Update(StatsAnimationTickMsg{})
 	if cmd != nil {
 		t.Fatal("expected nil command for tick when not animating")
+		return
 	}
 }
 
@@ -1834,6 +1842,7 @@ func TestInsightsView_MilestoneBannerShows(t *testing.T) {
 	cmd := iv.CheckAndShowMilestone(0, 0, 1)
 	if cmd == nil {
 		t.Fatal("expected auto-dismiss command for milestone banner")
+		return
 	}
 	if !iv.bannerActive {
 		t.Error("banner should be active after milestone check")
@@ -1905,6 +1914,7 @@ func TestInsightsView_MilestoneShownOnlyOnce(t *testing.T) {
 	cmd1 := iv1.CheckAndShowMilestone(0, 0, 1)
 	if cmd1 == nil {
 		t.Fatal("first check should trigger milestone")
+		return
 	}
 
 	// Second entry with same checker: should NOT trigger (already marked shown)

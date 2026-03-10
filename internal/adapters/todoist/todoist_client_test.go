@@ -47,6 +47,7 @@ func TestClientGetTasks(t *testing.T) {
 	tasks, err := client.GetTasks(context.Background(), "", "")
 	if err != nil {
 		t.Fatalf("GetTasks: %v", err)
+		return
 	}
 
 	if len(tasks) != 1 {
@@ -82,6 +83,7 @@ func TestClientGetTasksWithProjectID(t *testing.T) {
 	_, err := client.GetTasks(context.Background(), "2233", "")
 	if err != nil {
 		t.Fatalf("GetTasks with project_id: %v", err)
+		return
 	}
 }
 
@@ -104,6 +106,7 @@ func TestClientGetTasksWithFilter(t *testing.T) {
 	_, err := client.GetTasks(context.Background(), "", "today")
 	if err != nil {
 		t.Fatalf("GetTasks with filter: %v", err)
+		return
 	}
 }
 
@@ -134,6 +137,7 @@ func TestClientGetTasksWithDueDate(t *testing.T) {
 	tasks, err := client.GetTasks(context.Background(), "", "")
 	if err != nil {
 		t.Fatalf("GetTasks: %v", err)
+		return
 	}
 
 	if len(tasks) != 1 {
@@ -165,6 +169,7 @@ func TestClientCloseTask(t *testing.T) {
 	err := client.CloseTask(context.Background(), "12345")
 	if err != nil {
 		t.Fatalf("CloseTask: %v", err)
+		return
 	}
 }
 
@@ -180,6 +185,7 @@ func TestClientCloseTaskError(t *testing.T) {
 	err := client.CloseTask(context.Background(), "nonexistent")
 	if err == nil {
 		t.Fatal("expected error for 404 response")
+		return
 	}
 }
 
@@ -209,6 +215,7 @@ func TestClientGetProjects(t *testing.T) {
 	projects, err := client.GetProjects(context.Background())
 	if err != nil {
 		t.Fatalf("GetProjects: %v", err)
+		return
 	}
 
 	if len(projects) != 2 {
@@ -236,6 +243,7 @@ func TestClientRateLimitHandling(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 
 	var rle *RateLimitError
@@ -290,6 +298,7 @@ func TestClientBearerAuth(t *testing.T) {
 	_, err := client.GetProjects(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if gotAuth != "Bearer test-token" {
@@ -309,6 +318,7 @@ func TestClientGetTasksServerError(t *testing.T) {
 	_, err := client.GetTasks(context.Background(), "", "")
 	if err == nil {
 		t.Fatal("expected error for 500 response")
+		return
 	}
 }
 
@@ -324,6 +334,7 @@ func TestClientGetProjectsServerError(t *testing.T) {
 	_, err := client.GetProjects(context.Background())
 	if err == nil {
 		t.Fatal("expected error for 500 response")
+		return
 	}
 }
 

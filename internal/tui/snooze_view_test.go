@@ -79,6 +79,7 @@ func TestSnoozeViewEscCancels(t *testing.T) {
 	cmd := v.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("expected a command from Esc")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(SnoozeCancelledMsg); !ok {
@@ -95,6 +96,7 @@ func TestSnoozeViewSelectTomorrow(t *testing.T) {
 	cmd := v.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter")
+		return
 	}
 	msg := cmd()
 	snoozed, ok := msg.(TaskSnoozedMsg)
@@ -109,6 +111,7 @@ func TestSnoozeViewSelectTomorrow(t *testing.T) {
 	}
 	if snoozed.DeferDate == nil {
 		t.Fatal("expected DeferDate to be non-nil for tomorrow")
+		return
 	}
 }
 
@@ -121,6 +124,7 @@ func TestSnoozeViewSelectNextWeek(t *testing.T) {
 	cmd := v.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter")
+		return
 	}
 	msg := cmd()
 	snoozed, ok := msg.(TaskSnoozedMsg)
@@ -132,6 +136,7 @@ func TestSnoozeViewSelectNextWeek(t *testing.T) {
 	}
 	if snoozed.DeferDate == nil {
 		t.Fatal("expected DeferDate to be non-nil for next week")
+		return
 	}
 }
 
@@ -159,6 +164,7 @@ func TestSnoozeViewSelectSomeday(t *testing.T) {
 	cmd := v.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter")
+		return
 	}
 	msg := cmd()
 	snoozed, ok := msg.(TaskSnoozedMsg)
@@ -191,6 +197,7 @@ func TestSnoozeViewDateInput(t *testing.T) {
 	cmd := v.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter on valid date")
+		return
 	}
 	msg := cmd()
 	snoozed, ok := msg.(TaskSnoozedMsg)
@@ -202,6 +209,7 @@ func TestSnoozeViewDateInput(t *testing.T) {
 	}
 	if snoozed.DeferDate == nil {
 		t.Fatal("expected DeferDate to be non-nil for pick_date")
+		return
 	}
 }
 
@@ -424,6 +432,7 @@ func TestDetailViewZKeyOpenSnooze(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("z")})
 	if cmd == nil {
 		t.Fatal("expected a command from Z key")
+		return
 	}
 	msg := cmd()
 	showSnooze, ok := msg.(ShowSnoozeMsg)

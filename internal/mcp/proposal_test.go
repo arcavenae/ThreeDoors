@@ -18,6 +18,7 @@ func testPayload(t *testing.T, text string) json.RawMessage {
 	data, err := json.Marshal(map[string]string{"text": text})
 	if err != nil {
 		t.Fatalf("marshal test payload: %v", err)
+		return nil
 	}
 	return data
 }
@@ -49,6 +50,7 @@ func testStore(t *testing.T, pool *core.TaskPool) *ProposalStore {
 	store, err := NewProposalStore(path, pool)
 	if err != nil {
 		t.Fatalf("create test store: %v", err)
+		return nil
 	}
 	return store
 }
@@ -124,6 +126,7 @@ func TestProposalStore_CRUD(t *testing.T) {
 	p, err := NewProposal(ProposalAddNote, taskID, task.UpdatedAt, testPayload(t, "remember milk"), "mcp:test", "helpful note")
 	if err != nil {
 		t.Fatalf("NewProposal: %v", err)
+		return
 	}
 	if err := store.Create(p); err != nil {
 		t.Fatalf("Create: %v", err)
@@ -133,6 +136,7 @@ func TestProposalStore_CRUD(t *testing.T) {
 	got, err := store.Get(p.ID)
 	if err != nil {
 		t.Fatalf("Get: %v", err)
+		return
 	}
 	if got.ID != p.ID {
 		t.Errorf("Get ID = %s, want %s", got.ID, p.ID)
@@ -224,6 +228,7 @@ func TestProposalStore_OptimisticConcurrency(t *testing.T) {
 	err := store.UpdateStatus(p.ID, ProposalApproved, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("UpdateStatus: %v", err)
+		return
 	}
 
 	got, _ := store.Get(p.ID)
@@ -354,6 +359,7 @@ func TestProposalStore_Persistence(t *testing.T) {
 	store1, err := NewProposalStore(path, pool)
 	if err != nil {
 		t.Fatalf("create store: %v", err)
+		return
 	}
 	payload := testPayload(t, "persistent note "+uuid.New().String())
 	p, _ := NewProposal(ProposalAddNote, taskID, time.Now().UTC(), payload, "mcp:test", "reason")
@@ -363,11 +369,13 @@ func TestProposalStore_Persistence(t *testing.T) {
 	store2, err := NewProposalStore(path, pool)
 	if err != nil {
 		t.Fatalf("reload store: %v", err)
+		return
 	}
 
 	got, err := store2.Get(p.ID)
 	if err != nil {
 		t.Fatalf("Get from reloaded store: %v", err)
+		return
 	}
 	if got.Status != ProposalPending {
 		t.Errorf("reloaded status = %s, want pending", got.Status)
@@ -483,6 +491,7 @@ func TestProposalStore_NewFromNonexistentDir(t *testing.T) {
 	store, err := NewProposalStore(path, nil)
 	if err != nil {
 		t.Fatalf("NewProposalStore: %v", err)
+		return
 	}
 
 	// Verify the directory was created.
@@ -547,6 +556,7 @@ func TestProposalToolsViaServer(t *testing.T) {
 	respBytes, err := server.HandleRequest(raw)
 	if err != nil {
 		t.Fatalf("HandleRequest: %v", err)
+		return
 	}
 
 	var resp Response
@@ -555,6 +565,7 @@ func TestProposalToolsViaServer(t *testing.T) {
 	}
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %s", resp.Error.Message)
+		return
 	}
 
 	// Verify proposal was created.
@@ -599,6 +610,7 @@ func TestProposalToolsViaServer_SuggestTask(t *testing.T) {
 	respBytes, err := server.HandleRequest(raw)
 	if err != nil {
 		t.Fatalf("HandleRequest: %v", err)
+		return
 	}
 
 	var resp Response
@@ -607,6 +619,7 @@ func TestProposalToolsViaServer_SuggestTask(t *testing.T) {
 	}
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %s", resp.Error.Message)
+		return
 	}
 
 	all := store.List(ProposalFilter{})
@@ -649,6 +662,7 @@ func TestProposalToolsViaServer_SuggestRelationship(t *testing.T) {
 	respBytes, err := server.HandleRequest(raw)
 	if err != nil {
 		t.Fatalf("HandleRequest: %v", err)
+		return
 	}
 
 	var resp Response
@@ -657,6 +671,7 @@ func TestProposalToolsViaServer_SuggestRelationship(t *testing.T) {
 	}
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %s", resp.Error.Message)
+		return
 	}
 
 	all := store.List(ProposalFilter{})
@@ -695,6 +710,7 @@ func TestPendingProposalsResource(t *testing.T) {
 	respBytes, err := server.HandleRequest(raw)
 	if err != nil {
 		t.Fatalf("HandleRequest: %v", err)
+		return
 	}
 
 	var resp Response
@@ -703,6 +719,7 @@ func TestPendingProposalsResource(t *testing.T) {
 	}
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %s", resp.Error.Message)
+		return
 	}
 }
 

@@ -158,6 +158,7 @@ func TestCompleteResult_JSON(t *testing.T) {
 	data, err := json.Marshal(r)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
+		return
 	}
 
 	var decoded map[string]interface{}
@@ -310,6 +311,7 @@ func TestRunTaskAddSingleStdin(t *testing.T) {
 		data, err := io.ReadAll(r)
 		if err != nil {
 			t.Fatalf("read: %v", err)
+			return
 		}
 		text := strings.TrimSpace(string(data))
 		if text != "Buy groceries" {
@@ -467,6 +469,7 @@ func TestListMetadata_JSON(t *testing.T) {
 	data, err := json.Marshal(meta)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
+		return
 	}
 
 	var decoded map[string]interface{}
@@ -609,6 +612,7 @@ func TestDeleteResult_JSON(t *testing.T) {
 	data, err := json.Marshal(r)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
+		return
 	}
 
 	var decoded map[string]interface{}
@@ -636,6 +640,7 @@ func TestSearchMetadata_JSON(t *testing.T) {
 	data, err := json.Marshal(meta)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
+		return
 	}
 
 	var decoded map[string]interface{}

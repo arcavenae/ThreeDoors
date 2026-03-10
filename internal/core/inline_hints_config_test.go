@@ -101,6 +101,7 @@ func TestShowKeyHintsMigration(t *testing.T) {
 			} else {
 				if cfg.ShowKeyHints == nil {
 					t.Fatal("expected ShowKeyHints non-nil, got nil")
+					return
 				}
 				if *cfg.ShowKeyHints != *tt.wantShowKeyHints {
 					t.Errorf("ShowKeyHints: got %v, want %v", *cfg.ShowKeyHints, *tt.wantShowKeyHints)
@@ -133,10 +134,12 @@ func TestShowKeyHintsPersistenceRoundTrip(t *testing.T) {
 	loaded, err := LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("load failed: %v", err)
+		return
 	}
 
 	if loaded.ShowKeyHints == nil {
 		t.Fatal("expected ShowKeyHints non-nil after load")
+		return
 	}
 	if *loaded.ShowKeyHints != true {
 		t.Errorf("ShowKeyHints: got %v, want true", *loaded.ShowKeyHints)

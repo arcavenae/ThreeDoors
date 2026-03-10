@@ -52,6 +52,7 @@ func TestSmoke_Quit(t *testing.T) {
 	fm := tm.FinalModel(t, teatest.WithFinalTimeout(5*time.Second))
 	if fm == nil {
 		t.Fatal("expected non-nil final model after quit")
+		return
 	}
 
 	// Verify the final model is our MainModel.
@@ -92,6 +93,7 @@ func TestSmoke_DoorSelection(t *testing.T) {
 			fm := tm.FinalModel(t, teatest.WithFinalTimeout(5*time.Second))
 			if fm == nil {
 				t.Fatal("expected non-nil final model")
+				return
 			}
 		})
 	}
@@ -118,5 +120,6 @@ func TestSmoke_Reroll(t *testing.T) {
 	fm := tm.FinalModel(t, teatest.WithFinalTimeout(5*time.Second))
 	if fm == nil {
 		t.Fatal("expected non-nil final model after reroll + quit")
+		return
 	}
 }

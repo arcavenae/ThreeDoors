@@ -41,6 +41,7 @@ func newTestGuardrailChecker(t *testing.T, cfg DevDispatchConfig, workers []Work
 	audit, err := NewAuditLogger(path)
 	if err != nil {
 		t.Fatalf("NewAuditLogger: %v", err)
+		return nil, nil
 	}
 
 	disp := &guardrailMockDispatcher{workers: workers}
@@ -70,6 +71,7 @@ func TestCheckMaxConcurrentAtLimit(t *testing.T) {
 	err := checker.CheckMaxConcurrent(context.Background())
 	if err == nil {
 		t.Fatal("should fail at limit")
+		return
 	}
 
 	var violation *GuardrailViolation
@@ -91,6 +93,7 @@ func TestCheckMaxConcurrentListError(t *testing.T) {
 	err := checker.CheckMaxConcurrent(context.Background())
 	if err == nil {
 		t.Fatal("should propagate list error")
+		return
 	}
 	// Should not be a GuardrailViolation — it's an infrastructure error
 	var violation *GuardrailViolation
@@ -139,6 +142,7 @@ func TestCheckCooldownActive(t *testing.T) {
 	err := checker.CheckCooldown("task-1")
 	if err == nil {
 		t.Fatal("should fail during cooldown")
+		return
 	}
 
 	var violation *GuardrailViolation
@@ -198,6 +202,7 @@ func TestCheckDailyLimitAtLimit(t *testing.T) {
 	err := checker.CheckDailyLimit()
 	if err == nil {
 		t.Fatal("should fail at limit")
+		return
 	}
 
 	var violation *GuardrailViolation
@@ -247,6 +252,7 @@ func TestCheckAllFailsOnFirstViolation(t *testing.T) {
 	err := checker.CheckAll(context.Background(), "task-1")
 	if err == nil {
 		t.Fatal("CheckAll should fail")
+		return
 	}
 
 	var violation *GuardrailViolation

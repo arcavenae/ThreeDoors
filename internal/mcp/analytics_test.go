@@ -20,6 +20,7 @@ func writeSessions(t *testing.T, sessions []core.SessionMetrics) *metrics.Reader
 	f, err := os.Create(path)
 	if err != nil {
 		t.Fatalf("create temp file: %v", err)
+		return nil
 	}
 	t.Cleanup(func() { _ = f.Close() })
 
@@ -83,6 +84,7 @@ func TestMoodCorrelationAnalysis(t *testing.T) {
 	result, err := pm.MoodCorrelationAnalysis(now.AddDate(0, 0, -30), now)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result == nil {
@@ -118,6 +120,7 @@ func TestMoodCorrelationNoSessions(t *testing.T) {
 	result, err := pm.MoodCorrelationAnalysis(now.AddDate(0, 0, -7), now)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if len(result.Entries) != 0 {
@@ -136,6 +139,7 @@ func TestProductivityProfileAnalysis(t *testing.T) {
 	result, err := pm.ProductivityProfileAnalysis(now.AddDate(0, 0, -30), now)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result == nil {
@@ -174,6 +178,7 @@ func TestStreakAnalysis(t *testing.T) {
 	result, err := pm.StreakAnalysis()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result == nil {
@@ -203,6 +208,7 @@ func TestStreakAnalysisNoSessions(t *testing.T) {
 	result, err := pm.StreakAnalysis()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result.CurrentStreak != 0 {
@@ -223,6 +229,7 @@ func TestBurnoutRisk(t *testing.T) {
 	result, err := pm.BurnoutRisk()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result == nil {
@@ -249,6 +256,7 @@ func TestBurnoutRiskNoSessions(t *testing.T) {
 	result, err := pm.BurnoutRisk()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result.Level != "unknown" {
@@ -266,6 +274,7 @@ func TestWeeklySummaryAnalysis(t *testing.T) {
 	result, err := pm.WeeklySummaryAnalysis(time.Now().UTC())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if result == nil {
@@ -360,6 +369,7 @@ func TestAnalyticsResourcesRegistered(t *testing.T) {
 
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -434,6 +444,7 @@ func TestPromptsRegistered(t *testing.T) {
 
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -473,6 +484,7 @@ func TestPromptsGet(t *testing.T) {
 
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: code=%d msg=%s", resp.Error.Code, resp.Error.Message)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -508,6 +520,7 @@ func TestPromptsGetUnknown(t *testing.T) {
 
 	if resp.Error == nil {
 		t.Fatal("expected error for unknown prompt")
+		return
 	}
 }
 
@@ -626,6 +639,7 @@ func TestPatternMinerNilReader(t *testing.T) {
 	result, err := pm.MoodCorrelationAnalysis(now.AddDate(0, 0, -7), now)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(result.Entries) != 0 {
 		t.Errorf("expected 0 entries with nil reader, got %d", len(result.Entries))
@@ -634,6 +648,7 @@ func TestPatternMinerNilReader(t *testing.T) {
 	streaks, err := pm.StreakAnalysis()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if streaks.CurrentStreak != 0 {
 		t.Errorf("expected 0 current streak with nil reader")
@@ -642,6 +657,7 @@ func TestPatternMinerNilReader(t *testing.T) {
 	burnout, err := pm.BurnoutRisk()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if burnout.Level != "unknown" {
 		t.Errorf("expected unknown level with nil reader, got %s", burnout.Level)

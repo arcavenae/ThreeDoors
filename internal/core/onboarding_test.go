@@ -104,6 +104,7 @@ func TestMarkOnboardingComplete(t *testing.T) {
 		data, err := os.ReadFile(filepath.Join(dir, "config.yaml"))
 		if err != nil {
 			t.Fatalf("read config: %v", err)
+			return
 		}
 
 		content := string(data)

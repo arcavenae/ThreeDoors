@@ -52,6 +52,7 @@ func newTestQueue(t *testing.T) *dispatch.DevQueue {
 	q, err := dispatch.NewDevQueue(path)
 	if err != nil {
 		t.Fatalf("create test queue: %v", err)
+		return nil
 	}
 	return q
 }
@@ -157,6 +158,7 @@ func TestDevQueueViewEscReturns(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("expected command from Esc, got nil")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -176,6 +178,7 @@ func TestDevQueueViewRejectPending(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("n")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd from reject, got nil")
+		return
 	}
 
 	if len(dv.items) != 1 {
@@ -199,6 +202,7 @@ func TestDevQueueViewRejectNonPending(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("n")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd, got nil")
+		return
 	}
 	if !strings.Contains(dv.flash, "Only pending") {
 		t.Errorf("expected 'Only pending' in flash, got %q", dv.flash)
@@ -218,6 +222,7 @@ func TestDevQueueViewApproveNonPending(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd, got nil")
+		return
 	}
 	if !strings.Contains(dv.flash, "Only pending") {
 		t.Errorf("expected 'Only pending' in flash, got %q", dv.flash)
@@ -234,6 +239,7 @@ func TestDevQueueViewKillNonDispatched(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("K")})
 	if cmd == nil {
 		t.Fatal("expected ClearFlashCmd, got nil")
+		return
 	}
 	if !strings.Contains(dv.flash, "Only dispatched") {
 		t.Errorf("expected 'Only dispatched' in flash, got %q", dv.flash)
@@ -378,6 +384,7 @@ func TestDevQueueViewApproveCmd(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("expected tea.Cmd from approve, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -396,6 +403,7 @@ func TestDevQueueViewApproveCmd(t *testing.T) {
 	updated, err := q.Get(item.ID)
 	if err != nil {
 		t.Fatalf("get updated item: %v", err)
+		return
 	}
 	if updated.Status != dispatch.QueueItemDispatched {
 		t.Errorf("status = %s, want dispatched", updated.Status)
@@ -416,6 +424,7 @@ func TestDevQueueViewApproveError(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("expected tea.Cmd, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -431,6 +440,7 @@ func TestDevQueueViewApproveError(t *testing.T) {
 	updated, err := q.Get(item.ID)
 	if err != nil {
 		t.Fatalf("get item: %v", err)
+		return
 	}
 	if updated.Status != dispatch.QueueItemPending {
 		t.Errorf("status should revert to pending, got %s", updated.Status)
@@ -458,6 +468,7 @@ func TestDevQueueViewKillCmd(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("K")})
 	if cmd == nil {
 		t.Fatal("expected tea.Cmd from kill, got nil")
+		return
 	}
 
 	msg := cmd()
@@ -476,6 +487,7 @@ func TestDevQueueViewKillCmd(t *testing.T) {
 	updated, err := q.Get(item.ID)
 	if err != nil {
 		t.Fatalf("get item: %v", err)
+		return
 	}
 	if updated.Status != dispatch.QueueItemFailed {
 		t.Errorf("status = %s, want failed", updated.Status)
@@ -515,6 +527,7 @@ func TestDevQueueRemove(t *testing.T) {
 	q, err := dispatch.NewDevQueue(path)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	now := time.Now().UTC()
@@ -547,6 +560,7 @@ func TestDevQueueRemove(t *testing.T) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	if strings.Contains(string(data), "A") {
 		t.Error("removed item still in file")
@@ -560,6 +574,7 @@ func TestDevQueueRemoveNotFound(t *testing.T) {
 	q, err := dispatch.NewDevQueue(path)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	err = q.Remove("nonexistent")
