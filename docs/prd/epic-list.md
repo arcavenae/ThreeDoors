@@ -637,7 +637,20 @@
 - **Research:** See `../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md`, `../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md`
 - **Decisions:** D-112 (browser URL primary), D-113 (ring buffer), D-114 (allowlist privacy), D-115 (mandatory preview), D-116 (hardcoded target repo)
 
-**Epic 51+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 51: SLAES — Self-Learning Agentic Engineering System** (P1)
+- **Goal:** Build a continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste (saga patterns), audits doc consistency, analyzes CI/conflict patterns, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality and operational efficiency.
+- **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - Phase 0: Retrospector agent definition in responsibility+WHY format; rewrite 5 operational agent definitions with incident-hardened guardrails
+  - Phase 1 (MVP): JSONL findings log with per-merge lightweight retro, saga detection (2+ workers on same fix), doc consistency audit (periodic cross-check of planning docs), BOARD.md recommendation pipeline with confidence scoring
+  - Phase 2: Merge conflict rate analysis (hot files, parallelization safety), CI failure taxonomy and spec-chain tracing, research lifecycle tracking, PR creation authority, weekly trend reporting
+  - 5 Watchmen safeguards: no self-modification, audit trail, confidence scoring, periodic human review, kill switch (3 rejections → read-only)
+- **Stories:** 51.1-51.10 (10 stories)
+- **Research:** See `_bmad-output/planning-artifacts/agentic-engineering-agent-party-mode.md`, `_bmad-output/planning-artifacts/subagent-abuse-investigation.md`
+- **Decisions:** D-1 (single agent), D-2 (SLAES/retrospector naming), D-3 (persistent 15-min polling), D-4 (Level 2 authority), D-5 (consumer model), D-6 (dual-loop), D-7 (per-PR + batch), D-8 (5 Watchmen safeguards), D-9 (mode rotation), D-10 (responsibility+WHY definitions)
+
+**Epic 52+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -699,5 +712,6 @@
 | Epic 48: Door-Like Doors | 4 | Not Started |
 | Epic 49: ThreeDoors Doctor | 10 | Not Started |
 | Epic 50: In-App Bug Reporting | 3 | Not Started |
-| **Total** | **264** | **146 complete, 4 epics in progress, 118 not started** |
+| Epic 51: SLAES | 10 | Not Started |
+| **Total** | **274** | **146 complete, 4 epics in progress, 128 not started** |
 ---
