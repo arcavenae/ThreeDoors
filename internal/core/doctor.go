@@ -152,6 +152,7 @@ func NewDoctorChecker(configDir string) *DoctorChecker {
 	dc.RegisterCategory("Environment", dc.checkEnvironment)
 	dc.RegisterCategory("Task Data", dc.checkTaskData)
 	dc.RegisterCategory("Sync", dc.checkSync)
+	dc.RegisterCategory("Database", dc.checkDatabase)
 	return dc
 }
 
