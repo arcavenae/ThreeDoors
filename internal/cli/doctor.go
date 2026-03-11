@@ -8,6 +8,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 // doctorCategoryJSON is the JSON representation of a category result.
@@ -61,6 +62,10 @@ func runDoctor(cmd *cobra.Command) error {
 	}
 
 	dc := core.NewDoctorChecker(configDir)
+
+	// Detect terminal capabilities
+	dc.SetTerminalInfo(detectTerminalInfo())
+
 	result := dc.Run()
 
 	if isJSON {
@@ -156,4 +161,19 @@ func pluralize(word string, count int) string {
 		return "categories"
 	}
 	return word + "s"
+}
+
+// detectTerminalInfo gathers terminal size and color profile for doctor checks.
+func detectTerminalInfo() core.TerminalInfo {
+	info := core.TerminalInfo{}
+
+	width, height, err := term.GetSize(int(os.Stdout.Fd()))
+	if err == nil {
+		info.Width = width
+		info.Height = height
+	}
+
+	info.ColorProfile = lipgloss.ColorProfile().Name()
+
+	return info
 }
