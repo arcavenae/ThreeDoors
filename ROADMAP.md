@@ -46,7 +46,7 @@ Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-ski
 
 ### Story 0.47: Alpha Version Chronological Sorting (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #523).
 
 Insert UTC HHMMSS timecode into alpha version format so same-day releases sort chronologically. Changes `0.1.0-alpha.YYYYMMDD.SHA` to `0.1.0-alpha.YYYYMMDD.HHMMSS.SHA`. One-line CI fix, SemVer 2.0 compliant. Unblocks Story 49.9 (channel-aware version checking).
 
@@ -216,22 +216,22 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
-### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 4/10 stories done
+### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 10/10 stories done — COMPLETE
 
 Comprehensive self-diagnosis command with flutter-style category-based output, conservative auto-repair, and channel-aware version checking. Supersedes existing `health` command.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 49.1 | Doctor Command Skeleton & Health Alias | In Review | P1 | None |
+| 49.1 | Doctor Command Skeleton & Health Alias | Done (PR #444) | P1 | None |
 | 49.2 | Environment Checks | Done (PR #473) | P1 | 49.1 |
 | 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
-| 49.4 | Provider Health Checks | In Review | P1 | 49.1 |
-| 49.5 | Session & Analytics Checks | In Review | P1 | 49.1 |
-| 49.6 | Sync & Offline Queue Checks | In Review | P1 | 49.1 |
-| 49.7 | Enrichment Database Checks | In Review | P1 | 49.1 |
+| 49.4 | Provider Health Checks | Done (PR #475) | P1 | 49.1 |
+| 49.5 | Session & Analytics Checks | Done (PR #474) | P1 | 49.1 |
+| 49.6 | Sync & Offline Queue Checks | Done (PR #472) | P1 | 49.1 |
+| 49.7 | Enrichment Database Checks | Done (PR #470) | P1 | 49.1 |
 | 49.8 | Auto-Repair (`--fix` flag) | Done (PR #529) | P1 | 49.2-49.7 |
-| 49.9 | Channel-Aware Version Checking | In Review | P1 | 49.1 |
-| 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
+| 49.9 | Channel-Aware Version Checking | Done (PR #476) | P1 | 49.1 |
+| 49.10 | Verbose Mode, Category Filter & Polish | Done (PR #530) | P1 | 49.2-49.9 |
 
 ### Epic 42: Application Security Hardening (P1) — 1/5 stories done
 
