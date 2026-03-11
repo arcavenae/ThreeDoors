@@ -31,6 +31,7 @@ var commandRegistry = []commandDef{
 	{"insights", "Show pattern insights"},
 	{"mood", "Record current mood"},
 	{"quit", "Quit application"},
+	{"seasonal", "Pick seasonal theme (session only)"},
 	{"stats", "Show session statistics"},
 	{"suggestions", "View AI task suggestions"},
 	{"synclog", "View sync operation log"},
@@ -265,6 +266,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 
 	case "tag":
 		return func() tea.Msg { return ShowTagViewMsg{} }
+
+	case "seasonal":
+		return func() tea.Msg { return ShowSeasonalPickerMsg{} }
 
 	case "theme":
 		return func() tea.Msg { return ShowThemePickerMsg{} }

@@ -63,3 +63,27 @@ func (r *Registry) Names() []string {
 	sort.Strings(names)
 	return names
 }
+
+// SeasonalNames returns sorted names of themes where Season is non-empty.
+func (r *Registry) SeasonalNames() []string {
+	var names []string
+	for name, theme := range r.themes {
+		if theme.Season != "" {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names
+}
+
+// NonSeasonalNames returns sorted names of themes where Season is empty.
+func (r *Registry) NonSeasonalNames() []string {
+	var names []string
+	for name, theme := range r.themes {
+		if theme.Season == "" {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names
+}

@@ -208,6 +208,9 @@ type ShowSyncLogMsg struct {
 // ShowThemePickerMsg is sent to open the theme picker view.
 type ShowThemePickerMsg struct{}
 
+// ShowSeasonalPickerMsg is sent to open the seasonal theme picker view.
+type ShowSeasonalPickerMsg struct{}
+
 // ThemeSelectedMsg is sent when the user selects a theme from the picker.
 type ThemeSelectedMsg struct {
 	Name string
