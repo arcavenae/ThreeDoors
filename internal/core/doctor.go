@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"runtime"
 	"sort"
@@ -90,9 +91,10 @@ type TerminalInfo struct {
 
 // DoctorChecker performs category-based system diagnostics.
 type DoctorChecker struct {
-	configDir  string
-	terminal   TerminalInfo
-	categories []registeredCategory
+	configDir    string
+	terminal     TerminalInfo
+	categories   []registeredCategory
+	versionCheck *VersionChecker
 }
 
 type registeredCategory struct {
@@ -153,12 +155,42 @@ func NewDoctorChecker(configDir string) *DoctorChecker {
 	dc.RegisterCategory("Task Data", dc.checkTaskData)
 	dc.RegisterCategory("Sync", dc.checkSync)
 	dc.RegisterCategory("Database", dc.checkDatabase)
+	dc.RegisterCategory("Version", dc.checkVersion)
 	return dc
 }
 
 // SetTerminalInfo sets the terminal capability information for environment checks.
 func (dc *DoctorChecker) SetTerminalInfo(info TerminalInfo) {
 	dc.terminal = info
+}
+
+// SetVersionInfo configures the version checker with the current version and channel.
+// If not called, the Version category reports "dev build" by default.
+// The httpClient and releasesURL parameters are optional — pass nil/"" for defaults.
+func (dc *DoctorChecker) SetVersionInfo(version, channel string, httpClient *http.Client, releasesURL string) {
+	vc := NewVersionChecker(version, channel, dc.configDir)
+	if httpClient != nil {
+		vc.HTTPClient = httpClient
+	}
+	if releasesURL != "" {
+		vc.ReleasesURL = releasesURL
+	}
+	dc.versionCheck = vc
+}
+
+// checkVersion runs the Version category checks.
+func (dc *DoctorChecker) checkVersion() CategoryResult {
+	if dc.versionCheck == nil {
+		// No version info configured — treat as dev build
+		return CategoryResult{
+			Checks: []CheckResult{{
+				Name:    "Current version",
+				Status:  CheckInfo,
+				Message: "Running dev build",
+			}},
+		}
+	}
+	return CategoryResult{Checks: dc.versionCheck.Check()}
 }
 
 // RegisterCategory adds a check category that runs in registration order.

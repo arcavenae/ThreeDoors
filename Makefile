@@ -2,8 +2,11 @@ THREEDOORS_DIR ?= $(HOME)/.threedoors
 VERSION ?= dev
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE ?= $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+CHANNEL ?=
 LDFLAGS := -X main.version=$(VERSION) \
+           -X main.channel=$(CHANNEL) \
            -X github.com/arcaven/ThreeDoors/internal/cli.Version=$(VERSION) \
+           -X github.com/arcaven/ThreeDoors/internal/cli.Channel=$(CHANNEL) \
            -X github.com/arcaven/ThreeDoors/internal/cli.Commit=$(COMMIT) \
            -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=$(BUILD_DATE)
 
