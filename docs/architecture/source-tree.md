@@ -111,6 +111,9 @@ ThreeDoors/
 │   │       ├── credential.go        # CredentialStore interface + Env/Chain implementations
 │   │       ├── credential_ring.go   # OS keyring CredentialStore (keychain/keyring)
 │   │       ├── health.go            # HealthChecker, Syncer interfaces + HealthCheckResult
+│   │       ├── bridge.go            # ProviderBridge — adapts TaskProvider to HealthChecker/Syncer
+│   │       ├── conn_scheduler.go    # ConnAwareScheduler — state-aware polling per connection
+│   │       ├── resolve.go           # ResolveFromConfig — wires config → manager → providers
 │   │       ├── sync_event.go        # SyncEventLog — per-connection JSONL audit log
 │   │       └── oauth/               # OAuth device code flow
 │   │           ├── devicecode.go    # Device code grant implementation
