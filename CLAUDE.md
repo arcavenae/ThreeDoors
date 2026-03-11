@@ -41,23 +41,20 @@ go test -race ./...   # Race detector — run before pushing
 - If no story exists for needed work, create one (or ask the supervisor/PM to create one) before writing code
 - Research, spikes, and documentation tasks are exempt — but should still reference a story when possible
 
-## Doc Maintenance — MANDATORY
+## Doc Maintenance — MANDATORY (D-162)
 
-### Story File Updates (Workers)
+Do NOT edit `ROADMAP.md`, `docs/prd/epic-list.md`, or `docs/prd/epics-and-stories.md` unless you are running `/plan-work`, or you are project-watchdog or supervisor.
 
-Workers update ONLY their story file when completing implementation:
+### Story File Updates (Implementation Workers)
 
-- Update the story file status line: `Done (PR #NNN)`
-- Workers MUST NOT update `ROADMAP.md`, `docs/prd/epic-list.md`, or `docs/prd/epics-and-stories.md` — these are owned by project-watchdog (see D-162)
+- Update the story file status line: `Done (PR #NNN)` — this is the ONLY doc update implementation workers make
+- Do NOT update planning docs — project-watchdog syncs them from story files
 
-### Planning Doc Updates (project-watchdog / PM)
+### Planning Doc Updates (project-watchdog / PM / /plan-work)
 
-project-watchdog initiates all planning doc updates after story PRs merge:
-
-- Update `ROADMAP.md` epic progress when stories complete
-- Update `docs/prd/epic-list.md` and `docs/prd/epics-and-stories.md` when the last story in an epic completes
-- When **creating a new epic or story**, ensure it is added to all three docs: `ROADMAP.md`, `docs/prd/epic-list.md`, and `docs/prd/epics-and-stories.md`
-- project-watchdog batches multiple story status updates into a single PR when possible (see D-161)
+- project-watchdog initiates planning doc updates after story PRs merge, batching multiple updates into a single PR when possible (D-161)
+- `/plan-work` workers create new epics/stories in all three planning docs as part of their pipeline
+- When **creating a new epic or story**, request the epic number from project-watchdog — do NOT self-assign
 - ROADMAP.md ownership belongs to the PM role
 - These three planning docs plus the story files form the source-of-truth chain — story files are authoritative for individual story status; planning docs must be kept consistent
 
