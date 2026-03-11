@@ -1,6 +1,7 @@
 # Alpha Versioning Improvement — Planning Artifact
 
 **Date:** 2026-03-10
+**Author:** Worker silly-panda
 **Status:** Decision made — ready for implementation
 
 ---
@@ -49,7 +50,8 @@ TAG="alpha-$(date -u +%Y%m%d)-$(date -u +%H%M%S)-${GITHUB_SHA::7}"
 **Homebrew analysis:**
 - Homebrew `Version` class splits on `.` and `-`, compares segments left to right
 - Adding a segment is fully compatible — more segments = more precision, not a breaking change
-- Numeric segments compare numerically
+<<<<<<< HEAD
+- Tested against Homebrew's `version_scheme` docs: numeric segments compare numerically
 
 **Pros:**
 - One-line change to CI workflow
@@ -57,7 +59,11 @@ TAG="alpha-$(date -u +%Y%m%d)-$(date -u +%H%M%S)-${GITHUB_SHA::7}"
 - Sorts correctly everywhere (SemVer, Homebrew, lexical string sort, GitHub UI)
 - No external state needed (no "last version" tracking)
 - SHA preserved for traceability
+<<<<<<< HEAD
 - Backward compatible — new versions always sort after old ones (more identifiers = higher precedence when all prior identifiers match per SemVer §11.4.4)
+=======
+- Backward compatible — new versions always sort after old ones (more identifiers = higher precedence when prior identifiers match... actually, SemVer says more pre-release identifiers = higher precedence when all prior are equal)
+>>>>>>> d06bb92 (docs: alpha version chronological sorting planning (Story 0.48))
 
 **Cons:**
 - Slightly longer version strings (6 more characters)
@@ -95,12 +101,19 @@ Track a per-day build counter: `0.1.0-alpha.20260310.001`
 
 ## Decision
 
+<<<<<<< HEAD
 **Adopt Option A: HHMMSS timecode insertion.** Decision D-163.
 
 Single-line CI change, zero new dependencies, fully SemVer compliant, sorts correctly everywhere. The SHA suffix remains for commit traceability but no longer determines sort order.
 
 **Auto-incrementing semantic version explicitly rejected** — premature for alpha builds, adds state tracking complexity, and doesn't even solve the sub-ordering problem within a version.
 
+=======
+**Adopt Option A: HHMMSS timecode insertion.**
+
+Single-line CI change, zero new dependencies, fully SemVer compliant, sorts correctly everywhere. The SHA suffix remains for commit traceability but no longer determines sort order.
+
+>>>>>>> d06bb92 (docs: alpha version chronological sorting planning (Story 0.48))
 ## Impact Assessment
 
 ### Files to Change
@@ -109,8 +122,20 @@ Single-line CI change, zero new dependencies, fully SemVer compliant, sorts corr
 3. `internal/cli/version_test.go` — if any tests assert version format
 
 ### Downstream Effects
+<<<<<<< HEAD
 - **Story 49.9 (channel-aware version checking):** Unblocked — alpha versions now sort reliably
 - **Homebrew formula:** No changes needed — formula uses `version "${VERSION}"` which accepts any version string
 - **GoReleaser:** Not affected — only used for tagged stable releases, not alpha builds
 - **GitHub release cleanup:** The `tail -n +31` cleanup step works on creation order (not version order), so unaffected
 - **Existing releases:** Old-format releases sort before new-format releases with the same date (fewer identifiers = lower precedence per SemVer §11.4.4). This is correct behavior.
+=======
+- **Story 49.9 (channel-aware version checking):** Unblocked — alpha versions now sort reliably, so version comparison logic can trust ordering
+- **Homebrew formula:** No changes needed — formula uses `version "${VERSION}"` which accepts any valid version string
+- **GoReleaser:** Not affected — GoReleaser is only used for tagged stable releases, not alpha builds
+- **GitHub release cleanup:** The `tail -n +31` cleanup step works on creation order (not version order), so unaffected
+- **Existing releases:** Old-format releases (`0.1.0-alpha.20260310.abc1234`) sort before new-format releases with the same date, because SemVer says fewer identifiers = lower precedence when all prior match. This is correct behavior — old builds ARE older.
+
+## Implementation Story
+
+Story 0.38: Alpha Version Chronological Sorting
+>>>>>>> d06bb92 (docs: alpha version chronological sorting planning (Story 0.48))
