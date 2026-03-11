@@ -1,0 +1,66 @@
+# Story XX.1: README Badges & Header Polish
+
+## Status: Not Started
+
+## Epic
+
+Epic XX: README Overhaul
+
+## References
+
+- Plan: `_bmad-output/planning-artifacts/readme-overhaul-plan.md` (Section 2)
+
+## Story
+
+As a potential user visiting the GitHub repository,
+I want to see meaningful status badges (CI, release, Go Report Card, platform support),
+So that I can quickly assess project health, maturity, and compatibility.
+
+## Background
+
+The README currently has 3 badges (Go version, License, Built with Bubbletea). Best-in-class Go project READMEs (bubbletea, lazygit, glow) use centered badge clusters with 6-10 badges covering CI status, release version, downloads, and quality metrics.
+
+## Acceptance Criteria
+
+**Given** the README header section
+**When** a user views the README on GitHub
+**Then** they see a centered badge cluster with at minimum: CI status, latest release, Go Report Card, Go version, License, and Built with Bubbletea badges
+
+**Given** the CI badge
+**When** CI passes on main
+**Then** the badge shows a green "passing" status linked to the CI workflow
+
+**Given** the release badge
+**When** a new release is published
+**Then** the badge auto-updates to show the latest version number
+
+**Given** the badge cluster
+**When** rendered on GitHub
+**Then** all badges are centered using `<p align="center">` HTML
+
+**Given** the existing tagline
+**When** viewing the header
+**Then** the tagline "Progress over perfection. Three doors. One choice. Move forward." appears centered below the badges
+
+## Technical Notes
+
+- Badge URLs use shields.io and GitHub's built-in badge endpoints — no external service setup required
+- Go Report Card (`goreportcard.com`) auto-indexes public Go modules — verify it works for this repo
+- CI badge URL: `https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml/badge.svg?branch=main`
+- Release badge URL: `https://img.shields.io/github/v/release/arcaven/ThreeDoors`
+- If repo is private, some badge services may return 404 — verify after implementation
+- Platform badge is static: `https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey`
+- Do NOT add a code coverage badge — that requires CI integration (codecov/coveralls) which is out of scope
+
+## Tasks
+
+- [ ] Replace the current 3-badge row with centered `<p align="center">` badge cluster
+- [ ] Add CI status badge linked to `ci.yml` workflow
+- [ ] Add latest release badge linked to releases page
+- [ ] Add Go Report Card badge
+- [ ] Add platform support badge (macOS | Linux)
+- [ ] Keep existing Go version, License, Built with Bubbletea badges
+- [ ] Center the tagline below badges
+- [ ] Verify all badge URLs render correctly on GitHub
+- [ ] Run `make fmt` and `make lint` (no Go changes expected, but verify)
+- [ ] Update story status to Done

@@ -1,0 +1,78 @@
+# Story XX.4: README Feature List Update & Accuracy Pass
+
+## Status: Not Started
+
+## Epic
+
+Epic XX: README Overhaul
+
+## References
+
+- Plan: `_bmad-output/planning-artifacts/readme-overhaul-plan.md` (Section 6)
+- ROADMAP.md — completed epics list
+
+## Story
+
+As a potential user evaluating ThreeDoors,
+I want the Features section to accurately reflect all shipped capabilities,
+So that I understand the full scope of what the tool offers.
+
+## Background
+
+The README features section was last comprehensively updated several epics ago. A cross-reference audit against ROADMAP.md completed epics reveals 6 missing feature areas:
+
+1. **Daily Planning Mode** (Epic 27) — not mentioned
+2. **Seasonal Themes** (Epic 33) — only 4 base themes listed, seasonal variants missing
+3. **Door-Like Visuals** (Epic 35) — proportional door rendering not mentioned
+4. **Selection Feedback** (Epic 36) — tactile selection animations not mentioned
+5. **Beautiful Statistics** (Epic 40) — sparklines, heatmaps, streak flames not mentioned
+6. **Charm Ecosystem** (Epic 41) — huh forms adoption not mentioned
+
+Additionally, the Themes table lists only 4 themes but 4 seasonal variants (spring, summer, autumn, winter) now exist with auto-switching.
+
+## Acceptance Criteria
+
+**Given** the Features section
+**When** compared to ROADMAP.md completed epics
+**Then** all user-facing features from completed epics are represented (internal/infrastructure epics excluded)
+
+**Given** the Themes subsection
+**When** a user reads it
+**Then** it lists all 8 themes (4 base + 4 seasonal) and mentions the `:seasonal` command and date-based auto-switching
+
+**Given** Daily Planning Mode
+**When** a user reads the Features section
+**Then** they find a bullet point describing the morning planning ritual feature
+
+**Given** Beautiful Statistics
+**When** a user reads the Analytics section
+**Then** it mentions sparkline charts, activity heatmaps, streak flames, and progress bars
+
+**Given** the Features section organization
+**When** a user scans the features
+**Then** features are grouped into logical categories (Core, Search, Analytics, Wellbeing, Themes, Integrations, Reliability, Calendar, AI, Interfaces, Distribution, Privacy)
+
+**Given** the User Guide "Themes" subsection
+**When** a user reads it
+**Then** the theme table includes all 8 themes with descriptions and a note about seasonal auto-switching
+
+## Technical Notes
+
+- Verify feature descriptions against actual implementation — don't describe planned/in-progress features
+- Epic 33 (Seasonal Themes) is 3/4 done per ROADMAP but all user-facing seasonal features are shipped (33.4 is the picker, in review)
+- The features reorganization adds ~6 new bullet points and reorganizes existing ones into clearer categories
+- Do NOT remove any existing feature descriptions — only add missing ones and reorganize
+- Linear adapter exists in code but Epic 30 is 0/4 done — do NOT add Linear to the features list
+
+## Tasks
+
+- [ ] Add Daily Planning Mode feature bullet (Epic 27)
+- [ ] Add Seasonal Themes feature bullets and update theme table to 8 entries (Epic 33)
+- [ ] Add Door-Like Visuals feature bullet (Epic 35)
+- [ ] Add Selection Feedback feature bullet (Epic 36)
+- [ ] Add Beautiful Statistics feature bullets — sparklines, heatmaps, streak flames (Epic 40)
+- [ ] Add Charm Ecosystem / huh forms mention (Epic 41)
+- [ ] Add `:seasonal` command to Command Palette table
+- [ ] Reorganize features into clear categories with emoji headers
+- [ ] Verify all feature descriptions match actual shipped implementation
+- [ ] Update story status to Done
