@@ -37,6 +37,7 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.AddCommand(newStatsCmd())
 	cmd.AddCommand(newConfigCmd())
 	cmd.AddCommand(newPlanCmd())
+	cmd.AddCommand(newDocAuditCmd())
 
 	registerFlagCompletions(cmd)
 

@@ -63,6 +63,8 @@ func main() {
 		if loadErr != nil {
 			fmt.Fprintf(os.Stderr, "Warning: config load failed: %v, using defaults\n", loadErr)
 			cfg = &core.ProviderConfig{Provider: "textfile", NoteTitle: "ThreeDoors Tasks"}
+		} else {
+			core.WarnCredentialExposure(os.Stderr, configPath, cfg)
 		}
 	}
 

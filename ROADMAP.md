@@ -28,9 +28,21 @@ Renovate manages Go module dependencies (grouping, auto-merge, OSV vulnerability
 
 ### Story 0.20: CI Churn Reduction (P1)
 
-**Status:** Story created (PR #231). Research complete (PR #233). Implementation not started.
+**Status:** Done (PR #260).
 
-Branch protection & merge queue optimization to reduce cascading CI reruns.
+Branch protection & merge queue optimization to reduce cascading CI reruns. Relaxed up-to-date requirement, added path filtering for docs-only PRs, deferred GitHub merge queue (ADR-0030).
+
+### Story 0.36: CI Circuit Breaker — Post-Merge Main Branch Monitoring (P1)
+
+**Status:** Not Started.
+
+Operationalize merge-queue emergency mode: proactively check push-to-main CI after each merge, halt merges if main is red. Prerequisite safety net for the relaxed up-to-date rule (Story 0.20).
+
+### Story 0.37: CI Efficiency Metrics — Track Runs Per Merged PR (P2)
+
+**Status:** Not Started.
+
+Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-skip rate). Validates Story 0.20 improvements and monitors ADR-0030 re-entry gate for GitHub merge queue.
 
 ### Story 0.31: CI/Security Hardening — Secrets, Supply Chain & Reproducibility (P1)
 
@@ -61,6 +73,12 @@ Replace broken `:help` flash message with dedicated scrollable help view. Conten
 **Status:** Done (PR #361).
 
 Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health, synclog, etc.) to exit on 'q' instead of going back. Fix: scope 'q' quit to doors view only; sub-views treat 'q' as go-back (D-128).
+
+### Story 0.38: Epic Number Registry Accuracy & Enforcement (P1)
+
+**Status:** In Progress.
+
+Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing epics), backfill all active epics 39-51, and strengthen enforcement rules to reference project-watchdog as MUTEX. Implements D-112.
 
 ## Active Epics
 
@@ -119,7 +137,7 @@ Connection lifecycle layer for data source integrations. State machine, credenti
 |-------|-------|--------|----------|------------|
 | 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
 | 43.2 | Keyring Integration with Environment Variable Fallback | In Review | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | In Review (PR #441) | P1 | None |
 | 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
 | 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
 | 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
@@ -181,7 +199,7 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 49.1 | Doctor Command Skeleton & Health Alias | In Review | P1 | None |
-| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
+| 49.2 | Environment Checks | In Review | P1 | 49.1 |
 | 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
 | 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
 | 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
@@ -203,13 +221,13 @@ Remediate findings from the application security audit. Fix permissive file perm
 | 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
 
-### Epic 50: In-App Bug Reporting (P2) — 0/3 stories done
+### Epic 50: In-App Bug Reporting (P2) — 1/3 stories done
 
 In-app `:bug` command for frictionless bug reporting without leaving the TUI. Breadcrumb navigation trail, environment data collection with strict privacy allowlist, mandatory preview, and tiered submission (browser URL, GitHub API, local file).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 50.1 | Breadcrumb Tracking System | Not Started | P2 | None |
+| 50.1 | Breadcrumb Tracking System | In Review | P2 | None |
 | 50.2 | Bug Report View & Environment Collection | Not Started | P2 | 50.1 |
 | 50.3 | Submission Methods (Browser, API, File) | Not Started | P2 | 50.2 |
 
@@ -219,7 +237,7 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 11/13 |
+| 0 | Infrastructure & Process (Backfill) | 12/16 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
@@ -269,7 +287,7 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 | 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Not Started | P1 | None |
 | 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | Not Started | P1 | 51.1 |
 | 51.4 | Saga Detection (Dispatch Waste Alerting) | Not Started | P1 | 51.1 |
-| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | Not Started | P1 | 51.1 |
+| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | In Review | P1 | 51.1 |
 | 51.6 | BOARD.md Recommendation Pipeline | Not Started | P1 | 51.3, 51.4, 51.5 |
 | 51.7 | Merge Conflict Rate Analysis | Not Started | P2 | 51.3, 51.6 |
 | 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Not Started | P2 | 51.3, 51.6 |

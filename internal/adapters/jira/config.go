@@ -21,7 +21,7 @@ type JiraConfig struct {
 	URL          string
 	AuthType     AuthType
 	Email        string
-	APIToken     string
+	APIToken     string `yaml:"-"`
 	JQL          string
 	MaxResults   int
 	PollInterval time.Duration
