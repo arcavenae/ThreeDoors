@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -149,7 +148,7 @@ func (pa *PatternAnalyzer) ReadSessions(path string) ([]SessionMetrics, error) {
 	defer func() { _ = f.Close() }()
 
 	var sessions []SessionMetrics
-	scanner := bufio.NewScanner(f)
+	scanner := NewLimitedScanner(f, MaxJSONLLineSize)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" {
@@ -182,7 +181,7 @@ func (pa *PatternAnalyzer) LoadSessions(path string) error {
 	defer func() { _ = f.Close() }()
 
 	pa.sessions = nil
-	scanner := bufio.NewScanner(f)
+	scanner := NewLimitedScanner(f, MaxJSONLLineSize)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		if len(line) == 0 {

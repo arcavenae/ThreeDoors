@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"math/rand/v2"
@@ -52,7 +51,7 @@ func (cc *CompletionCounter) LoadFromFile(path string) error {
 	defer f.Close() //nolint:errcheck // best-effort close on read-only file
 
 	counts := make(map[string]int)
-	scanner := bufio.NewScanner(f)
+	scanner := NewLimitedScanner(f, MaxJSONLLineSize)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		date := parseDateFromLine(line)

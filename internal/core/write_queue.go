@@ -111,9 +111,9 @@ func (q *WriteQueue) RetryAll(provider TaskProvider) []error {
 
 // load reads pending writes from the persisted YAML file.
 func (q *WriteQueue) load() {
-	data, err := os.ReadFile(q.path)
+	data, err := ReadFileWithLimit(q.path, MaxConfigFileSize)
 	if err != nil {
-		// File doesn't exist or unreadable — start empty
+		// File doesn't exist, unreadable, or too large — start empty
 		q.pending = nil
 		return
 	}

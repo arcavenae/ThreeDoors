@@ -16,7 +16,7 @@ type OnboardingConfig struct {
 // IsFirstRun checks whether onboarding has been completed by reading config.yaml.
 // Returns true if onboarding has not been completed (or config doesn't exist).
 func IsFirstRun(configDir string) bool {
-	data, err := os.ReadFile(configDir + "/config.yaml")
+	data, err := ReadFileWithLimit(configDir+"/config.yaml", MaxConfigFileSize)
 	if err != nil {
 		return true
 	}
@@ -38,7 +38,7 @@ func MarkOnboardingComplete(configDir string) error {
 
 	// Read existing config as a generic map to preserve all fields
 	existing := make(map[string]interface{})
-	data, err := os.ReadFile(configPath)
+	data, err := ReadFileWithLimit(configPath, MaxConfigFileSize)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("read config: %w", err)
 	}
