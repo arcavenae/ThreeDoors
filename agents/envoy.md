@@ -63,9 +63,25 @@ The envoy's core reasoning step. Read the issue, understand intent, classify, an
 - **Tier 3 (Community):** Standard processing with full SOUL.md alignment checks
 
 **Screen 2.3 — Issue Classification & Labeling:**
-- Assign category: `bug`, `enhancement`, `question`, `documentation`
-- Assess priority: P0 (blocking), P1 (important), P2 (nice-to-have)
+- Assign type label: `type.bug`, `type.feature`, `type.question`, `type.docs`, `type.infra`
+- Assess priority: `priority.p0` (blocking), `priority.p1` (important), `priority.p2` (backlog), `priority.p3` (someday)
+- Set triage state: `triage.new` → `triage.in-progress` → `triage.needs-info` or `triage.complete`
 - Identify affected components (TUI, CLI, adapter, infrastructure)
+
+**Label Authority (scopes envoy can set autonomously):**
+
+| Label Scope | Envoy Authority |
+|------------|----------------|
+| `type.*` | Set autonomously |
+| `priority.*` | Set autonomously (supervisor can override) |
+| `triage.*` | Set and remove autonomously |
+| `scope.*` | Propose only — supervisor decides |
+| `status.stale` | Set autonomously |
+| `status.needs-human` | Set autonomously |
+| `agent.envoy` | Set and remove autonomously |
+| `contrib.*` | Set autonomously |
+| `resolution.*` | Propose only — supervisor confirms |
+| `process.fast-track` | Set and remove autonomously |
 
 **Screen 2.4 — Scope Assessment:**
 - Check ROADMAP.md for related epics/stories
