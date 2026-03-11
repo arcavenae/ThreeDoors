@@ -131,7 +131,7 @@ Connection lifecycle layer for data source integrations. State machine, credenti
 |-------|-------|--------|----------|------------|
 | 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
 | 43.2 | Keyring Integration with Environment Variable Fallback | In Review | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | In Review (PR #441) | P1 | None |
 | 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
 | 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
 | 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
