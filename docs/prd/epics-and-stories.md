@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26-29, 32, 34-38, 41 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 30-31, 33, 39-40, 42-49 are NOT STARTED or IN PROGRESS. 390+ merged PRs total. Last audit: 2026-03-10.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 49, 52 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epics 42, 44-48, 50-51, 53-54 are NOT STARTED or IN PROGRESS. 540+ merged PRs total. Last audit: 2026-03-11.
 
 ## Requirements Inventory
 
@@ -4218,9 +4218,9 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Not Started | P1 | None |
-| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Not Started | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
+| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
+| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ---
@@ -4239,7 +4239,7 @@ Integrate Linear as a task source for engineering teams via the Linear GraphQL A
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 30.1 | Linear GraphQL Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 30.1 | Linear GraphQL Client & Auth Configuration | In Review | P2 | Epic 7 (done) |
 | 30.2 | Read-Only Linear Provider with Field Mapping | Not Started | P2 | 30.1 |
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
@@ -4498,7 +4498,7 @@ Highest-scoring proposal (15/15). On selection, replace right border chars with 
 ## Epic 43: Connection Manager Infrastructure
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** COMPLETE (6/6 stories done)
 **Dependencies:** Epic 7 (Adapter SDK — complete), Epic 11 (Sync Observability — complete)
 
 ### Epic Goal
@@ -4509,11 +4509,11 @@ Build the connection lifecycle layer for data source integrations. ThreeDoors ha
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 43.1 | Connection State Machine and ConnectionManager Type | Not Started | P1 | None |
-| 43.2 | Keyring Integration with Environment Variable Fallback | Not Started | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
-| 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
-| 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
+| 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
+| 43.2 | Keyring Integration with Environment Variable Fallback | Done (PR #442) | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | Done (PR #467) | P1 | None |
+| 43.4 | Connection CRUD Operations | Done (PR #526) | P1 | 43.1, 43.2, 43.3 |
+| 43.5 | Sync Event Logging Infrastructure | Done (PR #439) | P1 | None |
 | 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Done (PR #540) | P1 | 43.1-43.5 |
 
 **Dependency graph:**
@@ -4993,7 +4993,7 @@ GitHub Releases API with 24h cache. Channel-aware comparison. Opt-out controls. 
 **Epic Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission methods.
 
 **Prerequisites:** None (standalone feature)
-**Status:** Not Started
+**Status:** In Progress (0/3 done; 50.1 In Review)
 **Priority:** P2
 
 ### Overview
@@ -5006,7 +5006,7 @@ The implementation follows strict privacy principles: a ring buffer captures nav
 
 #### Story 50.1: Breadcrumb Tracking System
 
-**Status:** Not Started
+**Status:** In Review
 **Priority:** P2
 **Depends On:** None
 **Effort:** Small
@@ -5063,7 +5063,7 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 
 **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
 
-**Status:** Not Started (0/10 stories)
+**Status:** In Progress (5/10 stories done; 5 In Review)
 
 **Phasing:**
 - Phase 0 (Bootstrap): Stories 51.1-51.2 — Agent definition rewrites
@@ -5166,6 +5166,8 @@ Expand retrospector authority to create PRs proposing improvements. Generate wee
 **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), Node.js/npm, Google Account
 
 **Dependencies:** None (agent infrastructure, not application code)
+
+**Status:** In Progress (2/5 stories done — PRs #537, #538)
 
 **Rearchitecture Note:** This epic was originally designed around `24601/agent-deep-research` (Python, paid API key). Rearchitected per user request to use the official Gemini CLI with OAuth (free tier). See D-164 (supersedes D-154).
 
