@@ -153,7 +153,7 @@ Transform rectangular card/panel doors into visually convincing doors using side
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 43: Connection Manager Infrastructure (P1) — 5/6 stories done
+### Epic 43: Connection Manager Infrastructure (P1) — 6/6 stories done — COMPLETE
 
 Connection lifecycle layer for data source integrations. State machine, credential storage (system keychain), config schema v3 (named connections), CRUD operations, sync event logging, and migration of existing adapters to the new pattern.
 
@@ -164,7 +164,7 @@ Connection lifecycle layer for data source integrations. State machine, credenti
 | 43.3 | Config Schema v3 Migration with Connections Support | Done (PR #467) | P1 | None |
 | 43.4 | Connection CRUD Operations | Done (PR #526) | P1 | 43.1, 43.2, 43.3 |
 | 43.5 | Sync Event Logging Infrastructure | Done (PR #439) | P1 | None |
-| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
+| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Done (PR #540) | P1 | 43.1-43.5 |
 
 ### Epic 44: Sources TUI (P1) — 0/7 stories done
 
