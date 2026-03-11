@@ -314,29 +314,201 @@ Example:
 
 ---
 
-## Duplicate Detection Process
+## Layer 1 Gate Specifications
 
-### Detection Method
+> Layer 1 gates are the first line of defense — fast, mechanical checks that resolve issues without AI deliberation. They run in sequence. If any gate resolves the issue, processing stops. Otherwise, the issue passes to Layer 2 (Lightweight AI Screening).
+>
+> **Party mode authority consensus:** Spam may be closed autonomously. Duplicates are flagged, NEVER auto-closed. Already-fixed and previously-decided issues are linked/cited but closure requires supervisor approval.
 
-When a new issue is filed, check for duplicates using fuzzy matching:
+### Gate 1.1: Spam Detection
 
-1. **Title comparison** — compare new issue title against:
-   - All open issues in the tracker
-   - Recently resolved issues (last 50, within 90 days)
-2. **Description keyword matching** — extract key terms from the new issue body and compare against existing issues
-3. **Symptom matching** — look for issues describing the same behavior, even with different titles
-4. **GitHub closed issues** — for deeper searches: `gh issue list --state closed --limit 50`
+**Purpose:** Remove zero-value noise from the triage pipeline so no agent time is wasted on non-issues.
 
-### When a Potential Duplicate Is Found
+**Detection Criteria:**
 
-1. **Flag, never close.** Post a comment on the new issue:
-   > This looks like it may be related to #NNN ([title]). We're checking whether these are the same issue or distinct problems. If you think this is different, please let us know what distinguishes your experience.
-2. Add to tracker with a note referencing the potential duplicate
-3. Message supervisor if closure is warranted — only supervisor can approve closing duplicates
+| Signal | Threshold | Weight |
+|--------|-----------|--------|
+| Body length | < 10 characters (excluding whitespace) | Strong — alone sufficient if title is also < 10 chars |
+| Known spam patterns | URL-heavy body (≥3 URLs, no code blocks), cryptocurrency keywords (`airdrop`, `token sale`, `web3`, `NFT mint`), SEO/marketing keywords (`buy now`, `discount`, `click here`) | Strong — any single match sufficient |
+| Gibberish title | No recognizable English words in title (after removing punctuation and numbers) | Strong — alone sufficient |
+| Empty body + generic title | Body is blank AND title matches low-effort patterns (`test`, `asdf`, `untitled`) | Strong — both signals required together |
+| Bot-generated | Reporter username matches known bot patterns (random hex strings, sequential numbering) | Weak — combine with other signals |
 
-### Why Never Auto-Close
+**Response Template:**
 
-Even "obvious" duplicates can be subtly different. A human should verify. False closure alienates reporters and may lose valuable information about a different manifestation of the same root cause.
+1. Close the issue with a brief comment:
+   > This issue appears to be spam. If this was filed in error, please reopen and we'll take another look.
+2. Notify supervisor immediately:
+   ```bash
+   multiclaude message send supervisor "Closed issue #NNN as spam. Title: [title]. Reporter: @username. Please review if this closure should be reversed."
+   ```
+3. Add to tracker with status `closed-spam`
+
+**Example:**
+
+> **Issue #999:** "Get Rich Quick with Crypto Tokens"
+> **Body:** "Visit example-scam.com for free airdrop tokens! Limited time offer!"
+>
+> **Gate result:** Spam detected — cryptocurrency keywords (`airdrop`, `tokens`) + URL-heavy body. Close and notify supervisor.
+
+---
+
+### Gate 1.2: Duplicate Detection
+
+**Purpose:** Link related issues together so effort isn't duplicated and reporters see existing work. Flag potential duplicates for human review — never close automatically.
+
+**Detection Criteria:**
+
+| Method | How It Works | Match Strength |
+|--------|-------------|----------------|
+| Exact title match | Case-insensitive comparison against all open + recently resolved issues in tracker | Strong |
+| Fuzzy title match | Extract title keywords (remove stop words: the, a, is, in, on, etc.). If ≥60% of keywords overlap with an existing issue title → flag | Medium |
+| Symptom keyword extraction | Extract behavioral keywords from issue body (error messages, component names, action verbs). Match against open + recently resolved issues | Medium |
+| GitHub closed issue search | `gh issue list --state closed --limit 50 --search "[key terms]"` — fallback for issues not in tracker | Weak (use to confirm, not as sole signal) |
+
+**Match strength guidance:**
+- **Strong** (exact title): Flag immediately
+- **Medium** (fuzzy title OR symptom match): Flag if 2+ medium signals align
+- **Weak** (closed issue search only): Note in tracker but don't flag on the issue unless combined with another signal
+
+**Response Template:**
+
+1. Post a comment on the new issue:
+   > This looks like it may be related to #NNN ([original title]). We're checking whether these are the same issue or distinct problems. If you think this is different, please let us know what distinguishes your experience.
+2. Add to tracker with a note: `potential-duplicate-of:#NNN`
+3. If closure seems warranted, message supervisor:
+   ```bash
+   multiclaude message send supervisor "Potential duplicate: Issue #NNN may duplicate #MMM. Title similarity: [brief explanation]. Recommend review — only close with your approval."
+   ```
+
+**Why never auto-close:** Even "obvious" duplicates can be subtly different. A human should verify. False closure alienates reporters and may lose valuable information about a different manifestation of the same root cause.
+
+**Example:**
+
+> **Issue #350:** "Panic when no task file exists"
+> **Existing issue #218:** "Panic: nil pointer dereference when textfile provider not registered"
+>
+> **Gate result:** Fuzzy title match — keywords `panic`, `task`, `file` overlap. Symptom match — both describe a crash on startup without provider config. Flag as potential duplicate of #218, post linking comment, do NOT close.
+
+---
+
+### Gate 1.3: Already-Fixed Detection
+
+**Purpose:** Quickly connect issues to recently merged fixes so reporters get closure and the team doesn't re-investigate solved problems.
+
+**Detection Criteria:**
+
+| Method | How It Works | Link Strength |
+|--------|-------------|---------------|
+| Strong PR references | Search merged PRs from last 30 days for `Fixes #NNN` or `Closes #NNN` where NNN matches the new issue number | Strong — PR explicitly targeted this issue |
+| Component/file matching | Extract component or file mentions from issue body (e.g., "doors view", "config.yaml", "CLI panic"). Match against files changed in PRs merged in last 30 days | Medium |
+| Keyword matching in PR titles | Extract key terms from issue title/body. Search recent merged PR titles for overlap | Weak |
+
+```bash
+# Search merged PRs for issue references
+gh pr list --state merged --limit 30 --json number,title,body,mergedAt
+
+# Search for specific issue number in PR bodies
+gh pr list --state merged --limit 30 --search "Fixes #NNN OR Closes #NNN"
+```
+
+**Link strength guidance:**
+- **Strong** (`Fixes #N` / `Closes #N`): Comment with high confidence, recommend closure
+- **Medium** (component/file match): Comment noting the related PR, suggest verification
+- **Weak** (keyword overlap only): Note in tracker, don't comment unless combined with other signals
+
+**Response Template:**
+
+For strong links:
+> It looks like this may have been addressed in PR #PPP ([PR title]), which was merged on [date]. Could you verify with the latest build? If the issue persists, please reopen and we'll dig deeper.
+
+For medium links:
+> PR #PPP ([PR title]) was recently merged and modified related components. This might address your issue — could you check with the latest build?
+
+After commenting:
+```bash
+multiclaude message send supervisor "Potential already-fixed: Issue #NNN may be resolved by PR #PPP (merged [date]). Link strength: [strong/medium]. Recommend closure pending reporter verification."
+```
+
+**Example:**
+
+> **Issue #360:** "q key exits the app from dashboard view"
+> **Merged PR #361:** "fix: scope q quit to doors view only (Story 0.34)" — merged 2 days ago, modified `internal/tui/main_model.go`
+>
+> **Gate result:** Strong link — PR #361 title and story description directly address this behavior. Comment linking PR, suggest verification, recommend closure to supervisor.
+
+---
+
+### Gate 1.4: Previously-Decided Detection
+
+**Purpose:** Connect issues to existing project decisions so reporters understand the rationale and the team doesn't relitigate settled questions.
+
+**Detection Criteria:**
+
+| Method | Where to Search | What to Look For |
+|--------|----------------|------------------|
+| BOARD.md Decided section | `docs/decisions/BOARD.md` → "Decided" table | Match issue keywords against decision descriptions. Look for decisions that directly address the feature/behavior the reporter is asking about |
+| BOARD.md Pending Recommendations | `docs/decisions/BOARD.md` → "Pending Recommendations" table | Match against in-progress recommendations — the issue may already be under consideration |
+| SOUL.md misalignment patterns | `docs/issue-tracker.md` → "SOUL.md Alignment Reference" section | Match against the common misalignment patterns table. If the issue maps to a known SOUL.md conflict, cite the principle |
+| Active Research | `docs/decisions/BOARD.md` → "Active Research" table | Match against ongoing research — the issue may fall within an active investigation |
+
+**Decision match types:**
+- **Decided-against:** The project explicitly decided not to do this. Cite the decision with rationale.
+- **Decided-for (already planned):** The project already plans to do this. Link to the epic/story.
+- **In-progress recommendation:** This is being actively considered. Link to the pending recommendation.
+- **Active research:** This is being researched. Link to the research entry.
+
+**Response Templates:**
+
+For decided-against:
+> Thanks for suggesting this! We actually discussed this previously and decided to go a different direction. [Decision ID] in our [decisions board](../decisions/BOARD.md) explains the rationale: [brief summary of why]. If you have new information that might change the calculus, we'd love to hear it!
+
+For decided-for (already planned):
+> Great news — this is already on our roadmap! [Epic/Story reference] covers exactly this. You can track progress there. Thanks for validating the priority!
+
+For in-progress recommendation:
+> This is actually under active consideration right now. [Recommendation ID] in our decisions board tracks the current thinking. We'll update this issue when a decision is reached.
+
+For active research:
+> We're currently researching this area. [Research ID] in our decisions board describes the investigation. We'll update this issue with findings when the research concludes.
+
+After commenting:
+```bash
+multiclaude message send supervisor "Previously-decided match: Issue #NNN maps to [decision/recommendation ID]. Type: [decided-against/decided-for/in-progress/research]. Cited decision on the issue."
+```
+
+**Example:**
+
+> **Issue #400:** "Please add a web-based dashboard for viewing tasks"
+> **BOARD.md D-023:** "iPhone app deferred — No validated demand; focus on core macOS persona"
+> **SOUL.md:** "Solo Dev Reality" principle
+>
+> **Gate result:** Previously-decided — D-023 (platform expansion deferred) + SOUL.md misalignment (Solo Dev Reality). Cite both the decision and the principle. Note: this gate identifies the decision match; the polite decline itself is handled by Layer 2's SOUL.md alignment classification.
+
+---
+
+### Gate Processing Order
+
+Gates run in sequence: **1.1 → 1.2 → 1.3 → 1.4**. This order is intentional:
+
+1. **Spam first** — cheapest check, highest noise reduction
+2. **Duplicates second** — prevents duplicate triage effort on the same issue
+3. **Already-fixed third** — catches issues that a recent PR already resolved
+4. **Previously-decided last** — the most nuanced gate, runs only if no earlier gate matched
+
+**Exit behavior:** If a gate matches, apply its response and stop. The issue does not continue to subsequent gates or to Layer 2. Exception: Gate 1.4 (previously-decided) may identify a decision match but still pass the issue to Layer 2 for SOUL.md alignment classification when the match type is "decided-against" — the polite decline template in Layer 2 provides a warmer response than a bare decision citation.
+
+### Response Template Summary
+
+| Gate | Outcome | Action | Close? | Notify Supervisor? |
+|------|---------|--------|--------|-------------------|
+| 1.1 Spam | Spam detected | Close + brief comment | Yes | Yes — immediately |
+| 1.2 Duplicate | Potential match | Flag with linking comment | Never | Only if closure warranted |
+| 1.3 Already-Fixed | Fix found (strong) | Link PR, suggest verification | No — recommend to supervisor | Yes |
+| 1.3 Already-Fixed | Fix found (medium) | Link PR, note relation | No | No (tracker update only) |
+| 1.4 Previously-Decided | Decided-against | Cite decision, pass to Layer 2 | No | Yes (via Layer 2 decline) |
+| 1.4 Previously-Decided | Already planned | Link epic/story | No | No (tracker update only) |
+| 1.4 Previously-Decided | In-progress/research | Link recommendation/research | No | No (tracker update only) |
 
 ---
 
@@ -435,8 +607,4 @@ Tiers affect **routing speed and escalation thresholds**, NOT the quality or tho
 
 ### Spam Handling
 
-The envoy MAY close obvious spam (empty body, advertising, gibberish) but MUST immediately notify supervisor:
-
-```bash
-multiclaude message send supervisor "Closed issue #NNN as spam. Title: [title]. Reporter: @username. Please review if this closure should be reversed."
-```
+See [Gate 1.1: Spam Detection](#gate-11-spam-detection) in the Layer 1 Gate Specifications for full detection criteria, thresholds, and response templates.
