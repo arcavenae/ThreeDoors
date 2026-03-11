@@ -488,6 +488,252 @@ func TestPollForToken_GitHubStyleOKWithError(t *testing.T) {
 	}
 }
 
+func TestPollForToken_UnexpectedError(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		writeJSON(t, w, tokenErrorResponse{Error: "some_unknown_error"})
+	}))
+	t.Cleanup(srv.Close)
+
+	client := NewClient(srv.Client())
+	config := testConfig("", srv.URL)
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-unexpected",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !containsStr(err.Error(), "unexpected error") {
+		t.Errorf("error %q should contain 'unexpected error'", err.Error())
+	}
+}
+
+func TestPollOnce_MissingAccessToken(t *testing.T) {
+	t.Parallel()
+
+	// Server returns 200 with no access_token and no error field.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		writeJSON(t, w, map[string]string{"token_type": "bearer"})
+	}))
+	t.Cleanup(srv.Close)
+
+	client := NewClient(srv.Client())
+	config := testConfig("", srv.URL)
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-notoken",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !containsStr(err.Error(), "missing access_token") {
+		t.Errorf("error %q should contain 'missing access_token'", err.Error())
+	}
+}
+
+func TestPollOnce_UnparseableErrorResponse(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		if _, err := w.Write([]byte("not json at all")); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	client := NewClient(srv.Client())
+	config := testConfig("", srv.URL)
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-badjson",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !containsStr(err.Error(), "token error response parse") {
+		t.Errorf("error %q should contain 'token error response parse'", err.Error())
+	}
+}
+
+func TestPollOnce_EmptyErrorCode(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		writeJSON(t, w, map[string]string{"error": ""})
+	}))
+	t.Cleanup(srv.Close)
+
+	client := NewClient(srv.Client())
+	config := testConfig("", srv.URL)
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-emptyerr",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !containsStr(err.Error(), "no error code") {
+		t.Errorf("error %q should contain 'no error code'", err.Error())
+	}
+}
+
+func TestPollOnce_UnparseableSuccessResponse(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if _, err := w.Write([]byte("not valid json")); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	client := NewClient(srv.Client())
+	config := testConfig("", srv.URL)
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-badjson-success",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !containsStr(err.Error(), "token response parse") {
+		t.Errorf("error %q should contain 'token response parse'", err.Error())
+	}
+}
+
+func TestStartDeviceCodeFlow_InvalidJSON(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if _, err := w.Write([]byte("{invalid json")); err != nil {
+			t.Errorf("failed to write response: %v", err)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	client := NewClient(srv.Client())
+	config := testConfig(srv.URL, "")
+
+	_, err := client.StartDeviceCodeFlow(context.Background(), config)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !containsStr(err.Error(), "response parse") {
+		t.Errorf("error %q should contain 'response parse'", err.Error())
+	}
+}
+
+func TestStartDeviceCodeFlow_HTTPClientError(t *testing.T) {
+	t.Parallel()
+
+	// Use a server that's already closed so the HTTP request fails.
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	srv.Close()
+
+	client := NewClient(srv.Client())
+	config := testConfig(srv.URL, "")
+
+	_, err := client.StartDeviceCodeFlow(context.Background(), config)
+	if err == nil {
+		t.Fatal("expected error from closed server, got nil")
+	}
+	if !containsStr(err.Error(), "device code request") {
+		t.Errorf("error %q should contain 'device code request'", err.Error())
+	}
+}
+
+func TestStartDeviceCodeFlow_InvalidAuthEndpoint(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(nil)
+	config := DeviceCodeConfig{
+		AuthEndpoint:  "://bad-url",
+		TokenEndpoint: "https://example.com/token",
+		ClientID:      "test",
+	}
+
+	_, err := client.StartDeviceCodeFlow(context.Background(), config)
+	if err == nil {
+		t.Fatal("expected error from invalid URL, got nil")
+	}
+	if !containsStr(err.Error(), "device code request") {
+		t.Errorf("error %q should contain 'device code request'", err.Error())
+	}
+}
+
+func TestPollOnce_HTTPClientError(t *testing.T) {
+	t.Parallel()
+
+	// Use a server that's already closed so the HTTP request fails.
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	srv.Close()
+
+	client := NewClient(srv.Client())
+	config := testConfig("", srv.URL)
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-httperr",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error from closed server, got nil")
+	}
+	if !containsStr(err.Error(), "token poll request") {
+		t.Errorf("error %q should contain 'token poll request'", err.Error())
+	}
+}
+
+func TestPollOnce_InvalidTokenEndpoint(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(nil)
+	config := DeviceCodeConfig{
+		AuthEndpoint:  "https://example.com/auth",
+		TokenEndpoint: "://bad-url",
+		ClientID:      "test",
+	}
+	dcResp := &DeviceCodeResponse{
+		DeviceCode: "dev-code-badurl",
+		ExpiresIn:  30,
+		Interval:   1,
+	}
+
+	_, err := client.PollForToken(context.Background(), config, dcResp)
+	if err == nil {
+		t.Fatal("expected error from invalid URL, got nil")
+	}
+	if !containsStr(err.Error(), "token poll request") {
+		t.Errorf("error %q should contain 'token poll request'", err.Error())
+	}
+}
+
 func TestNewClient_DefaultHTTPClient(t *testing.T) {
 	t.Parallel()
 	client := NewClient(nil)
