@@ -96,6 +96,7 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 		src, err := os.ReadFile(cfg.taskFile)
 		if err != nil {
 			t.Fatalf("read task file %s: %v", cfg.taskFile, err)
+			return nil
 		}
 		dst := filepath.Join(configDir, "tasks.yaml")
 		if err := os.WriteFile(dst, src, 0o644); err != nil {
@@ -122,6 +123,7 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 		loaded, err := textfile.NewTextFileProvider().LoadTasks()
 		if err != nil {
 			t.Fatalf("load tasks from file: %v", err)
+			return nil
 		}
 		for _, task := range loaded {
 			pool.AddTask(task)

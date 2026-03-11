@@ -366,6 +366,7 @@ func TestDependsOnYAMLRoundTrip(t *testing.T) {
 		data, err := yaml.Marshal(task)
 		if err != nil {
 			t.Fatalf("yaml.Marshal: %v", err)
+			return
 		}
 
 		var restored Task
@@ -391,6 +392,7 @@ func TestDependsOnYAMLRoundTrip(t *testing.T) {
 		data, err := yaml.Marshal(task)
 		if err != nil {
 			t.Fatalf("yaml.Marshal: %v", err)
+			return
 		}
 
 		yamlStr := string(data)
@@ -407,6 +409,7 @@ func TestDependsOnYAMLRoundTrip(t *testing.T) {
 		data, err := yaml.Marshal(task)
 		if err != nil {
 			t.Fatalf("yaml.Marshal: %v", err)
+			return
 		}
 
 		yamlStr := string(data)

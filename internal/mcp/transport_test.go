@@ -48,6 +48,7 @@ func TestStdioTransportRoundTrip(t *testing.T) {
 	}
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 }
 
@@ -165,6 +166,7 @@ func TestSSETransportMessageEndpoint(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("listen: %v", err)
+		return
 	}
 
 	srv := &http.Server{
@@ -180,6 +182,7 @@ func TestSSETransportMessageEndpoint(t *testing.T) {
 	resp, err := http.Get(baseURL + "/message?sessionId=test")
 	if err != nil {
 		t.Fatalf("GET /message: %v", err)
+		return
 	}
 	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusMethodNotAllowed {
@@ -190,6 +193,7 @@ func TestSSETransportMessageEndpoint(t *testing.T) {
 	resp, err = http.Post(baseURL+"/message", "application/json", strings.NewReader(`{}`))
 	if err != nil {
 		t.Fatalf("POST /message no session: %v", err)
+		return
 	}
 	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusBadRequest {
@@ -200,6 +204,7 @@ func TestSSETransportMessageEndpoint(t *testing.T) {
 	resp, err = http.Post(baseURL+"/message?sessionId=unknown", "application/json", strings.NewReader(`{}`))
 	if err != nil {
 		t.Fatalf("POST /message unknown session: %v", err)
+		return
 	}
 	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusNotFound {

@@ -20,6 +20,7 @@ func TestNewSciFiTheme(t *testing.T) {
 	}
 	if theme.Render == nil {
 		t.Fatal("expected non-nil Render function")
+		return
 	}
 	if theme.MinWidth < 1 {
 		t.Errorf("expected positive MinWidth, got %d", theme.MinWidth)

@@ -15,6 +15,7 @@ func newTestAuditLogger(t *testing.T) *AuditLogger {
 	logger, err := NewAuditLogger(path)
 	if err != nil {
 		t.Fatalf("NewAuditLogger: %v", err)
+		return nil
 	}
 	return logger
 }
@@ -38,6 +39,7 @@ func TestAuditLoggerLog(t *testing.T) {
 	data, err := os.ReadFile(logger.path)
 	if err != nil {
 		t.Fatalf("read log: %v", err)
+		return
 	}
 
 	var got AuditEntry
@@ -68,6 +70,7 @@ func TestAuditLoggerLogSetsTimestamp(t *testing.T) {
 	entries, err := logger.ReadAll()
 	if err != nil {
 		t.Fatalf("ReadAll: %v", err)
+		return
 	}
 	if len(entries) != 1 {
 		t.Fatalf("len = %d, want 1", len(entries))
@@ -90,6 +93,7 @@ func TestAuditLoggerMultipleEntries(t *testing.T) {
 	entries, err := logger.ReadAll()
 	if err != nil {
 		t.Fatalf("ReadAll: %v", err)
+		return
 	}
 	if len(entries) != 3 {
 		t.Fatalf("len = %d, want 3", len(entries))
@@ -125,6 +129,7 @@ func TestAuditLoggerCountDispatchesSince(t *testing.T) {
 	count, err := logger.CountDispatchesSince(now.Add(-1 * time.Hour))
 	if err != nil {
 		t.Fatalf("CountDispatchesSince: %v", err)
+		return
 	}
 	if count != 2 {
 		t.Errorf("count = %d, want 2 (recent dispatch + now dispatch)", count)
@@ -152,6 +157,7 @@ func TestAuditLoggerLastDispatchForTask(t *testing.T) {
 	last, err := logger.LastDispatchForTask("task-1")
 	if err != nil {
 		t.Fatalf("LastDispatchForTask: %v", err)
+		return
 	}
 	if !last.Equal(t2) {
 		t.Errorf("last = %v, want %v", last, t2)
@@ -165,6 +171,7 @@ func TestAuditLoggerLastDispatchForTaskNotFound(t *testing.T) {
 	last, err := logger.LastDispatchForTask("task-nonexistent")
 	if err != nil {
 		t.Fatalf("LastDispatchForTask: %v", err)
+		return
 	}
 	if !last.IsZero() {
 		t.Errorf("last = %v, want zero time", last)
@@ -178,6 +185,7 @@ func TestAuditLoggerReadAllEmptyFile(t *testing.T) {
 	entries, err := logger.ReadAll()
 	if err != nil {
 		t.Fatalf("ReadAll: %v", err)
+		return
 	}
 	if len(entries) != 0 {
 		t.Errorf("len = %d, want 0", len(entries))
@@ -202,6 +210,7 @@ func TestAuditLoggerJSONLFormat(t *testing.T) {
 	data, err := os.ReadFile(logger.path)
 	if err != nil {
 		t.Fatalf("read: %v", err)
+		return
 	}
 
 	// Verify it's a single line ending with newline

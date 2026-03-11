@@ -156,6 +156,7 @@ func TestPlanningView_ConfirmCompleteFinishes(t *testing.T) {
 	})
 	if cmd == nil {
 		t.Fatal("confirm complete should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -200,6 +201,7 @@ func TestPlanningView_GuidanceAnyKeyDismisses(t *testing.T) {
 	cmd := pv.updateGuidance(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
 	if cmd == nil {
 		t.Fatal("any key should return dismiss command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(planningGuidanceDismissMsg); !ok {
@@ -218,6 +220,7 @@ func TestPlanningView_GuidanceEscCancels(t *testing.T) {
 	cmd := pv.updateGuidance(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("esc should return cancel command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(PlanningCancelledMsg); !ok {
@@ -280,6 +283,7 @@ func TestPlanningView_FinishClearsFocusTags(t *testing.T) {
 	})
 	if cmd == nil {
 		t.Fatal("finishSession should return a command")
+		return
 	}
 
 	// Old task should have focus cleared

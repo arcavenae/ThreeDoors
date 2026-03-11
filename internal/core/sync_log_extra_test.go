@@ -18,6 +18,7 @@ func TestSyncLog_Rotation_KeepsNewestHalf(t *testing.T) {
 	f, err := os.Create(logPath)
 	if err != nil {
 		t.Fatalf("create: %v", err)
+		return
 	}
 
 	// Each entry is ~200 bytes. Write enough to exceed 1MB.
@@ -53,6 +54,7 @@ func TestSyncLog_Rotation_KeepsNewestHalf(t *testing.T) {
 	info, err := os.Stat(logPath)
 	if err != nil {
 		t.Fatalf("stat: %v", err)
+		return
 	}
 	if info.Size() >= maxSyncLogSize {
 		t.Errorf("expected size < %d after rotation, got %d", maxSyncLogSize, info.Size())
@@ -62,6 +64,7 @@ func TestSyncLog_Rotation_KeepsNewestHalf(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	lastEntry := entries[len(entries)-1]
 	if lastEntry.Provider != "PostRotation" {
@@ -95,6 +98,7 @@ func TestSyncLog_Rotation_AllCorrupt(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 1 {
 		t.Errorf("expected 1 entry after corrupt rotation, got %d", len(entries))
@@ -122,6 +126,7 @@ func TestSyncLog_Rotation_BelowThreshold(t *testing.T) {
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 5 {
 		t.Errorf("expected 5 entries (no rotation), got %d", len(entries))
@@ -146,6 +151,7 @@ not-valid-json
 	entries, err := sl.ReadEntries()
 	if err != nil {
 		t.Fatalf("ReadEntries: %v", err)
+		return
 	}
 	if len(entries) != 2 {
 		t.Errorf("expected 2 valid entries, got %d", len(entries))
@@ -170,6 +176,7 @@ func TestSyncLog_ReadRecentEntries_LessThanN(t *testing.T) {
 	entries, err := sl.ReadRecentEntries(100)
 	if err != nil {
 		t.Fatalf("ReadRecentEntries: %v", err)
+		return
 	}
 	if len(entries) != 1 {
 		t.Errorf("expected 1 entry, got %d", len(entries))
@@ -211,6 +218,7 @@ func TestSyncLog_EntriesSince(t *testing.T) {
 	entries, err := sl.EntriesSince(now.Add(-1 * time.Hour))
 	if err != nil {
 		t.Fatalf("EntriesSince: %v", err)
+		return
 	}
 	if len(entries) != 2 {
 		t.Errorf("expected 2 entries within last hour, got %d", len(entries))
@@ -225,6 +233,7 @@ func TestSyncLog_EntriesSince_Empty(t *testing.T) {
 	entries, err := sl.EntriesSince(time.Now().UTC().Add(-1 * time.Hour))
 	if err != nil {
 		t.Fatalf("EntriesSince: %v", err)
+		return
 	}
 	if len(entries) != 0 {
 		t.Errorf("expected 0 entries for empty log, got %d", len(entries))

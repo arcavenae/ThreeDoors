@@ -133,6 +133,7 @@ func TestSyncLogView_EscReturns(t *testing.T) {
 	cmd := sv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("expected command on Esc")
+		return
 	}
 
 	msg := cmd()

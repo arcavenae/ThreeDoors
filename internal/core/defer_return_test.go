@@ -37,6 +37,7 @@ func TestDeferUntilFieldSerializationRoundTrip(t *testing.T) {
 			data, err := yaml.Marshal(original)
 			if err != nil {
 				t.Fatalf("marshal: %v", err)
+				return
 			}
 
 			// Check YAML key presence
@@ -58,6 +59,7 @@ func TestDeferUntilFieldSerializationRoundTrip(t *testing.T) {
 			} else {
 				if loaded.DeferUntil == nil {
 					t.Fatal("expected non-nil DeferUntil, got nil")
+					return
 				}
 				if !loaded.DeferUntil.Equal(*tt.deferUntil) {
 					t.Errorf("DeferUntil = %v, want %v", loaded.DeferUntil, tt.deferUntil)

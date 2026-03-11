@@ -138,6 +138,7 @@ func TestAddTaskView_CharLimit_500(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected command for 500-char text")
+		return
 	}
 	msg := cmd()
 	taskMsg, ok := msg.(TaskAddedMsg)
@@ -204,6 +205,7 @@ func TestAddTaskWithContextView_Step2_Enter_WithContext_CreatesTask(t *testing.T
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from step 2 Enter")
+		return
 	}
 
 	msg := cmd()
@@ -233,6 +235,7 @@ func TestAddTaskWithContextView_Step2_Enter_EmptyContext_SkipsContext(t *testing
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from step 2 Enter")
+		return
 	}
 
 	msg := cmd()
@@ -256,6 +259,7 @@ func TestAddTaskWithContextView_Step1_EmptyText_ShowsError(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected a command from Enter with empty text")
+		return
 	}
 
 	msg := cmd()
@@ -276,6 +280,7 @@ func TestAddTaskWithContextView_Esc_FromStep1_Cancels(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected a command from Esc")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -297,6 +302,7 @@ func TestAddTaskWithContextView_Esc_FromStep2_Cancels(t *testing.T) {
 	cmd := av.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected a command from Esc")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {

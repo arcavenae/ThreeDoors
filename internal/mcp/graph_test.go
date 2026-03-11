@@ -220,6 +220,7 @@ func TestWalkGraph(t *testing.T) {
 	graph, err := WalkGraph(pool, edges, WalkGraphOptions{TaskID: "a", Depth: 2})
 	if err != nil {
 		t.Fatalf("WalkGraph: %v", err)
+		return
 	}
 
 	if len(graph.Nodes) != 3 {
@@ -250,6 +251,7 @@ func TestWalkGraphDepthLimit(t *testing.T) {
 	graph, err := WalkGraph(pool, edges, WalkGraphOptions{TaskID: "a", Depth: 1})
 	if err != nil {
 		t.Fatalf("WalkGraph: %v", err)
+		return
 	}
 
 	if len(graph.Nodes) != 2 {
@@ -281,6 +283,7 @@ func TestWalkGraphEdgeTypeFilter(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("WalkGraph: %v", err)
+		return
 	}
 
 	if _, ok := graph.Nodes["c"]; ok {
@@ -298,6 +301,7 @@ func TestWalkGraphNotFound(t *testing.T) {
 	_, err := WalkGraph(pool, nil, WalkGraphOptions{TaskID: "missing"})
 	if err == nil {
 		t.Fatal("expected error for missing task")
+		return
 	}
 }
 
@@ -319,6 +323,7 @@ func TestFindPaths(t *testing.T) {
 	paths, err := FindPaths(pool, edges, "a", "c", 5)
 	if err != nil {
 		t.Fatalf("FindPaths: %v", err)
+		return
 	}
 
 	if len(paths) < 2 {
@@ -333,6 +338,7 @@ func TestFindPathsNotFound(t *testing.T) {
 	_, err := FindPaths(pool, nil, "missing", "also-missing", 5)
 	if err == nil {
 		t.Fatal("expected error for missing task")
+		return
 	}
 }
 
@@ -354,6 +360,7 @@ func TestGetCriticalPath(t *testing.T) {
 	path, err := GetCriticalPath(pool, edges, "a")
 	if err != nil {
 		t.Fatalf("GetCriticalPath: %v", err)
+		return
 	}
 
 	if len(path) != 3 {
@@ -371,6 +378,7 @@ func TestGetCriticalPathNotFound(t *testing.T) {
 	_, err := GetCriticalPath(pool, nil, "missing")
 	if err == nil {
 		t.Fatal("expected error for missing task")
+		return
 	}
 }
 
@@ -586,6 +594,7 @@ func TestToolWalkGraphMissingID(t *testing.T) {
 	resp := dispatchToolCall(t, s, "walk_graph", map[string]any{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing task_id")
+		return
 	}
 }
 
@@ -616,6 +625,7 @@ func TestToolFindPathsMissingParams(t *testing.T) {
 	resp := dispatchToolCall(t, s, "find_paths", map[string]any{"from_id": "a"})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing to_id")
+		return
 	}
 }
 
@@ -649,6 +659,7 @@ func TestToolGetCriticalPathMissingID(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_critical_path", map[string]any{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing root_id")
+		return
 	}
 }
 
@@ -719,6 +730,7 @@ func TestToolGetProviderOverlapMissingParams(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_provider_overlap", map[string]any{"provider_a": "local"})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing provider_b")
+		return
 	}
 }
 
@@ -753,6 +765,7 @@ func TestToolGetUnifiedViewMissingTopic(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_unified_view", map[string]any{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing topic")
+		return
 	}
 }
 
@@ -784,6 +797,7 @@ func TestResourceGraphDependencies(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://graph/dependencies")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: code=%d msg=%s", resp.Error.Code, resp.Error.Message)
+		return
 	}
 }
 
@@ -798,6 +812,7 @@ func TestResourceGraphCrossProvider(t *testing.T) {
 	resp := dispatchRead(t, s, "threedoors://graph/cross-provider")
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: code=%d msg=%s", resp.Error.Code, resp.Error.Message)
+		return
 	}
 }
 
@@ -811,6 +826,7 @@ func TestToolsListIncludesGraphTools(t *testing.T) {
 	})
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -846,6 +862,7 @@ func TestResourcesListIncludesGraphResources(t *testing.T) {
 	})
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)

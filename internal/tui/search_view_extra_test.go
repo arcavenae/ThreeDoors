@@ -95,6 +95,7 @@ func TestSearchView_ExecuteCommand_Add(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd for :add")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(AddTaskPromptMsg); !ok {

@@ -216,5 +216,6 @@ func TestAnimationTickCmd(t *testing.T) {
 	cmd := AnimationTickCmd()
 	if cmd == nil {
 		t.Fatal("AnimationTickCmd returned nil")
+		return
 	}
 }

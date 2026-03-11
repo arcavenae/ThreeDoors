@@ -316,6 +316,7 @@ func TestContextSwitchAnalysisNilMiner(t *testing.T) {
 	analysis, err := contextSwitchAnalysis(nil, pool, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if analysis.TotalSwitches != 0 {
 		t.Errorf("expected 0 switches, got %d", analysis.TotalSwitches)
@@ -347,6 +348,7 @@ func TestContextSwitchAnalysisWithSessions(t *testing.T) {
 	analysis, err := contextSwitchAnalysis(pm, pool, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	// All 3 selections have different task texts → "general" type, so no switches.
@@ -371,6 +373,7 @@ func TestContextSwitchAnalysisSpecificSession(t *testing.T) {
 	analysis, err := contextSwitchAnalysis(pm, pool, "s2")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	// With no door selections, switches should be 0.
 	if analysis.TotalSwitches != 0 {
@@ -535,6 +538,7 @@ func TestToolWhatIfMissingIDs(t *testing.T) {
 	})
 	if resp.Error == nil {
 		t.Fatal("expected error for empty complete_task_ids")
+		return
 	}
 }
 

@@ -589,6 +589,7 @@ func TestTodoistProviderCacheFallback(t *testing.T) {
 	data, err := json.Marshal(cached)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	if err := os.WriteFile(cachePath, data, 0o600); err != nil {
 		t.Fatal(err)
@@ -641,6 +642,7 @@ func TestTodoistProviderCacheWrite(t *testing.T) {
 	data, readErr := os.ReadFile(cachePath)
 	if readErr != nil {
 		t.Fatalf("cache file not created: %v", readErr)
+		return
 	}
 
 	var entry cacheEntry

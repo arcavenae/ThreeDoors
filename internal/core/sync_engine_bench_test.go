@@ -155,6 +155,7 @@ func TestSyncNFR13(t *testing.T) {
 				_, err := engine.Sync(provider, syncState, pool)
 				if err != nil {
 					t.Fatalf("Sync failed: %v", err)
+					return
 				}
 			}
 			elapsed := time.Since(start)

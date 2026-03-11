@@ -16,6 +16,7 @@ func dispatchToolCall(t *testing.T, s *MCPServer, name string, args any) *Respon
 		argsJSON, err = json.Marshal(args)
 		if err != nil {
 			t.Fatalf("marshal args: %v", err)
+			return nil
 		}
 	}
 	params, _ := json.Marshal(ToolCallParams{Name: name, Arguments: argsJSON})
@@ -30,6 +31,7 @@ func parseToolText(t *testing.T, resp *Response) string {
 	t.Helper()
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: code=%d msg=%s", resp.Error.Code, resp.Error.Message)
+		return ""
 	}
 	resultBytes, _ := json.Marshal(resp.Result)
 	var result ToolCallResult
@@ -52,6 +54,7 @@ func TestToolsListPopulated(t *testing.T) {
 	})
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 
 	resultBytes, _ := json.Marshal(resp.Result)
@@ -193,6 +196,7 @@ func TestToolGetTaskMissingID(t *testing.T) {
 	resp := dispatchToolCall(t, s, "get_task", map[string]string{})
 	if resp.Error == nil {
 		t.Fatal("expected error for missing task_id")
+		return
 	}
 }
 
@@ -223,6 +227,7 @@ func TestToolGetSessionCurrent(t *testing.T) {
 
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 }
 
@@ -234,6 +239,7 @@ func TestToolGetSessionHistory(t *testing.T) {
 
 	if resp.Error != nil {
 		t.Fatalf("unexpected error: %v", resp.Error)
+		return
 	}
 }
 
@@ -268,6 +274,7 @@ func TestToolSearchTasksEmptyQuery(t *testing.T) {
 	resp := dispatchToolCall(t, s, "search_tasks", map[string]string{"query": ""})
 	if resp.Error == nil {
 		t.Fatal("expected error for empty query")
+		return
 	}
 }
 
@@ -278,6 +285,7 @@ func TestToolUnknown(t *testing.T) {
 	resp := dispatchToolCall(t, s, "nonexistent_tool", nil)
 	if resp.Error == nil {
 		t.Fatal("expected error for unknown tool")
+		return
 	}
 	if resp.Error.Code != CodeMethodNotFound {
 		t.Errorf("error code = %d, want %d", resp.Error.Code, CodeMethodNotFound)

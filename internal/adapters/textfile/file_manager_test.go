@@ -160,6 +160,7 @@ func TestAppendCompleted(t *testing.T) {
 	content, err := os.ReadFile(completedPath)
 	if err != nil {
 		t.Fatalf("Failed to read completed file: %v", err)
+		return
 	}
 
 	line := string(content)

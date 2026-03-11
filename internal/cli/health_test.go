@@ -51,6 +51,7 @@ func TestHealthCheckerResultsJSON(t *testing.T) {
 	err := formatter.WriteJSON("health", data, nil)
 	if err != nil {
 		t.Fatalf("WriteJSON failed: %v", err)
+		return
 	}
 
 	var env JSONEnvelope

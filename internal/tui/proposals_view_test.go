@@ -19,6 +19,7 @@ func newTestProposalStore(t *testing.T, pool *core.TaskPool) *mcp.ProposalStore 
 	store, err := mcp.NewProposalStore(path, pool)
 	if err != nil {
 		t.Fatalf("create proposal store: %v", err)
+		return nil
 	}
 	return store
 }
@@ -41,10 +42,12 @@ func addTestProposal(t *testing.T, store *mcp.ProposalStore, taskID string, base
 	data, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
+		return nil
 	}
 	p, err := mcp.NewProposal(pType, taskID, baseVersion, data, "mcp:test", rationale)
 	if err != nil {
 		t.Fatalf("create proposal: %v", err)
+		return nil
 	}
 	if err := store.Create(p); err != nil {
 		t.Fatalf("store proposal: %v", err)
@@ -172,6 +175,7 @@ func TestProposalsView_ApproveSelected(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("approve should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -210,6 +214,7 @@ func TestProposalsView_RejectSelected(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyBackspace})
 	if cmd == nil {
 		t.Fatal("reject should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -260,6 +265,7 @@ func TestProposalsView_StaleDetection(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("approve of stale should return a command")
+		return
 	}
 	msg := cmd()
 	if fm, ok := msg.(FlashMsg); !ok {
@@ -311,6 +317,7 @@ func TestProposalsView_EscReturns(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyEsc})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -353,6 +360,7 @@ func TestProposalsView_ApproveAll(t *testing.T) {
 	cmd := pv.Update(tea.KeyMsg{Type: tea.KeyCtrlA})
 	if cmd == nil {
 		t.Fatal("Ctrl+A should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -463,6 +471,7 @@ func TestApplyProposal(t *testing.T) {
 			data, err := json.Marshal(tt.payload)
 			if err != nil {
 				t.Fatalf("marshal: %v", err)
+				return
 			}
 
 			proposal := &mcp.Proposal{
@@ -561,6 +570,7 @@ func TestSearchView_SuggestionsCommand(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":suggestions should return a command")
+		return
 	}
 
 	msg := cmd()

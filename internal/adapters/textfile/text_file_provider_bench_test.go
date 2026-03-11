@@ -171,6 +171,7 @@ func TestAdapterReadWriteNFR13(t *testing.T) {
 			data, err := yaml.Marshal(&tf)
 			if err != nil {
 				t.Fatalf("marshal: %v", err)
+				return
 			}
 			if err := os.WriteFile(filepath.Join(configPath, "tasks.yaml"), data, 0o644); err != nil {
 				t.Fatalf("write: %v", err)

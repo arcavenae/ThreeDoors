@@ -206,6 +206,7 @@ END:VEVENT`,
 			events, err := parseICS(scanner, tt.start, tt.end)
 			if err != nil {
 				t.Fatalf("parseICS error: %v", err)
+				return
 			}
 			if len(events) != tt.wantCount {
 				t.Fatalf("got %d events, want %d", len(events), tt.wantCount)
@@ -297,6 +298,7 @@ func TestICSReaderWithFile(t *testing.T) {
 			events, err := reader.GetEvents(context.Background(), start, end)
 			if err != nil {
 				t.Fatalf("GetEvents error: %v", err)
+				return
 			}
 			if len(events) != tt.wantCount {
 				t.Errorf("got %d events, want %d", len(events), tt.wantCount)
@@ -318,6 +320,7 @@ func TestICSReaderDirectory(t *testing.T) {
 	events, err := reader.GetEvents(context.Background(), start, end)
 	if err != nil {
 		t.Fatalf("GetEvents error: %v", err)
+		return
 	}
 	// basic.ics (3) + special_chars.ics (2) + empty.ics (0) = 5
 	if len(events) != 5 {
@@ -390,6 +393,7 @@ func TestAppleScriptReaderParseOutput(t *testing.T) {
 			events, err := reader.parseOutput(tt.output)
 			if err != nil {
 				t.Fatalf("parseOutput error: %v", err)
+				return
 			}
 			if len(events) != tt.wantCount {
 				t.Errorf("got %d events, want %d", len(events), tt.wantCount)
@@ -492,6 +496,7 @@ func TestCalDAVCacheReader(t *testing.T) {
 		events, err := reader.GetEvents(context.Background(), start, end)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if len(events) != 0 {
 			t.Errorf("got %d events, want 0", len(events))
@@ -527,6 +532,7 @@ END:VCALENDAR`
 		events, err := reader.GetEvents(context.Background(), start, end)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if len(events) != 1 {
 			t.Errorf("got %d events, want 1", len(events))
@@ -557,6 +563,7 @@ func TestMultiSourceReader(t *testing.T) {
 		events, err := multi.GetEvents(context.Background(), start, end)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if len(events) != 2 {
 			t.Errorf("got %d events, want 2", len(events))
@@ -573,6 +580,7 @@ func TestMultiSourceReader(t *testing.T) {
 		events, err := multi.GetEvents(context.Background(), start, end)
 		if err != nil {
 			t.Fatalf("should not fail when some sources work: %v", err)
+			return
 		}
 		if len(events) != 1 {
 			t.Errorf("got %d events, want 1", len(events))
@@ -602,6 +610,7 @@ func TestMultiSourceReader(t *testing.T) {
 		events, err := multi.GetEvents(context.Background(), start, end)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if len(events) != 2 {
 			t.Fatalf("got %d events, want 2", len(events))
@@ -683,6 +692,7 @@ func TestLoadConfig(t *testing.T) {
 		cfg, err := LoadConfig("/nonexistent/config.yaml")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if cfg.Enabled {
 			t.Error("expected disabled config")
@@ -698,6 +708,7 @@ func TestLoadConfig(t *testing.T) {
 		cfg, err := LoadConfig(tmpFile)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if cfg.Enabled {
 			t.Error("expected disabled config")
@@ -720,6 +731,7 @@ func TestLoadConfig(t *testing.T) {
 		cfg, err := LoadConfig(tmpFile)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if !cfg.Enabled {
 			t.Error("expected enabled config")
@@ -741,6 +753,7 @@ note_title: My Tasks
 		cfg, err := LoadConfig(tmpFile)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+			return
 		}
 		if cfg.Enabled {
 			t.Error("expected disabled config")

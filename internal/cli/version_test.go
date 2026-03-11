@@ -19,6 +19,7 @@ func TestVersionHumanOutput(t *testing.T) {
 	err := writeVersion(&buf, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	output := buf.String()
@@ -41,6 +42,7 @@ func TestVersionJSONOutput(t *testing.T) {
 	err := writeVersion(&buf, true)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	var env JSONEnvelope

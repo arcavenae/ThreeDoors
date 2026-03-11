@@ -262,6 +262,7 @@ func TestSearchView_Esc_SendsSearchClosedMsg(t *testing.T) {
 	cmd := sv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(SearchClosedMsg); !ok {
@@ -280,6 +281,7 @@ func TestSearchView_Enter_WithSelection_SendsSearchResultSelectedMsg(t *testing.
 	cmd := sv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter on selected result should return a command")
+		return
 	}
 	msg := cmd()
 	srm, ok := msg.(SearchResultSelectedMsg)
@@ -335,6 +337,7 @@ func TestSearchView_AddCommand_CreatesTask(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":add should return a command")
+		return
 	}
 	msg := cmd()
 	tam, ok := msg.(TaskAddedMsg)
@@ -352,6 +355,7 @@ func TestSearchView_AddCommand_NoText_EmitsAddTaskPromptMsg(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":add with no text should return a command")
+		return
 	}
 	msg := cmd()
 	_, ok := msg.(AddTaskPromptMsg)
@@ -368,6 +372,7 @@ func TestSearchView_AddCtxCommand_NoArgs_EmitsPromptMsg(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":add-ctx should return a command")
+		return
 	}
 	msg := cmd()
 	ctxMsg, ok := msg.(AddTaskWithContextPromptMsg)
@@ -385,6 +390,7 @@ func TestSearchView_AddCtxCommand_WithArgs_EmitsPromptMsgWithPrefill(t *testing.
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":add-ctx with args should return a command")
+		return
 	}
 	msg := cmd()
 	ctxMsg, ok := msg.(AddTaskWithContextPromptMsg)
@@ -402,6 +408,7 @@ func TestSearchView_AddWhyFlag_EmitsPromptMsg(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":add --why should return a command")
+		return
 	}
 	msg := cmd()
 	_, ok := msg.(AddTaskWithContextPromptMsg)
@@ -416,6 +423,7 @@ func TestSearchView_AddWhyFlag_WithText_EmitsPromptMsgWithPrefill(t *testing.T) 
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":add --why with text should return a command")
+		return
 	}
 	msg := cmd()
 	ctxMsg, ok := msg.(AddTaskWithContextPromptMsg)
@@ -435,6 +443,7 @@ func TestSearchView_QuitCommand_SendsQuit(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":quit should return a command")
+		return
 	}
 	// :quit sends RequestQuitMsg which triggers quit flow
 }
@@ -445,6 +454,7 @@ func TestSearchView_ExitCommand_SendsQuit(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":exit should return a command")
+		return
 	}
 }
 
@@ -456,6 +466,7 @@ func TestSearchView_HelpCommand_ShowsHelp(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":help should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ShowHelpMsg); !ok {
@@ -471,6 +482,7 @@ func TestSearchView_ThemeCommand_EmitsShowThemePickerMsg(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":theme should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ShowThemePickerMsg); !ok {
@@ -484,6 +496,7 @@ func TestSearchView_HelpCommand_ContainsTheme(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":help should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ShowHelpMsg); !ok {
@@ -512,6 +525,7 @@ func TestSearchView_StatsCommand_ShowsStats(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":stats should return a command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -531,6 +545,7 @@ func TestSearchView_UnknownCommand_ShowsError(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal("unknown command should return a command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)

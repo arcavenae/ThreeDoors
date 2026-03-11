@@ -15,6 +15,7 @@ func TestConfirmView_Init(t *testing.T) {
 	cmd := cv.Init()
 	if cmd == nil {
 		t.Fatal("Init should return a command for tick and nudge timers")
+		return
 	}
 }
 
@@ -27,6 +28,7 @@ func TestConfirmView_EnterConfirms(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -50,6 +52,7 @@ func TestConfirmView_EscCancels(t *testing.T) {
 	cmd := cv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 
 	msg := cmd()
@@ -82,6 +85,7 @@ func TestConfirmView_TickUpdatesElapsed(t *testing.T) {
 	cmd := cv.Update(confirmTickMsg(time.Now().UTC()))
 	if cmd == nil {
 		t.Fatal("tick should return another tick command")
+		return
 	}
 	if cv.elapsed < 4*time.Second {
 		t.Errorf("elapsed should be at least 4s, got %v", cv.elapsed)

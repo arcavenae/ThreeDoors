@@ -250,6 +250,7 @@ happy-fox    completed  #42 https://github.com/example/repo/pull/42 2025-01-15T1
 	}
 	if e.CompletedAt == nil {
 		t.Fatal("CompletedAt is nil, want non-nil")
+		return
 	}
 	expected := time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC)
 	if !e.CompletedAt.Equal(expected) {
@@ -386,6 +387,7 @@ func TestCLIDispatcher_ErrorWrapping(t *testing.T) {
 	_, err := d.CreateWorker(ctx, "task")
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if !errors.Is(err, baseErr) {
 		t.Errorf("CreateWorker error should wrap base error, got: %v", err)
@@ -394,6 +396,7 @@ func TestCLIDispatcher_ErrorWrapping(t *testing.T) {
 	_, err = d.ListWorkers(ctx)
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if !errors.Is(err, baseErr) {
 		t.Errorf("ListWorkers error should wrap base error, got: %v", err)
@@ -402,6 +405,7 @@ func TestCLIDispatcher_ErrorWrapping(t *testing.T) {
 	_, err = d.GetHistory(ctx, 5)
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if !errors.Is(err, baseErr) {
 		t.Errorf("GetHistory error should wrap base error, got: %v", err)
@@ -410,6 +414,7 @@ func TestCLIDispatcher_ErrorWrapping(t *testing.T) {
 	err = d.RemoveWorker(ctx, "test")
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 	if !errors.Is(err, baseErr) {
 		t.Errorf("RemoveWorker error should wrap base error, got: %v", err)

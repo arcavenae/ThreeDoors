@@ -45,6 +45,7 @@ func TestSchemaVersionRecorded(t *testing.T) {
 	err := edb.db.QueryRow("SELECT MAX(version) FROM schema_version").Scan(&version)
 	if err != nil {
 		t.Fatalf("query schema_version: %v", err)
+		return
 	}
 	if version != SchemaVersion {
 		t.Errorf("schema version = %d, want %d", version, SchemaVersion)
@@ -58,12 +59,14 @@ func TestMigrationIsIdempotent(t *testing.T) {
 	edb1, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("first Open failed: %v", err)
+		return
 	}
 	_ = edb1.Close()
 
 	edb2, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("second Open failed: %v", err)
+		return
 	}
 	t.Cleanup(func() { _ = edb2.Close() })
 
@@ -72,6 +75,7 @@ func TestMigrationIsIdempotent(t *testing.T) {
 	err = edb2.db.QueryRow("SELECT COUNT(*) FROM schema_version").Scan(&count)
 	if err != nil {
 		t.Fatalf("count schema_version: %v", err)
+		return
 	}
 	if count != 1 {
 		t.Errorf("schema_version rows = %d, want 1", count)
@@ -113,6 +117,7 @@ func TestTaskMetadataCRUD(t *testing.T) {
 			got, err := edb.GetTaskMetadata(tt.meta.TaskID)
 			if err != nil {
 				t.Fatalf("GetTaskMetadata: %v", err)
+				return
 			}
 
 			if got.TaskID != tt.meta.TaskID {
@@ -140,6 +145,7 @@ func TestTaskMetadataCRUD(t *testing.T) {
 		got, err := edb.GetTaskMetadata("task-001")
 		if err != nil {
 			t.Fatalf("GetTaskMetadata after update: %v", err)
+			return
 		}
 		if got.Category != "administrative" {
 			t.Errorf("Category = %q, want %q", got.Category, "administrative")
@@ -190,6 +196,7 @@ func TestCrossReferenceCRUD(t *testing.T) {
 	refs, err := edb.GetCrossReferences("task-a")
 	if err != nil {
 		t.Fatalf("GetCrossReferences: %v", err)
+		return
 	}
 	if len(refs) != 1 {
 		t.Fatalf("got %d refs, want 1", len(refs))
@@ -214,6 +221,7 @@ func TestCrossReferenceCRUD(t *testing.T) {
 	refs3, err := edb.GetCrossReferences("task-a")
 	if err != nil {
 		t.Fatalf("GetCrossReferences after delete: %v", err)
+		return
 	}
 	if len(refs3) != 0 {
 		t.Errorf("got %d refs after delete, want 0", len(refs3))
@@ -263,6 +271,7 @@ func TestLearningPatternCRUD(t *testing.T) {
 	patterns, err := edb.GetLearningPatternsByType("mood_preference")
 	if err != nil {
 		t.Fatalf("GetLearningPatternsByType: %v", err)
+		return
 	}
 	if len(patterns) != 1 {
 		t.Fatalf("got %d patterns, want 1", len(patterns))
@@ -279,6 +288,7 @@ func TestLearningPatternCRUD(t *testing.T) {
 	patterns2, err := edb.GetLearningPatternsByType("mood_preference")
 	if err != nil {
 		t.Fatalf("GetLearningPatternsByType after update: %v", err)
+		return
 	}
 	if len(patterns2) != 1 {
 		t.Fatalf("got %d patterns after upsert, want 1", len(patterns2))
@@ -294,6 +304,7 @@ func TestLearningPatternCRUD(t *testing.T) {
 	patterns3, err := edb.GetLearningPatternsByType("mood_preference")
 	if err != nil {
 		t.Fatalf("GetLearningPatternsByType after delete: %v", err)
+		return
 	}
 	if len(patterns3) != 0 {
 		t.Errorf("got %d patterns after delete, want 0", len(patterns3))
@@ -323,6 +334,7 @@ func TestFeedbackHistoryCRUD(t *testing.T) {
 	byTask, err := edb.GetFeedbackByTask("task-1")
 	if err != nil {
 		t.Fatalf("GetFeedbackByTask: %v", err)
+		return
 	}
 	if len(byTask) != 2 {
 		t.Errorf("got %d entries for task-1, want 2", len(byTask))
@@ -332,6 +344,7 @@ func TestFeedbackHistoryCRUD(t *testing.T) {
 	bySess, err := edb.GetFeedbackBySession("sess-1")
 	if err != nil {
 		t.Fatalf("GetFeedbackBySession: %v", err)
+		return
 	}
 	if len(bySess) != 2 {
 		t.Errorf("got %d entries for sess-1, want 2", len(bySess))
@@ -355,6 +368,7 @@ func TestDataPreservedAcrossReopen(t *testing.T) {
 	edb1, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("first open: %v", err)
+		return
 	}
 	meta := &TaskMetadata{TaskID: "persist-test", Category: "test", Notes: "should survive"}
 	if err := edb1.UpsertTaskMetadata(meta); err != nil {
@@ -366,12 +380,14 @@ func TestDataPreservedAcrossReopen(t *testing.T) {
 	edb2, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("second open: %v", err)
+		return
 	}
 	t.Cleanup(func() { _ = edb2.Close() })
 
 	got, err := edb2.GetTaskMetadata("persist-test")
 	if err != nil {
 		t.Fatalf("get after reopen: %v", err)
+		return
 	}
 	if got.Notes != "should survive" {
 		t.Errorf("Notes = %q, want %q", got.Notes, "should survive")
@@ -385,6 +401,7 @@ func TestGetLearningPatternsEmptyType(t *testing.T) {
 	patterns, err := edb.GetLearningPatternsByType("nonexistent")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if len(patterns) != 0 {
 		t.Errorf("got %d patterns for nonexistent type, want 0", len(patterns))
@@ -398,6 +415,7 @@ func TestGetFeedbackEmptyResults(t *testing.T) {
 	byTask, err := edb.GetFeedbackByTask("nonexistent")
 	if err != nil {
 		t.Fatalf("GetFeedbackByTask: %v", err)
+		return
 	}
 	if len(byTask) != 0 {
 		t.Errorf("got %d entries, want 0", len(byTask))
@@ -406,6 +424,7 @@ func TestGetFeedbackEmptyResults(t *testing.T) {
 	bySess, err := edb.GetFeedbackBySession("nonexistent")
 	if err != nil {
 		t.Fatalf("GetFeedbackBySession: %v", err)
+		return
 	}
 	if len(bySess) != 0 {
 		t.Errorf("got %d entries, want 0", len(bySess))
@@ -420,6 +439,7 @@ func TestWALModeEnabled(t *testing.T) {
 	err := edb.db.QueryRow("PRAGMA journal_mode").Scan(&journalMode)
 	if err != nil {
 		t.Fatalf("query journal_mode: %v", err)
+		return
 	}
 	if journalMode != "wal" {
 		t.Errorf("journal_mode = %q, want %q", journalMode, "wal")
@@ -434,6 +454,7 @@ func TestForeignKeysEnabled(t *testing.T) {
 	err := edb.db.QueryRow("PRAGMA foreign_keys").Scan(&fk)
 	if err != nil {
 		t.Fatalf("query foreign_keys: %v", err)
+		return
 	}
 	if fk != 1 {
 		t.Errorf("foreign_keys = %d, want 1", fk)

@@ -86,6 +86,7 @@ func TestLoadDevDispatchConfig(t *testing.T) {
 			got, err := LoadDevDispatchConfig(path)
 			if err != nil {
 				t.Fatalf("LoadDevDispatchConfig: %v", err)
+				return
 			}
 
 			if got != tt.want {
@@ -100,6 +101,7 @@ func TestLoadDevDispatchConfigFileNotFound(t *testing.T) {
 	cfg, err := LoadDevDispatchConfig("/nonexistent/config.yaml")
 	if err != nil {
 		t.Fatalf("should return defaults for missing file: %v", err)
+		return
 	}
 	if cfg != DefaultDevDispatchConfig() {
 		t.Errorf("got %+v, want defaults", cfg)
@@ -117,6 +119,7 @@ func TestLoadDevDispatchConfigInvalidYAML(t *testing.T) {
 	_, err := LoadDevDispatchConfig(path)
 	if err == nil {
 		t.Fatal("should return error for invalid YAML")
+		return
 	}
 }
 

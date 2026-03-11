@@ -13,6 +13,7 @@ func TestCodeSigner_Sign_CorrectArguments(t *testing.T) {
 	err := cs.Sign("/path/to/binary")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if len(stub.Calls) != 1 {
@@ -76,6 +77,7 @@ func TestCodeSigner_Sign_ErrorWrapsOutput(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error, got nil")
+		return
 	}
 	if !errors.Is(err, stub.Responses["codesign"].Err) {
 		// The error should wrap the original
@@ -91,6 +93,7 @@ func TestCodeSigner_Verify_CorrectArguments(t *testing.T) {
 	err := cs.Verify("/path/to/signed-binary")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if len(stub.Calls) != 1 {
@@ -123,6 +126,7 @@ func TestCodeSigner_Verify_FailureReturnsError(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for invalid signature, got nil")
+		return
 	}
 }
 

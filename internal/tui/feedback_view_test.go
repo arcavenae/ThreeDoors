@@ -75,6 +75,7 @@ func TestFeedbackView_NumberKeySelects(t *testing.T) {
 			cmd := fv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(tt.key)})
 			if cmd == nil {
 				t.Fatalf("key %q should return a command", tt.key)
+				return
 			}
 			msg := cmd()
 			dfm, ok := msg.(DoorFeedbackMsg)
@@ -101,6 +102,7 @@ func TestFeedbackView_EscCancels(t *testing.T) {
 	cmd := fv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("Esc should return a command")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -136,6 +138,7 @@ func TestFeedbackView_CustomInput_EnterSubmits(t *testing.T) {
 	cmd := fv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("Enter should return a command after typing custom comment")
+		return
 	}
 	msg := cmd()
 	dfm, ok := msg.(DoorFeedbackMsg)

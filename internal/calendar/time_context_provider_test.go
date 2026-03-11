@@ -15,6 +15,7 @@ func TestCalendarTimeContextProvider_ReaderError(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if tc.HasCalendar {
 		t.Error("expected HasCalendar=false on reader error")
@@ -29,6 +30,7 @@ func TestCalendarTimeContextProvider_NoEvents(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if !tc.HasCalendar {
 		t.Error("expected HasCalendar=true when reader succeeds")
@@ -54,6 +56,7 @@ func TestCalendarTimeContextProvider_UpcomingEvent(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if !tc.HasCalendar {
 		t.Error("expected HasCalendar=true")
@@ -81,6 +84,7 @@ func TestCalendarTimeContextProvider_SkipsAllDayEvents(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if tc.NextEventName != "Meeting" {
 		t.Errorf("NextEventName = %q, want %q (should skip all-day)", tc.NextEventName, "Meeting")
@@ -101,6 +105,7 @@ func TestCalendarTimeContextProvider_PicksEarliestEvent(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if tc.NextEventName != "Soon Meeting" {
 		t.Errorf("NextEventName = %q, want %q", tc.NextEventName, "Soon Meeting")
@@ -122,6 +127,7 @@ func TestCalendarTimeContextProvider_SkipsPastEvents(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	// "Current" started in the past so Start is not After(now); "Future" is the next upcoming
 	if tc.NextEventName != "Future" {
@@ -137,6 +143,7 @@ func TestCalendarTimeContextProvider_DefaultLookAhead(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if tc.AvailableTime != 4*time.Hour {
 		t.Errorf("AvailableTime = %v, want 4h (default lookahead)", tc.AvailableTime)
@@ -156,6 +163,7 @@ func TestCalendarTimeContextProvider_OnlyAllDayEvents(t *testing.T) {
 	tc, err := provider.GetTimeContext(context.Background())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if !tc.HasCalendar {
 		t.Error("expected HasCalendar=true")

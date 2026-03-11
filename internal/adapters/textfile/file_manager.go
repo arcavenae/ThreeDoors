@@ -117,7 +117,7 @@ func SaveTasks(tasks []*core.Task) error {
 		return fmt.Errorf("failed to marshal tasks: %w", err)
 	}
 
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
@@ -150,7 +150,7 @@ func AppendCompleted(task *core.Task) error {
 	}
 
 	completedPath := filepath.Join(configPath, completedFile)
-	f, err := os.OpenFile(completedPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(completedPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open completed file: %w", err)
 	}

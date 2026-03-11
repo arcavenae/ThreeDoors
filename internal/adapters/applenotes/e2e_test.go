@@ -23,6 +23,7 @@ func fixturesDir(t *testing.T) string {
 	dir, err := filepath.Abs(filepath.Join("..", "..", "..", "testdata", "applenotes"))
 	if err != nil {
 		t.Fatalf("failed to resolve fixtures dir: %v", err)
+		return ""
 	}
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		t.Fatalf("fixtures directory does not exist: %s", dir)
@@ -36,6 +37,7 @@ func loadFixture(t *testing.T, name string) string {
 	data, err := os.ReadFile(filepath.Join(fixturesDir(t), name))
 	if err != nil {
 		t.Fatalf("failed to read fixture %q: %v", name, err)
+		return ""
 	}
 	return string(data)
 }
@@ -685,6 +687,7 @@ func TestE2E_Error_WriteFailure_OnSave(t *testing.T) {
 	err := provider.SaveTask(task)
 	if err == nil {
 		t.Fatal("expected error when write fails")
+		return
 	}
 }
 
@@ -700,6 +703,7 @@ func TestE2E_Error_ReadFailure_OnSave(t *testing.T) {
 	err := provider.SaveTask(task)
 	if err == nil {
 		t.Fatal("expected error when read fails during save")
+		return
 	}
 }
 
@@ -714,6 +718,7 @@ func TestE2E_Error_ReadFailure_OnDelete(t *testing.T) {
 	err := provider.DeleteTask("some-id")
 	if err == nil {
 		t.Fatal("expected error when read fails during delete")
+		return
 	}
 }
 
@@ -737,6 +742,7 @@ func TestE2E_Error_WriteFailure_OnDelete(t *testing.T) {
 	err := provider.DeleteTask(loaded[0].ID)
 	if err == nil {
 		t.Fatal("expected error when write fails during delete")
+		return
 	}
 }
 
@@ -756,6 +762,7 @@ func TestE2E_ConnectivityFailure_OsascriptNotFound(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error when osascript is unavailable")
+		return
 	}
 }
 
@@ -778,6 +785,7 @@ func TestE2E_ConnectivityFailure_IntermittentTimeout(t *testing.T) {
 	loaded, err := provider.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks should recover from transient timeout via retry, got: %v", err)
+		return
 	}
 	if len(loaded) != 1 {
 		t.Errorf("expected 1 task after transparent retry, got %d", len(loaded))
@@ -846,6 +854,7 @@ func TestE2E_PartialSync_WriteFailsAfterRead(t *testing.T) {
 	err := provider.SaveTask(loaded[0])
 	if err == nil {
 		t.Fatal("expected error from write failure")
+		return
 	}
 
 	// Re-read should still return original data (no corruption)
@@ -856,6 +865,7 @@ func TestE2E_PartialSync_WriteFailsAfterRead(t *testing.T) {
 	reloaded, err := reProvider.LoadTasks()
 	if err != nil {
 		t.Fatalf("re-read after partial failure: %v", err)
+		return
 	}
 
 	if reloaded[0].Status != core.StatusTodo {
@@ -887,6 +897,7 @@ func TestE2E_PartialSync_BatchUpdatePartialFailure(t *testing.T) {
 	err := provider.SaveTasks([]*core.Task{loaded[0], loaded[2]})
 	if err == nil {
 		t.Fatal("expected error from batch write failure")
+		return
 	}
 }
 

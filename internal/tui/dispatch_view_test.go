@@ -62,6 +62,7 @@ func TestDetailView_XKey_AlreadyDispatched_ShowsFlash(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("x")})
 	if cmd == nil {
 		t.Fatal("'x' on already-dispatched task should return a flash command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -83,6 +84,7 @@ func TestDetailView_DispatchConfirm_YKey_SendsDispatchRequest(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
 	if cmd == nil {
 		t.Fatal("'y' in confirm mode should return a command")
+		return
 	}
 	msg := cmd()
 	drm, ok := msg.(DevDispatchRequestMsg)
@@ -258,6 +260,7 @@ func TestSearchView_DispatchCommand_EnabledShowsHint(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":dispatch should return a command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)
@@ -282,6 +285,7 @@ func TestSearchView_DispatchCommand_DisabledShowsError(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal(":dispatch should return a command")
+		return
 	}
 	msg := cmd()
 	fm, ok := msg.(FlashMsg)

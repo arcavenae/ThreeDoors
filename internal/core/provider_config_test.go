@@ -280,6 +280,7 @@ func TestGenerateSampleConfig(t *testing.T) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("failed to read generated config: %v", err)
+		return
 	}
 
 	content := string(data)
@@ -315,6 +316,7 @@ func TestGenerateSampleConfig_DoesNotOverwriteExisting(t *testing.T) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("failed to read config: %v", err)
+		return
 	}
 	if string(data) != string(existing) {
 		t.Errorf("existing config was overwritten: got %q, want %q", string(data), string(existing))
@@ -448,6 +450,7 @@ func TestResolveActiveProvider_SettingsPassedToFactory(t *testing.T) {
 
 	if receivedSettings == nil {
 		t.Fatal("factory did not receive settings")
+		return
 	}
 	if receivedSettings["path"] != "/custom/path" {
 		t.Errorf("settings[path] = %q, want %q", receivedSettings["path"], "/custom/path")
@@ -621,6 +624,7 @@ func TestGenerateSampleConfig_IncludesSchemaVersion(t *testing.T) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("failed to read generated config: %v", err)
+		return
 	}
 
 	content := string(data)
@@ -724,6 +728,7 @@ func TestLoadProviderConfig_SeasonalThemes_Roundtrip(t *testing.T) {
 	loaded, err := LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("load: %v", err)
+		return
 	}
 	if loaded.SeasonalThemesEnabled() {
 		t.Error("loaded config should have seasonal_themes: false")
@@ -743,6 +748,7 @@ func TestLoadProviderConfig_SeasonalThemes_Absent(t *testing.T) {
 	loaded, err := LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("load: %v", err)
+		return
 	}
 	if !loaded.SeasonalThemesEnabled() {
 		t.Error("absent seasonal_themes should default to enabled")

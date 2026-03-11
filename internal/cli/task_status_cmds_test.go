@@ -467,6 +467,7 @@ func TestStatusResult_JSON(t *testing.T) {
 	data, err := json.Marshal(r)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
+		return
 	}
 
 	var decoded map[string]interface{}

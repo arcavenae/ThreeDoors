@@ -279,6 +279,7 @@ func TestObsidianAdapter_SaveTask_UpdateExisting(t *testing.T) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	got := string(data)
 	if got != "# Tasks\n- [ ] Updated task <!-- td:upd-1 -->\n" {
@@ -334,6 +335,7 @@ func TestObsidianAdapter_SaveTask_CreateFile(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "tasks.md"))
 	if err != nil {
 		t.Fatalf("read tasks.md: %v", err)
+		return
 	}
 	if got := string(data); got == "" {
 		t.Error("tasks.md is empty after save")
@@ -393,6 +395,7 @@ func TestObsidianAdapter_MarkComplete(t *testing.T) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	if got := string(data); got != "- [x] Complete me <!-- td:comp-1 -->\n" {
 		t.Errorf("file content = %q", got)
@@ -482,6 +485,7 @@ func TestObsidianAdapter_PreservesNonCheckboxContent(t *testing.T) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 	got := string(data)
 	want := "# My Project\n\nSome notes here.\n\n- [ ] Updated task <!-- td:pres-1 -->\n\n## Section 2\n"

@@ -129,7 +129,7 @@ func (mc *MilestoneChecker) MarkShown(id string) error {
 		return fmt.Errorf("marshal milestones: %w", err)
 	}
 
-	if err := os.MkdirAll(mc.configDir, 0o755); err != nil {
+	if err := os.MkdirAll(mc.configDir, 0o700); err != nil {
 		return fmt.Errorf("create config dir: %w", err)
 	}
 
@@ -157,7 +157,7 @@ func (mc *MilestoneChecker) filePath() string {
 
 // writeFileAtomic writes data to a file atomically: write .tmp, fsync, rename.
 func writeFileAtomic(tmpPath, finalPath string, data []byte) error {
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create tmp file %s: %w", tmpPath, err)
 	}

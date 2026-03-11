@@ -191,13 +191,13 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
 | 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
 
-### Epic 42: Application Security Hardening (P1) — 0/5 stories done
+### Epic 42: Application Security Hardening (P1) — 1/5 stories done
 
 Remediate findings from the application security audit. Fix permissive file permissions, add symlink validation, enforce input size limits, protect credentials in config, and harden CI supply chain.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 42.1 | File Permission Standardization (0o700/0o600) | Not Started | P1 | None |
+| 42.1 | File Permission Standardization (0o700/0o600) | Done (PR #437) | P1 | None |
 | 42.2 | Symlink Validation for File Operations | Not Started | P1 | None |
 | 42.3 | Input Size Limits for YAML and JSONL Readers | Not Started | P1 | None |
 | 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |

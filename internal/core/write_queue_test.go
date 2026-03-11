@@ -274,6 +274,7 @@ func TestWriteQueue_AtomicWrite(t *testing.T) {
 	data, err := os.ReadFile(queuePath)
 	if err != nil {
 		t.Fatalf("failed to read queue file: %v", err)
+		return
 	}
 
 	var loaded []PendingWrite

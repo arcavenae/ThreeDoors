@@ -13,6 +13,7 @@ func TestNewDedupStore_CreatesFile(t *testing.T) {
 	store, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore: %v", err)
+		return
 	}
 	if store == nil {
 		t.Fatal("expected non-nil store")
@@ -27,6 +28,7 @@ func TestDedupStore_RecordAndHasDecision(t *testing.T) {
 	store, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore: %v", err)
+		return
 	}
 
 	if store.HasDecision("task-a", "task-b") {
@@ -36,6 +38,7 @@ func TestDedupStore_RecordAndHasDecision(t *testing.T) {
 	err = store.RecordDecision("task-a", "task-b", DecisionDuplicate)
 	if err != nil {
 		t.Fatalf("RecordDecision: %v", err)
+		return
 	}
 
 	if !store.HasDecision("task-a", "task-b") {
@@ -50,11 +53,13 @@ func TestDedupStore_SymmetricLookup(t *testing.T) {
 	store, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore: %v", err)
+		return
 	}
 
 	err = store.RecordDecision("task-a", "task-b", DecisionDistinct)
 	if err != nil {
 		t.Fatalf("RecordDecision: %v", err)
+		return
 	}
 
 	// Lookup in reverse order should also work
@@ -70,11 +75,13 @@ func TestDedupStore_GetDecision(t *testing.T) {
 	store, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore: %v", err)
+		return
 	}
 
 	err = store.RecordDecision("task-a", "task-b", DecisionDuplicate)
 	if err != nil {
 		t.Fatalf("RecordDecision: %v", err)
+		return
 	}
 
 	decision, ok := store.GetDecision("task-a", "task-b")
@@ -94,16 +101,19 @@ func TestDedupStore_PersistenceAcrossLoads(t *testing.T) {
 	store1, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore: %v", err)
+		return
 	}
 	err = store1.RecordDecision("task-a", "task-b", DecisionDuplicate)
 	if err != nil {
 		t.Fatalf("RecordDecision: %v", err)
+		return
 	}
 
 	// Create a new store instance loading from the same file
 	store2, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore reload: %v", err)
+		return
 	}
 
 	if !store2.HasDecision("task-a", "task-b") {
@@ -118,6 +128,7 @@ func TestDedupStore_FilterUndecided(t *testing.T) {
 	store, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore: %v", err)
+		return
 	}
 
 	taskA := NewTask("buy groceries")
@@ -134,6 +145,7 @@ func TestDedupStore_FilterUndecided(t *testing.T) {
 	err = store.RecordDecision(taskA.ID, taskB.ID, DecisionDistinct)
 	if err != nil {
 		t.Fatalf("RecordDecision: %v", err)
+		return
 	}
 
 	// Filter should remove the decided pair
@@ -168,11 +180,13 @@ func TestDedupStore_EmptyFile(t *testing.T) {
 	err := os.WriteFile(path, []byte{}, 0o644)
 	if err != nil {
 		t.Fatalf("write empty file: %v", err)
+		return
 	}
 
 	store, err := NewDedupStore(path)
 	if err != nil {
 		t.Fatalf("NewDedupStore with empty file: %v", err)
+		return
 	}
 	if store.HasDecision("any", "thing") {
 		t.Error("expected no decisions from empty file")

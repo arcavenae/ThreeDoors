@@ -300,6 +300,7 @@ func TestWALProvider_LoadTasks_TriggersReplay(t *testing.T) {
 	tasks, err := wp.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks failed: %v", err)
+		return
 	}
 	// LoadTasks returns what the inner provider has (initially empty from mock)
 	_ = tasks

@@ -13,6 +13,7 @@ func TestNotarizer_Submit_CorrectArguments(t *testing.T) {
 	err := n.Submit("binary.zip")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if len(stub.Calls) != 1 {
@@ -78,6 +79,7 @@ func TestNotarizer_Submit_ErrorWrapsOutput(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error, got nil")
+		return
 	}
 }
 
@@ -89,6 +91,7 @@ func TestNotarizer_Staple_CorrectArguments(t *testing.T) {
 	err := n.Staple("threedoors.pkg")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	call := stub.Calls[0]
@@ -116,6 +119,7 @@ func TestNotarizer_Assess_CorrectArguments(t *testing.T) {
 	err := n.Assess("threedoors-darwin-arm64")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	call := stub.Calls[0]
@@ -143,6 +147,7 @@ func TestNotarizer_Assess_FailureReturnsError(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for rejected binary, got nil")
+		return
 	}
 }
 

@@ -23,6 +23,7 @@ func TestPkgBuilder_Build_CorrectArguments(t *testing.T) {
 	err := pb.Build(binaryPath, "0.1.0", outputPath)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if len(stub.Calls) != 1 {
@@ -95,6 +96,7 @@ func TestPkgBuilder_Build_StagingDirContainsBinary(t *testing.T) {
 	err := pb.Build(binaryPath, "1.0.0", outputPath)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	// Get the staging dir from the --root argument
@@ -128,6 +130,7 @@ func TestPkgBuilder_Build_MissingBinaryErrors(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected error for missing binary, got nil")
+		return
 	}
 }
 

@@ -38,7 +38,7 @@ type AuditLogger struct {
 // The parent directory is created if it doesn't exist.
 func NewAuditLogger(path string) (*AuditLogger, error) {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create audit log directory: %w", err)
 	}
 	return &AuditLogger{path: path}, nil
@@ -55,7 +55,7 @@ func (a *AuditLogger) Log(entry AuditEntry) error {
 		return fmt.Errorf("marshal audit entry: %w", err)
 	}
 
-	f, err := os.OpenFile(a.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(a.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("open audit log: %w", err)
 	}

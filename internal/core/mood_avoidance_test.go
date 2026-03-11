@@ -44,6 +44,7 @@ func TestAnalyzeMoodCorrelations_AvoidedType(t *testing.T) {
 	report, err = pa.Analyze(sessions)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
+		return
 	}
 
 	// Find the stressed correlation
@@ -83,6 +84,7 @@ func TestAnalyzeMoodCorrelations_NoBypassData(t *testing.T) {
 	report, err := pa.Analyze(sessions)
 	if err != nil {
 		t.Fatalf("Analyze failed: %v", err)
+		return
 	}
 
 	for _, mc := range report.MoodCorrelations {

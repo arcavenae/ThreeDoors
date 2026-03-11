@@ -13,12 +13,14 @@ func TestWriteImprovement(t *testing.T) {
 	err := WriteImprovement(dir, "test-session-123", "Break tasks into smaller pieces")
 	if err != nil {
 		t.Fatalf("WriteImprovement failed: %v", err)
+		return
 	}
 
 	path := filepath.Join(dir, "improvements.txt")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("reading improvements file: %v", err)
+		return
 	}
 
 	content := string(data)
@@ -39,17 +41,20 @@ func TestWriteImprovement_AppendsMultiple(t *testing.T) {
 	err := WriteImprovement(dir, "session-1", "First improvement")
 	if err != nil {
 		t.Fatalf("first write failed: %v", err)
+		return
 	}
 
 	err = WriteImprovement(dir, "session-2", "Second improvement")
 	if err != nil {
 		t.Fatalf("second write failed: %v", err)
+		return
 	}
 
 	path := filepath.Join(dir, "improvements.txt")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("reading improvements file: %v", err)
+		return
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
@@ -70,6 +75,7 @@ func TestWriteImprovement_CreatesFile(t *testing.T) {
 	err := WriteImprovement(dir, "session-1", "test")
 	if err != nil {
 		t.Fatalf("WriteImprovement failed: %v", err)
+		return
 	}
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -83,11 +89,13 @@ func TestWriteImprovement_TimestampFormat(t *testing.T) {
 	err := WriteImprovement(dir, "session-1", "test improvement")
 	if err != nil {
 		t.Fatalf("WriteImprovement failed: %v", err)
+		return
 	}
 
 	data, err := os.ReadFile(filepath.Join(dir, "improvements.txt"))
 	if err != nil {
 		t.Fatalf("reading file: %v", err)
+		return
 	}
 
 	content := string(data)

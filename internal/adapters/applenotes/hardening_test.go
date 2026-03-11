@@ -296,6 +296,7 @@ func TestErrorCategory_Timeout(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err == nil {
 		t.Fatal("expected error")
+		return
 	}
 
 	var adapterErr *AdapterError
@@ -483,6 +484,7 @@ func TestSyncLog_RecordsOperations(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if len(logs) == 0 {
@@ -571,6 +573,7 @@ func TestSyncLog_NilLoggerDoesNotPanic(t *testing.T) {
 	_, err := provider.LoadTasks()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 }
 
@@ -623,5 +626,6 @@ func TestRetry_SaveTaskRetriesOnTransient(t *testing.T) {
 	err := provider.SaveTask(task)
 	if err != nil {
 		t.Fatalf("SaveTask should succeed after retries: %v", err)
+		return
 	}
 }

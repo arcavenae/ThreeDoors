@@ -294,7 +294,7 @@ func (wp *WALProvider) persistWAL() error {
 func (wp *WALProvider) persistWALLocked() error {
 	tmpPath := wp.walPath + ".tmp"
 
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create WAL temp file: %w", err)
 	}

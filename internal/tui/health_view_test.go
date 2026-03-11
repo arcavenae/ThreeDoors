@@ -116,6 +116,7 @@ func TestHealthView_Update_EscReturnsToDoorsMsg(t *testing.T) {
 	cmd := hv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd on Esc press")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -131,6 +132,7 @@ func TestHealthView_Update_QKeyGoesBack(t *testing.T) {
 	cmd := hv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd on 'q' press — q should go back")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {

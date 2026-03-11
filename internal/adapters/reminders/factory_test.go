@@ -61,6 +61,7 @@ func TestNewFactory_DarwinCreatesProvider(t *testing.T) {
 	provider, err := factory(cfg)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 	if provider == nil {
 		t.Fatal("factory returned nil provider")

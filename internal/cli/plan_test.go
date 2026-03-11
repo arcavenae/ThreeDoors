@@ -16,6 +16,7 @@ func TestPlanCmd_Help(t *testing.T) {
 	err := cmd.Execute()
 	if err != nil {
 		t.Fatalf("plan --help should not error: %v", err)
+		return
 	}
 
 	output := buf.String()

@@ -202,6 +202,7 @@ func TestConfigSetAndLoad_RoundTrip(t *testing.T) {
 	loaded, err := core.LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("LoadProviderConfig: %v", err)
+		return
 	}
 
 	if loaded.Theme != "modern" {
@@ -262,6 +263,7 @@ func TestConfigGetJSON_UnknownKey(t *testing.T) {
 	}
 	if env.Error == nil {
 		t.Fatal("expected error in envelope")
+		return
 	}
 	if env.Error.Code != ExitValidation {
 		t.Errorf("error code = %d, want %d", env.Error.Code, ExitValidation)
@@ -288,6 +290,7 @@ func TestConfigSetPersists(t *testing.T) {
 	cfg, err := core.LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("load: %v", err)
+		return
 	}
 	if err := setConfigValue(cfg, "theme", "scifi"); err != nil {
 		t.Fatalf("set: %v", err)
@@ -300,6 +303,7 @@ func TestConfigSetPersists(t *testing.T) {
 	reloaded, err := core.LoadProviderConfig(configPath)
 	if err != nil {
 		t.Fatalf("reload: %v", err)
+		return
 	}
 	if reloaded.Theme != "scifi" {
 		t.Errorf("Theme = %q, want %q", reloaded.Theme, "scifi")
@@ -325,6 +329,7 @@ func TestLoadConfig_MissingDir(t *testing.T) {
 	path, cfg, err := loadConfig()
 	if err != nil {
 		t.Fatalf("loadConfig: %v", err)
+		return
 	}
 	if path == "" {
 		t.Error("expected non-empty config path")

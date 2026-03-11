@@ -57,6 +57,7 @@ func TestPromptDoorSelection_EOF(t *testing.T) {
 	_, err := promptDoorSelection(reader, &writer, 3)
 	if err == nil {
 		t.Fatal("expected error on EOF")
+		return
 	}
 }
 
@@ -69,6 +70,7 @@ func TestPromptDoorSelection_WritesPrompt(t *testing.T) {
 	_, err := promptDoorSelection(reader, &writer, 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	prompt := writer.String()

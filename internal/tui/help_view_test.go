@@ -280,6 +280,7 @@ func TestHelpCommand_ProducesShowHelpMsg(t *testing.T) {
 	cmd := sv.executeCommand()
 	if cmd == nil {
 		t.Fatal("expected command from :help")
+		return
 	}
 
 	msg := cmd()

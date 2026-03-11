@@ -79,6 +79,7 @@ func TestMoodHistoryCmd_EmptyJSON(t *testing.T) {
 	err := formatter.WriteJSON("mood history", entries, map[string]int{"total": 0})
 	if err != nil {
 		t.Fatalf("WriteJSON: %v", err)
+		return
 	}
 
 	var env JSONEnvelope

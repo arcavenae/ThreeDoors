@@ -56,6 +56,7 @@ func TestTextFileProvider_LoadTasks(t *testing.T) {
 	tasks, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 	if len(tasks) != len(defaultTaskTexts) {
 		t.Errorf("expected %d default tasks, got %d", len(defaultTaskTexts), len(tasks))
@@ -70,6 +71,7 @@ func TestTextFileProvider_SaveTask_NewTask(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	newTask := core.NewTask("Brand new task")
@@ -80,6 +82,7 @@ func TestTextFileProvider_SaveTask_NewTask(t *testing.T) {
 	tasks, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks after save: %v", err)
+		return
 	}
 
 	found := false
@@ -104,6 +107,7 @@ func TestTextFileProvider_SaveTask_UpdateExisting(t *testing.T) {
 	tasks, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	target := tasks[0]
@@ -116,6 +120,7 @@ func TestTextFileProvider_SaveTask_UpdateExisting(t *testing.T) {
 	reloaded, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks after update: %v", err)
+		return
 	}
 
 	for _, task := range reloaded {
@@ -145,6 +150,7 @@ func TestTextFileProvider_SaveTasks(t *testing.T) {
 	loaded, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 	if len(loaded) != 2 {
 		t.Fatalf("expected 2 tasks, got %d", len(loaded))
@@ -158,6 +164,7 @@ func TestTextFileProvider_DeleteTask(t *testing.T) {
 	tasks, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	deleteID := tasks[0].ID
@@ -170,6 +177,7 @@ func TestTextFileProvider_DeleteTask(t *testing.T) {
 	remaining, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks after delete: %v", err)
+		return
 	}
 	if len(remaining) != originalCount-1 {
 		t.Errorf("expected %d tasks, got %d", originalCount-1, len(remaining))
@@ -188,6 +196,7 @@ func TestTextFileProvider_DeleteTask_NonExistent(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	// Deleting a non-existent ID should succeed (no-op)
@@ -204,6 +213,7 @@ func TestTextFileProvider_HealthCheck_OK(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	result := p.HealthCheck()
@@ -240,6 +250,7 @@ func TestTextFileProvider_MarkComplete(t *testing.T) {
 	tasks, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	target := tasks[0]
@@ -254,6 +265,7 @@ func TestTextFileProvider_MarkComplete(t *testing.T) {
 	remaining, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks after complete: %v", err)
+		return
 	}
 	if len(remaining) != originalCount-1 {
 		t.Errorf("expected %d active tasks, got %d", originalCount-1, len(remaining))
@@ -265,6 +277,7 @@ func TestTextFileProvider_MarkComplete(t *testing.T) {
 	data, err := os.ReadFile(completedPath)
 	if err != nil {
 		t.Fatalf("read completed file: %v", err)
+		return
 	}
 	if len(data) == 0 {
 		t.Error("completed file should not be empty")
@@ -278,11 +291,13 @@ func TestTextFileProvider_MarkComplete_NotFound(t *testing.T) {
 	_, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	err = p.MarkComplete("nonexistent-id")
 	if err == nil {
 		t.Fatal("expected error for nonexistent task")
+		return
 	}
 }
 
@@ -293,6 +308,7 @@ func TestTextFileProvider_MarkComplete_InvalidTransition(t *testing.T) {
 	tasks, err := p.LoadTasks()
 	if err != nil {
 		t.Fatalf("LoadTasks: %v", err)
+		return
 	}
 
 	// Set a task to "deferred" — deferred→complete is not a valid transition
@@ -305,5 +321,6 @@ func TestTextFileProvider_MarkComplete_InvalidTransition(t *testing.T) {
 	err = p.MarkComplete(target.ID)
 	if err == nil {
 		t.Fatal("expected error for invalid transition from deferred to complete")
+		return
 	}
 }

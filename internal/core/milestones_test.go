@@ -136,6 +136,7 @@ func TestMilestoneChecker_MarkShown(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "milestones.json"))
 	if err != nil {
 		t.Fatalf("read milestones.json: %v", err)
+		return
 	}
 
 	var md MilestoneData
@@ -225,6 +226,7 @@ func TestMilestoneChecker_AtomicWrite(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "milestones.json"))
 	if err != nil {
 		t.Fatalf("read: %v", err)
+		return
 	}
 
 	var md MilestoneData

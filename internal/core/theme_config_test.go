@@ -19,6 +19,7 @@ func TestSaveThemeConfig_NewFile(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(dir, "config.yaml"))
 	if err != nil {
 		t.Fatalf("read config: %v", err)
+		return
 	}
 
 	var cfg map[string]interface{}
@@ -49,6 +50,7 @@ func TestSaveThemeConfig_PreservesExistingFields(t *testing.T) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("read config: %v", err)
+		return
 	}
 
 	var cfg map[string]interface{}
@@ -85,6 +87,7 @@ func TestSaveThemeConfig_OverwritesPreviousTheme(t *testing.T) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		t.Fatalf("read config: %v", err)
+		return
 	}
 
 	var cfg map[string]interface{}

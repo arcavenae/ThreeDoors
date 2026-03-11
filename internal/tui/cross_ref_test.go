@@ -16,6 +16,7 @@ func openTestEnrichDB(t *testing.T) *enrichment.DB {
 	edb, err := enrichment.Open(dbPath)
 	if err != nil {
 		t.Fatalf("failed to open test enrichment db: %v", err)
+		return nil
 	}
 	t.Cleanup(func() {
 		if closeErr := edb.Close(); closeErr != nil {
@@ -175,6 +176,7 @@ func TestDetailView_LKey_NoEnrichDB_FlashesError(t *testing.T) {
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("l")})
 	if cmd == nil {
 		t.Fatal("expected a flash command")
+		return
 	}
 	msg := cmd()
 	if fm, ok := msg.(FlashMsg); !ok {
@@ -233,6 +235,7 @@ func TestDetailView_LinkSelect_Enter_CreatesLink(t *testing.T) {
 
 	if cmd == nil {
 		t.Fatal("Enter should return a command")
+		return
 	}
 	msg := cmd()
 	if fm, ok := msg.(FlashMsg); !ok {
@@ -347,6 +350,7 @@ func TestDetailView_LinkBrowse_Enter_NavigatesToLinkedTask(t *testing.T) {
 
 	if cmd == nil {
 		t.Fatal("Enter in link browse should return a command")
+		return
 	}
 	msg := cmd()
 	navMsg, ok := msg.(NavigateToLinkedMsg)
@@ -379,6 +383,7 @@ func TestDetailView_LinkBrowse_UKey_Unlinks(t *testing.T) {
 
 	if cmd == nil {
 		t.Fatal("U should return a command")
+		return
 	}
 	msg := cmd()
 	if fm, ok := msg.(FlashMsg); !ok {

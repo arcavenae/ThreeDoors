@@ -48,7 +48,7 @@ func (sl *SyncLog) Append(entry SyncLogEntry) error {
 		return fmt.Errorf("sync log rotate: %w", err)
 	}
 
-	f, err := os.OpenFile(sl.logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(sl.logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("sync log open: %w", err)
 	}
@@ -204,7 +204,7 @@ func (sl *SyncLog) rotateIfNeeded() error {
 
 	// Atomic write
 	tmpPath := sl.logPath + ".tmp"
-	f, err := os.Create(tmpPath)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("create sync log temp: %w", err)
 	}

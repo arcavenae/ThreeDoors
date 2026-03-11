@@ -128,6 +128,7 @@ func TestThemePickerEnterSelectsTheme(t *testing.T) {
 	cmd := tp.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd on Enter")
+		return
 	}
 
 	msg := cmd()
@@ -148,6 +149,7 @@ func TestThemePickerEscapeCancels(t *testing.T) {
 	cmd := tp.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected non-nil cmd on Escape")
+		return
 	}
 
 	msg := cmd()

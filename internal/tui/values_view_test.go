@@ -49,6 +49,7 @@ func TestValuesSetupView_EmptyEnterWithValues(t *testing.T) {
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected save cmd when pressing enter with empty input and existing values")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ValuesSavedMsg); !ok {
@@ -74,6 +75,7 @@ func TestValuesSetupView_EscWithValues(t *testing.T) {
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected cmd on Esc with values")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ValuesSavedMsg); !ok {
@@ -88,6 +90,7 @@ func TestValuesSetupView_EscWithoutValues(t *testing.T) {
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected cmd on Esc without values")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
@@ -153,6 +156,7 @@ func TestValuesEditView_SaveOnEsc(t *testing.T) {
 	cmd := vv.Update(tea.KeyMsg{Type: tea.KeyEscape})
 	if cmd == nil {
 		t.Fatal("expected cmd on Esc")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(ValuesSavedMsg); !ok {

@@ -72,6 +72,7 @@ func TestClientSearchJQL(t *testing.T) {
 	result, err := client.SearchJQL(context.Background(), "assignee = currentUser()", []string{"summary", "status"}, 50, "")
 	if err != nil {
 		t.Fatalf("SearchJQL: %v", err)
+		return
 	}
 
 	if len(result.Issues) != 1 {
@@ -127,6 +128,7 @@ func TestClientSearchJQLPagination(t *testing.T) {
 	result1, err := client.SearchJQL(context.Background(), "test", nil, 1, "")
 	if err != nil {
 		t.Fatalf("page 1: %v", err)
+		return
 	}
 	if result1.IsLast {
 		t.Error("page 1 should not be last")
@@ -139,6 +141,7 @@ func TestClientSearchJQLPagination(t *testing.T) {
 	result2, err := client.SearchJQL(context.Background(), "test", nil, 1, result1.NextPageToken)
 	if err != nil {
 		t.Fatalf("page 2: %v", err)
+		return
 	}
 	if !result2.IsLast {
 		t.Error("page 2 should be last")
@@ -192,6 +195,7 @@ func TestClientGetTransitions(t *testing.T) {
 	transitions, err := client.GetTransitions(context.Background(), "PROJ-42")
 	if err != nil {
 		t.Fatalf("GetTransitions: %v", err)
+		return
 	}
 
 	if len(transitions) != 2 {
@@ -277,6 +281,7 @@ func TestClientRateLimitHandling(t *testing.T) {
 
 	if err == nil {
 		t.Fatal("expected rate limit error")
+		return
 	}
 
 	var rle *RateLimitError
@@ -332,6 +337,7 @@ func TestClientAuthBasic(t *testing.T) {
 	_, err := client.SearchJQL(context.Background(), "test", nil, 1, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if !containsStr(gotAuth, "Basic ") {
@@ -356,6 +362,7 @@ func TestClientAuthPAT(t *testing.T) {
 	_, err := client.SearchJQL(context.Background(), "test", nil, 1, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+		return
 	}
 
 	if gotAuth != "Bearer my-pat-token" {

@@ -118,9 +118,11 @@ func TestNewAgentService(t *testing.T) {
 			}
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+				return
 			}
 			if svc == nil {
 				t.Fatal("expected non-nil service")
+				return
 			}
 		})
 	}
@@ -255,6 +257,7 @@ func TestDecomposeAndWrite(t *testing.T) {
 			}
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
+				return
 			}
 			if result == nil {
 				t.Fatal("expected non-nil result")
@@ -285,6 +288,7 @@ func TestDecomposeAndWriteContextCancellation(t *testing.T) {
 	_, err := svc.DecomposeAndWrite(ctx, "Some task")
 	if err == nil {
 		t.Fatal("expected error from cancelled context")
+		return
 	}
 }
 

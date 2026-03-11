@@ -78,6 +78,7 @@ func TestOnboardingView_StepProgression(t *testing.T) {
 	cmd := ov.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected command on final Enter")
+		return
 	}
 	msg := cmd()
 	if _, ok := msg.(OnboardingCompletedMsg); !ok {
@@ -106,6 +107,7 @@ func TestOnboardingView_SkipAtEveryStep(t *testing.T) {
 			cmd := ov.Update(tea.KeyMsg{Type: tea.KeyEscape})
 			if cmd == nil {
 				t.Fatal("expected command on Esc")
+				return
 			}
 			msg := cmd()
 			if _, ok := msg.(OnboardingCompletedMsg); !ok {
@@ -369,6 +371,7 @@ func TestOnboardingView_ImportWithFile(t *testing.T) {
 	}
 	if ov.importResult == nil {
 		t.Fatal("expected importResult to be set")
+		return
 	}
 	if len(ov.importResult.Tasks) != 3 {
 		t.Errorf("imported %d tasks, want 3", len(ov.importResult.Tasks))
@@ -499,6 +502,7 @@ func TestOnboardingView_CompletedMsgCarriesData(t *testing.T) {
 	cmd := ov.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if cmd == nil {
 		t.Fatal("expected command on final Enter")
+		return
 	}
 
 	msg := cmd()
