@@ -730,7 +730,7 @@
 | Epic 39: Keybinding Display System | 13 | COMPLETE (12/13, 1 cancelled) |
 | Epic 40: Beautiful Stats Display | 10 | Complete |
 | Epic 41: Charm Ecosystem Adoption | 6 | Complete |
-| Epic 42: Application Security Hardening | 5 | In Progress (1/5 done) |
+| Epic 42: Application Security Hardening | 5 | In Progress (4/5 done) |
 | Epic 43: Connection Manager Infrastructure | 6 | Complete (6/6 done) |
 | Epic 44: Sources TUI | 7 | Not Started |
 | Epic 45: Sources CLI | 5 | Not Started |

@@ -3,6 +3,7 @@ package connection
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -126,6 +127,19 @@ func (m *ConnectionManager) transitionWithError(id string, to ConnectionState, e
 	}
 
 	return nil
+}
+
+// GetByLabel returns the first connection matching the given label (case-insensitive).
+func (m *ConnectionManager) GetByLabel(label string) (*Connection, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	for _, conn := range m.connections {
+		if strings.EqualFold(conn.Label, label) {
+			return conn, nil
+		}
+	}
+	return nil, fmt.Errorf("get connection by label %q: %w", label, ErrConnectionNotFound)
 }
 
 // Count returns the number of connections.
