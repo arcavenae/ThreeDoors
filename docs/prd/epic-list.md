@@ -712,6 +712,6 @@
 | Epic 48: Door-Like Doors | 4 | Not Started |
 | Epic 49: ThreeDoors Doctor | 10 | Not Started |
 | Epic 50: In-App Bug Reporting | 3 | Not Started |
-| Epic 51: SLAES | 10 | Not Started |
+| Epic 51: SLAES | 10 | In Progress (4/10 done) |
 | **Total** | **274** | **146 complete, 4 epics in progress, 128 not started** |
 ---
