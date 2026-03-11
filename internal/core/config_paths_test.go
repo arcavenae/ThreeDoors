@@ -7,7 +7,6 @@ import (
 )
 
 func TestEnsureConfigDir_CreatesWithRestrictivePermissions(t *testing.T) {
-	t.Parallel()
 	tmpDir := t.TempDir()
 	SetHomeDir(tmpDir)
 	t.Cleanup(func() { SetHomeDir("") })
@@ -31,7 +30,6 @@ func TestEnsureConfigDir_CreatesWithRestrictivePermissions(t *testing.T) {
 }
 
 func TestEnsureConfigDir_MigratesPermissiveDirectory(t *testing.T) {
-	t.Parallel()
 	tmpDir := t.TempDir()
 	SetHomeDir(tmpDir)
 	t.Cleanup(func() { SetHomeDir("") })
@@ -74,7 +72,6 @@ func TestEnsureConfigDir_MigratesPermissiveDirectory(t *testing.T) {
 }
 
 func TestEnsureConfigDir_NoChangeWhenAlreadyRestrictive(t *testing.T) {
-	t.Parallel()
 	tmpDir := t.TempDir()
 	SetHomeDir(tmpDir)
 	t.Cleanup(func() { SetHomeDir("") })
