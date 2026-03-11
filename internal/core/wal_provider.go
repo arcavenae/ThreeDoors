@@ -292,6 +292,10 @@ func (wp *WALProvider) persistWAL() error {
 
 // persistWALLocked writes the WAL file. Caller must hold wp.mu.
 func (wp *WALProvider) persistWALLocked() error {
+	if err := ValidatePath(wp.walPath); err != nil {
+		return fmt.Errorf("WAL file validation failed: %w", err)
+	}
+
 	tmpPath := wp.walPath + ".tmp"
 
 	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
