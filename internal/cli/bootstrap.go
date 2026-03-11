@@ -5,12 +5,14 @@ import (
 	"path/filepath"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 )
 
 // cliContext holds the initialized provider and task pool for CLI commands.
 type cliContext struct {
 	provider core.TaskProvider
 	pool     *core.TaskPool
+	resolved *connection.ResolvedConnections
 }
 
 // bootstrap loads configuration and initializes the provider and task pool.
@@ -51,5 +53,8 @@ func bootstrap() (*cliContext, error) {
 		pool.AddTask(t)
 	}
 
-	return &cliContext{provider: provider, pool: pool}, nil
+	// Resolve named connections (if any exist in config).
+	resolved, _ := connection.ResolveFromConfig(cfg, core.DefaultRegistry(), configPath, nil)
+
+	return &cliContext{provider: provider, pool: pool, resolved: resolved}, nil
 }
