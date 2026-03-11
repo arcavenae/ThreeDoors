@@ -27,7 +27,7 @@
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
 | P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Artifact](../../_bmad-output/planning-artifacts/envoy-scope-and-firewall-design.md) | Story creation |
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | Story creation |
-| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | **Approved** — update then run `/sync-enhancements` after merge |
+
 | P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode (3 rounds) + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md), [Research](../../_bmad-output/planning-artifacts/scoped-labels-research.md) | Story creation for migration |
 
 ## Decided
@@ -108,6 +108,7 @@
 | D-071 | Biweekly sprint cadence for agent team | 2026-03-08 | Balances planning overhead with delivery velocity for AI agent workflow | [ADR-0031](../ADRs/ADR-0031-biweekly-sprint-cadence.md) |
 | D-072 | BMAD files as primary tracker with ROADMAP sync | 2026-03-08 | Story files are source of truth; ROADMAP.md synced periodically; no external tracker needed | [ADR-0032](../ADRs/ADR-0032-work-tracking-bmad-files-with-roadmap-sync.md) |
 | D-073 | CLI -> MCP -> iPhone implementation priority | 2026-03-07 | CLI most valuable for core persona; MCP enables AI workflows; iPhone has no validated demand | [Research](../../_bmad-output/planning-artifacts/next-phase-prioritization-research.md) |
+| D-074 | Remove fork references from agent definitions | 2026-03-10 | Completed via Story 51.2 (PR #460); all agent definitions rewritten without fork/upstream references | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) |
 | D-074 | MIT license for ThreeDoors | 2026-03-08 | Charm ecosystem alignment; maximum adapter freedom; zero maintenance; Homebrew compatible | [Research](../../_bmad-output/planning-artifacts/license-selection-research.md) |
 | D-075 | Focus state via session-scoped +focus tags (Epic 27) | 2026-03-07 | Reuses existing tag infrastructure; no new Task model field needed | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
 | D-076 | Energy level inferred from time-of-day as default (Epic 27) | 2026-03-07 | Reduces friction; user can override; morning=high, afternoon=medium, evening=low | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
