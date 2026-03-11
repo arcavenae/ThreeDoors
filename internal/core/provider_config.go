@@ -55,11 +55,23 @@ type ProviderConfig struct {
 	// SeasonalThemes controls automatic seasonal theme switching.
 	// Uses *bool so nil (absent) defaults to true; explicit false disables.
 	SeasonalThemes *bool `yaml:"seasonal_themes,omitempty"`
+	// Connections holds named connection instances (schema v3+).
+	Connections []ConnectionConfig `yaml:"connections,omitempty"`
+}
+
+// ConnectionConfig represents a named connection instance in config.yaml.
+// This is the persistent config representation; runtime state lives in connection.Connection.
+type ConnectionConfig struct {
+	ID       string            `yaml:"id"`
+	Provider string            `yaml:"provider"`
+	Label    string            `yaml:"label"`
+	Settings map[string]string `yaml:"settings,omitempty"`
 }
 
 // CurrentSchemaVersion is the current config.yaml schema version.
 // Version 2 introduced SourceRefs for multi-provider task identity.
-const CurrentSchemaVersion = 2
+// Version 3 introduced named connections (connections array).
+const CurrentSchemaVersion = 3
 
 // defaultProviderConfig returns the default configuration.
 func defaultProviderConfig() *ProviderConfig {
@@ -111,16 +123,105 @@ func LoadProviderConfig(path string) (*ProviderConfig, error) {
 
 // MigrateConfig updates a config to the current schema version.
 // Version 1 → 2: no config-level changes needed (SourceRef migration happens at task load time).
+// Version 2 → 3: converts legacy providers[] entries to connections[] entries.
 // Also migrates show_keybinding_bar → show_key_hints when the new field is absent.
 func MigrateConfig(cfg *ProviderConfig) {
+	// Migrate v2 → v3: create connections from legacy providers list.
+	if cfg.SchemaVersion < 3 && len(cfg.Connections) == 0 {
+		migrateV2ToV3(cfg)
+	}
+
 	if cfg.SchemaVersion < CurrentSchemaVersion {
 		cfg.SchemaVersion = CurrentSchemaVersion
 	}
+
 	// Migrate show_keybinding_bar → show_key_hints (Story 39.13)
 	if cfg.ShowKeyHints == nil && cfg.ShowKeybindingBar != nil {
 		cfg.ShowKeyHints = cfg.ShowKeybindingBar
 		cfg.ShowKeybindingBar = nil
 	}
+}
+
+// migrateV2ToV3 converts legacy providers entries to named connections.
+// If no providers list exists but a flat provider field does, it creates a
+// connection from that. Connection IDs are deterministic from provider name
+// so that repeated migrations produce the same result.
+func migrateV2ToV3(cfg *ProviderConfig) {
+	if len(cfg.Providers) > 0 {
+		for _, p := range cfg.Providers {
+			cc := ConnectionConfig{
+				ID:       "legacy-" + p.Name,
+				Provider: p.Name,
+				Label:    p.Name,
+				Settings: p.Settings,
+			}
+			cfg.Connections = append(cfg.Connections, cc)
+		}
+		return
+	}
+
+	// Fall back to flat provider field.
+	if cfg.Provider != "" && cfg.Provider != "textfile" {
+		cc := ConnectionConfig{
+			ID:       "legacy-" + cfg.Provider,
+			Provider: cfg.Provider,
+			Label:    cfg.Provider,
+		}
+		cfg.Connections = append(cfg.Connections, cc)
+	}
+}
+
+// AddConnection adds a new ConnectionConfig to the config.
+// Returns an error if a connection with the same ID already exists.
+func (c *ProviderConfig) AddConnection(conn ConnectionConfig) error {
+	if conn.ID == "" {
+		return fmt.Errorf("add connection: ID must not be empty")
+	}
+	if conn.Provider == "" {
+		return fmt.Errorf("add connection: provider must not be empty")
+	}
+	for _, existing := range c.Connections {
+		if existing.ID == conn.ID {
+			return fmt.Errorf("add connection: duplicate ID %q", conn.ID)
+		}
+	}
+	c.Connections = append(c.Connections, conn)
+	return nil
+}
+
+// RemoveConnection removes a ConnectionConfig by ID.
+// Returns an error if the connection is not found.
+func (c *ProviderConfig) RemoveConnection(id string) error {
+	for i, conn := range c.Connections {
+		if conn.ID == id {
+			c.Connections = append(c.Connections[:i], c.Connections[i+1:]...)
+			return nil
+		}
+	}
+	return fmt.Errorf("remove connection: ID %q not found", id)
+}
+
+// GetConnection returns a pointer to the ConnectionConfig with the given ID,
+// or nil if not found.
+func (c *ProviderConfig) GetConnection(id string) *ConnectionConfig {
+	for i := range c.Connections {
+		if c.Connections[i].ID == id {
+			return &c.Connections[i]
+		}
+	}
+	return nil
+}
+
+// UpdateConnection replaces the ConnectionConfig with the matching ID.
+// Returns an error if the connection is not found.
+func (c *ProviderConfig) UpdateConnection(conn ConnectionConfig) error {
+	for i := range c.Connections {
+		if c.Connections[i].ID == conn.ID {
+			c.Connections[i] = conn
+			return nil
+		}
+	}
+	return fmt.Errorf("update connection: ID %q not found", conn.ID)
 }
 
 // ResolveActiveProvider creates a TaskProvider based on the configuration and registry.
@@ -258,6 +359,14 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 	fmt.Fprintf(&b, "# Active provider (simple mode — use 'providers:' list for advanced config)\n")
 	fmt.Fprintf(&b, "provider: textfile\n")
 	fmt.Fprintf(&b, "note_title: ThreeDoors Tasks\n\n")
+	fmt.Fprintf(&b, "# Named connections (schema v3) — multiple instances of the same provider\n")
+	fmt.Fprintf(&b, "# connections:\n")
+	fmt.Fprintf(&b, "#   - id: work-jira\n")
+	fmt.Fprintf(&b, "#     provider: jira\n")
+	fmt.Fprintf(&b, "#     label: Work Jira\n")
+	fmt.Fprintf(&b, "#     settings:\n")
+	fmt.Fprintf(&b, "#       url: https://company.atlassian.net\n")
+	fmt.Fprintf(&b, "#\n")
 	fmt.Fprintf(&b, "# Advanced: configure multiple providers with per-provider settings\n")
 	fmt.Fprintf(&b, "# Uncomment and customize the providers list below:\n")
 	fmt.Fprintf(&b, "#\n")
