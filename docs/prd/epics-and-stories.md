@@ -4514,7 +4514,7 @@ Build the connection lifecycle layer for data source integrations. ThreeDoors ha
 | 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
 | 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
 | 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
-| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
+| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Done (PR #540) | P1 | 43.1-43.5 |
 
 **Dependency graph:**
 ```
