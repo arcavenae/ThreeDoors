@@ -1,388 +1,277 @@
-# GitHub Pages User Guide — Research & Plan
+# GitHub Pages User Guide — Planning Artifact
 
-**Date:** 2026-03-10
-**Type:** Research artifact (no implementation)
-**Story:** TBD (needs story creation before implementation)
+**Created:** 2026-03-10
+**Type:** /plan-work research → implementation stories
+**Epic:** TBD (request number from project-watchdog)
 
 ---
 
-## 1. Static Site Generator Recommendation
+## Executive Summary
 
-### Evaluated Options
+ThreeDoors has a comprehensive 1,173-line user guide (`docs/user-guide.md`) plus a 745-line README, but no web-hosted documentation. Publishing via GitHub Pages would make the guide discoverable via search engines, accessible without cloning the repo, and provide a professional landing page for new users.
 
-| SSG | Language | Strengths | Weaknesses | Go Ecosystem Fit |
-|-----|----------|-----------|------------|------------------|
-| **MkDocs Material** | Python | Built-in search, versioning (mike), admonitions, tabs, dark mode, zero JS knowledge needed | Python dependency | ★★★★★ — GoReleaser uses it |
-| **Hugo** | Go | Fastest builds, Go-native, huge theme ecosystem | Docs-specific themes less polished, more config overhead | ★★★★ — Go-native but general-purpose |
-| **mdBook** | Rust | Dead simple, book-style navigation, used by Rust ecosystem | Limited theming, no built-in versioning, Rust-centric | ★★★ — Simple but too minimal |
-| **Docusaurus** | React/JS | Versioning built-in, MDX components, Meta-backed | Heavy JS toolchain, React knowledge needed, overkill for CLI docs | ★★ — Wrong ecosystem |
-| **Jekyll** | Ruby | GitHub Pages native support (no CI needed) | Slow builds, dated, not designed for technical docs | ★★ — Legacy choice |
+## Current State
 
-### Recommendation: **MkDocs Material**
+### What Exists
+- **`docs/user-guide.md`** — 1,173 lines covering installation, core concepts, all features, integrations (Jira, GitHub Issues, Apple Notes, Apple Reminders, Todoist, Obsidian), CLI reference, MCP server, configuration, troubleshooting
+- **`README.md`** — 745 lines with installation, quick start, feature overview, badges
+- **`SOUL.md`** — 101 lines of project philosophy
+- **`docs/architecture/`** — 25 files of technical architecture (developer-facing, not user-facing)
+- **`docs/adapter-developer-guide.md`** — TaskProvider interface docs for extension developers
+- **`CHANGELOG.md`** — 18.8KB of release history
+- **No GitHub Pages infrastructure** — no `_config.yml`, `mkdocs.yml`, `gh-pages` branch, or deployment workflow
+
+### What Doesn't Exist
+- Static site generator configuration
+- GitHub Actions workflow for Pages deployment
+- Multi-page navigation structure
+- Search functionality for docs
+- Custom domain configuration
+- Versioned documentation
+- Screenshots/GIFs of the TUI in action
+
+---
+
+## Approach Decision
+
+### Adopted: MkDocs + Material for MkDocs
 
 **Rationale:**
-1. **GoReleaser precedent** — The most successful Go CLI docs site (goreleaser.com) uses MkDocs Material. Following this proven pattern reduces risk.
-2. **Zero JS/React overhead** — Pure Markdown authoring. No build toolchain beyond `pip install mkdocs-material`.
-3. **Built-in search** — Client-side lunr.js search with suggestions, highlighting, and sharing. No external service needed.
-4. **Versioning via mike** — Native integration for `stable` vs `alpha` docs without complex config.
-5. **Admonitions, tabs, code annotations** — Perfect for CLI docs (command examples, config snippets, warnings).
-6. **Dark mode** — Automatic toggle, respects system preference. Matches TUI aesthetic.
-7. **Minimal maintenance** — Single `mkdocs.yml` config file. Content is just `.md` files.
+1. **Markdown-native** — existing `.md` files work with zero conversion
+2. **Material theme** — best-in-class docs theme with search, dark mode, navigation, mobile-responsive out of the box
+3. **GoReleaser precedent** — the most successful Go CLI docs site uses MkDocs Material; following a proven pattern reduces risk
+4. **Built-in search** — lunr.js client-side search, no backend needed
+5. **Low maintenance** — content stays as `.md` files; site rebuilds on push to main
+6. **Admonitions, tabs, code copy** — ideal for CLI docs with command examples and config snippets
+7. **Dark mode** — automatic toggle, matches TUI aesthetic
 
-**Rejected alternatives:**
-- **Hugo**: Go-native is appealing but docs-specific themes (Docsy, etc.) are more complex to configure than MkDocs Material, and the Go ecosystem's best docs site (GoReleaser) chose MkDocs Material over Hugo despite being a Go project. That's a strong signal.
-- **Docusaurus**: Powerful but brings an entire React/Node toolchain. Overkill for a CLI project with no interactive components needed.
-- **mdBook**: Too minimal — no built-in versioning, limited theming, and primarily serves the Rust ecosystem.
-- **Jekyll**: GitHub Pages supports it natively (no CI needed), but it's slow, dated, and not designed for technical documentation.
+### Rejected Alternatives
 
----
-
-## 2. Content Audit — What Exists vs. What's Needed
-
-### Existing Documentation Inventory
-
-| Source | Content | User-Facing? | Reusable for Guide? |
-|--------|---------|:------------:|:-------------------:|
-| `README.md` (28.5KB) | Installation, features, keybindings, CLI ref, MCP tools, config | ✅ | ✅ High — primary source |
-| `docs/user-guide.md` (35KB) | Comprehensive feature walkthrough, all workflows | ✅ | ✅ High — richest source |
-| `SOUL.md` | Philosophy, design values, what ThreeDoors is NOT | ✅ | ✅ Philosophy section |
-| `CHANGELOG.md` (18.8KB) | Release history, feature summaries | ✅ | ✅ Release notes section |
-| `docs/adapter-developer-guide.md` | TaskProvider interface, contract tests | Partial | ✅ Developer/extension guide |
-| `docs/architecture/` (19 files) | Full architecture documentation | ❌ Dev only | ⚠️ Selected sections only |
-| `docs/ADRs/` (33 ADRs) | Architectural decisions | ❌ Dev only | ❌ Not user-facing |
-| `docs/prd/` (17 files) | Product requirements | ❌ Internal | ❌ Not user-facing |
-| `docs/stories/` (262 files) | Story specs and acceptance criteria | ❌ Internal | ❌ Not user-facing |
-
-### Content Gaps (not currently documented anywhere)
-
-1. **Visual screenshots/GIFs** — No screenshots of the TUI in action (doors view, search, themes)
-2. **Task file format reference** — YAML schema documented in architecture but not in user-facing docs
-3. **Theme gallery** — Themes exist but no visual preview/comparison
-4. **Provider setup walkthroughs** — Config examples exist but no step-by-step setup guides per provider
-5. **Troubleshooting runbook** — Brief section in user-guide; needs expansion
-6. **FAQ** — No dedicated FAQ
-7. **Migration guide** — No docs for users coming from other task managers
-8. **MCP tool detailed reference** — Tools listed in README but no parameter schemas or examples per tool
-9. **Session analytics interpretation** — How to read JSONL session logs, what metrics mean
-10. **Keyboard shortcut cheat sheet** — Exists scattered; needs a printable/downloadable reference
+| Option | Why Rejected |
+|--------|-------------|
+| **Hugo** | Go-native is appealing but docs-specific themes (Docsy) are more complex; GoReleaser chose MkDocs Material over Hugo despite being a Go project — strong signal |
+| **Jekyll** | GitHub Pages supports it natively (no CI needed) but slow builds, dated, and not designed for technical documentation |
+| **Docusaurus** | Powerful but brings entire React/Node toolchain; overkill for CLI tool docs with no interactive components |
+| **mdBook** | Too minimal — no built-in versioning, limited theming, primarily serves Rust ecosystem |
+| **Plain HTML** | No search, no navigation, manual maintenance burden |
+| **GitHub Wiki** | Not version-controlled with the repo; limited formatting; can't PR changes |
 
 ---
 
-## 3. Proposed Guide Structure
+## Content Architecture
+
+### Source Location Decision
+
+**Adopted: `docs-site/` directory** (new, separate from `docs/`)
+
+The existing `docs/` contains 262 story files, 33 ADRs, 17 PRD files — none user-facing. Mixing user-facing and internal docs would create confusion and bloat the navigation. User guide content should be curated, not auto-included.
+
+### Proposed Site Structure
 
 ```
 docs-site/
-├── mkdocs.yml                    # Site configuration
-├── docs/
-│   ├── index.md                  # Landing page (hero, tagline, quick links)
-│   ├── philosophy.md             # From SOUL.md — why three doors?
-│   │
-│   ├── getting-started/
-│   │   ├── installation.md       # Homebrew, binary, go install, source
-│   │   ├── quickstart.md         # First launch → first completed task (5 min)
-│   │   └── concepts.md           # Doors, tasks, providers, sessions
-│   │
-│   ├── guide/
-│   │   ├── task-management.md    # Creating, completing, snoozing, deferring
-│   │   ├── search-and-commands.md # Search (/), command palette (:)
-│   │   ├── doors-interaction.md  # Door selection, refresh, avoidance detection
-│   │   ├── themes.md             # Theme system, gallery with previews
-│   │   ├── keybindings.md        # Full reference table + customization
-│   │   └── sessions.md           # Session tracking, mood, analytics
-│   │
-│   ├── providers/
-│   │   ├── overview.md           # Multi-source concept, provider pattern
-│   │   ├── local-files.md        # YAML task file format, examples
-│   │   ├── apple-notes.md        # Setup, sync behavior
-│   │   ├── apple-reminders.md    # Setup, sync behavior
-│   │   ├── jira.md               # Configuration, field mapping
-│   │   ├── github-issues.md      # Token setup, filtering
-│   │   ├── todoist.md            # API key, project mapping
-│   │   └── obsidian.md           # Vault path, task format
-│   │
-│   ├── cli/
-│   │   ├── commands.md           # Full CLI reference (threedoors ...)
-│   │   └── mcp-server.md         # MCP tools reference with schemas
-│   │
-│   ├── configuration/
-│   │   ├── config-file.md        # ~/.config/threedoors/config.yaml schema
-│   │   ├── environment.md        # Environment variables
-│   │   └── data-directory.md     # Data/log file locations
-│   │
-│   ├── advanced/
-│   │   ├── integrations.md       # LLM agents, automation, scripting
-│   │   ├── task-dependencies.md  # Dependency graph, blocking tasks
-│   │   └── extending.md          # Writing custom providers (from adapter guide)
-│   │
-│   ├── troubleshooting.md        # Common issues, diagnostics, FAQ
-│   ├── changelog.md              # From CHANGELOG.md
-│   └── contributing.md           # How to contribute
-```
-
-### Navigation Design (mkdocs.yml)
-
-```yaml
-nav:
-  - Home: index.md
-  - Philosophy: philosophy.md
-  - Getting Started:
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quickstart.md
-    - Core Concepts: getting-started/concepts.md
-  - User Guide:
-    - Task Management: guide/task-management.md
-    - Search & Commands: guide/search-and-commands.md
-    - Doors Interaction: guide/doors-interaction.md
-    - Themes: guide/themes.md
-    - Keybindings: guide/keybindings.md
-    - Sessions & Analytics: guide/sessions.md
-  - Task Sources:
-    - Overview: providers/overview.md
-    - Local Files: providers/local-files.md
-    - Apple Notes: providers/apple-notes.md
-    - Apple Reminders: providers/apple-reminders.md
-    - Jira: providers/jira.md
-    - GitHub Issues: providers/github-issues.md
-    - Todoist: providers/todoist.md
-    - Obsidian: providers/obsidian.md
-  - CLI & MCP:
-    - CLI Commands: cli/commands.md
-    - MCP Server: cli/mcp-server.md
-  - Configuration:
-    - Config File: configuration/config-file.md
-    - Environment Variables: configuration/environment.md
-    - Data Directory: configuration/data-directory.md
-  - Advanced:
-    - Integrations: advanced/integrations.md
-    - Task Dependencies: advanced/task-dependencies.md
-    - Custom Providers: advanced/extending.md
-  - Troubleshooting: troubleshooting.md
-  - Changelog: changelog.md
-  - Contributing: contributing.md
+├── mkdocs.yml
+├── requirements-docs.txt
+└── docs/
+    ├── index.md                    # Landing page (hero, tagline, quick links)
+    ├── philosophy.md               # From SOUL.md — why three doors?
+    ├── getting-started/
+    │   ├── installation.md         # All install methods
+    │   ├── quickstart.md           # First launch → first completed task (5 min)
+    │   └── concepts.md             # Doors, tasks, providers, sessions
+    ├── guide/
+    │   ├── task-management.md      # Creating, completing, snoozing, deferring
+    │   ├── search-and-commands.md  # Search (/), command palette (:)
+    │   ├── doors-interaction.md    # Door selection, refresh, avoidance detection
+    │   ├── themes.md               # Theme system, gallery with previews
+    │   ├── keybindings.md          # Full reference table + customization
+    │   └── sessions.md            # Session tracking, mood, analytics
+    ├── providers/
+    │   ├── overview.md             # Multi-source concept, provider pattern
+    │   ├── local-files.md          # YAML task file format, examples
+    │   ├── apple-notes.md          # Setup, sync behavior
+    │   ├── apple-reminders.md      # Setup, sync behavior
+    │   ├── jira.md                 # Configuration, field mapping
+    │   ├── github-issues.md        # Token setup, filtering
+    │   ├── todoist.md              # API key, project mapping
+    │   └── obsidian.md             # Vault path, task format
+    ├── cli/
+    │   ├── commands.md             # Full CLI reference
+    │   └── mcp-server.md           # MCP tools reference with schemas
+    ├── configuration/
+    │   ├── config-file.md          # ~/.config/threedoors/config.yaml schema
+    │   ├── environment.md          # Environment variables
+    │   └── data-directory.md       # Data/log file locations
+    ├── advanced/
+    │   ├── task-dependencies.md    # Dependency graph, blocking tasks
+    │   └── extending.md            # Writing custom providers (from adapter guide)
+    ├── troubleshooting.md          # Common issues, diagnostics, FAQ
+    └── changelog.md                # From CHANGELOG.md
 ```
 
 ---
 
-## 4. GitHub Actions Workflow
+## Implementation Stories
 
-### Recommended: Separate Docs Workflow
+### Story N.1: MkDocs Infrastructure & GitHub Pages Deployment
 
-A separate workflow (not modifying the existing `ci.yml`) that deploys on merge to main when docs content changes.
+**Goal:** Set up MkDocs with Material theme and GitHub Actions workflow to deploy to GitHub Pages on push to main.
 
-```yaml
-# .github/workflows/docs.yml
-name: docs
+**Acceptance Criteria:**
+- [ ] `docs-site/mkdocs.yml` configuration file with Material theme, site metadata, navigation stub
+- [ ] `docs-site/requirements-docs.txt` pinning MkDocs + Material versions
+- [ ] `docs-site/docs/index.md` landing page with project branding, feature highlights, install quick-reference, and "Get Started" link
+- [ ] `docs-site/docs/philosophy.md` extracted from SOUL.md
+- [ ] GitHub Actions workflow `.github/workflows/docs.yml` that builds and deploys on push to `main` (path-filtered to `docs-site/**` and `mkdocs.yml` changes only)
+- [ ] Site deploys successfully to `https://arcaven.github.io/ThreeDoors/`
+- [ ] Dark/light mode toggle works
+- [ ] Client-side search works (even with minimal content)
+- [ ] `make docs` and `make docs-serve` targets added to Makefile for local preview
+- [ ] Navigation tabs configured (even if most sections are stubs/empty)
+- [ ] Existing `docs/user-guide.md` is NOT modified or moved (preserved as-is)
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs-site/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/docs.yml'
+**Tasks:**
+1. Create `docs-site/` directory structure
+2. Create `docs-site/mkdocs.yml` with Material theme configuration (dark-first, deep purple + amber palette, navigation tabs, search, code copy)
+3. Create `docs-site/requirements-docs.txt` with pinned dependencies
+4. Create `docs-site/docs/index.md` landing page (extract hero content from README)
+5. Create `docs-site/docs/philosophy.md` from SOUL.md
+6. Create `.github/workflows/docs.yml` GitHub Actions workflow with path filtering
+7. Add `make docs` and `make docs-serve` targets to Makefile
+8. Test local build: `cd docs-site && pip install -r requirements-docs.txt && mkdocs serve`
 
-permissions:
-  contents: write
+**Effort:** Small-Medium (mostly configuration)
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0  # Required for mike versioning
+**Notes:**
+- The `.github/workflows/docs.yml` file will require manual merge by the project owner due to OAuth workflow scope limitation (merge-queue's token lacks `workflow` scope).
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
+---
 
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+### Story N.2: Content Split — Getting Started & Core Guide
 
-      - uses: actions/cache@v5
-        with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: ~/.cache
-          restore-keys: |
-            mkdocs-material-
+**Goal:** Port content from the monolithic user guide into the getting-started and core guide sections of the docs site.
 
-      - run: pip install mkdocs-material mike
+**Depends on:** Story N.1 merged
 
-      # For initial setup (no versioning):
-      - run: mkdocs gh-deploy --force
+**Acceptance Criteria:**
+- [ ] `docs-site/docs/getting-started/installation.md` — all installation methods (Homebrew stable + alpha, binary, go install, source build) with prerequisites
+- [ ] `docs-site/docs/getting-started/quickstart.md` — first launch, onboarding wizard walkthrough, "your first completed task in 5 minutes" narrative
+- [ ] `docs-site/docs/getting-started/concepts.md` — Three Doors philosophy, selection algorithm, behavioral science foundation, "progress over perfection"
+- [ ] `docs-site/docs/guide/task-management.md` — task statuses, transitions, quick add, categorization, undo completion
+- [ ] `docs-site/docs/guide/search-and-commands.md` — search (`/`), command palette (`:`), available commands
+- [ ] `docs-site/docs/guide/doors-interaction.md` — door selection, refresh, feedback options (blocked/not now/needs breakdown), mood logging
+- [ ] `docs-site/docs/guide/keybindings.md` — complete key binding tables for all views (doors, detail, search, help), keybinding overlay
+- [ ] `docs-site/docs/guide/sessions.md` — session metrics tracking, mood correlation, pattern insights
+- [ ] All content accurately reflects current implementation
+- [ ] Navigation in `mkdocs.yml` updated with all new pages
+- [ ] No broken internal links (verified with `mkdocs build --strict`)
 
-      # For versioned docs (later):
-      # - run: mike deploy --push --update-aliases $VERSION latest
+**Content Sources:**
+- `docs/user-guide.md` §Getting Started, §Core Concepts, §Basic Usage, §Task Management, §Search and Commands, §Snooze and Defer, §Undo Completion, §Intelligent Features, §Session Metrics
+- `README.md` §Key Bindings
+- `SOUL.md` for philosophy context
+
+**Tasks:**
+1. Extract getting-started sections from user-guide.md into 3 pages
+2. Extract core guide sections from user-guide.md into 5 pages
+3. Add MkDocs-specific enhancements: admonitions for tips/warnings, code copy buttons, keyboard key rendering (++key++)
+4. Update `mkdocs.yml` navigation
+5. Run `mkdocs build --strict` to verify no broken links or warnings
+
+**Effort:** Medium (content extraction, restructuring, and verification)
+
+---
+
+### Story N.3: Content Split — Integrations / Task Sources
+
+**Goal:** Create dedicated per-integration pages with setup instructions, configuration, and troubleshooting.
+
+**Depends on:** Story N.1 merged
+
+**Acceptance Criteria:**
+- [ ] `docs-site/docs/providers/overview.md` — multi-source architecture concept, connection manager, how providers work, mixing sources
+- [ ] `docs-site/docs/providers/local-files.md` — YAML task file format, file location, examples
+- [ ] `docs-site/docs/providers/apple-notes.md` — prerequisites, setup, sync behavior, limitations, troubleshooting
+- [ ] `docs-site/docs/providers/apple-reminders.md` — prerequisites, setup, sync behavior, limitations
+- [ ] `docs-site/docs/providers/jira.md` — OAuth setup, field mapping, JQL filtering, config examples
+- [ ] `docs-site/docs/providers/github-issues.md` — token setup, repo filtering, label mapping
+- [ ] `docs-site/docs/providers/todoist.md` — API key setup, project mapping, sync behavior
+- [ ] `docs-site/docs/providers/obsidian.md` — vault path configuration, task format, frontmatter mapping
+- [ ] Each page follows consistent structure: Overview → Prerequisites → Setup → Configuration → Usage → Troubleshooting
+- [ ] Navigation updated in `mkdocs.yml`
+- [ ] No broken links (`mkdocs build --strict`)
+
+**Content Sources:**
+- `docs/user-guide.md` §Task Sources through §Obsidian Integration
+- `docs/adapter-developer-guide.md` for architecture context
+- `README.md` §Task Sources
+
+**Tasks:**
+1. Extract integration sections from user-guide.md into 8 individual pages
+2. Apply consistent page structure to each (prerequisites, setup, config, usage, troubleshooting)
+3. Create providers overview page explaining multi-source architecture
+4. Add admonitions for platform-specific notes (e.g., Apple integrations macOS-only)
+5. Update mkdocs.yml navigation
+6. Verify with `mkdocs build --strict`
+
+**Effort:** Medium (8 pages, mostly extraction + structural consistency)
+
+---
+
+### Story N.4: Content Split — CLI, MCP, Configuration & Advanced
+
+**Goal:** Complete the content split with CLI reference, MCP server docs, configuration reference, and remaining feature pages.
+
+**Depends on:** Story N.1 merged
+
+**Acceptance Criteria:**
+- [ ] `docs-site/docs/cli/commands.md` — full CLI command reference with all subcommands, flags, and examples
+- [ ] `docs-site/docs/cli/mcp-server.md` — MCP server setup, available tools list, usage with LLM agents, example prompts
+- [ ] `docs-site/docs/configuration/config-file.md` — complete `config.yaml` schema reference with all fields, defaults, and examples
+- [ ] `docs-site/docs/configuration/environment.md` — environment variables that affect behavior
+- [ ] `docs-site/docs/configuration/data-directory.md` — data directory layout, log files, session files
+- [ ] `docs-site/docs/guide/themes.md` — available themes with descriptions (screenshots out of scope; note as future enhancement)
+- [ ] `docs-site/docs/advanced/task-dependencies.md` — dependency types, linking, blocking behavior
+- [ ] `docs-site/docs/advanced/extending.md` — writing custom TaskProvider implementations (extracted from adapter-developer-guide.md)
+- [ ] `docs-site/docs/troubleshooting.md` — common issues, diagnostics commands, FAQ
+- [ ] `docs-site/docs/changelog.md` — extracted from CHANGELOG.md
+- [ ] All navigation finalized in `mkdocs.yml`
+- [ ] Full site builds without warnings (`mkdocs build --strict`)
+- [ ] All internal cross-links work
+
+**Content Sources:**
+- `docs/user-guide.md` §CLI Reference, §MCP Server, §Configuration, §Themes, §Task Dependencies, §Offline and Sync, §Troubleshooting
+- `README.md` §CLI Reference, §MCP Server
+- `docs/adapter-developer-guide.md` for extending section
+- `CHANGELOG.md`
+
+**Tasks:**
+1. Extract CLI reference with full command documentation
+2. Extract MCP server section with tool reference
+3. Create configuration reference pages
+4. Extract themes, dependencies, and troubleshooting pages
+5. Port adapter developer guide into extending page
+6. Copy and format changelog
+7. Finalize all navigation in mkdocs.yml
+8. Run `mkdocs build --strict` for final verification
+
+**Effort:** Medium
+
+---
+
+## Story Dependency Graph
+
+```
+N.1 (Infrastructure) ──→ N.2 (Getting Started + Core Guide)
+                     ├──→ N.3 (Integrations / Task Sources)
+                     └──→ N.4 (CLI, Config, Advanced)
 ```
 
-### Integration with Existing CI
-
-The existing `ci.yml` already has a `docs-pass` job that detects docs-only PRs and skips code CI. The new `docs.yml` workflow complements this — it only runs on push to main (not on PRs), so docs deploy only after merge.
-
-### Path Filtering Decision
-
-Two options for where docs source lives:
-
-| Option | Pros | Cons |
-|--------|------|------|
-| **`docs-site/`** (new directory) | Clean separation from dev docs, no confusion | New directory, need to keep in sync |
-| **`docs/`** (existing) | Reuse existing content, single source | Mixes user-facing with dev-internal docs, harder to filter |
-
-**Recommendation:** New `docs-site/` directory. The existing `docs/` contains 262 story files, 33 ADRs, 17 PRD files — none user-facing. Mixing these in would create confusion and bloat the nav. User guide content should be curated, not auto-included.
+N.1 is the prerequisite. N.2, N.3, and N.4 can be parallelized after N.1 merges (they touch different files within `docs-site/`).
 
 ---
 
-## 5. Custom Domain
-
-### Setup Steps
-
-1. **Register domain** (e.g., `docs.threedoors.dev` or `threedoors.dev`)
-2. **DNS configuration:**
-   - For apex domain: A records pointing to GitHub Pages IPs (185.199.108-111.153)
-   - For subdomain: CNAME record pointing to `arcaven.github.io`
-3. **Repository configuration:**
-   - Settings → Pages → Custom domain → enter domain
-   - This creates a `CNAME` file in the `gh-pages` branch
-4. **HTTPS:** GitHub auto-provisions Let's Encrypt certificate (takes ~15 min after DNS propagates)
-5. **MkDocs config:**
-   ```yaml
-   # mkdocs.yml
-   site_url: https://docs.threedoors.dev/
-   ```
-
-### Domain Options
-
-| Domain | Cost | Notes |
-|--------|------|-------|
-| `arcaven.github.io/ThreeDoors` | Free | Default, no setup needed |
-| `threedoors.dev` | ~$12/yr | Professional, matches project name |
-| `docs.threedoors.dev` | Same | Subdomain approach, separates docs from potential landing page |
-
-**Recommendation:** Start with `arcaven.github.io/ThreeDoors` (free, zero config). Add custom domain later if the project grows. The MkDocs `site_url` can be updated without rebuilding content.
-
----
-
-## 6. Search
-
-### MkDocs Material Built-in Search
-
-MkDocs Material includes a built-in search plugin powered by **lunr.js** — no external service needed.
-
-**Features included out of the box:**
-- Client-side full-text search (no server required)
-- Search suggestions (autocomplete on typing)
-- Search highlighting (highlights matches on result pages)
-- Search sharing (deep-linkable search queries)
-- Keyboard shortcut (`/` or `s` to focus search — matches ThreeDoors' own TUI shortcut!)
-- Multi-language stemming support
-
-**Configuration:**
-
-```yaml
-# mkdocs.yml
-plugins:
-  - search:
-      lang: en
-      separator: '[\s\-\.]+'
-
-theme:
-  features:
-    - search.suggest
-    - search.highlight
-    - search.share
-```
-
-**Performance:** The search index is shipped as a static JSON file. For a docs site of this size (~25 pages), the index will be <50KB gzipped. No performance concerns.
-
-**No external services needed.** Algolia DocSearch is an alternative for very large sites, but lunr.js is more than sufficient here and avoids external dependencies — consistent with ThreeDoors' local-first philosophy.
-
----
-
-## 7. Versioned Documentation
-
-### Strategy: Stable vs. Alpha
-
-ThreeDoors already ships two channels via Homebrew:
-- `threedoors` — stable releases
-- `threedoors-a` — alpha channel (every push to main)
-
-The docs should mirror this:
-
-| Version | Content | Default? |
-|---------|---------|----------|
-| `stable` | Docs for latest tagged release | ✅ Yes |
-| `alpha` | Docs for latest main (may include unreleased features) | No |
-
-### Implementation with mike
-
-```yaml
-# mkdocs.yml
-extra:
-  version:
-    provider: mike
-    default: stable
-```
-
-**Deployment workflow (versioned):**
-
-```yaml
-# For stable releases (triggered by release.yml):
-- run: |
-    pip install mkdocs-material mike
-    mike deploy --push --update-aliases $TAG stable
-    mike set-default --push stable
-
-# For alpha (triggered on push to main):
-- run: |
-    pip install mkdocs-material mike
-    mike deploy --push alpha
-```
-
-**User experience:** A version selector dropdown appears in the header. Users on `stable` see release-matching docs. Users on `alpha` see the latest.
-
-### Phased Rollout
-
-1. **Phase 1:** No versioning. Single docs site deployed on push to main. (`mkdocs gh-deploy --force`)
-2. **Phase 2:** Add mike versioning when the first stable release is tagged. Deploy `stable` + `alpha`.
-3. **Phase 3:** (If needed) Per-version docs (v1.0, v1.1, etc.) using mike's full version management.
-
-**Recommendation:** Start with Phase 1. Versioning adds complexity and the project is pre-1.0. Add mike when stable releases begin.
-
----
-
-## 8. Exemplary Go Documentation Sites
-
-### GoReleaser (goreleaser.com) — MkDocs Material
-
-- **SSG:** MkDocs Material
-- **Structure:** Getting Started → Docs (customization, builds, packaging, publishing) → Pro → Blog
-- **Search:** Built-in MkDocs Material search with suggestions and highlighting
-- **Versioning:** Version selector in header
-- **Design:** Clean dark theme, code tabs for different languages, admonitions for tips/warnings
-- **Takeaway:** Best-in-class Go CLI docs. Direct model for ThreeDoors.
-
-### Charm.sh → charm.land
-
-- **Design:** Highly custom, brand-focused landing page
-- **Approach:** Individual tool docs (Bubbletea, Lipgloss, etc.) live in GitHub READMEs and pkg.go.dev
-- **Takeaway:** Not a good model for structured user documentation. More of a portfolio/brand site.
-
-### Cobra (cobra.dev)
-
-- **Structure:** Getting Started → How-To → Reference → Blog
-- **Design:** Custom theme with night/winter modes
-- **Takeaway:** Good structure (tutorial → how-to → reference pattern) but less polished than GoReleaser.
-
-### Key Patterns from Exemplary Sites
-
-1. **"Getting Started" is always first** — Installation → Quick Start → Core Concepts
-2. **Separate reference from tutorials** — CLI commands are reference; "managing tasks" is a tutorial
-3. **Code examples are king** — Every concept demonstrated with copy-pasteable examples
-4. **Dark mode default** — Terminal tool users expect dark themes
-5. **Minimal landing page** — Hero + tagline + "Get Started" button. Don't bury the lede.
-
----
-
-## 9. Minimal `mkdocs.yml` Starter
+## Starter mkdocs.yml Configuration
 
 ```yaml
 site_name: ThreeDoors
@@ -434,11 +323,47 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
-  - pymdownx.keys           # Render keyboard shortcuts like ++ctrl+k++
+  - pymdownx.keys
   - attr_list
   - md_in_html
   - toc:
       permalink: true
+
+nav:
+  - Home: index.md
+  - Philosophy: philosophy.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Core Concepts: getting-started/concepts.md
+  - User Guide:
+    - Task Management: guide/task-management.md
+    - Search & Commands: guide/search-and-commands.md
+    - Doors Interaction: guide/doors-interaction.md
+    - Themes: guide/themes.md
+    - Keybindings: guide/keybindings.md
+    - Sessions & Analytics: guide/sessions.md
+  - Task Sources:
+    - Overview: providers/overview.md
+    - Local Files: providers/local-files.md
+    - Apple Notes: providers/apple-notes.md
+    - Apple Reminders: providers/apple-reminders.md
+    - Jira: providers/jira.md
+    - GitHub Issues: providers/github-issues.md
+    - Todoist: providers/todoist.md
+    - Obsidian: providers/obsidian.md
+  - CLI & MCP:
+    - CLI Commands: cli/commands.md
+    - MCP Server: cli/mcp-server.md
+  - Configuration:
+    - Config File: configuration/config-file.md
+    - Environment Variables: configuration/environment.md
+    - Data Directory: configuration/data-directory.md
+  - Advanced:
+    - Task Dependencies: advanced/task-dependencies.md
+    - Custom Providers: advanced/extending.md
+  - Troubleshooting: troubleshooting.md
+  - Changelog: changelog.md
 
 extra:
   social:
@@ -448,71 +373,91 @@ extra:
 
 ---
 
-## 10. Implementation Estimate & Phasing
+## GitHub Actions Workflow Sketch
 
-### Phase 1: MVP Docs Site
-- Set up `docs-site/` directory with `mkdocs.yml`
-- Port content from README.md and docs/user-guide.md into structured pages
-- Landing page with hero
-- Getting Started (installation, quickstart, concepts)
-- Core guide sections (task management, search, themes, keybindings)
-- CLI reference
-- GitHub Actions workflow for auto-deploy
-- **Scope:** ~15 pages, largely ported from existing content
+```yaml
+# .github/workflows/docs.yml
+name: docs
 
-### Phase 2: Deep Content
-- Provider setup walkthroughs (one page per provider)
-- MCP server detailed reference with tool schemas
-- Configuration reference (full YAML schema)
-- Screenshots and terminal recordings (asciinema/VHS)
-- Troubleshooting expansion
-- **Scope:** ~10 additional pages + visual assets
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - '.github/workflows/docs.yml'
 
-### Phase 3: Polish
-- mike versioning (stable vs alpha)
-- Custom domain
-- Theme gallery with visual previews
-- FAQ based on real user questions
-- Contributing guide
-- **Scope:** Configuration + content refinement
+permissions:
+  contents: write
 
-### Content Sourcing Strategy
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-Most content already exists and can be ported:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
 
-| Target Page | Source | Effort |
-|-------------|--------|--------|
-| Installation | README.md §Installation | Low — copy + reformat |
-| Quick Start | README.md §Quick Start | Low — copy + reformat |
-| Core Concepts | docs/user-guide.md §Core Concepts | Low — copy + reformat |
-| Task Management | docs/user-guide.md §Task Management | Medium — restructure |
-| Keybindings | README.md §Key Bindings | Low — table reformatting |
-| CLI Reference | README.md §CLI Reference | Low — copy + expand |
-| MCP Server | README.md §MCP + docs/user-guide.md | Medium — add schemas |
-| Configuration | README.md §Configuration | Medium — expand examples |
-| Themes | docs/user-guide.md §Themes | Medium — add gallery |
-| Providers | docs/user-guide.md §Task Sources | High — split + expand per provider |
-| Troubleshooting | docs/user-guide.md §Troubleshooting | Medium — expand |
-| Philosophy | SOUL.md | Low — light editing |
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: ~/.cache
+          restore-keys: |
+            mkdocs-material-
+
+      - run: pip install -r docs-site/requirements-docs.txt
+
+      - run: cd docs-site && mkdocs gh-deploy --force
+```
 
 ---
 
-## 11. Open Questions for Decision
+## Risks & Mitigations
 
-1. **Docs source location:** `docs-site/` (recommended) vs. reuse `docs/`?
-2. **Custom domain:** Start with `arcaven.github.io/ThreeDoors` or register `threedoors.dev` upfront?
-3. **Screenshots:** Use static PNGs or terminal recordings (VHS/asciinema)?
-4. **Versioning timeline:** Add mike now or wait for stable release?
-5. **Scope of initial launch:** MVP (Phase 1 only) or Phase 1+2 together?
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| `docs/` dual purpose confusion | Developers unsure which docs are user-facing | Using separate `docs-site/` directory eliminates this |
+| Workflow scope limitation | merge-queue can't merge PR adding `.github/workflows/docs.yml` | Flag Story N.1 PR for manual merge by project owner |
+| Content drift after split | Monolithic `docs/user-guide.md` diverges from site pages | Delete `docs/user-guide.md` after N.4 completes and all content is verified on site. Or mark deprecated with redirect notice. |
+| MkDocs Python dependency | Developers need Python for local docs preview | Pin in `requirements-docs.txt`; `make docs-serve` handles setup; CI deploys automatically |
+| Content accuracy after port | Ported content may describe features that changed | Each story AC requires verification against current codebase |
+
+---
+
+## Opportunities (Out of Scope)
+
+These are noted for future consideration but NOT part of this epic:
+
+- Custom domain (e.g., `docs.threedoors.dev`)
+- Versioned documentation via mike (stable vs alpha channels)
+- Screenshots/GIFs of TUI using VHS or asciinema
+- Theme gallery with visual previews
+- API documentation generation from Go source
+- Contributing guide for developers
+- Blog/announcement section
+- Per-version docs for tagged releases
+- FAQ based on real user questions/issues
+- Search analytics to understand what users look for
+
+---
+
+## Open Questions for Decision
+
+1. **Custom domain:** Start with `arcaven.github.io/ThreeDoors` (free, zero config) or register a domain upfront?
+2. **Versioning timeline:** Add mike versioning now or defer until stable releases begin?
+3. **Delete monolithic guide?** After N.4, remove `docs/user-guide.md` or keep as single-page alternative?
+4. **Screenshots scope:** Include a follow-up story for VHS terminal recordings, or defer indefinitely?
 
 ---
 
 ## References
 
 - [Material for MkDocs — Publishing](https://squidfunk.github.io/mkdocs-material/publishing-your-site/)
-- [Material for MkDocs — Alternatives Comparison](https://squidfunk.github.io/mkdocs-material/alternatives/)
-- [Material for MkDocs — Versioning with mike](https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/)
-- [Material for MkDocs — Search Plugin](https://squidfunk.github.io/mkdocs-material/plugins/search/)
+- [Material for MkDocs — Alternatives](https://squidfunk.github.io/mkdocs-material/alternatives/)
 - [GoReleaser Docs](https://goreleaser.com) — exemplary MkDocs Material site for Go CLI
-- [mike — MkDocs version manager](https://github.com/jimporter/mike)
 - [GitHub Pages custom domain docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site)
