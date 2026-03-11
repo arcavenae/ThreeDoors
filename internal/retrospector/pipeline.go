@@ -188,7 +188,7 @@ func detectMergeConflictPattern(findings []Finding) *DetectedPattern {
 
 func detectACMismatchPattern(findings []Finding) *DetectedPattern {
 	count, matched := CountEvidenceForPattern(findings, func(f Finding) bool {
-		return f.ACMatch == "partial" || f.ACMatch == "none"
+		return f.ACMatch == ACMatchPartial || f.ACMatch == ACMatchNone
 	})
 	if count < 2 {
 		return nil

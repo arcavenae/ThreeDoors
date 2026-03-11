@@ -13,13 +13,12 @@ func makeFindings(count int, opts ...func(*Finding)) []Finding {
 	for i := range findings {
 		findings[i] = Finding{
 			PR:          100 + i,
-			Story:       "43.1",
-			ACMatch:     "full",
+			StoryRef:    "43.1",
+			ACMatch:     ACMatchFull,
 			CIFirstPass: true,
 			Conflicts:   0,
 			RebaseCount: 0,
 			Timestamp:   time.Date(2026, 3, 10, 0, 0, 0, 0, time.UTC),
-			Repo:        "ThreeDoors",
 		}
 		for _, opt := range opts {
 			opt(&findings[i])
@@ -97,7 +96,7 @@ func TestDetectACMismatchPattern(t *testing.T) {
 
 	findings := makeFindings(5, func(f *Finding) {
 		if f.PR >= 103 {
-			f.ACMatch = "partial"
+			f.ACMatch = ACMatchPartial
 		}
 	})
 
@@ -148,10 +147,9 @@ func TestDetectPatternsSortedByConfidence(t *testing.T) {
 	for i := range findings {
 		findings[i] = Finding{
 			PR:          100 + i,
-			ACMatch:     "full",
+			ACMatch:     ACMatchFull,
 			CIFirstPass: true,
 			Timestamp:   time.Date(2026, 3, 10, 0, 0, 0, 0, time.UTC),
-			Repo:        "ThreeDoors",
 		}
 	}
 	// 6 CI failures (High confidence)
@@ -276,13 +274,12 @@ func TestPipelineRateLimit(t *testing.T) {
 	for i := range findings {
 		findings[i] = Finding{
 			PR:          100 + i,
-			ACMatch:     "partial",
+			ACMatch:     ACMatchPartial,
 			CIFirstPass: false,
 			CIFailures:  []string{"lint"},
 			Conflicts:   3,
 			RebaseCount: 5,
 			Timestamp:   time.Date(2026, 3, 10, 0, 0, 0, 0, time.UTC),
-			Repo:        "ThreeDoors",
 		}
 	}
 

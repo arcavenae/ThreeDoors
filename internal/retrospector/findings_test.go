@@ -9,8 +9,8 @@ import (
 func TestReadFindingsFrom(t *testing.T) {
 	t.Parallel()
 
-	input := `{"pr":100,"story":"43.1","ac_match":"full","ci_first_pass":true,"conflicts":0,"rebase_count":1,"timestamp":"2026-03-10T14:30:00Z","repo":"ThreeDoors"}
-{"pr":101,"story":"43.2","ac_match":"partial","ci_first_pass":false,"ci_failures":["lint"],"conflicts":2,"rebase_count":3,"timestamp":"2026-03-10T15:45:00Z","repo":"ThreeDoors"}
+	input := `{"pr":100,"story_ref":"43.1","ac_match":"full","ci_first_pass":true,"conflicts":0,"rebase_count":1,"timestamp":"2026-03-10T14:30:00Z","title":"feat: add widget"}
+{"pr":101,"story_ref":"43.2","ac_match":"partial","ci_first_pass":false,"conflicts":2,"rebase_count":3,"timestamp":"2026-03-10T15:45:00Z","files_changed":5}
 `
 	findings, err := readFindingsFrom(strings.NewReader(input))
 	if err != nil {
@@ -25,11 +25,11 @@ func TestReadFindingsFrom(t *testing.T) {
 	if f0.PR != 100 {
 		t.Errorf("f0.PR = %d, want 100", f0.PR)
 	}
-	if f0.Story != "43.1" {
-		t.Errorf("f0.Story = %q, want 43.1", f0.Story)
+	if f0.StoryRef != "43.1" {
+		t.Errorf("f0.StoryRef = %q, want 43.1", f0.StoryRef)
 	}
-	if f0.ACMatch != "full" {
-		t.Errorf("f0.ACMatch = %q, want full", f0.ACMatch)
+	if f0.ACMatch != ACMatchFull {
+		t.Errorf("f0.ACMatch = %q, want %q", f0.ACMatch, ACMatchFull)
 	}
 	if !f0.CIFirstPass {
 		t.Error("f0.CIFirstPass should be true")
@@ -43,11 +43,11 @@ func TestReadFindingsFrom(t *testing.T) {
 	if f1.CIFirstPass {
 		t.Error("f1.CIFirstPass should be false")
 	}
-	if len(f1.CIFailures) != 1 || f1.CIFailures[0] != "lint" {
-		t.Errorf("f1.CIFailures = %v, want [lint]", f1.CIFailures)
-	}
 	if f1.Conflicts != 2 {
 		t.Errorf("f1.Conflicts = %d, want 2", f1.Conflicts)
+	}
+	if f1.FilesChanged != 5 {
+		t.Errorf("f1.FilesChanged = %d, want 5", f1.FilesChanged)
 	}
 }
 
@@ -67,7 +67,7 @@ func TestReadFindingsFromBlankLines(t *testing.T) {
 	t.Parallel()
 
 	input := `
-{"pr":100,"ac_match":"full","ci_first_pass":true,"conflicts":0,"rebase_count":0,"timestamp":"2026-03-10T14:30:00Z","repo":"ThreeDoors"}
+{"pr":100,"ac_match":"full","ci_first_pass":true,"conflicts":0,"rebase_count":0,"timestamp":"2026-03-10T14:30:00Z"}
 
 `
 	findings, err := readFindingsFrom(strings.NewReader(input))
