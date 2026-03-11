@@ -226,7 +226,7 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | 49.2 | Environment Checks | Done (PR #473) | P1 | 49.1 |
 | 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
 | 49.4 | Provider Health Checks | In Review | P1 | 49.1 |
-| 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
+| 49.5 | Session & Analytics Checks | In Review | P1 | 49.1 |
 | 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
 | 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
 | 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |

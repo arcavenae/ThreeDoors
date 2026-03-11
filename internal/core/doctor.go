@@ -159,6 +159,7 @@ func NewDoctorChecker(configDir string) *DoctorChecker {
 	dc.RegisterCategory("Sync", dc.checkSync)
 	dc.RegisterCategory("Database", dc.checkDatabase)
 	dc.RegisterCategory("Version", dc.checkVersion)
+	dc.RegisterSessionDataChecks()
 	return dc
 }
 
