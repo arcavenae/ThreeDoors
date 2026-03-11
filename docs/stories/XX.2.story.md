@@ -1,0 +1,54 @@
+# Story XX.2: README Table of Contents
+
+## Status: Not Started
+
+## Epic
+
+Epic XX: README Overhaul
+
+## References
+
+- Plan: `_bmad-output/planning-artifacts/readme-overhaul-plan.md` (Section 3)
+
+## Story
+
+As a user reading the README,
+I want a table of contents with anchor links to each major section,
+So that I can quickly navigate to the information I need without scrolling through 700+ lines.
+
+## Background
+
+At 747 lines, the README has no navigation aid. GitHub renders a hamburger-menu TOC automatically, but it's hidden behind a click and not visible inline. A manual TOC with emoji-prefixed anchors provides immediate navigation.
+
+## Acceptance Criteria
+
+**Given** the README
+**When** a user views it on GitHub
+**Then** a Table of Contents section appears after the hero/badges section and before the main content
+
+**Given** the TOC
+**When** a user clicks any entry
+**Then** the browser scrolls to the corresponding section
+
+**Given** the TOC entries
+**When** compared to the README sections
+**Then** every major section (Installation, Quick Start, Features, Key Bindings, CLI Reference, MCP Server, Configuration, Data & Privacy, Philosophy, Development, Contributing, Documentation, License) has a TOC entry
+
+**Given** the TOC format
+**When** rendered on GitHub
+**Then** entries use emoji prefixes matching their section headers (e.g., `📦 Installation`, `🚀 Quick Start`)
+
+## Technical Notes
+
+- GitHub auto-generates heading IDs from heading text, including emoji — test anchor links after implementation
+- Emoji in anchor links can be tricky: GitHub strips emoji from generated IDs on some renderers. Test with both GitHub web and GitHub mobile.
+- Manual TOC is preferred over auto-generation tools — the README changes infrequently
+- Place TOC between the badges/hero section and "What is ThreeDoors?" section
+
+## Tasks
+
+- [ ] Add `## 📑 Table of Contents` section after hero/badges
+- [ ] Create anchor links for all major sections
+- [ ] Verify anchor links work on GitHub (push to branch and test)
+- [ ] Ensure emoji prefixes match section header emojis
+- [ ] Update story status to Done

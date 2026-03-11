@@ -109,6 +109,11 @@ func SaveTasks(tasks []*core.Task) error {
 	}
 
 	yamlPath := filepath.Join(configPath, tasksYAMLFile)
+
+	if err := core.ValidatePath(yamlPath); err != nil {
+		return fmt.Errorf("tasks file validation failed: %w", err)
+	}
+
 	tmpPath := yamlPath + ".tmp"
 
 	tf := TasksFile{Tasks: tasks}
@@ -150,6 +155,11 @@ func AppendCompleted(task *core.Task) error {
 	}
 
 	completedPath := filepath.Join(configPath, completedFile)
+
+	if err := core.ValidatePath(completedPath); err != nil {
+		return fmt.Errorf("completed file validation failed: %w", err)
+	}
+
 	f, err := os.OpenFile(completedPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to open completed file: %w", err)

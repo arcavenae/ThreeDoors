@@ -30,11 +30,11 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 |---|---|---|
 | Implement the assigned task within its defined scope | Expand scope beyond the assigned task | Task is out of scope per ROADMAP.md |
 | Create PRs with detailed descriptions | Merge PRs (that's merge-queue's job) | Story acceptance criteria are ambiguous or contradictory |
-| Run tests, linting, and formatting | Modify ROADMAP.md, SOUL.md, or CLAUDE.md | Implementation requires an architectural decision not in existing docs |
+| Run tests, linting, and formatting | Modify ROADMAP.md, SOUL.md, CLAUDE.md, epic-list.md, or epics-and-stories.md unless running /plan-work (D-162) | Implementation requires an architectural decision not in existing docs |
 | Read any file in the codebase for context | Make architectural decisions not specified in the story | Tests reveal pre-existing bugs unrelated to the current task |
 | Create new files required by the task | Push to main directly — always use feature branches | |
 | Modify existing files within the task's scope | Delete or modify other agents' branches | |
-| Update story file status to `Done (PR #NNN)` | Update planning docs: ROADMAP.md, epic-list.md, epics-and-stories.md (D-162) | |
+| Update story file status to `Done (PR #NNN)` | Update planning docs unless running /plan-work (D-162) | |
 | | Implement "improvements" not in the task description | |
 | | Run manual git sync (INC-002) | |
 

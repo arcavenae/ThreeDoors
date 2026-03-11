@@ -1,0 +1,81 @@
+# Story XX.3: README Foldable Content Sections
+
+## Status: Not Started
+
+## Epic
+
+Epic XX: README Overhaul
+
+## References
+
+- Plan: `_bmad-output/planning-artifacts/readme-overhaul-plan.md` (Section 4)
+
+## Story
+
+As a casual visitor to the repository,
+I want verbose reference sections (CLI reference, key bindings, provider config, MCP tools) to be collapsed by default,
+So that I can scan the README quickly without being overwhelmed by dense reference tables.
+
+## Background
+
+The README is 747 lines. Approximately 400 lines are reference material (key binding tables, CLI command details, provider YAML examples, MCP tool tables) that most visitors don't need on first read. Using HTML `<details><summary>` tags reduces the visible length to ~300 lines while preserving all content for power users who expand what they need.
+
+## Acceptance Criteria
+
+**Given** the Key Bindings section
+**When** a user views the README on GitHub
+**Then** the three key binding tables (Three Doors View, Task Detail View, Search Mode) and Command Palette table are wrapped in a collapsed `<details>` block
+
+**Given** the CLI Reference section
+**When** a user views the README
+**Then** the full CLI command reference is wrapped in a collapsed `<details>` block
+
+**Given** the Provider Configuration section (currently inside User Guide)
+**When** a user views the README
+**Then** the full YAML config examples are wrapped in a collapsed `<details>` block
+
+**Given** the MCP Server section
+**When** a user views the README
+**Then** the MCP setup instructions, tools table, and Claude Desktop config are wrapped in a collapsed `<details>` block
+
+**Given** the Development section
+**When** a user views the README
+**Then** the tech stack, project structure tree, and make targets are wrapped in a collapsed `<details>` block
+
+**Given** the Data Directory section
+**When** a user views the README
+**Then** the `~/.threedoors/` file tree is wrapped in a collapsed `<details>` block
+
+**Given** the following sections: What is ThreeDoors?, Quick Start, Features, Data & Privacy, Philosophy, Contributing, Documentation, License
+**When** a user views the README
+**Then** these sections remain fully expanded (NOT wrapped in `<details>`)
+
+**Given** any foldable section
+**When** a user clicks the summary line
+**Then** the section expands to show its full content
+
+## Technical Notes
+
+- `<details><summary>` is standard HTML supported by GitHub, GitLab, and most markdown renderers
+- Some terminal-based markdown viewers (e.g., `glow`) may not render `<details>` — acceptable tradeoff since the README is primarily read on GitHub
+- Ensure a blank line between `<summary>` closing tag and markdown content inside `<details>` — GitHub requires this for markdown rendering inside HTML blocks
+- Content inside `<details>` blocks is NOT indexed by GitHub's built-in TOC generator — make sure TOC anchor links still work
+- This story should be implemented AFTER Story XX.4 (Feature List Update), so foldable wrapping applies to the updated content
+
+## Depends On
+
+- Story XX.4 (Feature List Update) — fold the updated content, not stale content
+
+## Tasks
+
+- [ ] Wrap Key Bindings section in `<details><summary>`
+- [ ] Wrap CLI Reference section in `<details><summary>`
+- [ ] Wrap Provider Configuration / Config Reference in `<details><summary>`
+- [ ] Wrap MCP Server section in `<details><summary>`
+- [ ] Wrap Development section in `<details><summary>`
+- [ ] Wrap Data Directory section in `<details><summary>`
+- [ ] Verify all sections expand/collapse correctly on GitHub
+- [ ] Verify markdown renders correctly inside `<details>` blocks (tables, code blocks, headers)
+- [ ] Verify TOC anchor links still work for folded sections
+- [ ] Add "↑ Back to top" links after each major section
+- [ ] Update story status to Done
