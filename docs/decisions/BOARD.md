@@ -316,27 +316,32 @@
 
 ## Epic Number Registry
 
-> **Purpose:** Prevents epic number collisions when multiple agents work in parallel. Check this table before assigning a new epic number. PM is the authority for allocating numbers (per standing orders). See D-112.
+> **Purpose:** Prevents epic number collisions when multiple agents work in parallel. Check this table before assigning a new epic number. Project-watchdog is the MUTEX for epic/story number allocation. See D-112.
 
 | Epic | Feature | Allocated | Status |
 |------|---------|-----------|--------|
-| 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Proposed (pending PM approval) |
-| 42 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Stories created |
-| 43 | Connection Manager Infrastructure | 2026-03-09 | Allocated (6 stories) |
-| 44 | Sources TUI | 2026-03-09 | Allocated (7 stories) |
-| 45 | Sources CLI | 2026-03-09 | Allocated (5 stories) |
-| 46 | OAuth Device Code Flow | 2026-03-09 | Allocated (4 stories) |
-| 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Allocated (4 stories) |
-| 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | Allocated (10 stories) |
-| 50 | In-App Bug Reporting | 2026-03-10 | Allocated (3 stories) |
-| 51 | *(next available)* | — | — |
+| 39 | Keybinding Display System | 2026-03-08 | Complete (12/13, 1 cancelled) |
+| 40 | Beautiful Stats Display | 2026-03-08 | Complete (10/10) |
+| 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Complete (6/6) |
+| 42 | Application Security Hardening | 2026-03-09 | In Progress (1/5) |
+| 43 | Connection Manager Infrastructure | 2026-03-09 | In Progress (2/6) |
+| 44 | Sources TUI | 2026-03-09 | Not Started (0/7) |
+| 45 | Sources CLI | 2026-03-09 | Not Started (0/5) |
+| 46 | OAuth Device Code Flow | 2026-03-09 | Not Started (0/4) |
+| 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Not Started (0/4) |
+| 48 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Not Started (0/4) |
+| 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | In Progress (1/10) |
+| 50 | In-App Bug Reporting | 2026-03-10 | Not Started (0/3) |
+| 51 | SLAES — Self-Learning Agentic Engineering System | 2026-03-10 | In Progress (0/10) |
+| 52 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
 2. Reserve the number here FIRST, before creating story files or updating ROADMAP.md
-3. Only PM (or supervisor acting as PM) may allocate epic numbers
-4. Completed epics (0-38) are not listed here — see ROADMAP.md Completed Epics table
-5. Active epics (39-40) are already allocated — do not reuse
+3. **Project-watchdog is the MUTEX** for epic number allocation — request numbers through supervisor/project-watchdog
+4. Workers and `/plan-work` agents NEVER self-assign epic numbers — always request from supervisor
+5. Completed epics (0-38) are not listed here — see ROADMAP.md Completed Epics table
+6. When an epic completes, update its status here to "Complete" (do not remove it)
 
 ## Superseded
 

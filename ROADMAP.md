@@ -74,6 +74,12 @@ Replace broken `:help` flash message with dedicated scrollable help view. Conten
 
 Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health, synclog, etc.) to exit on 'q' instead of going back. Fix: scope 'q' quit to doors view only; sub-views treat 'q' as go-back (D-128).
 
+### Story 0.38: Epic Number Registry Accuracy & Enforcement (P1)
+
+**Status:** In Progress.
+
+Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing epics), backfill all active epics 39-51, and strengthen enforcement rules to reference project-watchdog as MUTEX. Implements D-112.
+
 ## Active Epics
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
