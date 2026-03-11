@@ -78,47 +78,50 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 
 		var b strings.Builder
 
-		// Border characters
-		topLeft, topRight := "╭", "╮"
-		botLeft, botRight := "╰", "╯"
-		vChar := "│"
+		// Border characters: left (hinge) uses heavier weight, right (opening) uses standard
+		var hingeTL, openTR, hingeBL, openBR string
+		var hingeV, openV string
+		var hingeTee, openTee string
 		hChar := "─"
+
 		if selected {
-			topLeft, topRight = "┏", "┓"
-			botLeft, botRight = "┗", "┛"
-			vChar = "┃"
+			hingeTL, openTR = "┏", "┐"
+			hingeBL, openBR = "┗", "┘"
+			hingeV, openV = "┃", "│"
+			hingeTee, openTee = "┣", "┤"
 			hChar = "━"
+		} else {
+			hingeTL, openTR = "╓", "┐"
+			hingeBL, openBR = "╙", "┘"
+			hingeV, openV = "║", "│"
+			hingeTee, openTee = "╟", "┤"
 		}
 
 		hBar := strings.Repeat(hChar, inner)
-		blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
+		blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
 		for row := 0; row < height; row++ {
 			switch {
 			case row == anatomy.LintelRow:
-				// Top border (lintel)
-				fmt.Fprintf(&b, "%s", style.Render(topLeft+hBar+topRight))
+				// Top border (lintel) — hinge left, standard right
+				fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
 
 			case row == anatomy.PanelDivider:
-				// Panel divider: ├─────────────┤ (or ┣━━━━━━━━━━━━━┫ selected)
-				divLeft, divRight := "├", "┤"
-				if selected {
-					divLeft, divRight = "┣", "┫"
-				}
-				fmt.Fprintf(&b, "%s", style.Render(divLeft+hBar+divRight))
+				// Panel divider: ╟─────────────┤ (or ┣━━━━━━━━━━━━━┤ selected)
+				fmt.Fprintf(&b, "%s", style.Render(hingeTee+hBar+openTee))
 
 			case row == anatomy.HandleRow:
-				// Doorknob row: ● on the right side
-				knobPad := inner - 3
+				// Doorknob row: ● at rightmost content column
+				knobPad := inner - 1
 				if knobPad < 1 {
 					knobPad = 1
 				}
 				knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
-				fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+				fmt.Fprintf(&b, "%s%s%s", style.Render(hingeTee), knobLine, style.Render(openV))
 
 			case row == anatomy.ThresholdRow:
 				// Bottom border
-				fmt.Fprintf(&b, "%s", style.Render(botLeft+hBar+botRight))
+				fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
 
 			case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 				// Content area
@@ -131,9 +134,9 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 						padding = 0
 					}
 					fmt.Fprintf(&b, "%s%s%s",
-						style.Render(vChar),
+						style.Render(hingeV),
 						"  "+line+strings.Repeat(" ", padding),
-						style.Render(vChar),
+						style.Render(openV),
 					)
 				} else {
 					fmt.Fprintf(&b, "%s", blankLine)

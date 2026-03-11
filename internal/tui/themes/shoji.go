@@ -113,20 +113,34 @@ func shojiCompactRender(content string, width int, selected bool, frameColor, se
 }
 
 // shojiDoorRender renders the Shoji theme with door-like proportions using DoorAnatomy.
+// Hinge asymmetry: left uses heavier junctions (double-vert unselected, heavy selected),
+// right uses standard-weight junctions.
 func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string) string {
 	anatomy := NewDoorAnatomy(height)
 
 	color := frameColor
-	ch := shojiChars{
-		h: "─", v: "│", cross: "┼",
-		tTop: "┬", tBot: "┴", tLeft: "├", tRght: "┤",
-	}
+	// Left (hinge) and right (opening) character sets
+	var hingeTop, openTop string
+	var hingeBot, openBot string
+	var hingeV, openV string
+	var hingeTee, openTee string
+	var cross, h string
+
 	if selected {
 		color = selectedColor
-		ch = shojiChars{
-			h: "━", v: "┃", cross: "╋",
-			tTop: "┳", tBot: "┻", tLeft: "┣", tRght: "┫",
-		}
+		hingeTop, openTop = "┳", "┬"
+		hingeBot, openBot = "┻", "┴"
+		hingeV, openV = "┃", "│"
+		hingeTee, openTee = "┣", "┤"
+		cross = "╋"
+		h = "━"
+	} else {
+		hingeTop, openTop = "╥", "┬"
+		hingeBot, openBot = "╨", "┴"
+		hingeV, openV = "║", "│"
+		hingeTee, openTee = "╟", "┤"
+		cross = "┼"
+		h = "─"
 	}
 	style := lipgloss.NewStyle().Foreground(color)
 
@@ -144,7 +158,42 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	contentLines := strings.Split(wrapped, "\n")
 
 	crossPos := innerW / 2
-	emptyRow := shojiEmptyRow(ch, innerW, style)
+
+	// Helper for empty row with hinge asymmetry
+	emptyRow := style.Render(hingeV) + strings.Repeat(" ", innerW) + style.Render(openV)
+
+	// Helper for content row with hinge asymmetry
+	contentRow := func(text string) string {
+		textWidth := ansi.StringWidth(text)
+		cw := innerW - 2
+		if cw < 1 {
+			cw = 1
+		}
+		if textWidth > cw {
+			text = ansi.Truncate(text, cw, "")
+			textWidth = ansi.StringWidth(text)
+		}
+		rightPad := cw - textWidth
+		if rightPad < 0 {
+			rightPad = 0
+		}
+		return style.Render(hingeV) + " " + text + strings.Repeat(" ", rightPad) + " " + style.Render(openV)
+	}
+
+	// Helper for horizontal bar with hinge asymmetry
+	hBar := func() string {
+		return style.Render(hingeTee + strings.Repeat(h, innerW) + openTee)
+	}
+
+	// Helper for cross bar with hinge asymmetry
+	crossBar := func() string {
+		left := crossPos
+		right := innerW - crossPos - 1
+		if right < 0 {
+			right = 0
+		}
+		return style.Render(hingeTee + strings.Repeat(h, left) + cross + strings.Repeat(h, right) + openTee)
+	}
 
 	// Place a lattice bar one row after ContentStart (gives a pane above content)
 	latticeBarRow := anatomy.ContentStart - 1
@@ -163,39 +212,39 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Top rail
-			fmt.Fprintf(&b, "%s", style.Render(ch.tTop+strings.Repeat(ch.h, innerW)+ch.tTop))
+			// Top rail: hinge left, standard right
+			fmt.Fprintf(&b, "%s", style.Render(hingeTop+strings.Repeat(h, innerW)+openTop))
 
 		case row == latticeBarRow:
 			// Lattice bar above content
-			fmt.Fprintf(&b, "%s", shojiHBar(ch, innerW, style))
+			fmt.Fprintf(&b, "%s", hBar())
 
 		case row == anatomy.PanelDivider:
 			// Mid-cross bar at panel divider
-			fmt.Fprintf(&b, "%s", shojiCrossBar(ch, innerW, crossPos, style))
+			fmt.Fprintf(&b, "%s", crossBar())
 
 		case row == anatomy.HandleRow:
-			// Handle row: ○ on the right side, with optional hint
-			knobPad := innerW - 3
+			// Handle row: ○ at rightmost content column
+			knobPad := innerW - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(innerW, knobPad, "○", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(ch.v), knobLine, style.Render(ch.v))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
 
 		case row == latticeBar2Row:
 			// Lattice bar below handle
-			fmt.Fprintf(&b, "%s", shojiHBar(ch, innerW, style))
+			fmt.Fprintf(&b, "%s", hBar())
 
 		case row == anatomy.ThresholdRow:
-			// Bottom rail
-			fmt.Fprintf(&b, "%s", style.Render(ch.tBot+strings.Repeat(ch.h, innerW)+ch.tBot))
+			// Bottom rail: hinge left, standard right
+			fmt.Fprintf(&b, "%s", style.Render(hingeBot+strings.Repeat(h, innerW)+openBot))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			// Content area
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
-				fmt.Fprintf(&b, "%s", shojiContentRow(ch, innerW, contentLines[lineIdx], style))
+				fmt.Fprintf(&b, "%s", contentRow(contentLines[lineIdx]))
 			} else {
 				fmt.Fprintf(&b, "%s", emptyRow)
 			}

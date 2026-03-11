@@ -128,16 +128,27 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	wrapped := ansi.Wordwrap(content, contentWidth, "")
 	contentLines := strings.Split(wrapped, "\n")
 
+	// Hinge (left) uses heavier weight, opening (right) uses standard
+	var hingeTL, openTR, hingeBL, openBR string
+	var hingeV, openV string
+	var hingeTee, openTee string
+
+	if selected {
+		hingeTL, openTR = "┏", "┐"
+		hingeBL, openBR = "┗", "┘"
+		hingeV, openV = "┃", "│"
+		hingeTee, openTee = "┣", "┤"
+	} else {
+		hingeTL, openTR = "╓", "┐"
+		hingeBL, openBR = "╙", "┘"
+		hingeV, openV = "║", "│"
+		hingeTee, openTee = "╟", "┤"
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
-
-	// Panel divider with angular tee junctions
-	divLeft, divRight := "├", "┤"
-	if selected {
-		divLeft, divRight = "┣", "┫"
-	}
+	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
 	// Layered block texture rows using ▒ and ▓
 	textureTopRow := anatomy.LintelRow + 1
@@ -148,35 +159,35 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 
 	textureRow := func(block string) string {
 		pattern := strings.Repeat(block, inner)
-		return style.Render(vChar) + pattern + style.Render(vChar)
+		return style.Render(hingeV) + pattern + style.Render(openV)
 	}
 
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s", style.Render(tl+hBar+tr))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
 
 		case row == textureTopRow:
 			// Light block texture below lintel
 			fmt.Fprintf(&b, "%s", textureRow("▒"))
 
 		case row == anatomy.PanelDivider:
-			fmt.Fprintf(&b, "%s", style.Render(divLeft+hBar+divRight))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTee+hBar+openTee))
 
 		case row == anatomy.HandleRow:
-			knobPad := inner - 4
+			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
 
 		case row == textureBotRow:
 			// Dense block texture above threshold
 			fmt.Fprintf(&b, "%s", textureRow("▓"))
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s", style.Render(bl+hBar+br))
+			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -188,9 +199,9 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 					padding = 0
 				}
 				fmt.Fprintf(&b, "%s%s%s",
-					style.Render(vChar),
+					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
-					style.Render(vChar),
+					style.Render(openV),
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)

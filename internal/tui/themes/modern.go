@@ -133,10 +133,27 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	wrapped := ansi.Wordwrap(content, contentWidth, "")
 	contentLines := strings.Split(wrapped, "\n")
 
+	// Hinge (left) uses heavier weight, opening (right) uses standard
+	var hingeTL, openTR, hingeBL, openBR string
+	var hingeV, openV string
+	var hingeTee, openTee string
+
+	if selected {
+		hingeTL, openTR = "┏", "━"
+		hingeBL, openBR = "┗", "━"
+		hingeV, openV = "┃", "│"
+		hingeTee, openTee = "┣", "┤"
+	} else {
+		hingeTL, openTR = "╓", "─"
+		hingeBL, openBR = "╙", "─"
+		hingeV, openV = "║", "│"
+		hingeTee, openTee = "╟", "┤"
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
+	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
 	// Panel divider always uses thin line for minimalist look
 	thinH := "─"
@@ -144,26 +161,26 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Top border: heavy bar across full width (no corners)
-			fmt.Fprintf(&b, "%s", style.Render(hChar+hBar+hChar))
+			// Top border: hinge corner left, minimalist right
+			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
 
 		case row == anatomy.PanelDivider:
 			// Minimalist panel divider: thin line regardless of selection
 			divBar := strings.Repeat(thinH, inner)
-			fmt.Fprintf(&b, "%s", style.Render(vChar+divBar+vChar))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTee+divBar+openTee))
 
 		case row == anatomy.HandleRow:
-			// Minimalist handle: ○ (open circle) on the right side, with optional hint
-			knobPad := inner - 4
+			// Minimalist handle: ○ at rightmost content column
+			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "○", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
 
 		case row == anatomy.ThresholdRow:
-			// Bottom border: heavy bar across full width (no corners)
-			fmt.Fprintf(&b, "%s", style.Render(hChar+hBar+hChar))
+			// Bottom border: hinge corner left, minimalist right
+			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			// Content area with 3-char left padding
@@ -176,9 +193,9 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 					padding = 0
 				}
 				fmt.Fprintf(&b, "%s%s%s",
-					style.Render(vChar),
+					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
-					style.Render(vChar),
+					style.Render(openV),
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)

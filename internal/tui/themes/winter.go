@@ -134,15 +134,32 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	wrapped := ansi.Wordwrap(content, contentWidth, "")
 	contentLines := strings.Split(wrapped, "\n")
 
+	// Hinge (left) uses heavier weight, opening (right) uses standard
+	var hingeTL, openTR, hingeBL, openBR string
+	var hingeV, openV string
+	var hingeTee, openTee string
+
+	if selected {
+		hingeTL, openTR = "┏", "┐"
+		hingeBL, openBR = "┗", "┘"
+		hingeV, openV = "┃", "│"
+		hingeTee, openTee = "┣", "┤"
+	} else {
+		hingeTL, openTR = "╓", "┐"
+		hingeBL, openBR = "╙", "┘"
+		hingeV, openV = "║", "│"
+		hingeTee, openTee = "╟", "┤"
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
+	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
 	// Dense dot fill character for frost texture
 	dotChar := "·"
 
-	// Frost texture row: dense dots between borders
+	// Frost texture row: dense dots between hinge borders
 	frostRow := func() string {
 		pattern := strings.Repeat(dotChar+" ", inner/2)
 		if len(pattern) > inner {
@@ -152,7 +169,7 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 		if padLen < 0 {
 			padLen = 0
 		}
-		return style.Render(vChar) + pattern + strings.Repeat(" ", padLen) + style.Render(vChar)
+		return style.Render(hingeV) + pattern + strings.Repeat(" ", padLen) + style.Render(openV)
 	}
 
 	// Row just below lintel gets frost
@@ -164,36 +181,30 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 		frostBotRow = -1 // skip if no room
 	}
 
-	// Panel divider uses tee junctions
-	divLeft, divRight := "├", "┤"
-	if selected {
-		divLeft, divRight = "┣", "┫"
-	}
-
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s", style.Render(tl+hBar+tr))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
 
 		case row == frostTopRow:
 			fmt.Fprintf(&b, "%s", frostRow())
 
 		case row == anatomy.PanelDivider:
-			fmt.Fprintf(&b, "%s", style.Render(divLeft+hBar+divRight))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTee+hBar+openTee))
 
 		case row == anatomy.HandleRow:
-			knobPad := inner - 4
+			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "◆", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
 
 		case row == frostBotRow:
 			fmt.Fprintf(&b, "%s", frostRow())
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s", style.Render(bl+hBar+br))
+			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -205,9 +216,9 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 					padding = 0
 				}
 				fmt.Fprintf(&b, "%s%s%s",
-					style.Render(vChar),
+					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
-					style.Render(vChar),
+					style.Render(openV),
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)

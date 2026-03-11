@@ -128,40 +128,51 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	wrapped := ansi.Wordwrap(content, contentWidth, "")
 	contentLines := strings.Split(wrapped, "\n")
 
+	// Hinge (left) uses heavier weight, opening (right) uses standard with curved corners
+	var hingeTL, openTR, hingeBL, openBR string
+	var hingeV, openV string
+	var hingeTee, openTee string
+
+	if selected {
+		hingeTL, openTR = "┏", "┐"
+		hingeBL, openBR = "┗", "┘"
+		hingeV, openV = "┃", "│"
+		hingeTee, openTee = "┣", "┤"
+	} else {
+		hingeTL, openTR = "╓", "╮"
+		hingeBL, openBR = "╙", "╯"
+		hingeV, openV = "║", "│"
+		hingeTee, openTee = "╟", "┤"
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
-
-	// Panel divider uses curved junctions for flowing feel
-	divLeft, divRight := "├", "┤"
-	if selected {
-		divLeft, divRight = "┣", "┫"
-	}
+	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Curved top corners
-			fmt.Fprintf(&b, "%s", style.Render(tl+hBar+tr))
+			// Hinge left, curved right corner
+			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
 
 		case row == anatomy.PanelDivider:
-			// Light divider with tee junctions
+			// Light divider with hinge junctions
 			divH := "─"
-			fmt.Fprintf(&b, "%s", style.Render(divLeft+strings.Repeat(divH, inner)+divRight))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTee+strings.Repeat(divH, inner)+openTee))
 
 		case row == anatomy.HandleRow:
-			// Open circle handle
-			knobPad := inner - 4
+			// Open circle handle at rightmost content column
+			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "○", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
 
 		case row == anatomy.ThresholdRow:
-			// Curved bottom corners
-			fmt.Fprintf(&b, "%s", style.Render(bl+hBar+br))
+			// Hinge left, curved right corner
+			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -173,9 +184,9 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 					padding = 0
 				}
 				fmt.Fprintf(&b, "%s%s%s",
-					style.Render(vChar),
+					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
-					style.Render(vChar),
+					style.Render(openV),
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)

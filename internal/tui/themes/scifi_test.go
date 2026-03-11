@@ -57,9 +57,11 @@ func TestSciFiRenderHasDoubleLineFrame(t *testing.T) {
 	theme := NewSciFiTheme()
 	output := theme.Render("Task", 30, 0, false, "")
 
-	for _, ch := range []string{"╔", "╗", "╚", "╝", "═", "║"} {
+	// Hinge side (left) keeps double-line: ╔, ╚, ║
+	// Opening side (right) uses lighter: ╕, ╛, │
+	for _, ch := range []string{"╔", "╕", "╚", "╛", "═", "║"} {
 		if !strings.Contains(output, ch) {
-			t.Errorf("sci-fi theme should have double-line character %q", ch)
+			t.Errorf("sci-fi theme should have frame character %q", ch)
 		}
 	}
 }

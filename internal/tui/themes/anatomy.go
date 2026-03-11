@@ -8,6 +8,7 @@ type DoorAnatomy struct {
 	PanelDivider int // Horizontal division between upper/lower panels (~45% height)
 	HandleRow    int // Doorknob/handle placement (~60% height)
 	ThresholdRow int // Bottom border / floor line (height-1)
+	HingeCol     int // Hinge placement column (always 0 — leftmost edge)
 }
 
 // NewDoorAnatomy calculates structural row positions for a door of the given height.
@@ -47,5 +48,6 @@ func NewDoorAnatomy(height int) DoorAnatomy {
 		PanelDivider: panelDivider,
 		HandleRow:    handleRow,
 		ThresholdRow: threshold,
+		HingeCol:     0,
 	}
 }
