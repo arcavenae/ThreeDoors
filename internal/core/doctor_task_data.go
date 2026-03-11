@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -265,6 +266,13 @@ func (dc *DoctorChecker) checkLegacyFiles() CheckResult {
 	yamlExists := yamlErr == nil
 
 	if txtExists && !yamlExists {
+		if dc.fix {
+			if fixErr := dc.migrateLegacyTasks(txtPath, yamlPath); fixErr == nil {
+				result.Status = CheckFixed
+				result.Message = fmt.Sprintf("FIXED: migrated tasks.txt → tasks.yaml (backup at %s)", txtPath+".bak")
+				return result
+			}
+		}
 		result.Status = CheckWarn
 		result.Message = "tasks.txt exists but tasks.yaml does not — legacy migration needed"
 		result.Suggestion = "Run: threedoors migrate"
@@ -280,6 +288,68 @@ func (dc *DoctorChecker) checkLegacyFiles() CheckResult {
 	result.Status = CheckOK
 	result.Message = "No legacy task files found"
 	return result
+}
+
+// migrateLegacyTasks reads tasks.txt, converts to tasks.yaml, and backs up the original.
+func (dc *DoctorChecker) migrateLegacyTasks(txtPath, yamlPath string) error {
+	f, err := os.Open(txtPath)
+	if err != nil {
+		return fmt.Errorf("open tasks.txt: %w", err)
+	}
+	defer func() { _ = f.Close() }()
+
+	var tasks []*Task
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		text := strings.TrimSpace(scanner.Text())
+		if text != "" {
+			tasks = append(tasks, NewTask(text))
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("scan tasks.txt: %w", err)
+	}
+
+	// Write tasks.yaml atomically
+	type tasksFileWrapper struct {
+		Tasks []*Task `yaml:"tasks"`
+	}
+	data, err := yaml.Marshal(&tasksFileWrapper{Tasks: tasks})
+	if err != nil {
+		return fmt.Errorf("marshal tasks: %w", err)
+	}
+
+	tmpPath := yamlPath + ".tmp"
+	tf, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+	if err != nil {
+		return fmt.Errorf("create tasks.yaml tmp: %w", err)
+	}
+
+	if _, err := tf.Write(data); err != nil {
+		_ = tf.Close()
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("write tasks.yaml: %w", err)
+	}
+	if err := tf.Sync(); err != nil {
+		_ = tf.Close()
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("sync tasks.yaml: %w", err)
+	}
+	if err := tf.Close(); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("close tasks.yaml: %w", err)
+	}
+	if err := os.Rename(tmpPath, yamlPath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("rename tasks.yaml: %w", err)
+	}
+
+	// Backup tasks.txt
+	if err := os.Rename(txtPath, txtPath+".bak"); err != nil {
+		return fmt.Errorf("backup tasks.txt: %w", err)
+	}
+
+	return nil
 }
 
 // checkLegacyFields detects tasks using the deprecated source_provider field.

@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,6 +22,8 @@ const (
 	CheckOK CheckStatus = iota
 	// CheckInfo means informational notice, no action needed.
 	CheckInfo
+	// CheckFixed means the issue was auto-repaired by --fix.
+	CheckFixed
 	// CheckSkip means the check was skipped (not applicable).
 	CheckSkip
 	// CheckWarn means the check found a non-critical issue.
@@ -36,6 +39,8 @@ func (s CheckStatus) String() string {
 		return "OK"
 	case CheckInfo:
 		return "INFO"
+	case CheckFixed:
+		return "FIXED"
 	case CheckSkip:
 		return "SKIP"
 	case CheckWarn:
@@ -54,6 +59,8 @@ func (s CheckStatus) Icon() string {
 		return "[✓]"
 	case CheckInfo:
 		return "[i]"
+	case CheckFixed:
+		return "[F]"
 	case CheckSkip:
 		return "[ ]"
 	case CheckWarn:
@@ -98,6 +105,7 @@ type DoctorChecker struct {
 	registry     *Registry
 	categories   []registeredCategory
 	versionCheck *VersionChecker
+	fix          bool
 }
 
 type registeredCategory struct {
@@ -124,6 +132,25 @@ func (r *DoctorResult) IssueCount() (warnings, errors int) {
 		}
 	}
 	return warnings, errors
+}
+
+// FixedCount returns the total number of auto-repaired checks across all categories.
+func (r *DoctorResult) FixedCount() int {
+	count := 0
+	for _, cat := range r.Categories {
+		for _, check := range cat.Checks {
+			if check.Status == CheckFixed {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+// ManualCount returns the number of issues requiring manual intervention (warnings + errors).
+func (r *DoctorResult) ManualCount() int {
+	w, e := r.IssueCount()
+	return w + e
 }
 
 // CategoryIssueCount returns the number of categories that have at least one issue.
@@ -163,6 +190,12 @@ func NewDoctorChecker(configDir string) *DoctorChecker {
 	return dc
 }
 
+// SetFix enables auto-repair mode. When set, safe and reversible issues are
+// automatically fixed and reported as CheckFixed instead of CheckWarn/CheckFail.
+func (dc *DoctorChecker) SetFix(fix bool) {
+	dc.fix = fix
+}
+
 // SetTerminalInfo sets the terminal capability information for environment checks.
 func (dc *DoctorChecker) SetTerminalInfo(info TerminalInfo) {
 	dc.terminal = info
@@ -194,7 +227,68 @@ func (dc *DoctorChecker) checkVersion() CategoryResult {
 			}},
 		}
 	}
-	return CategoryResult{Checks: dc.versionCheck.Check()}
+
+	var checks []CheckResult
+
+	// Check version cache health before the version check itself
+	if cacheCheck := dc.checkVersionCache(); cacheCheck != nil {
+		checks = append(checks, *cacheCheck)
+	}
+
+	checks = append(checks, dc.versionCheck.Check()...)
+	return CategoryResult{Checks: checks}
+}
+
+// checkVersionCache validates version-check.json for corruption or staleness.
+// Returns nil if no issue is found or the file does not exist.
+func (dc *DoctorChecker) checkVersionCache() *CheckResult {
+	cachePath := filepath.Join(dc.configDir, versionCheckCacheFile)
+	data, err := os.ReadFile(cachePath)
+	if err != nil {
+		// File doesn't exist — not an issue
+		return nil
+	}
+
+	// Check for corruption
+	var cache VersionCheckCache
+	if jsonErr := json.Unmarshal(data, &cache); jsonErr != nil {
+		if dc.fix {
+			if rmErr := os.Remove(cachePath); rmErr == nil {
+				return &CheckResult{
+					Name:    "Version cache",
+					Status:  CheckFixed,
+					Message: "FIXED: cleared corrupt version cache",
+				}
+			}
+		}
+		return &CheckResult{
+			Name:       "Version cache",
+			Status:     CheckWarn,
+			Message:    "Version cache is corrupt",
+			Suggestion: "Run threedoors doctor --fix to clear it",
+		}
+	}
+
+	// Check for staleness (>7 days is considered stale for doctor purposes)
+	if time.Since(cache.CheckedAt) > 7*24*time.Hour {
+		if dc.fix {
+			if rmErr := os.Remove(cachePath); rmErr == nil {
+				return &CheckResult{
+					Name:    "Version cache",
+					Status:  CheckFixed,
+					Message: "FIXED: cleared stale version cache",
+				}
+			}
+		}
+		return &CheckResult{
+			Name:       "Version cache",
+			Status:     CheckWarn,
+			Message:    "Version cache is stale",
+			Suggestion: "Run threedoors doctor --fix to clear it",
+		}
+	}
+
+	return nil
 }
 
 // providerCheckTimeout is the maximum time to wait for a provider health check.
@@ -273,27 +367,43 @@ func (dc *DoctorChecker) checkConfigDir() CheckResult {
 		return result
 	}
 
-	// Check read+write permission by attempting to read the directory
+	// Check permissions and attempt fix if enabled
+	permOK := true
+
+	// Check read permission
 	f, err := os.Open(dc.configDir)
 	if err != nil {
-		result.Status = CheckFail
-		result.Message = "Config directory is not readable"
-		result.Suggestion = fmt.Sprintf("Run: chmod 700 %s", dc.configDir)
-		return result
+		permOK = false
+	} else {
+		_ = f.Close()
 	}
-	_ = f.Close()
 
-	// Check write permission with a temp file
-	tmpPath := fmt.Sprintf("%s/.doctor-check.tmp", dc.configDir)
-	tf, err := os.Create(tmpPath)
-	if err != nil {
+	// Check write permission
+	if permOK {
+		tmpPath := fmt.Sprintf("%s/.doctor-check.tmp", dc.configDir)
+		tf, err := os.Create(tmpPath)
+		if err != nil {
+			permOK = false
+		} else {
+			_ = tf.Close()
+			_ = os.Remove(tmpPath)
+		}
+	}
+
+	if !permOK {
+		if dc.fix {
+			if fixErr := os.Chmod(dc.configDir, 0o700); fixErr == nil {
+				result.Status = CheckFixed
+				result.Message = "FIXED: set directory permissions to 700"
+				return result
+			}
+			// chmod failed — fall through to report the original issue
+		}
 		result.Status = CheckWarn
-		result.Message = "Config directory is not writable"
+		result.Message = "Config directory has incorrect permissions"
 		result.Suggestion = fmt.Sprintf("Run: chmod 700 %s", dc.configDir)
 		return result
 	}
-	_ = tf.Close()
-	_ = os.Remove(tmpPath)
 
 	result.Status = CheckOK
 	result.Message = fmt.Sprintf("Config directory exists (%s)", dc.configDir)
@@ -308,6 +418,13 @@ func (dc *DoctorChecker) checkConfigFile() CheckResult {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
+			if dc.fix {
+				if fixErr := GenerateSampleConfig(configPath, dc.registry); fixErr == nil {
+					result.Status = CheckFixed
+					result.Message = "FIXED: created sample config.yaml"
+					return result
+				}
+			}
 			result.Status = CheckWarn
 			result.Message = "Config file not found (using defaults)"
 			result.Suggestion = "Run: threedoors config init"

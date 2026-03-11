@@ -38,12 +38,15 @@ func newDoctorCmd() *cobra.Command {
 		Aliases: []string{"health"},
 		Short:   "Run system diagnostics",
 		Long: `Run comprehensive system diagnostics and display results
-with category-based output. The 'health' command is an alias for 'doctor'.`,
+with category-based output. The 'health' command is an alias for 'doctor'.
+
+Use --fix to automatically repair safe, reversible issues.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runDoctor(cmd)
 		},
 	}
+	cmd.Flags().Bool("fix", false, "Auto-repair safe, reversible issues")
 	return cmd
 }
 
@@ -61,7 +64,10 @@ func runDoctor(cmd *cobra.Command) error {
 		os.Exit(ExitProviderError)
 	}
 
+	fix, _ := cmd.Flags().GetBool("fix")
+
 	dc := core.NewDoctorChecker(configDir)
+	dc.SetFix(fix)
 
 	// Detect terminal capabilities
 	dc.SetTerminalInfo(detectTerminalInfo())
@@ -116,14 +122,22 @@ func writeDoctorHuman(formatter *OutputFormatter, result core.DoctorResult) erro
 	}
 
 	// Summary line
-	warnings, errors := result.IssueCount()
-	total := warnings + errors
-	if total == 0 {
+	fixedCount := result.FixedCount()
+	manualCount := result.ManualCount()
+
+	if fixedCount == 0 && manualCount == 0 {
 		_ = formatter.Writef("No issues found\n")
+	} else if fixedCount > 0 && manualCount == 0 {
+		_ = formatter.Writef("Fixed %d %s.\n",
+			fixedCount, pluralize("issue", fixedCount))
+	} else if fixedCount > 0 {
+		_ = formatter.Writef("Fixed %d %s. %d %s require manual intervention.\n",
+			fixedCount, pluralize("issue", fixedCount),
+			manualCount, pluralize("issue", manualCount))
 	} else {
 		catCount := result.CategoryIssueCount()
 		_ = formatter.Writef("%d %s in %d %s\n",
-			total, pluralize("issue", total),
+			manualCount, pluralize("issue", manualCount),
 			catCount, pluralize("category", catCount))
 	}
 
@@ -143,6 +157,8 @@ func statusIcon(status core.CheckStatus) string {
 		return lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Render(icon)
 	case core.CheckInfo:
 		return lipgloss.NewStyle().Foreground(lipgloss.Color("6")).Render(icon)
+	case core.CheckFixed:
+		return lipgloss.NewStyle().Foreground(lipgloss.Color("4")).Render(icon)
 	case core.CheckSkip:
 		return lipgloss.NewStyle().Foreground(lipgloss.Color("8")).Render(icon)
 	case core.CheckWarn:
