@@ -1,0 +1,13 @@
+- id: "task-1"
+  text: "First task"
+  status: "todo"
+  created_at: "2026-01-01T00:00:00Z"
+  updated_at: "2026-01-01T00:00:00Z"
+- id: "task-2"
+  text: "Depends on nonexistent"
+  status: "blocked"
+  blocker: "Waiting on deleted task"
+  depends_on:
+    - "task-999"
+  created_at: "2026-01-01T00:00:00Z"
+  updated_at: "2026-01-01T00:00:00Z"
