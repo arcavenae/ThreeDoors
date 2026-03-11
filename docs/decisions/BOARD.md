@@ -10,8 +10,8 @@
 |----|----------|------|-------|---------|
 | Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support story points as a preference, but require the custom field involved to be specified — it's not built in. |
 | Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support multi-project JQL in Jira adapter. |
-| Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
-| Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) — **Resolved:** Yes, batch. See D-161. |
+| Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) — **Resolved:** Yes, Option B. See D-162. |
 
 ## Active Research
 
@@ -25,9 +25,9 @@
 |----|----------------|------|--------|------|----------|
 | P-006 | In-app bug reporting via `:bug` command — browser URL primary, PAT upgrade, file fallback | 2026-03-09 | Party mode (4 rounds: PM, Architect, UX, Dev) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md), [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) | **Done** — Epic 50 created (3 stories) |
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
-| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Artifact](../../_bmad-output/planning-artifacts/envoy-scope-and-firewall-design.md) | Story creation |
+| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Plan](../../_bmad-output/planning-artifacts/envoy-three-layer-firewall-plan.md), [Party Mode](../../_bmad-output/planning-artifacts/envoy-rules-of-behavior-party-mode.md) | **Done** — Epic 52 created (4 stories). Original artifact missing; plan reconstructed from available sources. Epic number provisional. |
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | Story creation |
-| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | **Approved** — update then run `/sync-enhancements` after merge |
+
 | P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode (3 rounds) + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md), [Research](../../_bmad-output/planning-artifacts/scoped-labels-research.md) | Story creation for migration |
 
 ## Decided
@@ -92,6 +92,7 @@
 | D-056 | Alpha binary named `threedoors-a` (not `threedoors`) | 2026-03-08 | Prevents Homebrew conflicts; allows simultaneous install; clear channel identity | [Artifact](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-party-mode.md) |
 | D-057 | Alpha formula `threedoors-a.rb` in same tap | 2026-03-08 | Single tap; consistent UX; no `conflicts_with` needed | [Research](../../_bmad-output/planning-artifacts/dual-homebrew-distribution-research.md) |
 | D-058 | Manual planning doc reconciliation over automation | 2026-03-08 | Automation rejected — drift is infrequent, docs are heterogeneous, CLAUDE.md reminder sufficient | [Artifact](../../_bmad-output/planning-artifacts/planning-docs-reconciliation-triage-party-mode.md) |
+| D-059 | Post-merge CI circuit breaker in merge-queue agent | 2026-03-10 | Explicit polling workflow after each merge; emergency mode halts merges on failure; prerequisite for relaxed up-to-date rule | [ADR-0030](../ADRs/ADR-0030-ci-churn-reduction.md), [Story 0.36](../stories/0.36.story.md) |
 | D-059 | Universal quit via MainModel-level 'q' interception | 2026-03-08 | Centralizes quit logic; views don't need individual 'q' handlers; `isTextInputActive()` guards text input views | [Story 36.3](../stories/36.3.story.md) |
 | D-060 | Content pre-styling for door selection contrast | 2026-03-08 | Style content before theme Render(); avoids modifying each theme; uses Bold/Faint + DoubleBorder for structural emphasis | [Story 36.1](../../docs/stories/36.1.story.md) |
 | D-061 | Replace softprops/action-gh-release with gh CLI | 2026-03-08 | Eliminates third-party supply chain risk; gh CLI is GitHub-maintained and pre-installed on runners | [Story 0.31](../stories/0.31.story.md) |
@@ -107,6 +108,7 @@
 | D-071 | Biweekly sprint cadence for agent team | 2026-03-08 | Balances planning overhead with delivery velocity for AI agent workflow | [ADR-0031](../ADRs/ADR-0031-biweekly-sprint-cadence.md) |
 | D-072 | BMAD files as primary tracker with ROADMAP sync | 2026-03-08 | Story files are source of truth; ROADMAP.md synced periodically; no external tracker needed | [ADR-0032](../ADRs/ADR-0032-work-tracking-bmad-files-with-roadmap-sync.md) |
 | D-073 | CLI -> MCP -> iPhone implementation priority | 2026-03-07 | CLI most valuable for core persona; MCP enables AI workflows; iPhone has no validated demand | [Research](../../_bmad-output/planning-artifacts/next-phase-prioritization-research.md) |
+| D-074 | Remove fork references from agent definitions | 2026-03-10 | Completed via Story 51.2 (PR #460); all agent definitions rewritten without fork/upstream references | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) |
 | D-074 | MIT license for ThreeDoors | 2026-03-08 | Charm ecosystem alignment; maximum adapter freedom; zero maintenance; Homebrew compatible | [Research](../../_bmad-output/planning-artifacts/license-selection-research.md) |
 | D-075 | Focus state via session-scoped +focus tags (Epic 27) | 2026-03-07 | Reuses existing tag infrastructure; no new Task model field needed | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
 | D-076 | Energy level inferred from time-of-day as default (Epic 27) | 2026-03-07 | Reduces friction; user can override; morning=high, afternoon=medium, evening=low | [Architecture](../../_bmad-output/planning-artifacts/architecture-daily-planning-mode.md) |
@@ -253,6 +255,8 @@
 | D-158 | Channel-aware version: show within channel + cross-channel if higher (Epic 49) | 2026-03-10 | Alpha users should know about newer stable releases; matches rustup approach; rejected: strict isolation (misses important releases), all channels (noisy) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 | D-159 | CI circuit breaker as agent prompt update, not code (Story 0.36) | 2026-03-10 | Merge-queue is LLM-driven; post-merge CI check is a workflow instruction, not compiled logic; `gh run list` provides the check mechanism | [ADR-0030](../ADRs/ADR-0030-ci-churn-reduction.md) |
 | D-160 | Shell script for CI metrics, not GitHub Action (Story 0.37) | 2026-03-10 | No external deps beyond `gh`; can be promoted to Action later; immediately runnable by retrospector agent (Story 51.8) | [Research](../research/ci-churn-reduction-research.md) |
+| D-161 | Project-watchdog batches governance sync PRs (resolves Q-003) | 2026-03-10 | One-per-story creates PR fatigue and merge ordering issues; batching reduces churn and conflicts. Rejected: one-per-story (current, too many small PRs) | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| D-162 | Workers update ONLY story files; project-watchdog owns all planning docs (resolves Q-004, Option B) | 2026-03-10 | Eliminates concurrent edit conflicts between workers and project-watchdog on ROADMAP.md, epic-list.md, epics-and-stories.md. Workers update their story file status only. project-watchdog initiates all planning doc updates. ROADMAP.md ownership belongs to PM role. Future SLAES (Epic 51) handles CLAUDE.md/SOUL.md updates. Rejected: Option A (workers update everything — concurrent edit conflicts with project-watchdog), Option C (mixed approach with locking — high complexity, not justified) | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 
 ## Rejected
 
@@ -316,27 +320,32 @@
 
 ## Epic Number Registry
 
-> **Purpose:** Prevents epic number collisions when multiple agents work in parallel. Check this table before assigning a new epic number. PM is the authority for allocating numbers (per standing orders). See D-112.
+> **Purpose:** Prevents epic number collisions when multiple agents work in parallel. Check this table before assigning a new epic number. Project-watchdog is the MUTEX for epic/story number allocation. See D-112.
 
 | Epic | Feature | Allocated | Status |
 |------|---------|-----------|--------|
-| 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Proposed (pending PM approval) |
-| 42 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Stories created |
-| 43 | Connection Manager Infrastructure | 2026-03-09 | Allocated (6 stories) |
-| 44 | Sources TUI | 2026-03-09 | Allocated (7 stories) |
-| 45 | Sources CLI | 2026-03-09 | Allocated (5 stories) |
-| 46 | OAuth Device Code Flow | 2026-03-09 | Allocated (4 stories) |
-| 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Allocated (4 stories) |
-| 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | Allocated (10 stories) |
-| 50 | In-App Bug Reporting | 2026-03-10 | Allocated (3 stories) |
-| 51 | *(next available)* | — | — |
+| 39 | Keybinding Display System | 2026-03-08 | Complete (12/13, 1 cancelled) |
+| 40 | Beautiful Stats Display | 2026-03-08 | Complete (10/10) |
+| 41 | Charm Ecosystem Adoption & TUI Polish | 2026-03-09 | Complete (6/6) |
+| 42 | Application Security Hardening | 2026-03-09 | In Progress (1/5) |
+| 43 | Connection Manager Infrastructure | 2026-03-09 | In Progress (2/6) |
+| 44 | Sources TUI | 2026-03-09 | Not Started (0/7) |
+| 45 | Sources CLI | 2026-03-09 | Not Started (0/5) |
+| 46 | OAuth Device Code Flow | 2026-03-09 | Not Started (0/4) |
+| 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Not Started (0/4) |
+| 48 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Not Started (0/4) |
+| 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | In Progress (1/10) |
+| 50 | In-App Bug Reporting | 2026-03-10 | Not Started (0/3) |
+| 51 | SLAES — Self-Learning Agentic Engineering System | 2026-03-10 | In Progress (0/10) |
+| 52 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
 2. Reserve the number here FIRST, before creating story files or updating ROADMAP.md
-3. Only PM (or supervisor acting as PM) may allocate epic numbers
-4. Completed epics (0-38) are not listed here — see ROADMAP.md Completed Epics table
-5. Active epics (39-40) are already allocated — do not reuse
+3. **Project-watchdog is the MUTEX** for epic number allocation — request numbers through supervisor/project-watchdog
+4. Workers and `/plan-work` agents NEVER self-assign epic numbers — always request from supervisor
+5. Completed epics (0-38) are not listed here — see ROADMAP.md Completed Epics table
+6. When an epic completes, update its status here to "Complete" (do not remove it)
 
 ## Superseded
 

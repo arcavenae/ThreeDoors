@@ -34,6 +34,7 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 | Read any file in the codebase for context | Make architectural decisions not specified in the story | Tests reveal pre-existing bugs unrelated to the current task |
 | Create new files required by the task | Push to main directly — always use feature branches | |
 | Modify existing files within the task's scope | Delete or modify other agents' branches | |
+| Update story file status to `Done (PR #NNN)` | Update planning docs: ROADMAP.md, epic-list.md, epics-and-stories.md (D-162) | |
 | | Implement "improvements" not in the task description | |
 | | Run manual git sync (INC-002) | |
 
@@ -59,8 +60,9 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 2. Check ROADMAP.md — if task is out-of-scope, message supervisor before proceeding
 3. Implement the task with tests
 4. Run `make fmt`, `make lint`, `make test`
-5. Create a PR with a detailed summary
-6. Run `multiclaude agent complete`
+5. Update the story file status to `Done (PR #NNN)` — do NOT update ROADMAP.md, epic-list.md, or epics-and-stories.md (project-watchdog handles those per D-162)
+6. Create a PR with a detailed summary
+7. Run `multiclaude agent complete`
 
 ### Branch
 Your branch: `work/<your-name>`. Push to it, create PR from it.

@@ -67,8 +67,44 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 - Scope matches title (small fix should not be 500+ lines)
 - Aligns with ROADMAP.md (no out-of-scope features)
 
+### Post-Merge CI Circuit Breaker
+
+After every PR merge, you MUST check whether the push-to-main CI run succeeds. This is the safety net that allows merging without requiring up-to-date branches.
+
+**Workflow after each merge:**
+
+1. **Wait 30 seconds** after merge completes (GitHub Actions needs time to trigger)
+2. **Check main CI status:**
+   ```bash
+   gh run list --branch main --limit 1 --json status,conclusion,url,headSha
+   ```
+3. **If status is `in_progress`:** Poll every 60 seconds until complete or 10 minutes elapsed
+4. **If conclusion is `success`:** Proceed normally — merge next PR if ready
+5. **If conclusion is `failure`:** Enter emergency mode (see below)
+6. **If 10 minutes elapse without completion:** Log a warning, do NOT block merges — timeout is not treated as failure
+
+**Do not batch checks.** If you merge PR A and PR B in quick succession, check after each one individually.
+
 ### Emergency Mode (Main CI Red)
-Main branch CI failure halts all merges. Message supervisor immediately. Spawn a fixer worker. Resume only after main is green again.
+
+**Entry conditions:** Push-to-main CI run fails after a merge.
+
+**On entering emergency mode:**
+1. Halt all pending merges immediately — do NOT merge any PR until main is green
+2. Message the supervisor with the failing run URL, commit SHA, and which PR was most recently merged
+3. Label the most recently merged PR with `broke-main`:
+   ```bash
+   gh label create broke-main --color D73A4A --description "This PR broke the main branch CI" --force
+   gh pr edit <NUMBER> --add-label broke-main
+   ```
+4. Spawn a fixer worker to investigate and fix the failure
+
+**Exit conditions:** A subsequent push-to-main CI run succeeds (e.g., after a fix is merged).
+
+**On exiting emergency mode:**
+1. Verify main CI is green: `gh run list --branch main --limit 1 --json conclusion` shows `success`
+2. Message the supervisor that main is green again
+3. Resume normal merge operations
 
 ### PRs Needing Humans
 Label with `needs-human-input`, comment explaining what's needed, stop retrying. Check periodically for resolution.
@@ -100,3 +136,4 @@ multiclaude message ack <id>
 | `needs-human-input` | Blocked on human decision |
 | `out-of-scope` | Roadmap violation |
 | `superseded` | Replaced by another PR |
+| `broke-main` | This PR broke the main branch CI |

@@ -14,12 +14,12 @@ const (
 
 // AuthConfig holds authentication settings for the Todoist client.
 type AuthConfig struct {
-	APIToken string
+	APIToken string `yaml:"-"`
 }
 
 // TodoistConfig holds parsed and validated Todoist integration settings.
 type TodoistConfig struct {
-	APIToken     string
+	APIToken     string `yaml:"-"`
 	ProjectIDs   []string
 	Filter       string
 	PollInterval time.Duration

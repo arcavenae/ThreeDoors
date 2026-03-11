@@ -67,6 +67,8 @@ func TestIsPlanCommand(t *testing.T) {
 		{"other command", []string{"threedoors", "doors"}, false},
 		{"no args", []string{"threedoors"}, false},
 		{"empty", nil, false},
+		{"empty slice", []string{}, false},
+		{"single element", []string{"threedoors"}, false},
 	}
 
 	for _, tt := range tests {
@@ -77,5 +79,44 @@ func TestIsPlanCommand(t *testing.T) {
 				t.Errorf("IsPlanCommand() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestSetPlanCommandArgs(t *testing.T) {
+	original := planCommandArgs
+	t.Cleanup(func() { planCommandArgs = original })
+
+	args := []string{"a", "b", "c"}
+	SetPlanCommandArgs(args)
+
+	if len(planCommandArgs) != 3 {
+		t.Fatalf("planCommandArgs has %d elements, want 3", len(planCommandArgs))
+	}
+	if planCommandArgs[0] != "a" {
+		t.Errorf("planCommandArgs[0] = %q, want %q", planCommandArgs[0], "a")
+	}
+}
+
+func TestNewPlanCmd_Structure(t *testing.T) {
+	t.Parallel()
+
+	cmd := newPlanCmd()
+	if cmd.Use != "plan" {
+		t.Errorf("Use = %q, want %q", cmd.Use, "plan")
+	}
+	if cmd.Short == "" {
+		t.Error("Short description should not be empty")
+	}
+	if cmd.Long == "" {
+		t.Error("Long description should not be empty")
+	}
+}
+
+func TestNewPlanCmd_RunE_NoError(t *testing.T) {
+	t.Parallel()
+
+	cmd := newPlanCmd()
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Errorf("RunE() returned error: %v", err)
 	}
 }

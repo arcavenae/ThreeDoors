@@ -69,6 +69,7 @@ type SearchView struct {
 	commandSelectedIndex int
 	height               int
 	hintEnabled          bool
+	breadcrumbs          *BreadcrumbTrail
 }
 
 // NewSearchView creates a new SearchView.
@@ -173,6 +174,11 @@ func parseCommand(input string) (string, string) {
 // executeCommand processes a command from the input.
 func (sv *SearchView) executeCommand() tea.Cmd {
 	cmd, args := parseCommand(sv.textInput.Value())
+
+	// Record command name (without arguments) as breadcrumb.
+	if cmd != "" && sv.breadcrumbs != nil {
+		sv.breadcrumbs.Record("Search", "cmd:"+cmd)
+	}
 
 	switch cmd {
 	case "add":

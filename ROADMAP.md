@@ -74,6 +74,12 @@ Replace broken `:help` flash message with dedicated scrollable help view. Conten
 
 Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health, synclog, etc.) to exit on 'q' instead of going back. Fix: scope 'q' quit to doors view only; sub-views treat 'q' as go-back (D-128).
 
+### Story 0.38: Epic Number Registry Accuracy & Enforcement (P1)
+
+**Status:** In Progress.
+
+Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing epics), backfill all active epics 39-51, and strengthen enforcement rules to reference project-watchdog as MUTEX. Implements D-112.
+
 ## Active Epics
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
@@ -131,7 +137,7 @@ Connection lifecycle layer for data source integrations. State machine, credenti
 |-------|-------|--------|----------|------------|
 | 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
 | 43.2 | Keyring Integration with Environment Variable Fallback | In Review | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | In Review (PR #441) | P1 | None |
 | 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
 | 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
 | 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
@@ -193,7 +199,7 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 49.1 | Doctor Command Skeleton & Health Alias | In Review | P1 | None |
-| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
+| 49.2 | Environment Checks | In Review | P1 | 49.1 |
 | 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
 | 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
 | 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
@@ -215,13 +221,13 @@ Remediate findings from the application security audit. Fix permissive file perm
 | 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
 
-### Epic 50: In-App Bug Reporting (P2) — 0/3 stories done
+### Epic 50: In-App Bug Reporting (P2) — 1/3 stories done
 
 In-app `:bug` command for frictionless bug reporting without leaving the TUI. Breadcrumb navigation trail, environment data collection with strict privacy allowlist, mandatory preview, and tiered submission (browser URL, GitHub API, local file).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 50.1 | Breadcrumb Tracking System | Not Started | P2 | None |
+| 50.1 | Breadcrumb Tracking System | In Review | P2 | None |
 | 50.2 | Bug Report View & Environment Collection | Not Started | P2 | 50.1 |
 | 50.3 | Submission Methods (Browser, API, File) | Not Started | P2 | 50.2 |
 
