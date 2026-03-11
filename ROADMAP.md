@@ -88,7 +88,7 @@ Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing
 
 ### Story 0.44: Scoped Label Migration — Rename and Create GitHub Labels (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #513).
 
 Migrate all 21 GitHub labels to scoped `.` separator format per finalized 27-label taxonomy (D-106, D-107). Rename-first strategy preserves label-issue associations (D-110). Create 6 new labels, delete 2 obsolete ones.
 
