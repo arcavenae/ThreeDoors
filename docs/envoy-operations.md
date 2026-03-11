@@ -76,6 +76,356 @@ Review all open issues in the tracker against staleness rules (see [Staleness De
 
 ---
 
+## Three-Layer Firewall Pipeline
+
+Every new issue passes through three progressively sophisticated layers. Processing stops as soon as a layer resolves the issue.
+
+### Top-Level Flowchart
+
+```
+                        ┌──────────────┐
+                        │  New Issue    │
+                        └──────┬───────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │    LAYER 1          │
+                    │  Non-LLM Gates      │
+                    │  (deterministic)     │
+                    └──────────┬──────────┘
+                               │
+                     ┌─────────▼─────────┐
+                     │  Resolved?         │
+                     └───┬───────────┬───┘
+                     YES │           │ NO
+                  ┌──────▼──────┐    │
+                  │  STOP       │    │
+                  │  (close,    │    │
+                  │   flag, or  │    │
+                  │   cite)     │    │
+                  └─────────────┘    │
+                    ┌────────────────▼────────────────┐
+                    │    LAYER 2                      │
+                    │  Lightweight AI Screening       │
+                    │  (envoy reasoning)              │
+                    └────────────────┬────────────────┘
+                                    │
+                          ┌─────────▼─────────┐
+                          │  Resolved?         │
+                          └───┬───────────┬───┘
+                          YES │           │ NO
+                   ┌──────────▼──────┐    │
+                   │  STOP           │    │
+                   │  (decline,      │    │
+                   │   answer, or    │    │
+                   │   relay to      │    │
+                   │   supervisor)   │    │
+                   └─────────────────┘    │
+                    ┌─────────────────────▼───────────┐
+                    │    LAYER 3                      │
+                    │  BMAD Deliberation              │
+                    │  (recommend to supervisor)      │
+                    └─────────────────────┬───────────┘
+                                          │
+                               ┌──────────▼──────────┐
+                               │  Relay to supervisor │
+                               │  with party mode     │
+                               │  recommendation      │
+                               └──────────────────────┘
+```
+
+### Layer 1: Non-LLM Gates (Deterministic Checks)
+
+Fast, mechanical checks using pattern matching, string comparison, and lookups. No AI reasoning required.
+
+Issues pass through gates sequentially. If any gate resolves the issue, processing stops.
+
+```
+┌─────────────┐
+│  New Issue   │
+└──────┬──────┘
+       │
+┌──────▼──────────────────────────────────────────┐
+│  Gate 1.1: SPAM DETECTION                       │
+│                                                  │
+│  Body empty OR body < 10 chars? ──YES──> CLOSE  │
+│       │ NO                                ↓     │
+│  Known ad/crypto patterns? ───────YES──> CLOSE  │
+│       │ NO                                ↓     │
+│  Title has no recognizable words? ─YES─> CLOSE  │
+│       │ NO                                      │
+│       ▼ PASS                                    │
+└──────┬──────────────────────────────────────────┘
+       │                Action on match:
+       │                • Close issue
+       │                • Notify supervisor immediately
+       │
+┌──────▼──────────────────────────────────────────┐
+│  Gate 1.2: DUPLICATE DETECTION                  │
+│                                                  │
+│  Exact title match in tracker? ───YES──> FLAG   │
+│       │ NO                                ↓     │
+│  Fuzzy title match (>80%)? ───────YES──> FLAG   │
+│       │ NO                                ↓     │
+│  Symptom keywords match recent                  │
+│  resolved issues (90-day)? ───────YES──> FLAG   │
+│       │ NO                                      │
+│       ▼ PASS                                    │
+└──────┬──────────────────────────────────────────┘
+       │                Action on match:
+       │                • Comment linking potential duplicate
+       │                • Add to tracker with duplicate note
+       │                • Do NOT close (never auto-close duplicates)
+       │
+┌──────▼──────────────────────────────────────────┐
+│  Gate 1.3: ALREADY-FIXED DETECTION              │
+│                                                  │
+│  Merged PR in last 30 days has                  │
+│  "Fixes #N" / "Closes #N" matching? ─YES─> REC │
+│       │ NO                                 ↓    │
+│  Issue references component/file                │
+│  recently modified in a PR? ──────────YES─> REC │
+│       │ NO                                      │
+│       ▼ PASS                                    │
+└──────┬──────────────────────────────────────────┘
+       │                Action on match (REC = recommend):
+       │                • Comment linking the fix PR
+       │                • Suggest reporter verify the fix
+       │                • Recommend closure to supervisor
+       │
+┌──────▼──────────────────────────────────────────┐
+│  Gate 1.4: PREVIOUSLY-DECIDED DETECTION         │
+│                                                  │
+│  Keywords match BOARD.md                        │
+│  "Decided" section? ─────────────YES──> CITE    │
+│       │ NO                                ↓     │
+│  Keywords match BOARD.md                        │
+│  "Pending Recommendations"? ─────YES──> LINK    │
+│       │ NO                                ↓     │
+│  Request matches SOUL.md                        │
+│  exclusion pattern? ─────────────YES──> CITE    │
+│       │ NO                                      │
+│       ▼ PASS (proceed to Layer 2)               │
+└─────────────────────────────────────────────────┘
+       Action on CITE:
+       • Polite decline citing the specific decision
+       • Notify supervisor afterward
+
+       Action on LINK:
+       • Comment linking to existing in-progress work
+       • Update tracker
+```
+
+**Layer 1 Example — Spam Gate:**
+
+> **Issue #301:** Title: "Buy cheap watches online!!!" Body: "Visit www.watches-sale.example.com for great deals!"
+>
+> Gate 1.1 fires: known advertising pattern detected (URL to unrelated product).
+> Action: Close issue. Notify supervisor: `"Closed issue #301 as spam. Title: Buy cheap watches online!!!. Reporter: @spambot99. Please review if this closure should be reversed."`
+>
+> Processing stops. Issue never reaches Layer 2.
+
+**Layer 1 Example — Duplicate Gate:**
+
+> **Issue #302:** Title: "Tasks don't save when I close the app"
+> **Existing open issue #287:** Title: "Task changes lost on quit"
+>
+> Gate 1.2 fires: fuzzy title match — "tasks"/"task" + "save"/"lost" + "close"/"quit" exceeds 80% keyword overlap.
+> Action: Comment on #302: "This looks like it may be related to #287 (Task changes lost on quit). We're checking whether these are the same issue or distinct problems. If you think this is different, please let us know what distinguishes your experience."
+> Add to tracker with duplicate note. Do NOT close.
+>
+> Processing continues to Layer 2 (flagging doesn't stop the pipeline — it annotates).
+
+**Layer 1 Example — Already-Fixed Gate:**
+
+> **Issue #303:** Title: "Keybinding help panel doesn't show custom bindings"
+> **Merged PR #389 (5 days ago):** Title: "feat: Story 39.8 — Custom Keybinding Display" — fixes keybinding display rendering
+>
+> Gate 1.3 fires: issue references keybinding display, recently modified in PR #389.
+> Action: Comment: "This may have been addressed in PR #389, merged 5 days ago, which updated keybinding display rendering. Could you verify with the latest build?" Recommend closure to supervisor.
+>
+> Processing stops.
+
+**Layer 1 Example — Previously-Decided Gate:**
+
+> **Issue #304:** Title: "Add cloud sync for tasks across devices"
+> **SOUL.md:** "Local-First, Privacy-Always" principle
+>
+> Gate 1.4 fires: "cloud sync" matches SOUL.md exclusion pattern for cloud/remote storage.
+> Action: Polite decline citing Local-First principle. Suggest local file sync (Syncthing/Dropbox on the YAML file) or MCP integration as alternatives. Notify supervisor with underlying need assessment.
+>
+> Processing stops.
+
+### Layer 2: Lightweight AI Screening (Envoy Reasoning)
+
+Issues that pass Layer 1 require the envoy's judgment. This is the core reasoning step where the envoy reads, understands, and classifies the issue.
+
+```
+┌──────────────────────┐
+│  Issue passed Layer 1 │
+└──────────┬───────────┘
+           │
+┌──────────▼───────────────────────────────────────┐
+│  Screen 2.1: SOUL.md ALIGNMENT                   │
+│                                                   │
+│  Read issue intent against SOUL.md values         │
+│                                                   │
+│  Clearly Aligned? ──────YES──> continue ──────┐  │
+│       │ NO                                    │  │
+│  Clearly Misaligned? ───YES──> DECLINE        │  │
+│       │ NO                       ↓            │  │
+│  Gray Area ─────────────────> ESCALATE        │  │
+│                                  ↓            │  │
+│           (notify supervisor, stop)           │  │
+└──────────────────────────────────────────┬───┘  │
+                                           │      │
+┌──────────────────────────────────────────▼──────▼┐
+│  Screen 2.2: AUTHORITY TIER ROUTING              │
+│                                                   │
+│  Check reporter against tracker authority tiers   │
+│                                                   │
+│  Tier 1 (Owner)?                                  │
+│    → Skip misalignment check (retroactively)      │
+│    → Highest priority                             │
+│    → Direction-conflicting? ALWAYS escalate        │
+│                                                   │
+│  Tier 2 (Contributor)?                            │
+│    → Enhanced priority                            │
+│    → Lower escalation threshold                   │
+│    → Gray area? Escalate with "trusted" flag      │
+│                                                   │
+│  Tier 3 (Community)?                              │
+│    → Standard processing                          │
+│    → Apply full alignment checks                  │
+└──────────────────────────┬───────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────┐
+│  Screen 2.3: CLASSIFICATION & LABELING           │
+│                                                   │
+│  Assign category:                                 │
+│    bug | enhancement | question | documentation   │
+│                                                   │
+│  Assess priority:                                 │
+│    P0 (blocking) | P1 (important) | P2 (nice)    │
+│                                                   │
+│  Identify affected components:                    │
+│    TUI | CLI | adapter | infrastructure           │
+└──────────────────────────┬───────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────┐
+│  Screen 2.4: SCOPE ASSESSMENT                    │
+│                                                   │
+│  Check ROADMAP.md for related epics/stories       │
+│                                                   │
+│  Fits existing epic? ──YES──> Relay to supervisor │
+│       │ NO                    with triage summary │
+│  Needs new story? ─────YES──> Relay to supervisor │
+│       │ NO                    with recommendation │
+│  Out of scope? ────────YES──> Escalate to         │
+│                               supervisor for      │
+│                               scope decision      │
+└──────────────────────────────────────────────────┘
+
+LAYER 2 EXIT:
+  • Misaligned → Decline + notify supervisor with underlying need
+  • Question → Answer directly + close (if straightforward)
+  • Aligned + classified → Relay to supervisor with full triage context
+  • Complex (needs multi-agent review) → Proceed to Layer 3
+```
+
+**Layer 2 Example — Alignment Decline:**
+
+> **Issue #305:** Title: "Add team sharing so my coworkers can see my tasks"
+>
+> Screen 2.1: Clearly misaligned — SOUL.md says "Personal tool for one person."
+> Action: Polite decline: "Thanks for suggesting this! I can see how team sharing would be helpful for collaboration. ThreeDoors is intentionally a personal tool — our SOUL.md philosophy focuses on individual decision-making without the overhead of team coordination. For team task management, tools like Jira or Linear are great choices, and ThreeDoors has adapter support for syncing with those systems so you can use ThreeDoors as your personal view into team work."
+> Notify supervisor: "Declined issue #305 as misaligned with 'Personal tool for one person.' Underlying need: reporter wants task visibility across team. Worth noting: our adapter strategy already addresses this use case."
+>
+> Processing stops.
+
+**Layer 2 Example — Full Pipeline to Relay:**
+
+> **Issue #306:** Title: "Stats view should show completion rate by tag"
+>
+> Screen 2.1: Clearly aligned — enhances existing stats feature, fits SOUL.md "Progress Over Perfection."
+> Screen 2.2: Tier 3 (community reporter) — standard processing.
+> Screen 2.3: Category: enhancement. Priority: P2 (nice-to-have). Component: TUI (stats view).
+> Screen 2.4: Fits Epic 40 (Beautiful Stats) — could be a new story within existing epic.
+>
+> Relay to supervisor: "New issue #306 passed screening: Enhancement request for completion rate by tag in stats view. Classified: enhancement/P2/TUI. Fits Epic 40 scope — could be Story 40.11. Awaiting triage decision."
+>
+> Processing stops (standard relay).
+
+### Layer 3: BMAD Deliberation (Full Escalation)
+
+Reserved for issues requiring architectural review, multi-perspective analysis, or potential project evolution. The envoy does NOT invoke Layer 3 — it recommends it to the supervisor, who decides whether to run party mode.
+
+#### Criteria Checklist
+
+An issue warrants a Layer 3 recommendation when **one or more** of the following are true:
+
+- [ ] Feature request that would require a new epic (estimated >3 stories)
+- [ ] Request that could change project architecture or introduce new patterns
+- [ ] Gray-area direction request from a contributor or owner
+- [ ] Issue that reveals a systemic problem (not just a point fix)
+- [ ] Bug report suggesting a fundamental design flaw (not implementation bug)
+- [ ] Three or more agents would have relevant perspectives on the approach
+
+#### Escalation Message Template
+
+When recommending Layer 3, the envoy sends the supervisor a structured escalation:
+
+```
+multiclaude message send supervisor "LAYER 3 RECOMMENDATION for issue #NNN:
+
+Summary: [1-2 sentence issue description]
+
+Criteria met:
+- [criterion 1 from checklist]
+- [criterion 2 from checklist]
+
+Layer 2 assessment:
+- Alignment: [aligned/gray-area]
+- Classification: [category/priority/component]
+- Scope: [existing epic or new epic needed]
+
+Recommended party mode participants:
+- [Agent 1] — [why their perspective matters]
+- [Agent 2] — [why their perspective matters]
+- [Agent 3, if applicable] — [why their perspective matters]
+
+Question(s) for party mode:
+1. [Specific question the deliberation should answer]
+2. [Optional second question]
+
+Awaiting your decision on whether to proceed with BMAD deliberation."
+```
+
+#### Agent Selection Guide
+
+| Issue Type | Recommended Agents | Rationale |
+|------------|-------------------|-----------|
+| Architecture change | Architect + PM + Dev | Technical feasibility, roadmap impact, implementation effort |
+| User-facing feature | UX + PM + QA | User experience, prioritization, testability |
+| New integration/adapter | Architect + Dev + PM | API design, implementation approach, scope |
+| Direction-sensitive | PM + Architect + UX | Philosophy alignment, technical options, user impact |
+| Systemic bug | Dev + Architect + QA | Root cause, design implications, test coverage |
+| Performance issue | Dev + Architect | Profiling, architectural bottlenecks |
+
+**Layer 3 Example:**
+
+> **Issue #307:** Title: "Support plugins for custom task sources"
+>
+> Layer 2 assessment: Aligned with adapter pattern (SOUL.md values extensibility), but scope is massive — would require a plugin API, loading mechanism, and documentation. Estimated 5+ stories. Could change project architecture (runtime loading vs compile-time registration, see D-007).
+>
+> Criteria met:
+> - Feature request requiring a new epic (>3 stories)
+> - Could change project architecture (contradicts D-007 compile-time registration)
+> - 3+ agents have relevant perspectives
+>
+> Escalation: "LAYER 3 RECOMMENDATION for issue #307: Plugin support for custom task sources. Criteria met: new epic scope, potential architecture change (challenges D-007 compile-time registration), multi-perspective needed. Recommended participants: Architect (plugin API design, D-007 implications), PM (roadmap fit, prioritization vs existing adapters), Dev (implementation feasibility, runtime loading risks). Questions: (1) Should we evolve beyond compile-time registration? (2) If yes, what's the minimal plugin API that preserves simplicity?"
+
+---
+
 ## PR-to-Issue Linkage Detection
 
 The envoy parses PR titles and descriptions for issue references. Links are classified by strength:
