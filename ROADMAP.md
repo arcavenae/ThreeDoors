@@ -94,13 +94,13 @@ Migrate all 21 GitHub labels to scoped `.` separator format per finalized 27-lab
 
 ### Story 0.45: Agent Definition Updates for Scoped Labels (P1)
 
-**Status:** Not Started. Depends on Story 0.44.
+**Status:** Done (PR #520).
 
 Update all agent definition files (envoy, merge-queue, pr-shepherd) to reference new scoped label names. Text-only changes — agents must be restarted after merge.
 
 ### Story 0.46: Label Authority & Triage Flow Documentation (P1)
 
-**Status:** Not Started. Depends on Stories 0.44, 0.45.
+**Status:** Done (PR #519).
 
 Document label authority matrix (who sets/removes each label) and end-to-end triage flow. Covers BOARD recommendations P-003 and P-005. Consolidates party mode consensus into operational reference.
 
