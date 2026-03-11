@@ -232,8 +232,8 @@ jobs:
       - name: Generate version
         id: version
         run: |
-          VERSION="0.1.0-alpha.$(date -u +%Y%m%d).${GITHUB_SHA::7}"
-          TAG="alpha-$(date -u +%Y%m%d)-${GITHUB_SHA::7}"
+          VERSION="0.1.0-alpha.$(date -u +%Y%m%d).$(date -u +%H%M%S).${GITHUB_SHA::7}"
+          TAG="alpha-$(date -u +%Y%m%d)-$(date -u +%H%M%S)-${GITHUB_SHA::7}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
