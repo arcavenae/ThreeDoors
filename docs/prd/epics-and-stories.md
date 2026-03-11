@@ -4888,16 +4888,16 @@ Comprehensive self-diagnosis command (`threedoors doctor`) with flutter-style ca
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 49.1 | Doctor Command Skeleton & Health Alias | Not Started | P1 | None |
-| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
-| 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
-| 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
-| 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
-| 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
-| 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
-| 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
-| 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
-| 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
+| 49.1 | Doctor Command Skeleton & Health Alias | Done (PR #444) | P1 | None |
+| 49.2 | Environment Checks | Done (PR #473) | P1 | 49.1 |
+| 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
+| 49.4 | Provider Health Checks | Done (PR #475) | P1 | 49.1 |
+| 49.5 | Session & Analytics Checks | Done (PR #474) | P1 | 49.1 |
+| 49.6 | Sync & Offline Queue Checks | Done (PR #472) | P1 | 49.1 |
+| 49.7 | Enrichment Database Checks | Done (PR #470) | P1 | 49.1 |
+| 49.8 | Auto-Repair (`--fix` flag) | Done (PR #529) | P1 | 49.2-49.7 |
+| 49.9 | Channel-Aware Version Checking | Done (PR #476) | P1 | 49.1 |
+| 49.10 | Verbose Mode, Category Filter & Polish | Done (PR #530) | P1 | 49.2-49.9 |
 
 **Dependency graph:**
 ```

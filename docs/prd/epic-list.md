@@ -736,7 +736,7 @@
 | Epic 46: OAuth Device Code Flow | 4 | In Progress (1/4 done) |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
 | Epic 48: Door-Like Doors | 4 | Not Started |
-| Epic 49: ThreeDoors Doctor | 10 | In Progress (4/10 done) |
+| Epic 49: ThreeDoors Doctor | 10 | Complete (10/10 done) |
 | Epic 50: In-App Bug Reporting | 3 | Not Started |
 | Epic 51: SLAES | 10 | In Progress (5/10 done) |
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
