@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
@@ -45,6 +46,7 @@ const (
 	ViewDeferred
 	ViewSnooze
 	ViewPlanning
+	ViewSources
 )
 
 // String returns the human-readable name of the view mode.
@@ -94,6 +96,8 @@ func (v ViewMode) String() string {
 		return "Snooze"
 	case ViewPlanning:
 		return "Planning"
+	case ViewSources:
+		return "Sources"
 	default:
 		return "Unknown"
 	}
@@ -125,6 +129,7 @@ type MainModel struct {
 	deferredListView    *DeferredListView
 	snoozeView          *SnoozeView
 	planningView        *PlanningView
+	sourcesView         *SourcesView
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -149,6 +154,7 @@ type MainModel struct {
 	dispatcher            dispatch.Dispatcher
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
+	connMgr               *connection.ConnectionManager
 	milestoneChecker      *core.MilestoneChecker
 	pollingActive         bool
 	syncSpinner           *SyncSpinner
@@ -355,6 +361,11 @@ func (m *MainModel) SetProposalStore(store *mcp.ProposalStore) {
 	}
 }
 
+// SetConnectionManager sets the connection manager for the sources dashboard.
+func (m *MainModel) SetConnectionManager(mgr *connection.ConnectionManager) {
+	m.connMgr = mgr
+}
+
 // SetDispatcher sets the Dispatcher used for worker status polling.
 func (m *MainModel) SetDispatcher(d dispatch.Dispatcher) {
 	m.dispatcher = d
@@ -482,6 +493,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.moodView = nil
 		m.healthView = nil
 		m.insightsView = nil
+		m.sourcesView = nil
 		m.addTaskView = nil
 		m.deferredListView = nil
 		m.doorsView.RefreshDoors()
@@ -523,6 +535,16 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		milestoneCmd := m.insightsView.CheckAndShowMilestone(totalTasks, currentStreak, sessionCount)
 		cmd := tea.Batch(animCmd, milestoneCmd)
 		return m, cmd
+
+	case ShowSourcesMsg:
+		if m.connMgr != nil {
+			m.sourcesView = NewSourcesView(m.connMgr)
+			m.sourcesView.SetWidth(m.width)
+			m.sourcesView.SetHeight(m.height)
+			m.previousView = m.viewMode
+			m.setViewMode(ViewSources)
+		}
+		return m, nil
 
 	case ReturnToSearchMsg:
 		m.searchView = m.newSearchView()
@@ -1366,6 +1388,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSnooze(msg)
 	case ViewPlanning:
 		return m.updatePlanning(msg)
+	case ViewSources:
+		return m.updateSources(msg)
 	}
 
 	return m, nil
@@ -1550,6 +1574,14 @@ func (m *MainModel) updateInsights(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.insightsView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSources(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.sourcesView == nil {
+		return m, nil
+	}
+	cmd := m.sourcesView.Update(msg)
 	return m, cmd
 }
 
@@ -2096,6 +2128,10 @@ func (m *MainModel) View() string {
 	case ViewInsights:
 		if m.insightsView != nil {
 			view = m.insightsView.View()
+		}
+	case ViewSources:
+		if m.sourcesView != nil {
+			view = m.sourcesView.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
