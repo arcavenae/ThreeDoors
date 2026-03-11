@@ -13,16 +13,18 @@ func TestHealthCommandRegistered(t *testing.T) {
 	t.Parallel()
 
 	root := NewRootCmd()
-	found := false
 	for _, cmd := range root.Commands() {
-		if cmd.Name() == "health" {
-			found = true
-			break
+		if cmd.Name() == "doctor" {
+			for _, alias := range cmd.Aliases {
+				if alias == "health" {
+					return // health is registered as alias of doctor
+				}
+			}
+			t.Error("doctor command exists but missing 'health' alias")
+			return
 		}
 	}
-	if !found {
-		t.Error("health command not registered on root")
-	}
+	t.Error("doctor command not registered on root")
 }
 
 func TestHealthCheckerResultsJSON(t *testing.T) {
