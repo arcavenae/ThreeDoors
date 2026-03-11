@@ -5156,3 +5156,113 @@ Expand retrospector authority to create PRs proposing improvements. Generate wee
 
 - SLAES Party Mode: `_bmad-output/planning-artifacts/agentic-engineering-agent-party-mode.md`
 - Subagent Abuse Investigation: `_bmad-output/planning-artifacts/subagent-abuse-investigation.md`
+
+---
+
+## Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (P2)
+
+**Goal:** Deploy a persistent research-supervisor agent that manages Gemini Deep Research queries on behalf of the multiclaude agent system, with context-aware grounding, result shielding, and budget management.
+
+**Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), `uv` installed, Gemini API key
+
+**Dependencies:** None (agent infrastructure, not application code)
+
+### Story 54.1: Research-Supervisor Agent Definition
+
+**As** the supervisor agent,
+**I want** a persistent research-supervisor agent with a clear definition file, polling loop, request protocol, and authority matrix,
+**So that** any agent can request deep research via messaging and receive structured findings without blocking.
+
+**Acceptance Criteria:**
+- Agent definition at `agents/research-supervisor.md` follows Responsibility+WHY format (Story 51.2)
+- 5-minute polling loop documented: check messages → dispatch queued → monitor running → process completed
+- Request protocol: `RESEARCH priority=<high|normal|low> depth=<quick|standard|deep> [context=<bundles>]: <question>`
+- Authority matrix: CAN (receive, queue, dispatch, store, summarize, deliver) / CANNOT (decide, execute, create stories, modify code) / ESCALATE (budget exhausted, security vuln, repeated failures)
+- Communication protocols: RESEARCH-RESULT, RESEARCH-ERROR, RESEARCH-BUDGET message formats
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 54.2: agent-deep-research CLI Integration & Tool Setup
+
+**As** the research-supervisor agent,
+**I want** the agent-deep-research tool installed, configured, and verified in `_tools/`,
+**So that** I can dispatch Gemini Deep Research queries via `uv run` with structured JSON output and local file grounding.
+
+**Acceptance Criteria:**
+- agent-deep-research cloned to `_tools/agent-deep-research/` (gitignored)
+- `_bmad-output/research-reports/` directory created with per-query subdirectory layout
+- `_tools/` added to `.gitignore`
+- API key documented as environment variable (never committed)
+- Dry-run verification command succeeds
+- Setup script at `scripts/setup-research-tool.sh` automates clone + verify
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 54.3: Context Packaging & Prompt Engineering
+
+**As** the research-supervisor agent,
+**I want** pre-defined context bundles and a prompt template that tailor each query with relevant project files,
+**So that** Gemini receives focused, project-specific grounding that improves result relevance within token budgets.
+
+**Acceptance Criteria:**
+- 8 context bundles documented: core, architecture, prd, stories, decisions, code-sample, tui, tasks
+- Keyword-to-bundle auto-detection mapping
+- 60KB context budget with priority shedding order (drop code-sample → truncate stories → drop prd)
+- Standard prompt template with: project context, grounding instructions, question, output requirements
+- `--context` and `--context-extensions` flag usage documented
+
+**Priority:** P2 | **Depends On:** 54.1
+
+### Story 54.4: Result Shielding & Artifact Storage
+
+**As** the supervisor (or any requesting agent),
+**I want** research results delivered as concise executive summaries with full reports on disk,
+**So that** context windows are not overwhelmed by 5,000-15,000 word reports.
+
+**Acceptance Criteria:**
+- Three-layer summary architecture: executive summary (≤500 words) → detailed report → raw data
+- Per-query directory: `YYYYMMDD-HHMMSS-<slug>/` with report.md, executive-summary.md, metadata.json, sources.json, context-bundle.md, request.json
+- Only executive summary sent via messaging; full report path included
+- RESEARCH-RESULT message format documented
+- Gating flow documented: research → summary → human/supervisor decision → optional action
+- No autonomous action restriction in CANNOT section
+
+**Priority:** P2 | **Depends On:** 54.1, 54.2
+
+### Story 54.5: Rate Limiting, Budget Management & Query Scheduling
+
+**As** the supervisor,
+**I want** daily query budget tracking, priority queuing, deduplication, and batch optimization,
+**So that** the 50 queries/day Gemini quota is used efficiently.
+
+**Acceptance Criteria:**
+- `budget.json` schema: date, daily_limit, queries_used, queries_remaining, query history
+- Daily reset at midnight UTC
+- Reserve pool: 5 queries held back after 6pm UTC for high-priority
+- Priority queue: high=immediate, normal=FIFO, low=budget-permitting
+- Batch optimization: 3+ related queries combined with merged prompt
+- Deduplication: 7-day lookback against existing `request.json` files
+- Dry-run gate for deep-depth queries
+- 2-minute cooldown between dispatches
+- RESEARCH-BUDGET escalation message for exhausted budget
+
+**Priority:** P2 | **Depends On:** 54.1, 54.2
+
+### Dependency Graph
+
+```
+54.1 (Agent Definition) ─┬──▶ 54.3 (Context Packaging)
+54.2 (CLI Integration)  ─┤
+                          ├──▶ 54.4 (Result Shielding) ← depends on 54.1 + 54.2
+                          └──▶ 54.5 (Rate Limiting) ← depends on 54.1 + 54.2
+```
+
+Stories 54.1 and 54.2 can parallelize. Stories 54.3, 54.4, and 54.5 can parallelize after 54.1+54.2 complete.
+
+### Decisions
+
+- D-154: agent-deep-research (24601) as Gemini Deep Research execution layer — rejected Gemini CLI, direct API, MCP server, browser UI, ephemeral worker model
+
+### Research
+
+- Design Artifact: `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md`

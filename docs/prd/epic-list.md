@@ -650,7 +650,33 @@
 - **Research:** See `_bmad-output/planning-artifacts/agentic-engineering-agent-party-mode.md`, `_bmad-output/planning-artifacts/subagent-abuse-investigation.md`
 - **Decisions:** D-1 (single agent), D-2 (SLAES/retrospector naming), D-3 (persistent 15-min polling), D-4 (Level 2 authority), D-5 (consumer model), D-6 (dual-loop), D-7 (per-PR + batch), D-8 (5 Watchmen safeguards), D-9 (mode rotation), D-10 (responsibility+WHY definitions)
 
-**Epic 52+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 52: Envoy Three-Layer Firewall** (P1)
+- **Goal:** Restructure the envoy agent definition into a formal three-layer firewall architecture for issue screening, with clear entry/exit criteria at each layer.
+- **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
+- **Status:** Not Started
+- **Stories:** 52.1-52.4 (4 stories)
+
+**Epic 53: Remote Collaboration — multiclaude Cross-Machine Access** (P2)
+- **Goal:** Document and enable remote collaboration with multiclaude via SSH, with future MCP bridge support.
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Stories:** 53.1-53.5 (5 stories)
+
+**Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure** (P2)
+- **Goal:** Deploy a persistent research-supervisor agent that manages Gemini Deep Research queries on behalf of the multiclaude agent system, with context-aware grounding, result shielding, and budget management.
+- **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), `uv` installed, Gemini API key
+- **Status:** Not Started
+- **Deliverables:**
+  - Research-supervisor persistent agent definition (Responsibility+WHY format)
+  - agent-deep-research CLI tool integration (`_tools/agent-deep-research/`)
+  - Context packaging system (8 curated bundles, 60KB budget, keyword auto-detection)
+  - Three-layer result shielding (executive summary → detailed report → raw data)
+  - Rate limiting and budget management (50 queries/day, priority queue, batch optimization, deduplication)
+- **Stories:** 54.1-54.5 (5 stories)
+- **Research:** See `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md`
+- **Decisions:** D-154 (agent-deep-research as execution layer)
+
+**Epic 55+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -713,5 +739,8 @@
 | Epic 49: ThreeDoors Doctor | 10 | Not Started |
 | Epic 50: In-App Bug Reporting | 3 | Not Started |
 | Epic 51: SLAES | 10 | In Progress (5/10 done) |
-| **Total** | **274** | **146 complete, 4 epics in progress, 128 not started** |
+| Epic 52: Envoy Three-Layer Firewall | 4 | Not Started |
+| Epic 53: Remote Collaboration | 5 | Not Started |
+| Epic 54: Gemini Research Supervisor | 5 | Not Started |
+| **Total** | **288** | **146 complete, 4 epics in progress, 142 not started** |
 ---

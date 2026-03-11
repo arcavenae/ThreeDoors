@@ -175,6 +175,7 @@
 | D-151 | Last-writer-wins with remote-wins for metadata, local-wins for ThreeDoors fields | 2026-03-09 | Simple and predictable; source system authoritative for metadata; ThreeDoors owns its enrichments | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 | D-152 | Named connections with ULID IDs for multi-instance provider support | 2026-03-09 | Supports multiple instances of same provider type; user-friendly labels; globally unique IDs | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 | D-153 | Tiered remote collaboration: SSH+CLI today, MCP bridge near-term | 2026-03-10 | SSH provides zero-development access; MCP bridge adds native Claude Code integration; avoids over-engineering network-native multiclaude | [Investigation](../../_bmad-output/planning-artifacts/remote-collaboration-investigation.md), [Problem Solving](../../_bmad-output/planning-artifacts/remote-collab-creative-problem-solving.md), [Feasibility](../../_bmad-output/planning-artifacts/remote-collab-analyst-feasibility.md) |
+| D-154 | agent-deep-research (24601) as Gemini Deep Research execution layer | 2026-03-11 | Purpose-built CLI for agent consumption: dual JSON/human output, adaptive polling, `--context` for RAG grounding, `--dry-run` for cost estimation, `--depth` control, non-interactive mode. Rejected: Gemini CLI (agent-in-agent complexity, paid API key needed), direct curl/Python (must reimplement polling/retry/parsing), MCP server (engineering effort, poor fit for 5-45min async), browser UI (not automatable) | [Design](../../_bmad-output/planning-artifacts/gemini-research-supervisor-design.md) |
 
 ## Rejected
 
@@ -345,7 +346,8 @@
 | 51 | SLAES — Self-Learning Agentic Engineering System | 2026-03-10 | In Progress (0/10) |
 | 52 | Envoy Three-Layer Firewall | 2026-03-10 | Not Started (0/4) |
 | 53 | Remote Collaboration — multiclaude Cross-Machine Access | 2026-03-10 | Not Started (0/5) |
-| 54 | *(next available)* | — | — |
+| 54 | Gemini Research Supervisor — Deep Research Agent Infrastructure | 2026-03-11 | Not Started (0/5) |
+| 55 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number

@@ -322,6 +322,20 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 
 **Dependency graph:** Stories 51.1 & 51.2 can parallelize. Stories 51.3-51.5 can parallelize after 51.1. Story 51.6 depends on 51.3-51.5. Phase 2 stories depend on Phase 1 validation.
 
+### Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (P2) — 0/5 stories done
+
+Persistent research-supervisor agent that manages Gemini Deep Research queries on behalf of the multiclaude agent system. Uses `24601/agent-deep-research` as the execution layer (D-154). Features context-aware grounding (8 curated bundles, 60KB budget), three-layer result shielding (executive summary → detailed report → raw data), and budget management (50 queries/day, priority queue, batch optimization).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 54.1 | Research-Supervisor Agent Definition | Not Started | P2 | None |
+| 54.2 | agent-deep-research CLI Integration & Tool Setup | Not Started | P2 | None |
+| 54.3 | Context Packaging & Prompt Engineering | Not Started | P2 | 54.1 |
+| 54.4 | Result Shielding & Artifact Storage | Not Started | P2 | 54.1, 54.2 |
+| 54.5 | Rate Limiting, Budget Management & Query Scheduling | Not Started | P2 | 54.1, 54.2 |
+
+**Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
+
 ## Icebox (Deferred Indefinitely)
 
 | Epic | Title | Stories | Decision Date | Rationale |
