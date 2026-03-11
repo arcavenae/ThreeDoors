@@ -29,7 +29,7 @@ type AuthConfig struct {
 	Type     AuthType
 	URL      string // Base URL (e.g., "https://company.atlassian.net")
 	Email    string // Cloud only
-	APIToken string // Cloud: API token, Server: PAT
+	APIToken string `yaml:"-"` // Cloud: API token, Server: PAT
 }
 
 // ConflictError is returned when the Jira API responds with 409 Conflict,

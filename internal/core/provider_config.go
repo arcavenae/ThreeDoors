@@ -384,6 +384,7 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 			fmt.Fprintf(&b, "#       url: https://company.atlassian.net\n")
 			fmt.Fprintf(&b, "#       auth_type: basic  # basic or pat\n")
 			fmt.Fprintf(&b, "#       email: user@example.com  # Cloud only (basic auth)\n")
+			fmt.Fprintf(&b, "#       # Recommended: set JIRA_API_TOKEN env var instead of storing here\n")
 			fmt.Fprintf(&b, "#       api_token: \"\"  # Or set JIRA_API_TOKEN env var\n")
 			fmt.Fprintf(&b, "#       jql: \"assignee = currentUser() AND statusCategory != Done\"\n")
 			fmt.Fprintf(&b, "#       max_results: \"50\"  # Optional\n")
@@ -399,7 +400,14 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 		case "reminders":
 			fmt.Fprintf(&b, "#       lists: Work,ThreeDoors  # Optional: comma-separated list names (default: all)\n")
 			fmt.Fprintf(&b, "#       include_completed: false  # Optional: include completed reminders\n")
+		case "github":
+			fmt.Fprintf(&b, "#       repos: owner/repo  # Required: comma-separated owner/repo list\n")
+			fmt.Fprintf(&b, "#       # Recommended: set GITHUB_TOKEN env var instead of storing here\n")
+			fmt.Fprintf(&b, "#       token: \"\"  # Or set GITHUB_TOKEN env var\n")
+			fmt.Fprintf(&b, "#       assignee: \"@me\"  # Optional\n")
+			fmt.Fprintf(&b, "#       poll_interval: 5m  # Optional\n")
 		case "todoist":
+			fmt.Fprintf(&b, "#       # Recommended: set TODOIST_API_TOKEN env var instead of storing here\n")
 			fmt.Fprintf(&b, "#       api_token: \"\"  # Or set TODOIST_API_TOKEN env var\n")
 			fmt.Fprintf(&b, "#       project_ids: \"\"  # Optional: comma-separated project IDs\n")
 			fmt.Fprintf(&b, "#       filter: \"\"  # Optional: Todoist filter expression (mutually exclusive with project_ids)\n")
