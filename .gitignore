@@ -109,5 +109,9 @@ temp/
 .bmad-core/
 .bmad-*/
 
+# Gemini research reports (keep budget.json, ignore individual reports)
+_bmad-output/research-reports/*/
+!_bmad-output/research-reports/budget.json
+
 # multiclaude enhancements repo (local subproject)
 multiclaude-enhancements/
