@@ -1,0 +1,55 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before requesting a feature, please read [SOUL.md](https://github.com/arcaven/ThreeDoors/blob/main/SOUL.md) to understand ThreeDoors' design philosophy. Features that increase complexity or conflict with "three doors, not three hundred" will likely be declined.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What problem does this feature solve? Why do you need it?
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider?
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of ThreeDoors does this affect?
+      options:
+        - TUI (interactive terminal)
+        - CLI (headless commands)
+        - MCP Server
+        - Task providers / integrations
+        - Data / analytics
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: soul-check
+    attributes:
+      label: Philosophy check
+      options:
+        - label: This feature reduces friction (doesn't add steps for the user)
+          required: false
+        - label: This feature respects local-first, privacy-always principles
+          required: false
+        - label: I've read SOUL.md and believe this aligns with the project's philosophy
+          required: true

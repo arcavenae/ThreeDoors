@@ -1,0 +1,29 @@
+name: Question
+description: Ask a question about ThreeDoors
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question? Check the [README](https://github.com/arcaven/ThreeDoors/blob/main/README.md) and [docs/](https://github.com/arcaven/ThreeDoors/tree/main/docs) first.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What would you like to know?
+    validations:
+      required: true
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Installation / setup
+        - Configuration
+        - Task providers / integrations
+        - TUI usage
+        - CLI usage
+        - MCP server
+        - Contributing / development
+        - Other
