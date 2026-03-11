@@ -9,4 +9,8 @@ const (
 	ExitValidation     = 3
 	ExitProviderError  = 4
 	ExitAmbiguousInput = 5
+
+	// Doctor-specific exit codes (Story 49.10)
+	ExitDoctorWarning = 1 // warnings only, no errors
+	ExitDoctorError   = 2 // at least one error found
 )

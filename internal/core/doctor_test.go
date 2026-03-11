@@ -648,3 +648,195 @@ func TestDoctorChecker_EnvironmentCheckCount(t *testing.T) {
 		}
 	}
 }
+
+func TestRunWithOptions_CategoryFilter(t *testing.T) {
+	t.Parallel()
+
+	dc := &DoctorChecker{configDir: t.TempDir()}
+	var called []string
+	dc.RegisterCategory("Environment", func() CategoryResult {
+		called = append(called, "Environment")
+		return CategoryResult{Checks: []CheckResult{{Status: CheckOK, Message: "ok"}}}
+	})
+	dc.RegisterCategory("Task Data", func() CategoryResult {
+		called = append(called, "Task Data")
+		return CategoryResult{Checks: []CheckResult{{Status: CheckOK, Message: "ok"}}}
+	})
+	dc.RegisterCategory("Version", func() CategoryResult {
+		called = append(called, "Version")
+		return CategoryResult{Checks: []CheckResult{{Status: CheckOK, Message: "ok"}}}
+	})
+
+	result := dc.RunWithOptions(DoctorOptions{Categories: []string{"env"}})
+
+	// Only Environment should have been called
+	if len(called) != 1 || called[0] != "Environment" {
+		t.Errorf("called = %v, want [Environment]", called)
+	}
+
+	// All categories should appear in result
+	if len(result.Categories) != 3 {
+		t.Fatalf("got %d categories, want 3", len(result.Categories))
+	}
+
+	// Environment should be OK, others should be SKIP
+	if result.Categories[0].Status != CheckOK {
+		t.Errorf("Environment status = %v, want OK", result.Categories[0].Status)
+	}
+	if result.Categories[1].Status != CheckSkip {
+		t.Errorf("Task Data status = %v, want SKIP", result.Categories[1].Status)
+	}
+	if result.Categories[2].Status != CheckSkip {
+		t.Errorf("Version status = %v, want SKIP", result.Categories[2].Status)
+	}
+}
+
+func TestRunWithOptions_MultipleCategoryFilter(t *testing.T) {
+	t.Parallel()
+
+	dc := &DoctorChecker{configDir: t.TempDir()}
+	var called []string
+	dc.RegisterCategory("Environment", func() CategoryResult {
+		called = append(called, "Environment")
+		return CategoryResult{Checks: []CheckResult{{Status: CheckOK}}}
+	})
+	dc.RegisterCategory("Sync", func() CategoryResult {
+		called = append(called, "Sync")
+		return CategoryResult{Checks: []CheckResult{{Status: CheckWarn, Message: "stale"}}}
+	})
+	dc.RegisterCategory("Version", func() CategoryResult {
+		called = append(called, "Version")
+		return CategoryResult{Checks: []CheckResult{{Status: CheckOK}}}
+	})
+
+	result := dc.RunWithOptions(DoctorOptions{Categories: []string{"env", "sync"}})
+
+	if len(called) != 2 {
+		t.Errorf("called = %v, want [Environment Sync]", called)
+	}
+	if result.Categories[2].Status != CheckSkip {
+		t.Errorf("Version should be skipped, got %v", result.Categories[2].Status)
+	}
+}
+
+func TestRunWithOptions_EmptyFilter_RunsAll(t *testing.T) {
+	t.Parallel()
+
+	dc := &DoctorChecker{configDir: t.TempDir()}
+	callCount := 0
+	for _, name := range []string{"A", "B", "C"} {
+		name := name
+		dc.RegisterCategory(name, func() CategoryResult {
+			callCount++
+			return CategoryResult{Checks: []CheckResult{{Status: CheckOK}}}
+		})
+	}
+
+	dc.RunWithOptions(DoctorOptions{})
+	if callCount != 3 {
+		t.Errorf("callCount = %d, want 3", callCount)
+	}
+}
+
+func TestHasFixableIssues(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		result DoctorResult
+		want   bool
+	}{
+		{
+			name: "no issues",
+			result: DoctorResult{Categories: []CategoryResult{
+				{Status: CheckOK, Checks: []CheckResult{{Status: CheckOK}}},
+			}},
+			want: false,
+		},
+		{
+			name: "warning with suggestion",
+			result: DoctorResult{Categories: []CategoryResult{
+				{Status: CheckWarn, Checks: []CheckResult{
+					{Status: CheckWarn, Message: "stale", Suggestion: "Run sync"},
+				}},
+			}},
+			want: true,
+		},
+		{
+			name: "warning without suggestion",
+			result: DoctorResult{Categories: []CategoryResult{
+				{Status: CheckWarn, Checks: []CheckResult{
+					{Status: CheckWarn, Message: "stale"},
+				}},
+			}},
+			want: false,
+		},
+		{
+			name: "fail with suggestion",
+			result: DoctorResult{Categories: []CategoryResult{
+				{Status: CheckFail, Checks: []CheckResult{
+					{Status: CheckFail, Message: "missing", Suggestion: "Create it"},
+				}},
+			}},
+			want: true,
+		},
+		{
+			name: "skipped category excluded",
+			result: DoctorResult{Categories: []CategoryResult{
+				{Status: CheckSkip, Checks: []CheckResult{
+					{Status: CheckWarn, Suggestion: "fix it"},
+				}},
+			}},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := tt.result.HasFixableIssues()
+			if got != tt.want {
+				t.Errorf("HasFixableIssues() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIssueCount_SkipsSkippedCategories(t *testing.T) {
+	t.Parallel()
+
+	result := DoctorResult{Categories: []CategoryResult{
+		{Status: CheckWarn, Checks: []CheckResult{
+			{Status: CheckWarn},
+		}},
+		{Status: CheckSkip, Checks: []CheckResult{
+			{Status: CheckFail}, // should be excluded
+		}},
+	}}
+
+	warnings, errors := result.IssueCount()
+	if warnings != 1 {
+		t.Errorf("warnings = %d, want 1", warnings)
+	}
+	if errors != 0 {
+		t.Errorf("errors = %d, want 0", errors)
+	}
+}
+
+func TestValidCategoryKeys(t *testing.T) {
+	t.Parallel()
+
+	expected := map[string]string{
+		"env": "Environment", "tasks": "Task Data", "providers": "Providers",
+		"sessions": "Session Data", "sync": "Sync", "db": "Database", "version": "Version",
+	}
+	for key, want := range expected {
+		got, ok := ValidCategoryKeys[key]
+		if !ok {
+			t.Errorf("ValidCategoryKeys missing key %q", key)
+			continue
+		}
+		if got != want {
+			t.Errorf("ValidCategoryKeys[%q] = %q, want %q", key, got, want)
+		}
+	}
+}

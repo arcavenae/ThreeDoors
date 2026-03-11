@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
@@ -129,7 +130,7 @@ func TestWriteDoctorHuman_NoIssues(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewOutputFormatter(&buf, false)
 
-	if err := writeDoctorHuman(formatter, result); err != nil {
+	if err := writeDoctorHuman(formatter, result, false); err != nil {
 		t.Fatalf("writeDoctorHuman: %v", err)
 	}
 
@@ -171,7 +172,7 @@ func TestWriteDoctorHuman_WithSuggestions(t *testing.T) {
 	var buf bytes.Buffer
 	formatter := NewOutputFormatter(&buf, false)
 
-	if err := writeDoctorHuman(formatter, result); err != nil {
+	if err := writeDoctorHuman(formatter, result, false); err != nil {
 		t.Fatalf("writeDoctorHuman: %v", err)
 	}
 
@@ -305,5 +306,274 @@ func TestPluralize_AdditionalWords(t *testing.T) {
 				t.Errorf("pluralize(%q, %d) = %q, want %q", tt.word, tt.count, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestNewDoctorCmd_Flags(t *testing.T) {
+	t.Parallel()
+
+	cmd := newDoctorCmd()
+
+	// --verbose / -v
+	vFlag := cmd.Flags().Lookup("verbose")
+	if vFlag == nil {
+		t.Fatal("missing --verbose flag")
+	}
+	if vFlag.Shorthand != "v" {
+		t.Errorf("verbose shorthand = %q, want %q", vFlag.Shorthand, "v")
+	}
+
+	// --category
+	catFlag := cmd.Flags().Lookup("category")
+	if catFlag == nil {
+		t.Fatal("missing --category flag")
+	}
+
+	// --skip-version
+	svFlag := cmd.Flags().Lookup("skip-version")
+	if svFlag == nil {
+		t.Fatal("missing --skip-version flag")
+	}
+}
+
+func TestWriteDoctorHuman_VerboseShowsCheckNames(t *testing.T) {
+	t.Parallel()
+
+	result := core.DoctorResult{
+		Categories: []core.CategoryResult{
+			{
+				Name:   "Environment",
+				Status: core.CheckOK,
+				Checks: []core.CheckResult{
+					{
+						Name:    "Config directory",
+						Status:  core.CheckOK,
+						Message: "Config directory exists (/tmp/test)",
+					},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	formatter := NewOutputFormatter(&buf, false)
+
+	if err := writeDoctorHuman(formatter, result, true); err != nil {
+		t.Fatalf("writeDoctorHuman: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "Name: Config directory") {
+		t.Errorf("verbose output should show check name, got: %s", output)
+	}
+}
+
+func TestWriteDoctorHuman_NonVerboseHidesCheckNames(t *testing.T) {
+	t.Parallel()
+
+	result := core.DoctorResult{
+		Categories: []core.CategoryResult{
+			{
+				Name:   "Environment",
+				Status: core.CheckOK,
+				Checks: []core.CheckResult{
+					{
+						Name:    "Config directory",
+						Status:  core.CheckOK,
+						Message: "Config directory exists (/tmp/test)",
+					},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	formatter := NewOutputFormatter(&buf, false)
+
+	if err := writeDoctorHuman(formatter, result, false); err != nil {
+		t.Fatalf("writeDoctorHuman: %v", err)
+	}
+
+	output := buf.String()
+	if strings.Contains(output, "Name: Config directory") {
+		t.Errorf("non-verbose output should not show check name, got: %s", output)
+	}
+}
+
+func TestWriteDoctorHuman_SkippedCategory(t *testing.T) {
+	t.Parallel()
+
+	result := core.DoctorResult{
+		Categories: []core.CategoryResult{
+			{
+				Name:   "Environment",
+				Status: core.CheckOK,
+				Checks: []core.CheckResult{
+					{Status: core.CheckOK, Message: "ok"},
+				},
+			},
+			{
+				Name:   "Version",
+				Status: core.CheckSkip,
+				Checks: []core.CheckResult{
+					{Status: core.CheckSkip, Message: "Skipped (not selected)"},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	formatter := NewOutputFormatter(&buf, false)
+
+	if err := writeDoctorHuman(formatter, result, false); err != nil {
+		t.Fatalf("writeDoctorHuman: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "Skipped (not selected)") {
+		t.Errorf("should show skipped message, got: %s", output)
+	}
+}
+
+func TestWriteDoctorHuman_SummaryWithFixable(t *testing.T) {
+	t.Parallel()
+
+	result := core.DoctorResult{
+		Categories: []core.CategoryResult{
+			{
+				Name:   "Sync",
+				Status: core.CheckWarn,
+				Checks: []core.CheckResult{
+					{
+						Status:     core.CheckWarn,
+						Message:    "Orphaned temp files",
+						Suggestion: "Run --fix to clean up",
+					},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	formatter := NewOutputFormatter(&buf, false)
+
+	if err := writeDoctorHuman(formatter, result, false); err != nil {
+		t.Fatalf("writeDoctorHuman: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "Doctor found issues in 1 category.") {
+		t.Errorf("missing summary line, got: %s", output)
+	}
+	if !strings.Contains(output, "threedoors doctor --fix") {
+		t.Errorf("missing fix suggestion, got: %s", output)
+	}
+}
+
+func TestWriteDoctorHuman_SummaryNoFixable(t *testing.T) {
+	t.Parallel()
+
+	result := core.DoctorResult{
+		Categories: []core.CategoryResult{
+			{
+				Name:   "Sync",
+				Status: core.CheckWarn,
+				Checks: []core.CheckResult{
+					{
+						Status:  core.CheckWarn,
+						Message: "Something off",
+						// No suggestion — not fixable
+					},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	formatter := NewOutputFormatter(&buf, false)
+
+	if err := writeDoctorHuman(formatter, result, false); err != nil {
+		t.Fatalf("writeDoctorHuman: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "Doctor found issues in 1 category.") {
+		t.Errorf("missing summary, got: %s", output)
+	}
+	if strings.Contains(output, "--fix") {
+		t.Errorf("should not show fix suggestion when no fixable issues, got: %s", output)
+	}
+}
+
+func TestDoctorExitCode(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		result core.DoctorResult
+		want   int
+	}{
+		{
+			name: "no issues",
+			result: core.DoctorResult{Categories: []core.CategoryResult{
+				{Status: core.CheckOK, Checks: []core.CheckResult{{Status: core.CheckOK}}},
+			}},
+			want: ExitSuccess,
+		},
+		{
+			name: "warnings only",
+			result: core.DoctorResult{Categories: []core.CategoryResult{
+				{Status: core.CheckWarn, Checks: []core.CheckResult{{Status: core.CheckWarn}}},
+			}},
+			want: ExitDoctorWarning,
+		},
+		{
+			name: "errors",
+			result: core.DoctorResult{Categories: []core.CategoryResult{
+				{Status: core.CheckFail, Checks: []core.CheckResult{{Status: core.CheckFail}}},
+			}},
+			want: ExitDoctorError,
+		},
+		{
+			name: "mixed warns and errors",
+			result: core.DoctorResult{Categories: []core.CategoryResult{
+				{Status: core.CheckWarn, Checks: []core.CheckResult{{Status: core.CheckWarn}}},
+				{Status: core.CheckFail, Checks: []core.CheckResult{{Status: core.CheckFail}}},
+			}},
+			want: ExitDoctorError,
+		},
+		{
+			name: "skipped categories ignored",
+			result: core.DoctorResult{Categories: []core.CategoryResult{
+				{Status: core.CheckSkip, Checks: []core.CheckResult{{Status: core.CheckFail}}},
+				{Status: core.CheckOK, Checks: []core.CheckResult{{Status: core.CheckOK}}},
+			}},
+			want: ExitSuccess,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := doctorExitCode(tt.result)
+			if got != tt.want {
+				t.Errorf("doctorExitCode() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidCategoryKeyList(t *testing.T) {
+	t.Parallel()
+
+	keys := validCategoryKeyList()
+	if len(keys) != len(core.ValidCategoryKeys) {
+		t.Errorf("got %d keys, want %d", len(keys), len(core.ValidCategoryKeys))
+	}
+	// Verify sorted
+	for i := 1; i < len(keys); i++ {
+		if keys[i] < keys[i-1] {
+			t.Errorf("keys not sorted: %v", keys)
+			break
+		}
 	}
 }

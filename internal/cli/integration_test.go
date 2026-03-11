@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,6 +10,9 @@ import (
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/enrichment"
+
+	_ "modernc.org/sqlite"
 )
 
 // setupTestEnv creates a temporary ThreeDoors config directory with a textfile
@@ -367,11 +372,7 @@ func TestIntegration_TaskBlock_NoReason(t *testing.T) {
 
 func TestIntegration_Doctor_JSON(t *testing.T) {
 	configDir := setupTestEnv(t)
-	// Create tasks.yaml so doctor doesn't report CheckFail and os.Exit
-	tasksYAML := filepath.Join(configDir, "tasks.yaml")
-	if err := os.WriteFile(tasksYAML, []byte("tasks: []\n"), 0o644); err != nil {
-		t.Fatalf("create tasks.yaml: %v", err)
-	}
+	setupDoctorTestEnv(t, configDir)
 	if err := executeCmd(t, "doctor", "--json"); err != nil {
 		t.Fatalf("doctor --json: %v", err)
 	}
@@ -379,14 +380,32 @@ func TestIntegration_Doctor_JSON(t *testing.T) {
 
 func TestIntegration_Doctor_Human(t *testing.T) {
 	configDir := setupTestEnv(t)
-	// Create tasks.yaml so doctor doesn't report CheckFail and os.Exit
-	tasksYAML := filepath.Join(configDir, "tasks.yaml")
-	if err := os.WriteFile(tasksYAML, []byte("tasks: []\n"), 0o644); err != nil {
-		t.Fatalf("create tasks.yaml: %v", err)
-	}
+	setupDoctorTestEnv(t, configDir)
 	if err := executeCmd(t, "doctor"); err != nil {
 		t.Fatalf("doctor: %v", err)
 	}
+}
+
+// setupDoctorTestEnv creates the minimum files needed for doctor to run
+// without CheckFail or CheckWarn results (which trigger os.Exit).
+func setupDoctorTestEnv(t *testing.T, configDir string) {
+	t.Helper()
+	// tasks.yaml — prevents task data CheckFail
+	if err := os.WriteFile(filepath.Join(configDir, "tasks.yaml"), []byte("tasks: []\n"), 0o644); err != nil {
+		t.Fatalf("create tasks.yaml: %v", err)
+	}
+	// enrichment.db — prevents database CheckWarn (Story 49.10: warnings now exit with code 1)
+	dbPath := filepath.Join(configDir, "enrichment.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("create enrichment.db: %v", err)
+	}
+	// Create schema_version table with current version
+	if _, err := db.Exec(fmt.Sprintf(`CREATE TABLE schema_version (version INTEGER); INSERT INTO schema_version VALUES (%d)`, enrichment.SchemaVersion)); err != nil {
+		_ = db.Close()
+		t.Fatalf("setup enrichment.db schema: %v", err)
+	}
+	_ = db.Close()
 }
 
 func TestIntegration_Stats_JSON(t *testing.T) {
