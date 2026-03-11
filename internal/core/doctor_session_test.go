@@ -13,7 +13,7 @@ func TestCheckSessionsFile_NoFile(t *testing.T) {
 	dc := NewDoctorChecker(t.TempDir())
 	result := dc.Run()
 
-	sessionCat := findCategory(t, result, "Session Data")
+	sessionCat := requireCategory(t, result, "Session Data")
 	sessionCheck := findCheckInCategory(t, sessionCat, "Session history")
 
 	if sessionCheck.Status != CheckInfo {
@@ -34,7 +34,7 @@ func TestCheckSessionsFile_EmptyFile(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	if sessionCheck.Status != CheckInfo {
 		t.Errorf("status = %v, want %v", sessionCheck.Status, CheckInfo)
 	}
@@ -61,7 +61,7 @@ func TestCheckSessionsFile_ValidSessions(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	if sessionCheck.Status != CheckOK {
 		t.Errorf("status = %v, want %v (message: %s)", sessionCheck.Status, CheckOK, sessionCheck.Message)
 	}
@@ -87,7 +87,7 @@ func TestCheckSessionsFile_CorruptLines(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	if sessionCheck.Status != CheckWarn {
 		t.Errorf("status = %v, want %v (message: %s)", sessionCheck.Status, CheckWarn, sessionCheck.Message)
 	}
@@ -112,7 +112,7 @@ func TestCheckSessionsFile_IncompleteSessions(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	if sessionCheck.Status != CheckWarn {
 		t.Errorf("status = %v, want %v (message: %s)", sessionCheck.Status, CheckWarn, sessionCheck.Message)
 	}
@@ -135,7 +135,7 @@ func TestCheckSessionsFile_CorruptTakesPrecedence(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	if sessionCheck.Status != CheckWarn {
 		t.Errorf("status = %v, want %v", sessionCheck.Status, CheckWarn)
 	}
@@ -147,7 +147,7 @@ func TestCheckPatternsFile_NoFile(t *testing.T) {
 	dc := NewDoctorChecker(t.TempDir())
 	result := dc.Run()
 
-	patternCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Pattern cache")
+	patternCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Pattern cache")
 	if patternCheck.Status != CheckOK {
 		t.Errorf("status = %v, want %v (message: %s)", patternCheck.Status, CheckOK, patternCheck.Message)
 	}
@@ -173,7 +173,7 @@ func TestCheckPatternsFile_ValidPatterns(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	patternCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Pattern cache")
+	patternCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Pattern cache")
 	if patternCheck.Status != CheckOK {
 		t.Errorf("status = %v, want %v (message: %s)", patternCheck.Status, CheckOK, patternCheck.Message)
 	}
@@ -191,7 +191,7 @@ func TestCheckPatternsFile_CorruptJSON(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	patternCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Pattern cache")
+	patternCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Pattern cache")
 	if patternCheck.Status != CheckWarn {
 		t.Errorf("status = %v, want %v (message: %s)", patternCheck.Status, CheckWarn, patternCheck.Message)
 	}
@@ -210,7 +210,7 @@ func TestCheckPatternsFile_EmptyFile(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	patternCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Pattern cache")
+	patternCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Pattern cache")
 	if patternCheck.Status != CheckWarn {
 		t.Errorf("status = %v, want %v", patternCheck.Status, CheckWarn)
 	}
@@ -221,11 +221,11 @@ func TestSessionDataCategory_RegisteredAutomatically(t *testing.T) {
 	dc := NewDoctorChecker(t.TempDir())
 	result := dc.Run()
 
-	if len(result.Categories) < 3 {
-		t.Fatalf("expected at least 3 categories, got %d", len(result.Categories))
+	if len(result.Categories) < 5 {
+		t.Fatalf("expected at least 5 categories, got %d", len(result.Categories))
 	}
-	if result.Categories[2].Name != "Session Data" {
-		t.Errorf("third category = %q, want %q", result.Categories[2].Name, "Session Data")
+	if result.Categories[4].Name != "Session Data" {
+		t.Errorf("fifth category = %q, want %q", result.Categories[4].Name, "Session Data")
 	}
 }
 
@@ -273,7 +273,7 @@ func TestCheckSessionsFile_SessionDates(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	assertContains(t, sessionCheck.Message, "first: 2025-06-15")
 	assertContains(t, sessionCheck.Message, "last: 2026-03-10")
 }
@@ -294,22 +294,21 @@ func TestCheckSessionsFile_ManyCorruptLines(t *testing.T) {
 	dc := NewDoctorChecker(dir)
 	result := dc.Run()
 
-	sessionCheck := findCheckInCategory(t, findCategory(t, result, "Session Data"), "Session history")
+	sessionCheck := findCheckInCategory(t, requireCategory(t, result, "Session Data"), "Session history")
 	assertContains(t, sessionCheck.Message, "8 corrupt lines")
 	assertContains(t, sessionCheck.Message, "and 3 more")
 }
 
 // --- test helpers ---
 
-func findCategory(t *testing.T, result DoctorResult, name string) CategoryResult {
+// requireCategory wraps findCategory (from doctor_database_test.go) with a fatal on nil.
+func requireCategory(t *testing.T, result DoctorResult, name string) CategoryResult {
 	t.Helper()
-	for _, cat := range result.Categories {
-		if cat.Name == name {
-			return cat
-		}
+	cat := findCategory(result, name)
+	if cat == nil {
+		t.Fatalf("category %q not found", name)
 	}
-	t.Fatalf("category %q not found", name)
-	return CategoryResult{}
+	return *cat
 }
 
 func findCheckInCategory(t *testing.T, cat CategoryResult, name string) CheckResult {
