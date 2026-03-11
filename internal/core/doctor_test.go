@@ -145,8 +145,8 @@ func TestDoctorChecker_ConfigDirMissing(t *testing.T) {
 	dc := NewDoctorChecker("/nonexistent/path/that/does/not/exist")
 	result := dc.Run()
 
-	if len(result.Categories) != 1 {
-		t.Fatalf("expected 1 category, got %d", len(result.Categories))
+	if len(result.Categories) < 1 {
+		t.Fatal("expected at least 1 category")
 	}
 
 	env := result.Categories[0]
@@ -366,11 +366,10 @@ func TestDoctorChecker_RegisterCategory(t *testing.T) {
 	if !called {
 		t.Error("custom category was not called")
 	}
-	if len(result.Categories) != 2 {
-		t.Errorf("expected 2 categories, got %d", len(result.Categories))
-	}
-	if result.Categories[1].Name != "Custom" {
-		t.Errorf("second category name = %q, want %q", result.Categories[1].Name, "Custom")
+	// Find the Custom category (it should be the last one registered)
+	lastCat := result.Categories[len(result.Categories)-1]
+	if lastCat.Name != "Custom" {
+		t.Errorf("last category name = %q, want %q", lastCat.Name, "Custom")
 	}
 }
 

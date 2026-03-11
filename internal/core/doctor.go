@@ -140,6 +140,7 @@ func (r *DoctorResult) OverallStatus() CheckStatus {
 func NewDoctorChecker(configDir string) *DoctorChecker {
 	dc := &DoctorChecker{configDir: configDir}
 	dc.RegisterCategory("Environment", dc.checkEnvironment)
+	dc.RegisterCategory("Task Data", dc.checkTaskData)
 	return dc
 }
 
