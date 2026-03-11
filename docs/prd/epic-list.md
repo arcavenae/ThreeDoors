@@ -732,7 +732,7 @@
 | Epic 41: Charm Ecosystem Adoption | 6 | Complete |
 | Epic 42: Application Security Hardening | 5 | In Progress (4/5 done) |
 | Epic 43: Connection Manager Infrastructure | 6 | Complete (6/6 done) |
-| Epic 44: Sources TUI | 7 | Not Started |
+| Epic 44: Sources TUI | 7 | In Progress (1/7 done) |
 | Epic 45: Sources CLI | 5 | In Progress (1/5 done) |
 | Epic 46: OAuth Device Code Flow | 4 | In Progress (1/4 done) |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
