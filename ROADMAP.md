@@ -203,16 +203,16 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
-### Epic 42: Application Security Hardening (P1) — 1/5 stories done
+### Epic 42: Application Security Hardening (P1) — 4/5 stories done
 
 Remediate findings from the application security audit. Fix permissive file permissions, add symlink validation, enforce input size limits, protect credentials in config, and harden CI supply chain.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 42.1 | File Permission Standardization (0o700/0o600) | Done (PR #437) | P1 | None |
-| 42.2 | Symlink Validation for File Operations | In Review | P1 | None |
-| 42.3 | Input Size Limits for YAML and JSONL Readers | In Review | P1 | None |
-| 42.4 | Credential Protection in Config Files | In Review | P2 | 42.1 |
+| 42.2 | Symlink Validation for File Operations | Done (PR #440) | P1 | None |
+| 42.3 | Input Size Limits for YAML and JSONL Readers | Done (PR #448) | P1 | None |
+| 42.4 | Credential Protection in Config Files | Done (PR #477) | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
 
 ### Epic 50: In-App Bug Reporting (P2) — 0/3 stories done
