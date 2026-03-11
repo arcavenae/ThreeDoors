@@ -10,8 +10,8 @@
 |----|----------|------|-------|---------|
 | Q-001 | Should Jira adapter use story points or priority for effort mapping? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support story points as a preference, but require the custom field involved to be specified — it's not built in. |
 | Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support multi-project JQL in Jira adapter. |
-| Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
-| Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) — **Resolved:** Yes, batch. See D-161. |
+| Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) — **Resolved:** Yes, Option B. See D-162. |
 
 ## Active Research
 
@@ -254,6 +254,8 @@
 | D-158 | Channel-aware version: show within channel + cross-channel if higher (Epic 49) | 2026-03-10 | Alpha users should know about newer stable releases; matches rustup approach; rejected: strict isolation (misses important releases), all channels (noisy) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 | D-159 | CI circuit breaker as agent prompt update, not code (Story 0.36) | 2026-03-10 | Merge-queue is LLM-driven; post-merge CI check is a workflow instruction, not compiled logic; `gh run list` provides the check mechanism | [ADR-0030](../ADRs/ADR-0030-ci-churn-reduction.md) |
 | D-160 | Shell script for CI metrics, not GitHub Action (Story 0.37) | 2026-03-10 | No external deps beyond `gh`; can be promoted to Action later; immediately runnable by retrospector agent (Story 51.8) | [Research](../research/ci-churn-reduction-research.md) |
+| D-161 | Project-watchdog batches governance sync PRs (resolves Q-003) | 2026-03-10 | One-per-story creates PR fatigue and merge ordering issues; batching reduces churn and conflicts. Rejected: one-per-story (current, too many small PRs) | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
+| D-162 | Workers update ONLY story files; project-watchdog owns all planning docs (resolves Q-004, Option B) | 2026-03-10 | Eliminates concurrent edit conflicts between workers and project-watchdog on ROADMAP.md, epic-list.md, epics-and-stories.md. Workers update their story file status only. project-watchdog initiates all planning doc updates. ROADMAP.md ownership belongs to PM role. Future SLAES (Epic 51) handles CLAUDE.md/SOUL.md updates. Rejected: Option A (workers update everything — concurrent edit conflicts with project-watchdog), Option C (mixed approach with locking — high complexity, not justified) | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 
 ## Rejected
 
