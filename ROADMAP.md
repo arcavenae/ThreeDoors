@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-10
+> Last updated: 2026-03-11
 
 ## Priority Legend
 
@@ -34,13 +34,13 @@ Branch protection & merge queue optimization to reduce cascading CI reruns. Rela
 
 ### Story 0.36: CI Circuit Breaker — Post-Merge Main Branch Monitoring (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #479).
 
 Operationalize merge-queue emergency mode: proactively check push-to-main CI after each merge, halt merges if main is red. Prerequisite safety net for the relaxed up-to-date rule (Story 0.20).
 
 ### Story 0.37: CI Efficiency Metrics — Track Runs Per Merged PR (P2)
 
-**Status:** Not Started.
+**Status:** Done (PR #494).
 
 Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-skip rate). Validates Story 0.20 improvements and monitors ADR-0030 re-entry gate for GitHub merge queue.
 
@@ -76,7 +76,7 @@ Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health,
 
 ### Story 0.38: Epic Number Registry Accuracy & Enforcement (P1)
 
-**Status:** In Progress.
+**Status:** Done (PR #485).
 
 Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing epics), backfill all active epics 39-51, and strengthen enforcement rules to reference project-watchdog as MUTEX. Implements D-112.
 
@@ -114,7 +114,7 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Done (PR #403) | P2 | Epic 17 (done) |
 | 33.2 | Four Seasonal Theme Implementations | Done (PR #409) | P2 | 33.1 |
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Done (PR #410) | P2 | 33.1 |
-| 33.4 | Seasonal Theme Picker and `:seasonal` Command | In Review | P2 | 33.2, 33.3 |
+| 33.4 | Seasonal Theme Picker and `:seasonal` Command | Done (PR #447) | P2 | 33.2, 33.3 |
 
 ### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done
 
@@ -129,17 +129,17 @@ Transform rectangular card/panel doors into visually convincing doors using side
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 43: Connection Manager Infrastructure (P1) — 2/6 stories done
+### Epic 43: Connection Manager Infrastructure (P1) — 4/6 stories done
 
 Connection lifecycle layer for data source integrations. State machine, credential storage (system keychain), config schema v3 (named connections), CRUD operations, sync event logging, and migration of existing adapters to the new pattern.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
-| 43.2 | Keyring Integration with Environment Variable Fallback | In Review | P1 | None |
+| 43.2 | Keyring Integration with Environment Variable Fallback | Done (PR #442) | P1 | None |
 | 43.3 | Config Schema v3 Migration with Connections Support | In Review (PR #441) | P1 | None |
 | 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
-| 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
+| 43.5 | Sync Event Logging Infrastructure | Done (PR #439) | P1 | None |
 | 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
 
 ### Epic 44: Sources TUI (P1) — 0/7 stories done
@@ -168,13 +168,13 @@ Non-interactive CLI commands for data source management: `threedoors connect`, `
 | 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
 
-### Epic 46: OAuth Device Code Flow (P2) — 0/4 stories done
+### Epic 46: OAuth Device Code Flow (P2) — 1/4 stories done
 
 Generic OAuth device code flow client for browser-based authentication. Provider-specific integrations for GitHub and Linear. Silent token refresh with explicit re-auth on expiry.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 46.1 | Generic Device Code Flow Client | Not Started | P2 | None |
+| 46.1 | Generic Device Code Flow Client | Done (PR #443) | P2 | None |
 | 46.2 | GitHub OAuth Integration | Not Started | P2 | 46.1 |
 | 46.3 | Linear OAuth Integration | Not Started | P2 | 46.1 |
 | 46.4 | Token Refresh Lifecycle | Not Started | P2 | 46.1 |
@@ -192,15 +192,15 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
-### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 1/10 stories done
+### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 3/10 stories done
 
 Comprehensive self-diagnosis command with flutter-style category-based output, conservative auto-repair, and channel-aware version checking. Supersedes existing `health` command.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 49.1 | Doctor Command Skeleton & Health Alias | In Review | P1 | None |
-| 49.2 | Environment Checks | In Review | P1 | 49.1 |
-| 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
+| 49.2 | Environment Checks | Done (PR #473) | P1 | 49.1 |
+| 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
 | 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
 | 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
 | 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
@@ -277,14 +277,14 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 40 | Beautiful Stats Display | 10/10 |
 | 41 | Charm Ecosystem Adoption & TUI Polish | 6/6 |
 
-### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 0/10 stories done
+### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 1/10 stories done
 
 Continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality (did we build the right thing?) and operational efficiency (are we building efficiently?).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | Not Started | P1 | None |
-| 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Not Started | P1 | None |
+| 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Done (PR #460) | P1 | None |
 | 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | Not Started | P1 | 51.1 |
 | 51.4 | Saga Detection (Dispatch Waste Alerting) | Not Started | P1 | 51.1 |
 | 51.5 | Doc Consistency Audit (Periodic Cross-Check) | In Review | P1 | 51.1 |
