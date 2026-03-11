@@ -216,7 +216,7 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
-### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 3/10 stories done
+### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 4/10 stories done
 
 Comprehensive self-diagnosis command with flutter-style category-based output, conservative auto-repair, and channel-aware version checking. Supersedes existing `health` command.
 
@@ -229,7 +229,7 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | 49.5 | Session & Analytics Checks | In Review | P1 | 49.1 |
 | 49.6 | Sync & Offline Queue Checks | In Review | P1 | 49.1 |
 | 49.7 | Enrichment Database Checks | In Review | P1 | 49.1 |
-| 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
+| 49.8 | Auto-Repair (`--fix` flag) | Done (PR #529) | P1 | 49.2-49.7 |
 | 49.9 | Channel-Aware Version Checking | In Review | P1 | 49.1 |
 | 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
 
