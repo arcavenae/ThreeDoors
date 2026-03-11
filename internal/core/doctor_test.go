@@ -146,7 +146,7 @@ func TestDoctorChecker_ConfigDirMissing(t *testing.T) {
 	result := dc.Run()
 
 	if len(result.Categories) < 1 {
-		t.Fatal("expected at least 1 category")
+		t.Fatalf("expected at least 1 category, got %d", len(result.Categories))
 	}
 
 	env := result.Categories[0]
