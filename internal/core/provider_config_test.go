@@ -754,3 +754,519 @@ func TestLoadProviderConfig_SeasonalThemes_Absent(t *testing.T) {
 		t.Error("absent seasonal_themes should default to enabled")
 	}
 }
+
+// --- Story 43.3 Tests: Config Schema v3 with Connections ---
+
+func TestMigrateConfig_V2ToV3_WithProvidersList(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 2,
+		Providers: []ProviderEntry{
+			{Name: "jira", Settings: map[string]string{"url": "https://a.atlassian.net"}},
+			{Name: "todoist", Settings: map[string]string{"filter": "today"}},
+		},
+	}
+
+	MigrateConfig(cfg)
+
+	if cfg.SchemaVersion != CurrentSchemaVersion {
+		t.Errorf("SchemaVersion = %d, want %d", cfg.SchemaVersion, CurrentSchemaVersion)
+	}
+	if len(cfg.Connections) != 2 {
+		t.Fatalf("expected 2 connections, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].ID != "legacy-jira" {
+		t.Errorf("Connections[0].ID = %q, want %q", cfg.Connections[0].ID, "legacy-jira")
+	}
+	if cfg.Connections[0].Provider != "jira" {
+		t.Errorf("Connections[0].Provider = %q, want %q", cfg.Connections[0].Provider, "jira")
+	}
+	if cfg.Connections[0].Settings["url"] != "https://a.atlassian.net" {
+		t.Errorf("Connections[0].Settings[url] = %q, want %q", cfg.Connections[0].Settings["url"], "https://a.atlassian.net")
+	}
+	if cfg.Connections[1].ID != "legacy-todoist" {
+		t.Errorf("Connections[1].ID = %q, want %q", cfg.Connections[1].ID, "legacy-todoist")
+	}
+}
+
+func TestMigrateConfig_V2ToV3_FlatProviderOnly(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 2,
+		Provider:      "jira",
+	}
+
+	MigrateConfig(cfg)
+
+	if cfg.SchemaVersion != CurrentSchemaVersion {
+		t.Errorf("SchemaVersion = %d, want %d", cfg.SchemaVersion, CurrentSchemaVersion)
+	}
+	if len(cfg.Connections) != 1 {
+		t.Fatalf("expected 1 connection from flat provider, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].Provider != "jira" {
+		t.Errorf("Connections[0].Provider = %q, want %q", cfg.Connections[0].Provider, "jira")
+	}
+}
+
+func TestMigrateConfig_V2ToV3_TextfileOnly_NoConnection(t *testing.T) {
+	t.Parallel()
+
+	// textfile-only configs don't get a connection entry (it's the default)
+	cfg := &ProviderConfig{
+		SchemaVersion: 2,
+		Provider:      "textfile",
+	}
+
+	MigrateConfig(cfg)
+
+	if len(cfg.Connections) != 0 {
+		t.Errorf("expected 0 connections for textfile-only config, got %d", len(cfg.Connections))
+	}
+}
+
+func TestMigrateConfig_V3_NoDoubleConversion(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Connections: []ConnectionConfig{
+			{ID: "existing", Provider: "jira", Label: "Work Jira"},
+		},
+		Providers: []ProviderEntry{
+			{Name: "jira"},
+		},
+	}
+
+	MigrateConfig(cfg)
+
+	// Should NOT create new connections since schema is already v3.
+	if len(cfg.Connections) != 1 {
+		t.Errorf("expected 1 connection (no migration), got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].ID != "existing" {
+		t.Errorf("Connections[0].ID = %q, want %q", cfg.Connections[0].ID, "existing")
+	}
+}
+
+func TestMigrateConfig_V1_MigratesThrough(t *testing.T) {
+	t.Parallel()
+
+	// v1 config with providers list should migrate through to v3
+	cfg := &ProviderConfig{
+		SchemaVersion: 1,
+		Providers: []ProviderEntry{
+			{Name: "obsidian", Settings: map[string]string{"vault_path": "/v"}},
+		},
+	}
+
+	MigrateConfig(cfg)
+
+	if cfg.SchemaVersion != CurrentSchemaVersion {
+		t.Errorf("SchemaVersion = %d, want %d", cfg.SchemaVersion, CurrentSchemaVersion)
+	}
+	if len(cfg.Connections) != 1 {
+		t.Fatalf("expected 1 connection, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].Provider != "obsidian" {
+		t.Errorf("Connections[0].Provider = %q, want %q", cfg.Connections[0].Provider, "obsidian")
+	}
+}
+
+func TestLoadProviderConfig_V3_WithConnections(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	content := []byte(`schema_version: 3
+provider: textfile
+connections:
+  - id: work-jira
+    provider: jira
+    label: Work Jira
+    settings:
+      url: https://company.atlassian.net
+  - id: personal-todoist
+    provider: todoist
+    label: Personal Todoist
+    settings:
+      filter: today
+`)
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+
+	if len(cfg.Connections) != 2 {
+		t.Fatalf("expected 2 connections, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].ID != "work-jira" {
+		t.Errorf("Connections[0].ID = %q, want %q", cfg.Connections[0].ID, "work-jira")
+	}
+	if cfg.Connections[0].Label != "Work Jira" {
+		t.Errorf("Connections[0].Label = %q, want %q", cfg.Connections[0].Label, "Work Jira")
+	}
+	if cfg.Connections[1].ID != "personal-todoist" {
+		t.Errorf("Connections[1].ID = %q, want %q", cfg.Connections[1].ID, "personal-todoist")
+	}
+}
+
+func TestLoadProviderConfig_V2_AutoMigratesToV3(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	content := []byte(`schema_version: 2
+providers:
+  - name: jira
+    settings:
+      url: https://company.atlassian.net
+`)
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+
+	if cfg.SchemaVersion != 3 {
+		t.Errorf("SchemaVersion = %d, want 3", cfg.SchemaVersion)
+	}
+	if len(cfg.Connections) != 1 {
+		t.Fatalf("expected 1 migrated connection, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].Settings["url"] != "https://company.atlassian.net" {
+		t.Errorf("migrated connection settings lost: %v", cfg.Connections[0].Settings)
+	}
+}
+
+func TestProviderConfig_AddConnection(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+
+	err := cfg.AddConnection(ConnectionConfig{
+		ID:       "work-jira",
+		Provider: "jira",
+		Label:    "Work Jira",
+		Settings: map[string]string{"url": "https://a.atlassian.net"},
+	})
+	if err != nil {
+		t.Fatalf("AddConnection() unexpected error: %v", err)
+	}
+
+	if len(cfg.Connections) != 1 {
+		t.Fatalf("expected 1 connection, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].ID != "work-jira" {
+		t.Errorf("ID = %q, want %q", cfg.Connections[0].ID, "work-jira")
+	}
+}
+
+func TestProviderConfig_AddConnection_DuplicateID(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Connections: []ConnectionConfig{
+			{ID: "work-jira", Provider: "jira", Label: "Work Jira"},
+		},
+	}
+
+	err := cfg.AddConnection(ConnectionConfig{
+		ID:       "work-jira",
+		Provider: "jira",
+		Label:    "Other Jira",
+	})
+	if err == nil {
+		t.Error("AddConnection() expected error for duplicate ID, got nil")
+	}
+}
+
+func TestProviderConfig_AddConnection_EmptyID(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+	err := cfg.AddConnection(ConnectionConfig{Provider: "jira", Label: "x"})
+	if err == nil {
+		t.Error("AddConnection() expected error for empty ID, got nil")
+	}
+}
+
+func TestProviderConfig_AddConnection_EmptyProvider(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+	err := cfg.AddConnection(ConnectionConfig{ID: "x", Label: "x"})
+	if err == nil {
+		t.Error("AddConnection() expected error for empty provider, got nil")
+	}
+}
+
+func TestProviderConfig_RemoveConnection(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Connections: []ConnectionConfig{
+			{ID: "a", Provider: "jira", Label: "A"},
+			{ID: "b", Provider: "todoist", Label: "B"},
+		},
+	}
+
+	if err := cfg.RemoveConnection("a"); err != nil {
+		t.Fatalf("RemoveConnection() unexpected error: %v", err)
+	}
+
+	if len(cfg.Connections) != 1 {
+		t.Fatalf("expected 1 connection after removal, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].ID != "b" {
+		t.Errorf("remaining connection ID = %q, want %q", cfg.Connections[0].ID, "b")
+	}
+}
+
+func TestProviderConfig_RemoveConnection_NotFound(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+	err := cfg.RemoveConnection("nonexistent")
+	if err == nil {
+		t.Error("RemoveConnection() expected error for missing ID, got nil")
+	}
+}
+
+func TestProviderConfig_GetConnection(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Connections: []ConnectionConfig{
+			{ID: "a", Provider: "jira", Label: "A"},
+			{ID: "b", Provider: "todoist", Label: "B"},
+		},
+	}
+
+	conn := cfg.GetConnection("b")
+	if conn == nil {
+		t.Fatal("GetConnection() returned nil for existing ID")
+		return
+	}
+	if conn.Provider != "todoist" {
+		t.Errorf("Provider = %q, want %q", conn.Provider, "todoist")
+	}
+}
+
+func TestProviderConfig_GetConnection_NotFound(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+	conn := cfg.GetConnection("nonexistent")
+	if conn != nil {
+		t.Errorf("GetConnection() expected nil for missing ID, got %+v", conn)
+	}
+}
+
+func TestProviderConfig_UpdateConnection(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Connections: []ConnectionConfig{
+			{ID: "a", Provider: "jira", Label: "Old Label"},
+		},
+	}
+
+	err := cfg.UpdateConnection(ConnectionConfig{
+		ID:       "a",
+		Provider: "jira",
+		Label:    "New Label",
+		Settings: map[string]string{"url": "https://new.atlassian.net"},
+	})
+	if err != nil {
+		t.Fatalf("UpdateConnection() unexpected error: %v", err)
+	}
+
+	if cfg.Connections[0].Label != "New Label" {
+		t.Errorf("Label = %q, want %q", cfg.Connections[0].Label, "New Label")
+	}
+	if cfg.Connections[0].Settings["url"] != "https://new.atlassian.net" {
+		t.Errorf("Settings[url] = %q, want %q", cfg.Connections[0].Settings["url"], "https://new.atlassian.net")
+	}
+}
+
+func TestProviderConfig_UpdateConnection_NotFound(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+	err := cfg.UpdateConnection(ConnectionConfig{ID: "missing", Provider: "jira"})
+	if err == nil {
+		t.Error("UpdateConnection() expected error for missing ID, got nil")
+	}
+}
+
+func TestProviderConfig_MultipleConnectionsSameProvider(t *testing.T) {
+	t.Parallel()
+
+	cfg := &ProviderConfig{SchemaVersion: 3}
+
+	_ = cfg.AddConnection(ConnectionConfig{
+		ID: "work-jira", Provider: "jira", Label: "Work Jira",
+		Settings: map[string]string{"url": "https://work.atlassian.net"},
+	})
+	_ = cfg.AddConnection(ConnectionConfig{
+		ID: "personal-jira", Provider: "jira", Label: "Personal Jira",
+		Settings: map[string]string{"url": "https://personal.atlassian.net"},
+	})
+
+	if len(cfg.Connections) != 2 {
+		t.Fatalf("expected 2 connections, got %d", len(cfg.Connections))
+	}
+	if cfg.Connections[0].ID == cfg.Connections[1].ID {
+		t.Error("connections should have distinct IDs")
+	}
+	if cfg.Connections[0].Label == cfg.Connections[1].Label {
+		t.Error("connections should have distinct labels")
+	}
+}
+
+func TestConnectionConfig_RoundTrip_SaveLoad(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Provider:      "textfile",
+		NoteTitle:     "ThreeDoors Tasks",
+		Connections: []ConnectionConfig{
+			{
+				ID:       "work-jira",
+				Provider: "jira",
+				Label:    "Work Jira",
+				Settings: map[string]string{"url": "https://a.atlassian.net"},
+			},
+			{
+				ID:       "personal-todoist",
+				Provider: "todoist",
+				Label:    "Personal Todoist",
+				Settings: map[string]string{"filter": "today"},
+			},
+		},
+	}
+
+	if err := SaveProviderConfig(configPath, cfg); err != nil {
+		t.Fatalf("SaveProviderConfig() unexpected error: %v", err)
+	}
+
+	loaded, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("LoadProviderConfig() unexpected error: %v", err)
+	}
+
+	if len(loaded.Connections) != 2 {
+		t.Fatalf("expected 2 connections after round-trip, got %d", len(loaded.Connections))
+	}
+	if loaded.Connections[0].ID != "work-jira" {
+		t.Errorf("Connections[0].ID = %q, want %q", loaded.Connections[0].ID, "work-jira")
+	}
+	if loaded.Connections[0].Settings["url"] != "https://a.atlassian.net" {
+		t.Errorf("Connections[0].Settings[url] lost after round-trip")
+	}
+	if loaded.Connections[1].ID != "personal-todoist" {
+		t.Errorf("Connections[1].ID = %q, want %q", loaded.Connections[1].ID, "personal-todoist")
+	}
+}
+
+func TestConnectionConfig_NoCredentialsInSavedYAML(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	cfg := &ProviderConfig{
+		SchemaVersion: 3,
+		Connections: []ConnectionConfig{
+			{
+				ID:       "work-jira",
+				Provider: "jira",
+				Label:    "Work Jira",
+				Settings: map[string]string{"url": "https://a.atlassian.net"},
+			},
+		},
+	}
+
+	if err := SaveProviderConfig(configPath, cfg); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+
+	content := string(data)
+	for _, keyword := range []string{"password", "secret", "token", "api_key", "credential"} {
+		if strings.Contains(strings.ToLower(content), keyword) {
+			t.Errorf("saved YAML contains credential keyword %q", keyword)
+		}
+	}
+}
+
+func TestProviderConfig_ExistingFieldsPreserved_AfterV3Migration(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "config.yaml")
+
+	content := []byte(`schema_version: 2
+provider: textfile
+note_title: My Tasks
+theme: scifi
+dev_dispatch_enabled: true
+providers:
+  - name: jira
+    settings:
+      url: https://a.atlassian.net
+llm:
+  backend: claude
+`)
+	if err := os.WriteFile(configPath, content, 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	cfg, err := LoadProviderConfig(configPath)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+
+	// All existing fields should be preserved after migration.
+	if cfg.Provider != "textfile" {
+		t.Errorf("Provider = %q, want %q", cfg.Provider, "textfile")
+	}
+	if cfg.NoteTitle != "My Tasks" {
+		t.Errorf("NoteTitle = %q, want %q", cfg.NoteTitle, "My Tasks")
+	}
+	if cfg.Theme != "scifi" {
+		t.Errorf("Theme = %q, want %q", cfg.Theme, "scifi")
+	}
+	if !cfg.DevDispatchEnabled {
+		t.Error("DevDispatchEnabled should be true")
+	}
+	if cfg.LLM.Backend != "claude" {
+		t.Errorf("LLM.Backend = %q, want %q", cfg.LLM.Backend, "claude")
+	}
+	if len(cfg.Providers) != 1 {
+		t.Errorf("Providers should be preserved, got %d", len(cfg.Providers))
+	}
+	// And connections should be migrated
+	if len(cfg.Connections) != 1 {
+		t.Fatalf("expected 1 migrated connection, got %d", len(cfg.Connections))
+	}
+}
