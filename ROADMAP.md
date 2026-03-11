@@ -269,7 +269,7 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 | 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Not Started | P1 | None |
 | 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | Not Started | P1 | 51.1 |
 | 51.4 | Saga Detection (Dispatch Waste Alerting) | Not Started | P1 | 51.1 |
-| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | Not Started | P1 | 51.1 |
+| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | In Review | P1 | 51.1 |
 | 51.6 | BOARD.md Recommendation Pipeline | Not Started | P1 | 51.3, 51.4, 51.5 |
 | 51.7 | Merge Conflict Rate Analysis | Not Started | P2 | 51.3, 51.6 |
 | 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Not Started | P2 | 51.3, 51.6 |
