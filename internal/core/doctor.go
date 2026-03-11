@@ -428,7 +428,6 @@ func checkGoVersion() CheckResult {
 	}
 }
 
-
 // checkProviders runs the Providers category checks.
 func (dc *DoctorChecker) checkProviders() CategoryResult {
 	configPath := filepath.Join(dc.configDir, "config.yaml")

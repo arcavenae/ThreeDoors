@@ -66,12 +66,23 @@ func (dc *DoctorChecker) checkTaskFile(path string) ([]*Task, CheckResult) {
 		return nil, result
 	}
 
+	// Try the current TasksFile wrapper format first, then fall back to
+	// the legacy bare-array format for backwards compatibility.
 	var tasks []*Task
-	if err := yaml.Unmarshal(data, &tasks); err != nil {
-		result.Status = CheckFail
-		result.Message = fmt.Sprintf("tasks.yaml is not valid YAML: %v", err)
-		result.Suggestion = "Check tasks.yaml for syntax errors"
-		return nil, result
+	type tasksFile struct {
+		Tasks []*Task `yaml:"tasks"`
+	}
+	var tf tasksFile
+	if err := yaml.Unmarshal(data, &tf); err == nil {
+		tasks = tf.Tasks
+	} else {
+		// Legacy bare-array format
+		if err2 := yaml.Unmarshal(data, &tasks); err2 != nil {
+			result.Status = CheckFail
+			result.Message = fmt.Sprintf("tasks.yaml is not valid YAML: %v", err2)
+			result.Suggestion = "Check tasks.yaml for syntax errors"
+			return nil, result
+		}
 	}
 
 	result.Status = CheckOK

@@ -369,7 +369,7 @@ func TestIntegration_Doctor_JSON(t *testing.T) {
 	configDir := setupTestEnv(t)
 	// Create tasks.yaml so doctor doesn't report CheckFail and os.Exit
 	tasksYAML := filepath.Join(configDir, "tasks.yaml")
-	if err := os.WriteFile(tasksYAML, []byte("[]\n"), 0o644); err != nil {
+	if err := os.WriteFile(tasksYAML, []byte("tasks: []\n"), 0o644); err != nil {
 		t.Fatalf("create tasks.yaml: %v", err)
 	}
 	if err := executeCmd(t, "doctor", "--json"); err != nil {
@@ -381,7 +381,7 @@ func TestIntegration_Doctor_Human(t *testing.T) {
 	configDir := setupTestEnv(t)
 	// Create tasks.yaml so doctor doesn't report CheckFail and os.Exit
 	tasksYAML := filepath.Join(configDir, "tasks.yaml")
-	if err := os.WriteFile(tasksYAML, []byte("[]\n"), 0o644); err != nil {
+	if err := os.WriteFile(tasksYAML, []byte("tasks: []\n"), 0o644); err != nil {
 		t.Fatalf("create tasks.yaml: %v", err)
 	}
 	if err := executeCmd(t, "doctor"); err != nil {
