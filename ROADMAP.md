@@ -44,6 +44,12 @@ Operationalize merge-queue emergency mode: proactively check push-to-main CI aft
 
 Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-skip rate). Validates Story 0.20 improvements and monitors ADR-0030 re-entry gate for GitHub merge queue.
 
+### Story 0.47: Alpha Version Chronological Sorting (P1)
+
+**Status:** Not Started.
+
+Insert UTC HHMMSS timecode into alpha version format so same-day releases sort chronologically. Changes `0.1.0-alpha.YYYYMMDD.SHA` to `0.1.0-alpha.YYYYMMDD.HHMMSS.SHA`. One-line CI fix, SemVer 2.0 compliant. Unblocks Story 49.9 (channel-aware version checking).
+
 ### Story 0.31: CI/Security Hardening — Secrets, Supply Chain & Reproducibility (P1)
 
 **Status:** Done (PR #270).
