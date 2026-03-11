@@ -174,6 +174,7 @@
 | D-150 | Use `charmbracelet/huh` for setup wizard forms | 2026-03-09 | Native Bubbletea integration, Group-as-page wizard model, dynamic forms via WithHideFunc | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 | D-151 | Last-writer-wins with remote-wins for metadata, local-wins for ThreeDoors fields | 2026-03-09 | Simple and predictable; source system authoritative for metadata; ThreeDoors owns its enrichments | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
 | D-152 | Named connections with ULID IDs for multi-instance provider support | 2026-03-09 | Supports multiple instances of same provider type; user-friendly labels; globally unique IDs | [Research](../../_bmad-output/planning-artifacts/data-source-setup-ux-research.md) |
+| D-153 | Tiered remote collaboration: SSH+CLI today, MCP bridge near-term | 2026-03-10 | SSH provides zero-development access; MCP bridge adds native Claude Code integration; avoids over-engineering network-native multiclaude | [Investigation](../../_bmad-output/planning-artifacts/remote-collaboration-investigation.md), [Problem Solving](../../_bmad-output/planning-artifacts/remote-collab-creative-problem-solving.md), [Feasibility](../../_bmad-output/planning-artifacts/remote-collab-analyst-feasibility.md) |
 
 ## Rejected
 
@@ -317,6 +318,11 @@
 | X-096 | Telemetry/crash reporting in doctor (Epic 49) | 2026-03-10 | Out of scope; doctor is local-only diagnostics; telemetry is a separate concern | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 | X-097 | `health` and `doctor` coexist as separate commands (Epic 49) | 2026-03-10 | User confusion about which to run; health is new enough to absorb into doctor | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 | X-098 | Command name `check` or `diagnose` instead of `doctor` (Epic 49) | 2026-03-10 | `check` too generic (conflicts with linter terminology); `diagnose` too verbose; `doctor` is the established pattern | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| X-099 | Network-native multiclaude (add TCP/WebSocket/NATS transport to daemon) | 2026-03-10 | Requires significant multiclaude core refactoring; premature before validating Tier 1-2 approaches | [Investigation](../../_bmad-output/planning-artifacts/remote-collaboration-investigation.md) |
+| X-100 | NATS/Redis as inter-agent message broker | 2026-03-10 | Adds external infrastructure dependency; SSH stdio achieves same result for current scale | [Problem Solving](../../_bmad-output/planning-artifacts/remote-collab-creative-problem-solving.md) |
+| X-101 | Direct daemon socket exposure over TCP | 2026-03-10 | Unix socket protocol not designed for network use; no auth layer; race conditions with daemon state | [Feasibility](../../_bmad-output/planning-artifacts/remote-collab-analyst-feasibility.md) |
+| X-102 | File sync (rsync/Syncthing) for message directories | 2026-03-10 | Covers messages only, not agent spawning or status; sync conflicts if both sides write simultaneously | [Feasibility](../../_bmad-output/planning-artifacts/remote-collab-analyst-feasibility.md) |
+| X-103 | Typing into tmux windows for agent communication | 2026-03-10 | Sends raw keystrokes to Claude Code; corrupts conversation state; unpredictable and dangerous | [Investigation](../../_bmad-output/planning-artifacts/remote-collaboration-investigation.md) |
 
 ## Epic Number Registry
 
@@ -337,7 +343,9 @@
 | 49 | ThreeDoors Doctor — Self-Diagnosis Command | 2026-03-10 | In Progress (1/10) |
 | 50 | In-App Bug Reporting | 2026-03-10 | Not Started (0/3) |
 | 51 | SLAES — Self-Learning Agentic Engineering System | 2026-03-10 | In Progress (0/10) |
-| 52 | *(next available)* | — | — |
+| 52 | Envoy Three-Layer Firewall | 2026-03-10 | Not Started (0/4) |
+| 53 | Remote Collaboration — multiclaude Cross-Machine Access | 2026-03-10 | Not Started (0/5) |
+| 54 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
