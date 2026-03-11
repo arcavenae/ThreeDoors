@@ -1032,12 +1032,31 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setViewMode(ViewThemePicker)
 		return m, nil
 
+	case ShowSeasonalPickerMsg:
+		currentTheme := ""
+		if dv := m.doorsView; dv != nil && dv.theme != nil {
+			currentTheme = dv.theme.Name
+		}
+		reg := m.doorsView.themeRegistry
+		if reg == nil {
+			reg = themes.NewDefaultRegistry()
+		}
+		m.themePickerView = NewSeasonalThemePicker(reg, currentTheme)
+		m.themePickerView.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.viewMode = ViewThemePicker
+		return m, nil
+
 	case ThemeSelectedMsg:
+		seasonal := m.themePickerView != nil && m.themePickerView.IsSeasonal()
 		m.doorsView.SetThemeByName(msg.Name)
 		m.themePickerView = nil
 		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		m.flash = fmt.Sprintf("Theme changed to %s", msg.Name)
+		if seasonal {
+			return m, ClearFlashCmd()
+		}
 		return m, tea.Batch(ClearFlashCmd(), m.saveThemeCmd(msg.Name))
 
 	case ThemeCancelledMsg:

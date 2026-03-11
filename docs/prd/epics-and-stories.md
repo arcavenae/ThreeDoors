@@ -228,7 +228,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 | FR116-FR119 | Epic 30 | Linear Integration (NOT STARTED) |
 | FR120-FR126 | Epic 31 | Expand/Fork Key Implementations (NOT STARTED) |
 | FR127-FR131 | Epic 32 | Undo Task Completion (COMPLETE) |
-| FR132-FR137 | Epic 33 | Seasonal Door Theme Variants (NOT STARTED) |
+| FR132-FR137 | Epic 33 | Seasonal Door Theme Variants (COMPLETE) |
 | FR148-FR151 | Epic 36 | Door Selection Feedback (COMPLETE) |
 
 ## Epic List
@@ -395,7 +395,7 @@ Redesign all door themes to visually read as actual doors with portrait orientat
 **Prerequisites:** Epic 17 ✅ (Door Theme System)
 **Status:** All 7 stories complete (PRs #226, #229, #234, #236, #237, #238, #239).
 
-### Epic 33: Seasonal Door Theme Variants — NOT STARTED
+### Epic 33: Seasonal Door Theme Variants — COMPLETE
 Time-based seasonal theme variants that auto-switch based on the current date, extending the Door Theme System with visual variety.
 **FRs covered:** FR132-FR137
 **Prerequisites:** Epic 17 ✅ (Door Theme System)
