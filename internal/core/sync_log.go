@@ -44,6 +44,10 @@ func NewSyncLog(configDir string) *SyncLog {
 
 // Append writes a new entry to the sync log, rotating if the file exceeds 1MB.
 func (sl *SyncLog) Append(entry SyncLogEntry) error {
+	if err := ValidatePath(sl.logPath); err != nil {
+		return fmt.Errorf("sync log validation failed: %w", err)
+	}
+
 	if err := sl.rotateIfNeeded(); err != nil {
 		return fmt.Errorf("sync log rotate: %w", err)
 	}

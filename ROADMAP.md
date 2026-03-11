@@ -216,7 +216,7 @@ Remediate findings from the application security audit. Fix permissive file perm
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 42.1 | File Permission Standardization (0o700/0o600) | Done (PR #437) | P1 | None |
-| 42.2 | Symlink Validation for File Operations | Not Started | P1 | None |
+| 42.2 | Symlink Validation for File Operations | In Review | P1 | None |
 | 42.3 | Input Size Limits for YAML and JSONL Readers | Not Started | P1 | None |
 | 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
