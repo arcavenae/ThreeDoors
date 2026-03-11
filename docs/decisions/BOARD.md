@@ -251,6 +251,8 @@
 | D-156 | Conservative auto-fix with `--fix` flag (Epic 49) | 2026-03-10 | Only fix safe, reversible operations (temp files, derived caches, permissions); user data never auto-modified; rejected: aggressive auto-fix (risky), no auto-fix (misses easy wins) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 | D-157 | 24-hour cached version check, gh CLI pattern (Epic 49) | 2026-03-10 | Proven pattern; respects rate limits; non-blocking; opt-out via env var and config; rejected: check every run (chatty), weekly (too stale) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
 | D-158 | Channel-aware version: show within channel + cross-channel if higher (Epic 49) | 2026-03-10 | Alpha users should know about newer stable releases; matches rustup approach; rejected: strict isolation (misses important releases), all channels (noisy) | [Research](../../_bmad-output/planning-artifacts/threedoors-doctor-research.md) |
+| D-159 | CI circuit breaker as agent prompt update, not code (Story 0.36) | 2026-03-10 | Merge-queue is LLM-driven; post-merge CI check is a workflow instruction, not compiled logic; `gh run list` provides the check mechanism | [ADR-0030](../ADRs/ADR-0030-ci-churn-reduction.md) |
+| D-160 | Shell script for CI metrics, not GitHub Action (Story 0.37) | 2026-03-10 | No external deps beyond `gh`; can be promoted to Action later; immediately runnable by retrospector agent (Story 51.8) | [Research](../research/ci-churn-reduction-research.md) |
 
 ## Rejected
 

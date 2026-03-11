@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (19/22 complete) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (12/16 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 10 of 14 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32, 0.34 not started.
+**Status:** 12 of 16 stories complete. Stories 0.29, 0.36, 0.37 not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
 
-**Status:** 10 of 14 stories complete. Stories 0.24 (Renovate + Dependabot), 0.31, 0.32, 0.34 not started.
+**Status:** 12 of 16 stories complete. Stories 0.29, 0.36, 0.37 not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -671,7 +671,7 @@ As a development team running multiple parallel agents,
 I want CI to run efficiently without cascading reruns,
 So that PRs merge quickly without wasting 5-10x CI runs per PR.
 
-**Status:** Not Started
+**Status:** Done (PR #260)
 
 **Acceptance Criteria:**
 - **AC1:** Branch protection "Require branches to be up to date" DISABLED (Phase 1)
@@ -680,6 +680,36 @@ So that PRs merge quickly without wasting 5-10x CI runs per PR.
 - **AC4:** merge-queue and pr-shepherd agents updated (Phase 1)
 - **AC5:** CI workflows use path-based triggers for docs-only PRs (Phase 2)
 - **AC6:** Evaluate and implement GitHub Native Merge Queue if feasible (Phase 3)
+
+### Story 0.36: CI Circuit Breaker — Post-Merge Main Branch Monitoring
+
+As the merge-queue agent merging PRs without requiring up-to-date branches,
+I need to detect push-to-main CI failures immediately after each merge,
+So that I can halt further merges before cascading breakage onto a red main.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** Merge-queue agent checks push-to-main CI status after each merge via `gh run list`
+- **AC2:** Emergency mode entered on main CI failure: halt merges, message supervisor, label PR
+- **AC3:** Automatic recovery when subsequent push-to-main CI succeeds
+- **AC4:** Timeout handling: 10-minute timeout does not block merges
+- **AC5:** Agent prompt updated with explicit post-merge CI check workflow
+
+### Story 0.37: CI Efficiency Metrics — Track Runs Per Merged PR
+
+As a project maintainer running parallel CI workflows,
+I want to track CI efficiency metrics (runs per merged PR, churn ratio),
+So that I can measure the impact of CI churn reduction and know when to reconsider deferred options.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** `scripts/ci-metrics.sh` computes total runs, merged PRs, runs-per-PR ratio, docs-skip count, main-failure count
+- **AC2:** Script uses `gh` CLI only — no external dependencies
+- **AC3:** Human-readable summary and JSON output modes
+- **AC4:** Baseline comparison against pre-optimization metrics (5-10 runs/PR)
+- **AC5:** ADR-0030 re-entry gate warning when main CI failures exceed 3/week
 
 ### Story 0.21: Homebrew Public Distribution — Custom Tap, CI Hardening, and homebrew-core Submission
 
