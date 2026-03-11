@@ -6,21 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 )
-
-// Finding represents a single retrospector finding from the JSONL log.
-type Finding struct {
-	PR          int       `json:"pr"`
-	Story       string    `json:"story,omitempty"`
-	ACMatch     string    `json:"ac_match"`
-	CIFirstPass bool      `json:"ci_first_pass"`
-	CIFailures  []string  `json:"ci_failures,omitempty"`
-	Conflicts   int       `json:"conflicts"`
-	RebaseCount int       `json:"rebase_count"`
-	Timestamp   time.Time `json:"timestamp"`
-	Repo        string    `json:"repo"`
-}
 
 // ReadFindings reads all findings from a JSONL file at the given path.
 func ReadFindings(path string) ([]Finding, error) {
