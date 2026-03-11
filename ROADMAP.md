@@ -80,6 +80,24 @@ Story 36.3 (PR #276) universal quit handler causes sub-views (dashboard, health,
 
 Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing epics), backfill all active epics 39-51, and strengthen enforcement rules to reference project-watchdog as MUTEX. Implements D-112.
 
+### Story 0.44: Scoped Label Migration — Rename and Create GitHub Labels (P1)
+
+**Status:** Not Started.
+
+Migrate all 21 GitHub labels to scoped `.` separator format per finalized 27-label taxonomy (D-106, D-107). Rename-first strategy preserves label-issue associations (D-110). Create 6 new labels, delete 2 obsolete ones.
+
+### Story 0.45: Agent Definition Updates for Scoped Labels (P1)
+
+**Status:** Not Started. Depends on Story 0.44.
+
+Update all agent definition files (envoy, merge-queue, pr-shepherd) to reference new scoped label names. Text-only changes — agents must be restarted after merge.
+
+### Story 0.46: Label Authority & Triage Flow Documentation (P1)
+
+**Status:** Not Started. Depends on Stories 0.44, 0.45.
+
+Document label authority matrix (who sets/removes each label) and end-to-end triage flow. Covers BOARD recommendations P-003 and P-005. Consolidates party mode consensus into operational reference.
+
 ## Active Epics
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
@@ -237,7 +255,7 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 12/16 |
+| 0 | Infrastructure & Process (Backfill) | 12/19 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |

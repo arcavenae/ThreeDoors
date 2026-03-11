@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (12/16 complete) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (12/19 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -710,6 +710,52 @@ So that I can measure the impact of CI churn reduction and know when to reconsid
 - **AC3:** Human-readable summary and JSON output modes
 - **AC4:** Baseline comparison against pre-optimization metrics (5-10 runs/PR)
 - **AC5:** ADR-0030 re-entry gate warning when main CI failures exceed 3/week
+
+### Story 0.44: Scoped Label Migration — Rename and Create GitHub Labels
+
+As the ThreeDoors project maintainer,
+I want all GitHub labels migrated to scoped `.` separator format with the finalized 27-label taxonomy,
+So that agents and humans have consistent, queryable, namespaced labels for issue and PR management.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** All 11 colon-separated labels renamed to `.` format (triage, priority, scope scopes)
+- **AC2:** All 8 unscoped labels renamed to scoped equivalents (bug→type.bug, etc.)
+- **AC3:** 7 new labels created (status.blocked, status.stale, status.do-not-merge, agent.envoy, agent.worker, contrib.good-first-issue, contrib.help-wanted)
+- **AC4:** `multiclaude` and `ux` labels deleted
+- **AC5:** All label colors match finalized scheme
+- **AC6:** `gh label list` shows exactly 28 labels (27 scoped + dependencies)
+- **AC7:** No issues or PRs lost label associations during migration
+
+### Story 0.45: Agent Definition Updates for Scoped Labels
+
+As the ThreeDoors agent infrastructure maintainer,
+I want all agent definition files updated to reference the new scoped label names,
+So that agents use the correct label names after the migration (Story 0.44).
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** `agents/merge-queue.md` updated with scoped label names and `status.do-not-merge` merge gate
+- **AC2:** `agents/envoy.md` updated with scoped label names and authority documentation
+- **AC3:** `agents/pr-shepherd.md` updated with scoped label names
+- **AC4:** No behavioral changes introduced — only label name references updated
+
+### Story 0.46: Label Authority & Triage Flow Documentation
+
+As the ThreeDoors project maintainer,
+I want a documented label authority matrix and triage flow,
+So that all agents follow consistent labeling practices and the triage process is unambiguous.
+
+**Status:** Not Started
+
+**Acceptance Criteria:**
+- **AC1:** Label authority matrix documenting who can set/remove each label scope
+- **AC2:** End-to-end triage flow documented with label state transitions
+- **AC3:** Fast-track shortcut flow documented
+- **AC4:** Mutual exclusivity rules documented per scope
+- **AC5:** Convention enforcement documented (agents remove old labels before applying new)
 
 ### Story 0.21: Homebrew Public Distribution — Custom Tap, CI Hardening, and homebrew-core Submission
 
