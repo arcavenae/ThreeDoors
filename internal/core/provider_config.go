@@ -310,6 +310,10 @@ func ResolveAllProviders(cfg *ProviderConfig, reg *Registry) (*MultiSourceAggreg
 
 // SaveProviderConfig persists provider configuration to a YAML file using atomic write.
 func SaveProviderConfig(path string, cfg *ProviderConfig) error {
+	if err := ValidatePath(path); err != nil {
+		return fmt.Errorf("config file validation failed: %w", err)
+	}
+
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("marshal provider config: %w", err)
@@ -415,6 +419,10 @@ func GenerateSampleConfig(path string, reg *Registry) error {
 		default:
 			fmt.Fprintf(&b, "#       # Add provider-specific settings here\n")
 		}
+	}
+
+	if err := ValidatePath(path); err != nil {
+		return fmt.Errorf("sample config validation failed: %w", err)
 	}
 
 	tmpPath := path + ".tmp"
