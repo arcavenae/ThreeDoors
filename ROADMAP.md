@@ -140,20 +140,20 @@ Time-based seasonal theme variants that auto-switch based on current date. Exten
 | 33.3 | Auto-Switch Integration in DoorsView and Config | Done (PR #410) | P2 | 33.1 |
 | 33.4 | Seasonal Theme Picker and `:seasonal` Command | Done (PR #447) | P2 | 33.2, 33.3 |
 
-### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done
+### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done (2 In Review)
 
 Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations. Based on 5-round party mode research with 7 agents.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 48.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
-| 48.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
+| 48.1 | Side-Mounted Handle + Hinge Marks | In Review | P2 | Epic 35 (done), Epic 17 (done) |
+| 48.2 | Continuous Threshold / Floor Line | In Review | P2 | None |
 | 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
 | 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 43: Connection Manager Infrastructure (P1) — 4/6 stories done
+### Epic 43: Connection Manager Infrastructure (P1) — 5/6 stories done
 
 Connection lifecycle layer for data source integrations. State machine, credential storage (system keychain), config schema v3 (named connections), CRUD operations, sync event logging, and migration of existing adapters to the new pattern.
 
@@ -161,8 +161,8 @@ Connection lifecycle layer for data source integrations. State machine, credenti
 |-------|-------|--------|----------|------------|
 | 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
 | 43.2 | Keyring Integration with Environment Variable Fallback | Done (PR #442) | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | In Review (PR #441) | P1 | None |
-| 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
+| 43.3 | Config Schema v3 Migration with Connections Support | Done (PR #467) | P1 | None |
+| 43.4 | Connection CRUD Operations | Done (PR #526) | P1 | 43.1, 43.2, 43.3 |
 | 43.5 | Sync Event Logging Infrastructure | Done (PR #439) | P1 | None |
 | 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
 
@@ -227,10 +227,10 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
 | 49.4 | Provider Health Checks | In Review | P1 | 49.1 |
 | 49.5 | Session & Analytics Checks | In Review | P1 | 49.1 |
-| 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
-| 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
+| 49.6 | Sync & Offline Queue Checks | In Review | P1 | 49.1 |
+| 49.7 | Enrichment Database Checks | In Review | P1 | 49.1 |
 | 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
-| 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
+| 49.9 | Channel-Aware Version Checking | In Review | P1 | 49.1 |
 | 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
 
 ### Epic 42: Application Security Hardening (P1) — 1/5 stories done
@@ -241,8 +241,8 @@ Remediate findings from the application security audit. Fix permissive file perm
 |-------|-------|--------|----------|------------|
 | 42.1 | File Permission Standardization (0o700/0o600) | Done (PR #437) | P1 | None |
 | 42.2 | Symlink Validation for File Operations | In Review | P1 | None |
-| 42.3 | Input Size Limits for YAML and JSONL Readers | Not Started | P1 | None |
-| 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |
+| 42.3 | Input Size Limits for YAML and JSONL Readers | In Review | P1 | None |
+| 42.4 | Credential Protection in Config Files | In Review | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
 
 ### Epic 50: In-App Bug Reporting (P2) — 1/3 stories done
@@ -307,12 +307,12 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | Not Started | P1 | None |
+| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | In Review | P1 | None |
 | 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Done (PR #460) | P1 | None |
 | 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | In Review (PR #462) | P1 | 51.1 |
-| 51.4 | Saga Detection (Dispatch Waste Alerting) | Not Started | P1 | 51.1 |
+| 51.4 | Saga Detection (Dispatch Waste Alerting) | In Review | P1 | 51.1 |
 | 51.5 | Doc Consistency Audit (Periodic Cross-Check) | In Review | P1 | 51.1 |
-| 51.6 | BOARD.md Recommendation Pipeline | Not Started | P1 | 51.3, 51.4, 51.5 |
+| 51.6 | BOARD.md Recommendation Pipeline | In Review | P1 | 51.3, 51.4, 51.5 |
 | 51.7 | Merge Conflict Rate Analysis | Done (PR #506) | P2 | 51.3, 51.6 |
 | 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Done (PR #505) | P2 | 51.3, 51.6 |
 | 51.9 | Research Lifecycle Tracking | Done (PR #507) | P2 | 51.3, 51.6 |
@@ -321,6 +321,20 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 **Phasing:** Phase 0 (stories 51.1-51.2): Bootstrap — rewrite agent definitions. Phase 1 (stories 51.3-51.6): MVP monitoring. Phase 2 (stories 51.7-51.10): Advanced analysis after 2 weeks of MVP validation.
 
 **Dependency graph:** Stories 51.1 & 51.2 can parallelize. Stories 51.3-51.5 can parallelize after 51.1. Story 51.6 depends on 51.3-51.5. Phase 2 stories depend on Phase 1 validation.
+
+### Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (P2) — 0/5 stories done
+
+Persistent research-supervisor agent that manages Gemini Deep Research queries on behalf of the multiclaude agent system. Uses `24601/agent-deep-research` as the execution layer (D-154). Features context-aware grounding (8 curated bundles, 60KB budget), three-layer result shielding (executive summary → detailed report → raw data), and budget management (50 queries/day, priority queue, batch optimization).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 54.1 | Research-Supervisor Agent Definition | Not Started | P2 | None |
+| 54.2 | agent-deep-research CLI Integration & Tool Setup | Not Started | P2 | None |
+| 54.3 | Context Packaging & Prompt Engineering | Not Started | P2 | 54.1 |
+| 54.4 | Result Shielding & Artifact Storage | Not Started | P2 | 54.1, 54.2 |
+| 54.5 | Rate Limiting, Budget Management & Query Scheduling | Not Started | P2 | 54.1, 54.2 |
+
+**Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
 
 ## Icebox (Deferred Indefinitely)
 
