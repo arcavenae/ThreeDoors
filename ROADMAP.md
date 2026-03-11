@@ -193,7 +193,7 @@ Comprehensive self-diagnosis command with flutter-style category-based output, c
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 49.1 | Doctor Command Skeleton & Health Alias | In Review | P1 | None |
-| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
+| 49.2 | Environment Checks | In Review | P1 | 49.1 |
 | 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
 | 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
 | 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
