@@ -662,19 +662,20 @@
 - **Status:** Not Started
 - **Stories:** 53.1-53.5 (5 stories)
 
-**Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure** (P2)
-- **Goal:** Deploy a persistent research-supervisor agent that manages Gemini Deep Research queries on behalf of the multiclaude agent system, with context-aware grounding, result shielding, and budget management.
-- **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), `uv` installed, Gemini API key
-- **Status:** Not Started
+**Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (Rearchitected)** (P2)
+- **Goal:** Deploy a persistent research-supervisor agent that wraps the official Gemini CLI (`@google/gemini-cli`) with OAuth authentication, providing web-grounded research with context packaging, result shielding, and dual-tier budget management (Pro + Flash).
+- **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), Node.js/npm, Google Account
+- **Status:** Not Started (Rearchitected from original D-154 approach)
 - **Deliverables:**
-  - Research-supervisor persistent agent definition (Responsibility+WHY format)
-  - agent-deep-research CLI tool integration (`_tools/agent-deep-research/`)
-  - Context packaging system (8 curated bundles, 60KB budget, keyword auto-detection)
-  - Three-layer result shielding (executive summary → detailed report → raw data)
-  - Rate limiting and budget management (50 queries/day, priority queue, batch optimization, deduplication)
-- **Stories:** 54.1-54.5 (5 stories)
-- **Research:** See `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md`
-- **Decisions:** D-154 (agent-deep-research as execution layer)
+  - Research-supervisor persistent agent definition (Responsibility+WHY format, Gemini CLI backend)
+  - Gemini CLI installation, OAuth setup, and `scripts/gemini-research.sh` wrapper script
+  - `GEMINI.md` project context file for automatic research grounding
+  - Context packaging system (8 curated bundles, 60KB budget, keyword auto-detection, `--include-directories`)
+  - Three-layer result shielding (executive summary → detailed report → raw JSON)
+  - Dual-tier rate limiting (50 Pro/day + 1,000 Flash/day), priority queue, batch optimization, deduplication
+- **Stories:** 54.1-54.5 (5 stories, all rewritten for Gemini CLI + OAuth)
+- **Research:** See `_bmad-output/planning-artifacts/gemini-cli-oauth-research.md`, `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md` (original)
+- **Decisions:** D-164 (Gemini CLI + OAuth as execution layer, supersedes D-154)
 
 **Epic 55+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
