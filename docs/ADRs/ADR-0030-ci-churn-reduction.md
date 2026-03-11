@@ -29,7 +29,7 @@ The merge-queue agent no longer requires PRs to be rebased on main before mergin
 - The `push` trigger on main re-runs CI, catching any post-merge breakage
 - Impact: ~70-80% reduction in CI runs
 
-**Safety net:** If push-to-main CI fails after a merge, the merge-queue agent enters emergency mode and halts further merges until fixed.
+**Safety net:** If push-to-main CI fails after a merge, the merge-queue agent enters emergency mode and halts further merges until fixed. **Circuit breaker is now operational** (Story 0.36) — the merge-queue agent prompt includes an explicit post-merge CI check workflow with polling, emergency mode entry/exit, and `broke-main` labeling.
 
 **Admin action required:** If GitHub branch protection has "Require branches to be up to date before merging" enabled, the repo admin should disable it. This is a repo settings change, not a code change.
 

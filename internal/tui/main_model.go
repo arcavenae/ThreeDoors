@@ -47,6 +47,58 @@ const (
 	ViewPlanning
 )
 
+// String returns the human-readable name of the view mode.
+func (v ViewMode) String() string {
+	switch v {
+	case ViewDoors:
+		return "Doors"
+	case ViewDetail:
+		return "Detail"
+	case ViewMood:
+		return "Mood"
+	case ViewSearch:
+		return "Search"
+	case ViewHealth:
+		return "Health"
+	case ViewAddTask:
+		return "AddTask"
+	case ViewValuesGoals:
+		return "ValuesGoals"
+	case ViewFeedback:
+		return "Feedback"
+	case ViewImprovement:
+		return "Improvement"
+	case ViewNextSteps:
+		return "NextSteps"
+	case ViewAvoidancePrompt:
+		return "AvoidancePrompt"
+	case ViewInsights:
+		return "Insights"
+	case ViewOnboarding:
+		return "Onboarding"
+	case ViewConflict:
+		return "Conflict"
+	case ViewSyncLog:
+		return "SyncLog"
+	case ViewThemePicker:
+		return "ThemePicker"
+	case ViewDevQueue:
+		return "DevQueue"
+	case ViewProposals:
+		return "Proposals"
+	case ViewHelp:
+		return "Help"
+	case ViewDeferred:
+		return "Deferred"
+	case ViewSnooze:
+		return "Snooze"
+	case ViewPlanning:
+		return "Planning"
+	default:
+		return "Unknown"
+	}
+}
+
 // MainModel is the root Bubbletea model that orchestrates view transitions.
 type MainModel struct {
 	viewMode            ViewMode
@@ -109,6 +161,7 @@ type MainModel struct {
 	searchQuery           string
 	searchSelectedIndex   int
 	promptedTasks         map[string]bool
+	breadcrumbs           BreadcrumbTrail
 }
 
 // NewMainModel creates the root application model.
@@ -234,7 +287,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 
 	if isFirstRun {
 		m.onboardingView = NewOnboardingView()
-		m.viewMode = ViewOnboarding
+		m.setViewMode(ViewOnboarding)
 	}
 
 	return m
@@ -284,7 +337,7 @@ func (m *MainModel) SetPlanningMode(enabled bool) {
 		pv.SetWidth(m.width)
 		pv.SetHeight(m.height)
 		m.planningView = pv
-		m.viewMode = ViewPlanning
+		m.setViewMode(ViewPlanning)
 	}
 }
 
@@ -333,6 +386,7 @@ func (m *MainModel) Init() tea.Cmd {
 func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		m.breadcrumbs.Record(m.viewMode.String(), fmt.Sprintf("resize:%dx%d", msg.Width, msg.Height))
 		m.width = msg.Width
 		m.height = msg.Height
 		m.doorsView.SetWidth(msg.Width)
@@ -417,13 +471,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.searchView.RestoreState(m.searchQuery, m.searchSelectedIndex)
-			m.viewMode = ViewSearch
+			m.setViewMode(ViewSearch)
 			m.detailView = nil
 			m.addTaskView = nil
 			m.previousView = ViewDoors
 			return m, nil
 		}
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.detailView = nil
 		m.moodView = nil
 		m.healthView = nil
@@ -438,12 +492,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.healthView.SetWidth(m.width)
 		m.healthView.SetInlineHints(m.resolveHints())
 		m.previousView = m.viewMode
-		m.viewMode = ViewHealth
+		m.setViewMode(ViewHealth)
 		return m, nil
 
 	case NavigateToLinkedMsg:
 		m.detailView = m.newDetailView(msg.Task)
-		m.viewMode = ViewDetail
+		m.setViewMode(ViewDetail)
 		return m, nil
 
 	case ShowInsightsMsg:
@@ -454,7 +508,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.insightsView = NewInsightsView(m.patternAnalyzer, m.completionCounter, activeTheme, m.milestoneChecker)
 		m.insightsView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewInsights
+		m.setViewMode(ViewInsights)
 		animCmd := m.insightsView.StartAnimation()
 
 		// Check for milestone celebrations on view entry
@@ -474,13 +528,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searchView = m.newSearchView()
 		m.searchView.SetWidth(m.width)
 		m.searchView.RestoreState(msg.Query, msg.SelectedIndex)
-		m.viewMode = ViewSearch
+		m.setViewMode(ViewSearch)
 		m.detailView = nil
 		m.previousView = ViewDoors
 		return m, nil
 
 	case SearchClosedMsg:
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.searchView = nil
 		m.previousView = ViewDoors
 		return m, nil
@@ -493,7 +547,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.previousView = ViewSearch
 		m.detailView = m.newDetailView(msg.Task)
-		m.viewMode = ViewDetail
+		m.setViewMode(ViewDetail)
 		return m, nil
 
 	case AddTaskPromptMsg:
@@ -501,7 +555,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.addTaskView.SetWidth(m.width)
 		m.addTaskView.SetInlineHints(m.resolveHints())
 		m.previousView = m.viewMode
-		m.viewMode = ViewAddTask
+		m.setViewMode(ViewAddTask)
 		return m, nil
 
 	case AddTaskWithContextPromptMsg:
@@ -514,7 +568,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.addTaskView.textInput.Placeholder = "Why does this matter? (Enter to skip)"
 		}
 		m.previousView = m.viewMode
-		m.viewMode = ViewAddTask
+		m.setViewMode(ViewAddTask)
 		return m, nil
 
 	case ExpandTaskMsg:
@@ -526,7 +580,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.flash = "Subtask added"
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		return m, ClearFlashCmd()
 
 	case TaskAddedMsg:
@@ -540,13 +594,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.previousView == ViewSearch {
 			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
-			m.viewMode = ViewSearch
+			m.setViewMode(ViewSearch)
 			m.previousView = ViewDoors
 		} else {
 			m.doorsView.RefreshDoors()
 			m.nextStepsView = NewNextStepsView("added", m.pool, m.completionCounter)
 			m.nextStepsView.SetWidth(m.width)
-			m.viewMode = ViewNextSteps
+			m.setViewMode(ViewNextSteps)
 		}
 		return m, ClearFlashCmd()
 
@@ -572,7 +626,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Show next-steps view instead of returning directly to doors
 		m.nextStepsView = NewNextStepsView("completed", m.pool, m.completionCounter)
 		m.nextStepsView.SetWidth(m.width)
-		m.viewMode = ViewNextSteps
+		m.setViewMode(ViewNextSteps)
 		cmds := []tea.Cmd{ClearFlashCmd()}
 		if len(unblockedTasks) > 0 {
 			cmds = append(cmds, func() tea.Msg {
@@ -588,7 +642,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 		}
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
 		m.flash = "Task uncompleted — returned to todo"
@@ -598,7 +652,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 		}
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
@@ -607,7 +661,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.tracker != nil {
 			m.tracker.RecordMood(msg.Mood, msg.CustomText)
 		}
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.moodView = nil
 		m.flash = fmt.Sprintf("Mood logged: %s", msg.Mood)
 		return m, ClearFlashCmd()
@@ -616,14 +670,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.moodView = NewMoodView()
 		m.moodView.SetWidth(m.width)
 		m.moodView.SetInlineHints(m.resolveHints())
-		m.viewMode = ViewMood
+		m.setViewMode(ViewMood)
 		return m, nil
 
 	case ShowFeedbackMsg:
 		m.feedbackView = NewFeedbackView(msg.Task)
 		m.feedbackView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewFeedback
+		m.setViewMode(ViewFeedback)
 		return m, nil
 
 	case DoorFeedbackMsg:
@@ -637,7 +691,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		m.feedbackView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		m.flash = "Feedback recorded"
 		return m, ClearFlashCmd()
@@ -646,14 +700,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.valuesView = NewValuesSetupView(m.valuesConfig)
 		m.valuesView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewValuesGoals
+		m.setViewMode(ViewValuesGoals)
 		return m, nil
 
 	case ShowValuesEditMsg:
 		m.valuesView = NewValuesEditView(m.valuesConfig)
 		m.valuesView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewValuesGoals
+		m.setViewMode(ViewValuesGoals)
 		return m, nil
 
 	case ValuesSavedMsg:
@@ -665,7 +719,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.valuesView = nil
 		m.flash = "Values saved"
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		return m, ClearFlashCmd()
 
@@ -676,7 +730,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if metrics.TasksCompleted >= 1 || metrics.DurationSeconds() >= 300 {
 				m.improvementView = NewImprovementView()
 				m.improvementView.SetWidth(m.width)
-				m.viewMode = ViewImprovement
+				m.setViewMode(ViewImprovement)
 				return m, nil
 			}
 		}
@@ -699,14 +753,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ShowNextStepsMsg:
 		m.nextStepsView = NewNextStepsView(msg.Context, m.pool, m.completionCounter)
 		m.nextStepsView.SetWidth(m.width)
-		m.viewMode = ViewNextSteps
+		m.setViewMode(ViewNextSteps)
 		return m, nil
 
 	case NextStepSelectedMsg:
 		m.nextStepsView = nil
 		switch msg.Action {
 		case "doors":
-			m.viewMode = ViewDoors
+			m.setViewMode(ViewDoors)
 			m.doorsView.RefreshDoors()
 			m.doorsView.RotateFooterMessage()
 		case "add":
@@ -716,24 +770,24 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "search":
 			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
-			m.viewMode = ViewSearch
+			m.setViewMode(ViewSearch)
 			m.previousView = ViewDoors
 		case "stats":
 			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
 			m.searchView.textInput.SetValue(":stats")
 			m.searchView.checkCommandMode()
-			m.viewMode = ViewSearch
+			m.setViewMode(ViewSearch)
 			m.previousView = ViewDoors
 		default:
-			m.viewMode = ViewDoors
+			m.setViewMode(ViewDoors)
 			m.doorsView.RefreshDoors()
 		}
 		return m, nil
 
 	case NextStepDismissedMsg:
 		m.nextStepsView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		m.doorsView.RotateFooterMessage()
 		return m, nil
@@ -743,7 +797,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.avoidancePromptView.SetWidth(m.width)
 		m.promptedTasks[msg.Task.Text] = true
 		m.previousView = m.viewMode
-		m.viewMode = ViewAvoidancePrompt
+		m.setViewMode(ViewAvoidancePrompt)
 		return m, nil
 
 	case AvoidanceActionMsg:
@@ -756,12 +810,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.detailView = m.newDetailView(msg.Task)
-			m.viewMode = ViewDetail
+			m.setViewMode(ViewDetail)
 			m.flash = "Taking it on!"
 			return m, ClearFlashCmd()
 		case "breakdown":
 			m.detailView = m.newDetailView(msg.Task)
-			m.viewMode = ViewDetail
+			m.setViewMode(ViewDetail)
 			return m, nil
 		case "defer":
 			if err := msg.Task.UpdateStatus(core.StatusDeferred); err == nil {
@@ -772,7 +826,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 				}
 			}
-			m.viewMode = ViewDoors
+			m.setViewMode(ViewDoors)
 			m.doorsView.RefreshDoors()
 			m.flash = "Task set aside for later"
 			return m, ClearFlashCmd()
@@ -783,12 +837,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.pool.RemoveTask(msg.Task.ID)
 			}
-			m.viewMode = ViewDoors
+			m.setViewMode(ViewDoors)
 			m.doorsView.RefreshDoors()
 			m.flash = "Task archived"
 			return m, ClearFlashCmd()
 		default:
-			m.viewMode = ViewDoors
+			m.setViewMode(ViewDoors)
 			m.doorsView.RefreshDoors()
 		}
 		return m, nil
@@ -797,14 +851,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.snoozeView = NewSnoozeView(msg.Task)
 		m.snoozeView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewSnooze
+		m.setViewMode(ViewSnooze)
 		return m, nil
 
 	case TaskSnoozedMsg:
 		m.snoozeView = nil
 		msg.Task.DeferUntil = msg.DeferDate
 		if err := msg.Task.UpdateStatus(core.StatusDeferred); err != nil {
-			m.viewMode = m.previousView
+			m.setViewMode(m.previousView)
 			m.flash = "Cannot snooze: " + err.Error()
 			return m, ClearFlashCmd()
 		}
@@ -815,10 +869,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.deferredListView != nil {
 				m.deferredListView.Refresh()
 			}
-			m.viewMode = ViewDeferred
+			m.setViewMode(ViewDeferred)
 			m.flash = "Snooze date updated"
 		} else {
-			m.viewMode = ViewDoors
+			m.setViewMode(ViewDoors)
 			m.doorsView.RefreshDoors()
 			m.flash = "Task snoozed"
 		}
@@ -826,12 +880,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case SnoozeCancelledMsg:
 		m.snoozeView = nil
-		m.viewMode = m.previousView
+		m.setViewMode(m.previousView)
 		return m, nil
 
 	case OnboardingCompletedMsg:
 		m.onboardingView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		// Save values if provided
 		if len(msg.Values) > 0 {
 			m.valuesConfig = &core.ValuesConfig{Values: msg.Values}
@@ -886,7 +940,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.doorsView.SetShowKeyHints(m.showKeyHints)
 		m.doorsView.SetHeight(m.contentHeight())
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		return m, tea.Batch(ClearFlashCmd(), m.saveKeyHintsCmd(m.showKeyHints))
 
 	case DecomposeStartMsg:
@@ -912,7 +966,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cv.SetWidth(m.width)
 		m.conflictView = cv
 		m.previousView = m.viewMode
-		m.viewMode = ViewConflict
+		m.setViewMode(ViewConflict)
 		return m, nil
 
 	case ConflictResolvedMsg:
@@ -929,7 +983,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Fprintf(os.Stderr, "warning: failed to save after conflict resolution: %v\n", err)
 		}
 		m.conflictView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		m.flash = fmt.Sprintf("%d conflict(s) resolved", len(resolutions))
 		return m, ClearFlashCmd()
@@ -940,13 +994,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		sv.SetHeight(m.height)
 		m.syncLogView = sv
 		m.previousView = m.viewMode
-		m.viewMode = ViewSyncLog
+		m.setViewMode(ViewSyncLog)
 		return m, nil
 	case DuplicateDismissedMsg:
 		m.refreshDuplicates()
 		m.flash = "Duplicate flag dismissed"
 		m.detailView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		return m, ClearFlashCmd()
 
@@ -959,7 +1013,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.refreshDuplicates()
 		m.flash = "Duplicate merged"
 		m.detailView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		return m, ClearFlashCmd()
 
@@ -975,20 +1029,20 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.themePickerView = NewThemePicker(reg, currentTheme)
 		m.themePickerView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewThemePicker
+		m.setViewMode(ViewThemePicker)
 		return m, nil
 
 	case ThemeSelectedMsg:
 		m.doorsView.SetThemeByName(msg.Name)
 		m.themePickerView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.doorsView.RefreshDoors()
 		m.flash = fmt.Sprintf("Theme changed to %s", msg.Name)
 		return m, tea.Batch(ClearFlashCmd(), m.saveThemeCmd(msg.Name))
 
 	case ThemeCancelledMsg:
 		m.themePickerView = nil
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		return m, nil
 
 	case DependencyUnblockedMsg:
@@ -1049,7 +1103,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.proposalsView.SetWidth(m.width)
 		m.proposalsView.SetHeight(m.contentHeight())
 		m.previousView = m.viewMode
-		m.viewMode = ViewProposals
+		m.setViewMode(ViewProposals)
 		return m, nil
 
 	case ProposalApprovedMsg:
@@ -1073,7 +1127,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		pv.SetHeight(m.height)
 		m.planningView = pv
 		m.previousView = m.viewMode
-		m.viewMode = ViewPlanning
+		m.setViewMode(ViewPlanning)
 		return m, pv.Init()
 
 	case PlanningCompleteMsg:
@@ -1088,7 +1142,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// CLI plan mode: exit after planning
 			return m, tea.Quit
 		}
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.planningView = nil
 		focusCount := len(msg.FocusTasks)
 		if focusCount > 0 {
@@ -1102,7 +1156,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.planningMode {
 			return m, tea.Quit
 		}
-		m.viewMode = ViewDoors
+		m.setViewMode(ViewDoors)
 		m.planningView = nil
 		return m, nil
 
@@ -1112,14 +1166,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		hv.SetHeight(m.height)
 		m.helpView = hv
 		m.previousView = m.viewMode
-		m.viewMode = ViewHelp
+		m.setViewMode(ViewHelp)
 		return m, nil
 
 	case ShowDeferredListMsg:
 		m.deferredListView = NewDeferredListView(m.pool)
 		m.deferredListView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewDeferred
+		m.setViewMode(ViewDeferred)
 		return m, nil
 
 	case UnsnoozeTaskMsg:
@@ -1141,7 +1195,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.snoozeView = NewSnoozeView(msg.Task)
 		m.snoozeView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewSnooze
+		m.setViewMode(ViewSnooze)
 		return m, nil
 
 	case ShowDevQueueMsg:
@@ -1152,7 +1206,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.devQueueView = NewDevQueueView(m.devQueue, m.dispatcher)
 		m.devQueueView.SetWidth(m.width)
 		m.previousView = m.viewMode
-		m.viewMode = ViewDevQueue
+		m.setViewMode(ViewDevQueue)
 		return m, nil
 
 	case DevDispatchRequestMsg:
@@ -1202,6 +1256,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// Record non-text key events as breadcrumbs (privacy: never record tea.KeyRunes).
+	if keyMsg, ok := msg.(tea.KeyMsg); ok && keyMsg.Type != tea.KeyRunes {
+		m.breadcrumbs.Record(m.viewMode.String(), "key:"+keyMsg.String())
+	}
+
 	// When overlay is visible, intercept all keys.
 	if m.showKeybindingOverlay {
 		if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -1238,7 +1297,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.searchView.textInput.SetValue(":")
 		m.searchView.checkCommandMode()
 		m.previousView = m.viewMode
-		m.viewMode = ViewSearch
+		m.setViewMode(ViewSearch)
 		return m, nil
 	}
 
@@ -1291,6 +1350,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+// setViewMode transitions to a new view and records a breadcrumb if the view changed.
+func (m *MainModel) setViewMode(v ViewMode) {
+	if v != m.viewMode {
+		m.breadcrumbs.Record(v.String(), "view:"+v.String())
+	}
+	m.viewMode = v
 }
 
 // updateOverlay handles key events when the keybinding overlay is visible.
@@ -1408,7 +1475,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.tracker.RecordDoorSelection(m.doorsView.selectedDoorIndex, task.Text)
 				}
 				m.detailView = m.newDetailView(task)
-				m.viewMode = ViewDetail
+				m.setViewMode(ViewDetail)
 			}
 		case "n", "N":
 			if m.doorsView.selectedDoorIndex >= 0 && m.doorsView.selectedDoorIndex < len(m.doorsView.currentDoors) {
@@ -1422,7 +1489,7 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "/":
 			m.searchView = m.newSearchView()
 			m.searchView.SetWidth(m.width)
-			m.viewMode = ViewSearch
+			m.setViewMode(ViewSearch)
 			m.previousView = ViewDoors
 			return m, nil
 		case "z", "Z":
@@ -1675,6 +1742,7 @@ func (m *MainModel) newSearchView() *SearchView {
 	sv.SetDuplicateTaskIDs(m.duplicateTaskIDs)
 	sv.SetInlineHints(m.resolveHints())
 	sv.SetHeight(m.height)
+	sv.breadcrumbs = &m.breadcrumbs
 	if m.devDispatchEnabled && m.dispatcher != nil {
 		if m.dispatcher.CheckAvailable(context.Background()) == nil {
 			sv.SetDevDispatchEnabled(true)

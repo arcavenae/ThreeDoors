@@ -1,0 +1,6 @@
+- id: "task-1"
+  text: "Task with legacy field"
+  status: "todo"
+  source_provider: "textfile"
+  created_at: "2026-01-01T00:00:00Z"
+  updated_at: "2026-01-01T00:00:00Z"

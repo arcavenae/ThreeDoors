@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"sort"
 	"time"
 
@@ -79,9 +80,18 @@ type CategoryResult struct {
 // CategoryCheckFunc is a function that runs all checks for a category.
 type CategoryCheckFunc func() CategoryResult
 
+// TerminalInfo holds terminal capability information for doctor checks.
+// Fields are set by the caller; zero values are treated as "unknown".
+type TerminalInfo struct {
+	Width        int
+	Height       int
+	ColorProfile string // "Ascii", "ANSI256", "TrueColor", etc.
+}
+
 // DoctorChecker performs category-based system diagnostics.
 type DoctorChecker struct {
 	configDir  string
+	terminal   TerminalInfo
 	categories []registeredCategory
 }
 
@@ -140,7 +150,13 @@ func (r *DoctorResult) OverallStatus() CheckStatus {
 func NewDoctorChecker(configDir string) *DoctorChecker {
 	dc := &DoctorChecker{configDir: configDir}
 	dc.RegisterCategory("Environment", dc.checkEnvironment)
+	dc.RegisterCategory("Task Data", dc.checkTaskData)
 	return dc
+}
+
+// SetTerminalInfo sets the terminal capability information for environment checks.
+func (dc *DoctorChecker) SetTerminalInfo(info TerminalInfo) {
+	dc.terminal = info
 }
 
 // RegisterCategory adds a check category that runs in registration order.
@@ -174,6 +190,15 @@ func (dc *DoctorChecker) checkEnvironment() CategoryResult {
 	// Check 2: Config file valid YAML and schema version
 	checks = append(checks, dc.checkConfigFile())
 
+	// Check 3: Terminal width
+	checks = append(checks, dc.checkTerminalWidth())
+
+	// Check 4: Color profile
+	checks = append(checks, dc.checkColorProfile())
+
+	// Check 5: Go runtime version
+	checks = append(checks, checkGoVersion())
+
 	return CategoryResult{Checks: checks}
 }
 
@@ -185,8 +210,8 @@ func (dc *DoctorChecker) checkConfigDir() CheckResult {
 	if err != nil {
 		if os.IsNotExist(err) {
 			result.Status = CheckFail
-			result.Message = "Config directory does not exist"
-			result.Suggestion = fmt.Sprintf("Run: mkdir -p %s", dc.configDir)
+			result.Message = "Config directory not found"
+			result.Suggestion = "Run threedoors to create it during onboarding"
 			return result
 		}
 		result.Status = CheckFail
@@ -276,15 +301,84 @@ func (dc *DoctorChecker) checkConfigFile() CheckResult {
 		return result
 	}
 
+	if version > CurrentSchemaVersion {
+		result.Status = CheckFail
+		result.Message = fmt.Sprintf("Unsupported config schema version %d (max supported: %d)", version, CurrentSchemaVersion)
+		result.Suggestion = "Update ThreeDoors to the latest version"
+		return result
+	}
+
 	if version < CurrentSchemaVersion {
 		result.Status = CheckInfo
 		result.Message = fmt.Sprintf("Config schema version %d (current: %d) — will be auto-migrated", version, CurrentSchemaVersion)
 		return result
 	}
 
+	// Check required fields
+	if _, hasProvider := parsed["provider"]; !hasProvider {
+		if _, hasProviders := parsed["providers"]; !hasProviders {
+			result.Status = CheckWarn
+			result.Message = "Config file missing required field: provider"
+			result.Suggestion = "Add provider: textfile to config.yaml"
+			return result
+		}
+	}
+
 	result.Status = CheckOK
 	result.Message = fmt.Sprintf("Config file valid (schema v%d)", version)
 	return result
+}
+
+// checkTerminalWidth reports on terminal width, warning if too narrow.
+func (dc *DoctorChecker) checkTerminalWidth() CheckResult {
+	result := CheckResult{Name: "Terminal size"}
+
+	if dc.terminal.Width == 0 && dc.terminal.Height == 0 {
+		result.Status = CheckInfo
+		result.Message = "Terminal size not available"
+		return result
+	}
+
+	if dc.terminal.Width < 40 {
+		result.Status = CheckWarn
+		result.Message = fmt.Sprintf("Narrow terminal (%d columns) may affect theme display", dc.terminal.Width)
+		result.Suggestion = "Widen your terminal to at least 40 columns"
+		return result
+	}
+
+	result.Status = CheckOK
+	result.Message = fmt.Sprintf("Terminal size %d×%d", dc.terminal.Width, dc.terminal.Height)
+	return result
+}
+
+// checkColorProfile reports the terminal color profile.
+func (dc *DoctorChecker) checkColorProfile() CheckResult {
+	result := CheckResult{Name: "Color support"}
+
+	if dc.terminal.ColorProfile == "" {
+		result.Status = CheckInfo
+		result.Message = "Color profile not available"
+		return result
+	}
+
+	if dc.terminal.ColorProfile == "Ascii" {
+		result.Status = CheckInfo
+		result.Message = "Terminal supports ASCII only — colors will be degraded"
+		return result
+	}
+
+	result.Status = CheckOK
+	result.Message = fmt.Sprintf("Color profile: %s", dc.terminal.ColorProfile)
+	return result
+}
+
+// checkGoVersion reports the Go runtime version as INFO.
+func checkGoVersion() CheckResult {
+	return CheckResult{
+		Name:    "Go runtime",
+		Status:  CheckInfo,
+		Message: fmt.Sprintf("Built with %s", runtime.Version()),
+	}
 }
 
 // worstCheckStatus returns the worst (highest severity) status in a list of checks.
