@@ -16,7 +16,7 @@ const (
 
 // GitHubConfig holds parsed and validated GitHub integration settings.
 type GitHubConfig struct {
-	Token           string
+	Token           string `yaml:"-"`
 	Repos           []string
 	Assignee        string
 	PollInterval    time.Duration
