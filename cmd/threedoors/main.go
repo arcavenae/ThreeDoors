@@ -215,6 +215,9 @@ func main() {
 	if agentSvc != nil {
 		model.SetAgentService(agentSvc)
 	}
+	if resolved != nil {
+		model.SetConnectionManager(resolved.Manager)
+	}
 	if isPlanMode {
 		model.SetPlanningMode(true)
 	}
