@@ -113,6 +113,12 @@ type registeredCategory struct {
 	checkFn CategoryCheckFunc
 }
 
+// DoctorOptions controls doctor behavior (verbose mode, category filtering).
+type DoctorOptions struct {
+	Verbose    bool
+	Categories []string // if non-empty, only run these categories
+}
+
 // DoctorResult holds the complete output of a doctor run.
 type DoctorResult struct {
 	Categories []CategoryResult
@@ -120,8 +126,12 @@ type DoctorResult struct {
 }
 
 // IssueCount returns the total number of warnings and errors across all categories.
+// Skipped categories are excluded from the count.
 func (r *DoctorResult) IssueCount() (warnings, errors int) {
 	for _, cat := range r.Categories {
+		if cat.Status == CheckSkip {
+			continue
+		}
 		for _, check := range cat.Checks {
 			switch check.Status {
 			case CheckWarn:
@@ -153,6 +163,21 @@ func (r *DoctorResult) ManualCount() int {
 	return w + e
 }
 
+// HasFixableIssues returns true if any check has a suggestion (indicating a fixable issue).
+func (r *DoctorResult) HasFixableIssues() bool {
+	for _, cat := range r.Categories {
+		if cat.Status == CheckSkip {
+			continue
+		}
+		for _, check := range cat.Checks {
+			if (check.Status == CheckWarn || check.Status == CheckFail) && check.Suggestion != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // CategoryIssueCount returns the number of categories that have at least one issue.
 func (r *DoctorResult) CategoryIssueCount() int {
 	count := 0
@@ -176,6 +201,18 @@ func (r *DoctorResult) OverallStatus() CheckStatus {
 		}
 	}
 	return worst
+}
+
+// ValidCategoryKeys lists the recognized category filter keys for --category.
+// Keys are lowercase; they map to the registered category names.
+var ValidCategoryKeys = map[string]string{
+	"env":       "Environment",
+	"tasks":     "Task Data",
+	"providers": "Providers",
+	"sessions":  "Session Data",
+	"sync":      "Sync",
+	"db":        "Database",
+	"version":   "Version",
 }
 
 // NewDoctorChecker creates a DoctorChecker that looks for config in configDir.
@@ -308,9 +345,37 @@ func (dc *DoctorChecker) RegisterCategory(name string, fn CategoryCheckFunc) {
 
 // Run executes all registered categories in order and returns the result.
 func (dc *DoctorChecker) Run() DoctorResult {
+	return dc.RunWithOptions(DoctorOptions{})
+}
+
+// RunWithOptions executes categories with filtering support.
+// When opts.Categories is non-empty, only matching categories run;
+// others are included in the result with CheckSkip status.
+func (dc *DoctorChecker) RunWithOptions(opts DoctorOptions) DoctorResult {
 	start := time.Now().UTC()
+
+	// Build set of enabled category names (empty = all enabled)
+	enabled := make(map[string]bool)
+	for _, key := range opts.Categories {
+		if name, ok := ValidCategoryKeys[key]; ok {
+			enabled[name] = true
+		}
+	}
+
 	var categories []CategoryResult
 	for _, cat := range dc.categories {
+		if len(enabled) > 0 && !enabled[cat.name] {
+			categories = append(categories, CategoryResult{
+				Name:   cat.name,
+				Status: CheckSkip,
+				Checks: []CheckResult{{
+					Name:    cat.name,
+					Status:  CheckSkip,
+					Message: "Skipped (not selected)",
+				}},
+			})
+			continue
+		}
 		result := cat.checkFn()
 		result.Name = cat.name
 		result.Status = worstCheckStatus(result.Checks)
