@@ -4,20 +4,292 @@ All notable changes to this project, organized by date (most recent first).
 
 ## Highlights
 
-- **212+ PRs merged** across 22+ completed epics
+- **488+ PRs merged** across 35+ completed epics
 - **Core TUI** — Three-door task selection with themes, search, mood tracking, session metrics
 - **Apple Notes** — Bidirectional sync with offline-first WAL
 - **Obsidian** — Vault reader/writer with daily note integration
 - **Jira** — Read-only and bidirectional sync with cache/retry
 - **Apple Reminders** — Full CRUD via JXA scripts
 - **GitHub Issues** — SDK client, TaskProvider, bidirectional sync, contract tests
+- **Todoist** — HTTP client, read-only adapter, bidirectional sync, contract tests
 - **Multi-Source Sync** — Scheduler, dashboard, cross-provider linking, duplicate detection
 - **CLI Interface** — Cobra-based CLI with task management, config, stats, doors experience
 - **MCP Server** — Resources, tools, prompts, security middleware, proposal review
 - **Dev Dispatch** — Self-driving pipeline with queue, engine, TUI controls, safety guardrails
-- **Door Themes** — Classic, Modern, Sci-Fi, Shoji with theme picker and golden file tests
+- **Door Themes** — Classic, Modern, Sci-Fi, Shoji, Seasonal variants with auto-switch
+- **Keybinding System** — Registry, overlay, inline hints, command mode, autocomplete
+- **Beautiful Stats** — Dashboard, sparklines, heatmap, counters, milestone celebrations
+- **Charm Ecosystem** — Spinner, viewport, harmonica, layout utilities, color profiles
+- **Security** — File permissions, credential protection, input size limits, keyring
+- **Doctor Command** — Self-diagnosis with environment checks and data integrity
+- **SLAES** — Retrospector agent, saga detection, doc audit, BOARD pipeline
+- **Homebrew** — Dual-publish (stable + alpha), signing, notarization, retention cleanup
 - **Testing** — E2E Docker harness, golden file snapshots, CI benchmarks, coverage gates
-- **CI/CD** — GitHub Releases, code signing, notarization, coverage reporting
+- **CI/CD** — GitHub Releases, code signing, notarization, coverage reporting, circuit breaker
+
+---
+
+## 2026-03-11
+
+### Epic 49: Doctor Command (Stories 49.1–49.3)
+
+- feat: doctor command skeleton with health alias (Story 49.1) (#444)
+- feat: comprehensive environment checks for Doctor (Story 49.2) (#473)
+- feat: task data integrity checks for Doctor command (Story 49.3) (#471)
+
+### Epic 50: In-App Bug Reporting (Story 50.1)
+
+- feat: breadcrumb tracking system for in-app bug reporting (Story 50.1) (#478)
+
+### Epic 51: SLAES (Stories 51.1, 51.4–51.6)
+
+- feat: retrospector agent definition — Responsibility+WHY format (Story 51.1) (#461)
+- feat: saga detection package for dispatch waste alerting (Story 51.4) (#464)
+- feat: doc consistency audit package and CLI command (Story 51.5) (#465)
+- feat: BOARD.md recommendation pipeline (Story 51.6) (#463)
+
+### Epic 42: Application Security (Stories 42.3–42.4)
+
+- feat: input size limits for YAML and JSONL readers (Story 42.3) (#448)
+- feat: credential protection in config files (Story 42.4) (#477)
+
+### Epic 43: Data Source Setup UX (Story 43.5)
+
+- feat: sync event logging infrastructure (Story 43.5) (#439)
+
+### Epic 46: OAuth (Story 46.1)
+
+- feat: generic device code flow client (Story 46.1) (#443)
+
+### Infrastructure
+
+- feat: post-merge CI circuit breaker (Story 0.36) (#479)
+
+### Bug Fixes
+
+- fix: staticcheck SA5011 in TestProviderConfig_GetConnection (#467)
+- fix: remove t.Parallel() from config_paths tests sharing mutable state (Story 42.1) (#468)
+
+### Docs
+
+- docs: Story 51.2 — rewrite operational agent definitions (Responsibility+WHY format) (#460)
+- docs: PR failure analyses — #447, #438, #441 (#459, #458, #457)
+- docs: CI churn reduction follow-up stories (Stories 0.36, 0.37) (#469)
+- docs: GitHub community standards plan (#480)
+- docs: README.md overhaul research and plan (#482)
+- docs: resolve Q-003/Q-004 — planning doc ownership (D-161, D-162) (#484)
+- docs: fix Epic Number Registry accuracy and enforcement (Story 0.38) (#485)
+- docs: close BOARD P-004 — fork references already removed (#487)
+- docs: envoy three-layer firewall stories (BOARD P-002) (#488)
+
+---
+
+## 2026-03-10
+
+### Epic 42: Application Security (Story 42.1)
+
+- feat: file permission standardization 0o700/0o600 (Story 42.1) (#437)
+
+### Epic 43: Data Source Setup UX (Stories 43.1–43.2)
+
+- feat: connection state machine and ConnectionManager type (Story 43.1) (#428)
+- feat: keyring integration with environment variable fallback (Story 43.2) (#442)
+
+### Bug Fixes
+
+- fix: harden agent definitions and recover lost skills (#423)
+- fix: remove destructive git sync overrides from agent definitions (#424)
+- fix: resolve pre-existing SA5011 lint errors in test files (#449)
+
+### Docs
+
+- docs: Epic 42 — Application Security Hardening planning (#418)
+- docs: Epic 49 — ThreeDoors Doctor self-diagnosis command planning (#430)
+- docs: Epic 50 — In-App Bug Reporting stories and planning (P-006) (#445)
+- docs: Epic 51 — SLAES stories and planning docs (#450)
+- docs: renumber Door-Like Doors from Epic 42 → Epic 48 (#421)
+- docs: incident reports — INC-001 pr-shepherd contamination (#422), INC-002 git sync (#426), INC-003 epic collision (#429)
+- docs: governance syncs — Epic 25 Done (#427), Story 43.1 Done (#433)
+- docs: SLAES party mode — retrospector agent design consensus (#434)
+- docs: subagent abuse investigation and enforcement rule (#435)
+- docs: remote collaboration research — investigation (#452), creative problem-solving (#453), feasibility analysis (#454), brainstorm (#455), web research (#456)
+
+---
+
+## 2026-03-09
+
+The biggest day in the project — 13 epics completed, 150+ PRs merged across keybindings, stats, themes, integrations, and infrastructure.
+
+### Epic 25: Todoist Integration (Stories 25.1–25.4, COMPLETE)
+
+- feat: Todoist HTTP client & auth configuration (Story 25.1) (#308)
+- feat: read-only Todoist adapter with field mapping (Story 25.2) (#321)
+- feat: bidirectional Todoist sync & WAL integration (Story 25.3) (#336)
+- feat: contract tests & integration testing (Story 25.4) (#353)
+
+### Epic 27: Daily Planning Mode (Stories 27.1–27.5, COMPLETE)
+
+- feat: planning data model & focus tag (Story 27.1) (#323)
+- feat: review incomplete tasks flow (Story 27.2) (#339)
+- feat: focus selection flow (Story 27.3) (#352)
+- feat: energy level matching & time-of-day inference (Story 27.4) (#354)
+- feat: CLI plan subcommand & TUI integration (Story 27.5) (#360)
+
+### Epic 28: Snooze/Defer (Stories 28.1–28.4, COMPLETE)
+
+- feat: DeferUntil field, status transitions, and auto-return logic (Story 28.1) (#310)
+- feat: snooze TUI view and Z-key binding (Story 28.2) (#338)
+- feat: deferred list view and :deferred command (Story 28.3) (#358)
+- feat: session metrics logging for snooze events (Story 28.4) (#355)
+
+### Epic 29: Task Dependencies (Stories 29.1–29.4, COMPLETE)
+
+- feat: DependsOn field and DependencyResolver (Story 29.1) (#307)
+- feat: door selection dependency filter and auto-unblock (Story 29.2) (#319)
+- feat: TUI blocked-by indicator and dependency management (Story 29.3) (#340)
+- feat: session metrics logging for dependency events (Story 29.4) (#356)
+
+### Epic 32: Undo Task Completion (Stories 32.1–32.3, COMPLETE)
+
+- feat: complete-to-todo status transition (Story 32.1) (#306)
+- feat: session metrics undo complete event logging (Story 32.2) (#322)
+- feat: TUI & CLI undo experience (Story 32.3) (#337)
+
+### Epic 33: Seasonal Door Theme Variants (Stories 33.1–33.3)
+
+- feat: seasonal theme metadata model and date-range resolver (Story 33.1) (#403)
+- feat: four seasonal theme implementations (Story 33.2) (#409)
+- feat: seasonal theme auto-switch integration (Story 33.3) (#410)
+
+### Epic 36: Expand/Fork Key Implementations (Stories 36.1–36.4, COMPLETE)
+
+- feat: enhanced door selection visual feedback (Story 36.1) (#277)
+- feat: deselect toggle — press same key to unselect (Story 36.2) (#272)
+- feat: universal quit — 'q' works from all screens (Story 36.3) (#276)
+- feat: Space/Enter toggle to close door (Story 36.4) (#405)
+
+### Epic 37: BMAD Agent Ecosystem (Stories 37.1–37.4, COMPLETE)
+
+- feat: agent definitions — project-watchdog and arch-watchdog (Story 37.1) (#271)
+- feat: cron configuration — SM sprint health & QA coverage audit (Story 37.2) (#280)
+- docs: agent communication architecture documentation (Story 37.3) (#279)
+- docs: monitoring, tuning, and Phase 1 evaluation (Story 37.4) (#281)
+
+### Epic 38: Homebrew Dual Publish (Stories 38.1–38.6, COMPLETE)
+
+- feat: alpha Homebrew formula — threedoors-a (Story 38.1) (#273)
+- feat: alpha publishing toggle (Story 38.2) (#287)
+- feat: stable release signing & notarization (Story 38.3) (#288)
+- feat: alpha release verification (Story 38.4) (#295)
+- feat: alpha release retention cleanup (Story 38.5) (#294)
+- fix: alpha formula template DSL — use if/elsif conditionals (Story 38.6) (#312)
+
+### Epic 39: Keybinding Display System (Stories 39.1–39.11, 39.13)
+
+- feat: keybinding registry model (Story 39.1) (#305)
+- feat: concise keybinding bar component (Story 39.2) (#318)
+- feat: full keybinding overlay (Story 39.3) (#320)
+- feat: toggle behavior, config persistence, MainModel integration (Story 39.4) (#346)
+- feat: view-specific keybinding completeness and polish (Story 39.5) (#384)
+- feat: spacebar as Enter alias in doors view (Story 39.6) (#303)
+- feat: global ':' command mode (Story 39.7) (#365)
+- feat: command autocomplete/completion (Story 39.8) (#381)
+- feat: inline hint rendering infrastructure (Story 39.9) (#374)
+- feat: door view inline hints (Story 39.10) (#387)
+- feat: non-door view inline hints (Story 39.11) (#388)
+- feat: unified door key indicator toggle (Story 39.13) (#407)
+
+### Epic 40: Beautiful Stats Display (Stories 40.1–40.10, COMPLETE)
+
+- feat: stats dashboard shell with Lipgloss panels (Story 40.1) (#343)
+- feat: gradient sparkline with color-blind safe palette (Story 40.2) (#366)
+- feat: fun facts engine (Story 40.3) (#371)
+- feat: horizontal bar charts for mood correlation (Story 40.4) (#362)
+- feat: GitHub-style activity heatmap (Story 40.5) (#391)
+- feat: surface hidden session metrics (Story 40.6) (#368)
+- feat: animated counter reveals (Story 40.7) (#392)
+- feat: tab navigation for detail view (Story 40.8) (#367)
+- feat: theme-matched stats color palettes (Story 40.9) (#380)
+- feat: milestone celebrations (Story 40.10) (#393)
+
+### Epic 41: Charm Ecosystem Adoption (Stories 41.1–41.6, COMPLETE)
+
+- feat: spinner component for async provider operations (Story 41.1) (#372)
+- feat: Lipgloss layout utilities adoption (Story 41.2) (#370)
+- feat: viewport adoption for help view (Story 41.3) (#364)
+- feat: viewport adoption for synclog and keybinding overlay (Story 41.4) (#379)
+- feat: Harmonica door transition spike (Story 41.5) (#369)
+- feat: adaptive color profile support (Story 41.6) (#373)
+
+### Infrastructure
+
+- feat: CI/security hardening — secrets, supply chain & reproducibility (Story 0.31) (#270)
+- feat: CI churn reduction — path filtering & relaxed merge rules (Story 0.20) (#260)
+- feat: Homebrew distribution via GoReleaser (Story 0.21) (#262)
+- feat: cross-repo CI monitoring for shared homebrew tap (Story 0.22) (#263)
+- feat: envoy operations guide (Story 0.29) (#259)
+- feat: dedicated help view replacing flash message (Story 0.32) (#309)
+- feat: Renovate + Dependabot automated dependency management (Story 0.24) (#402)
+- feat: stabilize command mode input position (Story 0.35) (#401)
+- build(deps): bump the actions group with 8 updates (#404)
+
+### Bug Fixes
+
+- fix: Homebrew formula template passes brew audit --strict (Story 0.23) (#261)
+- fix: CI release duplicate asset error (#286)
+- fix: scope q-quit to doors view only (Story 0.34) (#361)
+- fix: stable search result ordering (Story 0.33) (#350)
+- fix: add supervisor agent definition (#275)
+
+### Docs
+
+- docs: reconcile planning docs (Story 0.30) (#274)
+- docs: governance syncs — epic/story status updates (#282, #285, #297, #302, #314, #316, #325, #327, #332, #351, #357, #363, #376, #377, #378, #382, #383, #385, #386, #389, #390, #394, #395, #397, #400, #406, #416)
+- docs: Epic 38 — Homebrew Dual Publish planning (#284)
+- docs: Epic 39 — Keybinding Display System planning (#292)
+- docs: Epic 39 / 40 — Beautiful Stats Display planning (#299)
+- docs: Epic 41 — Charm Ecosystem Adoption planning (#359)
+- docs: Story 36.4 — Space/Enter toggle planning (#398)
+- docs: Story 39.13 — unified door key indicator toggle planning (#399)
+- docs: global command mode and autocomplete planning (Stories 39.7, 39.8) (#335)
+- docs: inline tooltips/keybinding hints design (Stories 39.9–39.12) (#341)
+- docs: help display UX redesign (Story 0.32) (#293)
+- docs: dual Homebrew distribution design (#269)
+- docs: Homebrew installation instructions in README (#289)
+- docs: comprehensive README and user guide update (#345)
+- docs: triage CI/security issues #244-248 — stories and artifacts (#264)
+- docs: triage planning docs reconciliation issue #252 (#258)
+- docs: triage issue #296 — alpha formula CI failures (Story 38.6) (#301)
+- docs: triage issue #334 — stable search result ordering (#342)
+- docs: triage issue #330 — dashboard q key regression (#344)
+- docs: :dashboard exits-app bug investigation (#331)
+- docs: governance quick wins + strategic decisions (ADRs 0029-0033) (#265)
+- docs: scoped label taxonomy for human-LLM collaborative projects (#315)
+- docs: dead research audit — surface untracked artifacts (#290)
+- docs: dead research audit follow-up — scoped labels decisions (#317)
+- docs: consolidate planning artifact sprawl into canonical directory (#324)
+- docs: fix stale path references after artifact consolidation (#326)
+- docs: research — open source license selection (#268)
+- docs: research — spacebar action (full agent panel debate) (#298)
+- docs: research — Beautiful Stats Display (#291)
+- docs: research — full-terminal vertical layout & party mode (#329)
+- docs: Bubbletea feature audit & Charm ecosystem UX roadmap (#347)
+- docs: Renovate/Dependabot agent interaction risk analysis (#348)
+- docs: state of testing audit report (#349)
+- docs: persistent agent lockup diagnosis and restart protocol (#375)
+- docs: persistent agent communication investigation (#267)
+- docs: envoy agent messaging integration fix (#266)
+- docs: application security audit (#411)
+- docs: doors-more-doorlike party mode research (#412)
+- docs: ThreeDoors doctor command research report (#413)
+- docs: data source setup UX research — full lifecycle management (#415)
+- docs: Epic 42 — Door-Like Doors planning (#417)
+- docs: data source setup UX — Epics 43-47 planning (26 stories) (#420)
+- docs: fix Epic 39/40 number collision residuals (#313)
+- docs: ROADMAP.md status sync for Story 0.28 (#304)
+- docs: research — in-app bug reporting via :bug command (#328)
+- docs: Epic 39 governance sync investigation + epic number registry (#327)
+- docs: resolve Q-001/Q-002, fix P-002/P-003 links, approve P-004 (#333)
 
 ---
 
