@@ -268,7 +268,6 @@
 | X-061 | Time-bounded breadcrumb buffer | 2026-03-09 | Variable memory; hard to reason about edge cases (idle vs active); count-bounded is simpler | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
 | X-062 | Blocklist approach for bug report privacy | 2026-03-09 | Blocklists risk leaks from new data types; allowlist at capture level is defense in depth | [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) |
 | X-063 | Configurable target repo for bug reports | 2026-03-09 | YAGNI; ThreeDoors reports to ThreeDoors; adds config complexity for no validated need | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) |
-
 | X-050 | `epic.N` per-epic labels | 2026-03-08 | GitHub milestones serve this purpose; 40+ labels is bloat | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-051 | `sprint.*` labels | 2026-03-08 | No fixed sprints in ThreeDoors workflow | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
 | X-052 | `effort.*` Fibonacci labels | 2026-03-08 | Effort tracked in story files, not issues | [Artifact](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) |
