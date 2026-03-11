@@ -736,7 +736,7 @@
 | Epic 45: Sources CLI | 5 | Not Started |
 | Epic 46: OAuth Device Code Flow | 4 | In Progress (1/4 done) |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
-| Epic 48: Door-Like Doors | 4 | Not Started |
+| Epic 48: Door-Like Doors | 4 | In Progress (2/4 done) |
 | Epic 49: ThreeDoors Doctor | 10 | Complete (10/10 done) |
 | Epic 50: In-App Bug Reporting | 3 | Not Started |
 | Epic 51: SLAES | 10 | In Progress (5/10 done) |
