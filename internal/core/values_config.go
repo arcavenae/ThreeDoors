@@ -23,7 +23,7 @@ type ValuesConfig struct {
 // LoadValuesConfig reads values configuration from a YAML file.
 // Returns an empty config if the file does not exist.
 func LoadValuesConfig(path string) (*ValuesConfig, error) {
-	data, err := os.ReadFile(path)
+	data, err := ReadFileWithLimit(path, MaxConfigFileSize)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return &ValuesConfig{}, nil

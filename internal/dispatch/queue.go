@@ -45,6 +45,14 @@ func NewDevQueue(path string) (*DevQueue, error) {
 
 // Load reads queue items from the given YAML file.
 func (q *DevQueue) Load(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	const maxConfigFileSize = 1 * 1024 * 1024 // 1MB
+	if info.Size() > maxConfigFileSize {
+		return fmt.Errorf("file %s exceeds size limit (%d bytes > %d bytes)", path, info.Size(), maxConfigFileSize)
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err

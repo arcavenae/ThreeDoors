@@ -78,7 +78,7 @@ func LoadSyncState() (SyncState, error) {
 	}
 
 	statePath := filepath.Join(configPath, syncStateFile)
-	data, err := os.ReadFile(statePath)
+	data, err := ReadFileWithLimit(statePath, MaxConfigFileSize)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return empty, nil
