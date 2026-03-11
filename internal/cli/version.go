@@ -11,6 +11,7 @@ import (
 // Build-time variables set via -ldflags.
 var (
 	Version   = "dev"
+	Channel   = ""
 	Commit    = "unknown"
 	BuildDate = "unknown"
 )

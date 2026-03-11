@@ -65,7 +65,7 @@ func runDoctor(cmd *cobra.Command) error {
 
 	// Detect terminal capabilities
 	dc.SetTerminalInfo(detectTerminalInfo())
-
+	dc.SetVersionInfo(Version, Channel, nil, "")
 	result := dc.Run()
 
 	if isJSON {
