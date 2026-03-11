@@ -108,6 +108,8 @@ func TestSyncSpinnerDelayThreshold(t *testing.T) {
 	t.Parallel()
 	s := NewSyncSpinner()
 	s.Start("Todoist")
+	// Pin startTime to the future so threshold is guaranteed not elapsed
+	s.startTime = time.Now().UTC().Add(time.Second)
 	if s.ThresholdElapsed() {
 		t.Error("threshold should not be elapsed immediately after start")
 	}
@@ -128,7 +130,8 @@ func TestSyncSpinnerViewRespectsThreshold(t *testing.T) {
 	t.Parallel()
 	s := NewSyncSpinner()
 	s.Start("Todoist")
-	// View immediately should be empty (threshold not met)
+	// Pin startTime to the future so threshold is guaranteed not elapsed
+	s.startTime = time.Now().UTC().Add(time.Second)
 	if s.View() != "" {
 		t.Error("spinner view should be empty before threshold elapsed")
 	}
@@ -210,7 +213,9 @@ func TestRenderSyncStatusBarWithSpinnerBelowThreshold(t *testing.T) {
 
 	sp := NewSyncSpinner()
 	sp.Start("Todoist")
-	// Don't set startTime to past — threshold not met
+	// Pin startTime to the future so threshold is guaranteed not elapsed,
+	// regardless of CI machine speed or scheduling delays.
+	sp.startTime = time.Now().UTC().Add(time.Second)
 
 	got := RenderSyncStatusBarWithSpinner(tracker, sp)
 	want := RenderSyncStatusBar(tracker)

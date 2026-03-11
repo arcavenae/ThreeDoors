@@ -11,6 +11,15 @@ import (
 	"time"
 )
 
+// isolatedHTTPClient returns an http.Client with its own transport,
+// preventing CloseIdleConnections races between parallel tests.
+func isolatedHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: &http.Transport{},
+	}
+}
+
 func writeJSON(t *testing.T, w http.ResponseWriter, v any) {
 	t.Helper()
 	w.Header().Set("Content-Type", "application/json")
@@ -204,6 +213,7 @@ func TestLinearClientRateLimit(t *testing.T) {
 
 	client := NewLinearClient("lin_api_test")
 	client.baseURL = server.URL
+	client.httpClient = isolatedHTTPClient()
 	client.sleepFn = func(_ time.Duration) {} // no-op sleep for tests
 
 	viewer, err := client.QueryViewer(context.Background())
@@ -229,6 +239,7 @@ func TestLinearClientRateLimitExhausted(t *testing.T) {
 
 	client := NewLinearClient("lin_api_test")
 	client.baseURL = server.URL
+	client.httpClient = isolatedHTTPClient()
 	client.sleepFn = func(_ time.Duration) {}
 
 	_, err := client.QueryViewer(context.Background())
