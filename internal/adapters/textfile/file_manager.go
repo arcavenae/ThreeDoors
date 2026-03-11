@@ -72,7 +72,7 @@ func LoadTasks() ([]*core.Task, error) {
 }
 
 func loadFromYAML(path string) ([]*core.Task, error) {
-	data, err := os.ReadFile(path)
+	data, err := core.ReadFileWithLimit(path, core.MaxTaskFileSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w", path, err)
 	}

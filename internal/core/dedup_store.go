@@ -38,7 +38,7 @@ func NewDedupStore(path string) (*DedupStore, error) {
 		index: make(map[string]string),
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := ReadFileWithLimit(path, MaxConfigFileSize)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("read dedup store: %w", err)
 	}

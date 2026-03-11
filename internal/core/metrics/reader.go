@@ -4,7 +4,6 @@
 package metrics
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -73,7 +72,7 @@ func (r *Reader) readFiltered(pred func(core.SessionMetrics) bool) ([]core.Sessi
 	defer func() { _ = f.Close() }()
 
 	var sessions []core.SessionMetrics
-	scanner := bufio.NewScanner(f)
+	scanner := core.NewLimitedScanner(f, core.MaxJSONLLineSize)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" {

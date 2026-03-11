@@ -342,7 +342,7 @@ func (wp *WALProvider) loadPending() {
 	}
 	defer f.Close() //nolint:errcheck // best-effort close on read
 
-	scanner := bufio.NewScanner(f)
+	scanner := NewLimitedScanner(f, MaxJSONLLineSize)
 	var maxSeq int64
 	for scanner.Scan() {
 		line := scanner.Bytes()

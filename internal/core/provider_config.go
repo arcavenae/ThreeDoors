@@ -79,7 +79,7 @@ func (c *ProviderConfig) SeasonalThemesEnabled() bool {
 // LoadProviderConfig reads provider configuration from a YAML file.
 // Returns defaults if the file does not exist.
 func LoadProviderConfig(path string) (*ProviderConfig, error) {
-	data, err := os.ReadFile(path)
+	data, err := ReadFileWithLimit(path, MaxConfigFileSize)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return defaultProviderConfig(), nil

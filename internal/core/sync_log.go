@@ -124,7 +124,7 @@ func (sl *SyncLog) ReadEntries() ([]SyncLogEntry, error) {
 	defer func() { _ = f.Close() }()
 
 	var entries []SyncLogEntry
-	scanner := bufio.NewScanner(f)
+	scanner := NewLimitedScanner(f, MaxJSONLLineSize)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 		if len(line) == 0 {
