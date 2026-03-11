@@ -20,6 +20,7 @@ type commandDef struct {
 // commandRegistry is the single source of truth for all available commands.
 var commandRegistry = []commandDef{
 	{"add", "Create a new task"},
+	{"connect", "Connect a new data source"},
 	{"add-ctx", "Add task with context (why it matters)"},
 	{"dashboard", "Open insights dashboard"},
 	{"deferred", "View deferred/snoozed tasks"},
@@ -218,6 +219,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		return func() tea.Msg {
 			return AddTaskWithContextPromptMsg{PrefilledText: args}
 		}
+
+	case "connect":
+		return func() tea.Msg { return ShowConnectWizardMsg{} }
 
 	case "mood":
 		if args != "" {

@@ -45,6 +45,7 @@ const (
 	ViewDeferred
 	ViewSnooze
 	ViewPlanning
+	ViewConnectWizard
 )
 
 // String returns the human-readable name of the view mode.
@@ -94,6 +95,8 @@ func (v ViewMode) String() string {
 		return "Snooze"
 	case ViewPlanning:
 		return "Planning"
+	case ViewConnectWizard:
+		return "ConnectWizard"
 	default:
 		return "Unknown"
 	}
@@ -125,6 +128,7 @@ type MainModel struct {
 	deferredListView    *DeferredListView
 	snoozeView          *SnoozeView
 	planningView        *PlanningView
+	connectWizard       *ConnectWizard
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -1188,6 +1192,26 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setViewMode(ViewHelp)
 		return m, nil
 
+	case ShowConnectWizardMsg:
+		w := NewConnectWizard(core.DefaultRegistry(), nil)
+		w.SetWidth(m.width)
+		w.SetHeight(m.height)
+		m.connectWizard = w
+		m.previousView = m.viewMode
+		m.setViewMode(ViewConnectWizard)
+		return m, w.Init()
+
+	case ConnectWizardCompleteMsg:
+		m.flash = "Data source connected!"
+		m.setViewMode(m.previousView)
+		m.connectWizard = nil
+		return m, ClearFlashCmd()
+
+	case ConnectWizardCancelMsg:
+		m.setViewMode(m.previousView)
+		m.connectWizard = nil
+		return m, nil
+
 	case ShowDeferredListMsg:
 		m.deferredListView = NewDeferredListView(m.pool)
 		m.deferredListView.SetWidth(m.width)
@@ -1366,6 +1390,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSnooze(msg)
 	case ViewPlanning:
 		return m.updatePlanning(msg)
+	case ViewConnectWizard:
+		return m.updateConnectWizard(msg)
 	}
 
 	return m, nil
@@ -1630,6 +1656,14 @@ func (m *MainModel) updatePlanning(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.planningView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateConnectWizard(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.connectWizard == nil {
+		return m, nil
+	}
+	_, cmd := m.connectWizard.Update(msg)
 	return m, cmd
 }
 
@@ -2161,6 +2195,10 @@ func (m *MainModel) View() string {
 	case ViewPlanning:
 		if m.planningView != nil {
 			view = m.planningView.View()
+		}
+	case ViewConnectWizard:
+		if m.connectWizard != nil {
+			view = m.connectWizard.View()
 		}
 	default:
 		view = m.doorsView.View()
