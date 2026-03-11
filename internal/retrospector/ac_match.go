@@ -12,10 +12,23 @@ import (
 // storyRefPattern matches "Story X.Y" in commit messages and PR titles.
 var storyRefPattern = regexp.MustCompile(`(?i)story\s+(\d+\.\d+)`)
 
+// epicRefPattern extracts the epic number from a story reference like "51.3" → "51".
+var epicRefPattern = regexp.MustCompile(`^(\d+)\.\d+$`)
+
 // ParseStoryRef extracts a story reference (e.g. "51.3") from text.
 // Returns empty string if no reference found.
 func ParseStoryRef(text string) string {
 	matches := storyRefPattern.FindStringSubmatch(text)
+	if len(matches) < 2 {
+		return ""
+	}
+	return matches[1]
+}
+
+// EpicRefFromStory extracts the epic number from a story reference.
+// "51.3" → "51", "" → "".
+func EpicRefFromStory(storyRef string) string {
+	matches := epicRefPattern.FindStringSubmatch(storyRef)
 	if len(matches) < 2 {
 		return ""
 	}

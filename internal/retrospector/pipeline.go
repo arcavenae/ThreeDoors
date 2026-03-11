@@ -3,6 +3,7 @@ package retrospector
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -16,6 +17,9 @@ const (
 	PatternMergeConflict   PatternType = "merge_conflict"
 	PatternACMismatch      PatternType = "ac_mismatch"
 	PatternExcessiveRebase PatternType = "excessive_rebase"
+	PatternHotFile         PatternType = "hot_file"
+	PatternEpicCollision   PatternType = "epic_collision"
+	PatternRebaseChurn     PatternType = "rebase_churn"
 )
 
 // DetectedPattern represents a cross-PR pattern found during batch analysis.
@@ -59,6 +63,9 @@ func DetectPatterns(findings []Finding) []DetectedPattern {
 	if p := detectExcessiveRebasePattern(findings); p != nil {
 		patterns = append(patterns, *p)
 	}
+
+	// Conflict analysis patterns (Story 51.7)
+	patterns = append(patterns, detectConflictAnalysisPatterns(findings)...)
 
 	// Sort by confidence (High first) then by data points (descending)
 	sort.Slice(patterns, func(i, j int) bool {
@@ -291,4 +298,108 @@ func joinSlice(items []string, sep string) string {
 		result += item
 	}
 	return result
+}
+
+// detectConflictAnalysisPatterns runs the conflict analyzer and converts
+// results into DetectedPattern entries for the pipeline.
+func detectConflictAnalysisPatterns(findings []Finding) []DetectedPattern {
+	ca := NewConflictAnalyzer(findings)
+	report := ca.Analyze()
+
+	var patterns []DetectedPattern
+
+	// Hot files → pattern
+	if len(report.HotFiles) > 0 {
+		totalPRs := map[int]bool{}
+		for _, hf := range report.HotFiles {
+			for _, pr := range hf.PRs {
+				totalPRs[pr] = true
+			}
+		}
+		var evidence []Finding
+		for _, f := range findings {
+			if totalPRs[f.PR] {
+				evidence = append(evidence, f)
+			}
+		}
+
+		summary := fmt.Sprintf("%d hot files detected across %d PRs; sequence PRs to reduce conflicts",
+			len(report.HotFiles), len(totalPRs))
+		if len(report.HotFiles) > 0 {
+			summary += fmt.Sprintf("; worst: %s (%d concurrent PRs)",
+				report.HotFiles[0].Path, report.HotFiles[0].Count)
+		}
+
+		patterns = append(patterns, DetectedPattern{
+			Type:       PatternHotFile,
+			Summary:    summary,
+			DataPoints: len(totalPRs),
+			Confidence: ScoreConfidence(len(totalPRs)),
+			PRNumbers:  extractPRNumbers(evidence),
+			Evidence:   evidence,
+		})
+	}
+
+	// Epic collisions → pattern
+	if len(report.EpicCollisions) > 0 {
+		totalSharedFiles := 0
+		for _, ec := range report.EpicCollisions {
+			totalSharedFiles += len(ec.SharedFiles)
+		}
+
+		summary := fmt.Sprintf("%d epic collision zones with %d shared files",
+			len(report.EpicCollisions), totalSharedFiles)
+		if len(report.EpicCollisions) > 0 {
+			summary += fmt.Sprintf("; worst: Epic %s vs Epic %s (%d shared files)",
+				report.EpicCollisions[0].EpicA, report.EpicCollisions[0].EpicB,
+				len(report.EpicCollisions[0].SharedFiles))
+		}
+
+		patterns = append(patterns, DetectedPattern{
+			Type:       PatternEpicCollision,
+			Summary:    summary,
+			DataPoints: totalSharedFiles,
+			Confidence: ScoreConfidence(totalSharedFiles),
+		})
+	}
+
+	// Rebase churn → pattern (upgraded from basic excessive rebase detection)
+	if len(report.RebaseChurn) > 0 {
+		var evidence []Finding
+		var prNums []int
+		for _, rc := range report.RebaseChurn {
+			prNums = append(prNums, rc.PR)
+			for _, f := range findings {
+				if f.PR == rc.PR {
+					evidence = append(evidence, f)
+					break
+				}
+			}
+		}
+
+		// Group by root cause for summary
+		causeCounts := map[RebaseRootCause]int{}
+		for _, rc := range report.RebaseChurn {
+			causeCounts[rc.RootCause]++
+		}
+		var causes []string
+		for cause, count := range causeCounts {
+			causes = append(causes, fmt.Sprintf("%s (%d)", cause, count))
+		}
+		sort.Strings(causes)
+
+		summary := fmt.Sprintf("Rebase churn in %d PRs; root causes: %s",
+			len(report.RebaseChurn), strings.Join(causes, ", "))
+
+		patterns = append(patterns, DetectedPattern{
+			Type:       PatternRebaseChurn,
+			Summary:    summary,
+			DataPoints: len(report.RebaseChurn),
+			Confidence: ScoreConfidence(len(report.RebaseChurn)),
+			PRNumbers:  prNums,
+			Evidence:   evidence,
+		})
+	}
+
+	return patterns
 }
