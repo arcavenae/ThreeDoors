@@ -103,6 +103,62 @@ func TestNewDefaultRegistry(t *testing.T) {
 	}
 }
 
+func TestSeasonalNames(t *testing.T) {
+	t.Parallel()
+
+	reg := NewDefaultRegistry()
+	names := reg.SeasonalNames()
+
+	expected := []string{"autumn", "spring", "summer", "winter"}
+	if len(names) != len(expected) {
+		t.Fatalf("got %d seasonal names, want %d: %v", len(names), len(expected), names)
+	}
+	for i, name := range expected {
+		if names[i] != name {
+			t.Errorf("names[%d] = %q, want %q", i, names[i], name)
+		}
+	}
+}
+
+func TestNonSeasonalNames(t *testing.T) {
+	t.Parallel()
+
+	reg := NewDefaultRegistry()
+	names := reg.NonSeasonalNames()
+
+	expected := []string{"classic", "modern", "scifi", "shoji"}
+	if len(names) != len(expected) {
+		t.Fatalf("got %d non-seasonal names, want %d: %v", len(names), len(expected), names)
+	}
+	for i, name := range expected {
+		if names[i] != name {
+			t.Errorf("names[%d] = %q, want %q", i, names[i], name)
+		}
+	}
+}
+
+func TestSeasonalNamesEmptyRegistry(t *testing.T) {
+	t.Parallel()
+
+	reg := NewRegistry()
+	reg.Register(&DoorTheme{
+		Name: "plain",
+		Render: func(content string, width int, height int, selected bool, hint string) string {
+			return content
+		},
+	})
+
+	names := reg.SeasonalNames()
+	if len(names) != 0 {
+		t.Errorf("expected no seasonal names, got %v", names)
+	}
+
+	nonSeasonal := reg.NonSeasonalNames()
+	if len(nonSeasonal) != 1 || nonSeasonal[0] != "plain" {
+		t.Errorf("expected [plain], got %v", nonSeasonal)
+	}
+}
+
 func TestNames(t *testing.T) {
 	t.Parallel()
 

@@ -88,7 +88,7 @@ func TestMonochromeDoorSignifiers(t *testing.T) {
 	checks := []signifierCheck{
 		{
 			NewClassicTheme(),
-			[]string{"─", "├"},
+			[]string{"─", "╟"},
 			[]string{"●"},
 			"▔",
 		},
@@ -112,13 +112,13 @@ func TestMonochromeDoorSignifiers(t *testing.T) {
 		},
 		{
 			NewWinterTheme(),
-			[]string{"─", "├"},
+			[]string{"─", "╟"},
 			[]string{"◆"},
 			"▔",
 		},
 		{
 			NewSpringTheme(),
-			[]string{"─", "├"},
+			[]string{"─", "╟"},
 			[]string{"○"},
 			"▔",
 		},
@@ -130,7 +130,7 @@ func TestMonochromeDoorSignifiers(t *testing.T) {
 		},
 		{
 			NewAutumnTheme(),
-			[]string{"─", "├"},
+			[]string{"─", "╟"},
 			[]string{"●"},
 			"▒",
 		},
@@ -190,14 +190,14 @@ func TestCompactFallbackAllThemes(t *testing.T) {
 	// Note: some themes reuse characters like ● in compact card layout (e.g. Modern),
 	// so we check only elements exclusive to door mode.
 	themeChecks := map[string][]string{
-		"classic": {"▔", "├"},      // threshold and panel divider junction
+		"classic": {"▔", "╟"},      // threshold and hinge divider junction
 		"modern":  {"▔", "○"},      // threshold and open circle handle (door mode)
 		"scifi":   {"▓", "◈", "╞"}, // floor grating, access panel, bulkhead junction
 		"shoji":   {"▔", "○"},      // threshold and handle (lattice chars shared with compact)
-		"winter":  {"▔", "├"},      // threshold and panel divider junction
-		"spring":  {"▔", "├"},      // threshold and panel divider junction
-		"summer":  {"▀", "╠"},      // bold threshold and panel divider
-		"autumn":  {"▒", "├"},      // block threshold and panel divider junction
+		"winter":  {"▔", "╟"},      // threshold and hinge divider junction
+		"spring":  {"▔", "╟"},      // threshold and hinge divider junction
+		"summer":  {"▀", "╠"},      // bold threshold and hinge divider
+		"autumn":  {"▒", "╟"},      // block threshold and hinge divider junction
 	}
 
 	content := "Important task to complete"

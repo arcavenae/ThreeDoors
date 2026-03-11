@@ -10,6 +10,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -335,6 +336,7 @@ func (dv *DoorsView) View() string {
 		if doorHeight < 10 {
 			doorHeight = 10
 		}
+		doorHeight-- // reserve 1 row for threshold floor line (Story 48.2)
 	}
 
 	// Resolve the active theme for this render cycle.
@@ -453,7 +455,21 @@ func (dv *DoorsView) View() string {
 		}
 	}
 
-	s.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...))
+	doorRow := lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...)
+	s.WriteString(doorRow)
+
+	// Continuous threshold/floor line beneath all doors (Story 48.2).
+	// Spans the full width of the door row, appearing below shadows,
+	// grounding the doors in a shared visual space.
+	if firstNewline := strings.IndexByte(doorRow, '\n'); firstNewline > 0 {
+		rowWidth := ansi.StringWidth(doorRow[:firstNewline])
+		thresholdLine := strings.Repeat("▔", rowWidth)
+		thresholdStyle := separatorStyle
+		if activeTheme != nil {
+			thresholdStyle = lipgloss.NewStyle().Foreground(activeTheme.Colors.Frame)
+		}
+		fmt.Fprintf(&s, "\n%s", thresholdStyle.Render(thresholdLine))
+	}
 
 	if dv.completedCount > 0 {
 		fmt.Fprintf(&s, "\n\nCompleted this session: %d", dv.completedCount)

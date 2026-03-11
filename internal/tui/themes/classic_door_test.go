@@ -47,8 +47,9 @@ func TestClassicDoorProportions(t *testing.T) {
 					t.Errorf("panel divider at row %d should contain horizontal bars, got: %q",
 						anatomy.PanelDivider, dividerLine)
 				}
-				if !strings.Contains(dividerLine, "├") && !strings.Contains(dividerLine, "┣") {
-					t.Errorf("panel divider should have left junction character, got: %q", dividerLine)
+				// Hinge junction: ╟ (unselected) or ┣ (selected)
+				if !strings.Contains(dividerLine, "╟") && !strings.Contains(dividerLine, "┣") {
+					t.Errorf("panel divider should have hinge junction character (╟ or ┣), got: %q", dividerLine)
 				}
 			}
 
@@ -109,19 +110,27 @@ func TestClassicDoorSelectedVsUnselected(t *testing.T) {
 		t.Error("selected and unselected door-mode output should differ")
 	}
 
-	// Unselected uses rounded corners
-	if !strings.Contains(unselected, "╭") {
-		t.Error("unselected should use rounded corner ╭")
+	// Unselected uses double-line hinge on left (╓)
+	if !strings.Contains(unselected, "╓") {
+		t.Error("unselected should use double-line hinge corner ╓")
 	}
 
-	// Selected uses heavy corners
+	// Selected uses heavy hinge on left (┏)
 	if !strings.Contains(selected, "┏") {
-		t.Error("selected should use heavy corner ┏")
+		t.Error("selected should use heavy hinge corner ┏")
 	}
 
-	// Selected panel divider uses heavy junction
+	// Opening side (right) uses standard weight
+	if !strings.Contains(unselected, "┐") {
+		t.Error("unselected should use standard right corner ┐")
+	}
+	if !strings.Contains(selected, "┐") {
+		t.Error("selected should use standard right corner ┐ (lighter than hinge)")
+	}
+
+	// Selected panel divider uses heavy hinge junction
 	if !strings.Contains(selected, "┣") {
-		t.Error("selected panel divider should use heavy junction ┣")
+		t.Error("selected panel divider should use heavy hinge junction ┣")
 	}
 }
 

@@ -128,18 +128,31 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	wrapped := ansi.Wordwrap(content, contentWidth, "")
 	contentLines := strings.Split(wrapped, "\n")
 
+	// Summer already uses double-line (╔║╚) — hinge keeps double left,
+	// opening (right) uses single-vertical with double-horizontal connections
+	var hingeTL, openTR, hingeBL, openBR string
+	var hingeV, openV string
+	var hingeTee, openTee string
+	var divH string
+
+	if selected {
+		hingeTL, openTR = "┏", "┐"
+		hingeBL, openBR = "┗", "┘"
+		hingeV, openV = "┃", "│"
+		hingeTee, openTee = "┣", "┤"
+		divH = "━"
+	} else {
+		hingeTL, openTR = "╔", "╕"
+		hingeBL, openBR = "╚", "╛"
+		hingeV, openV = "║", "│"
+		hingeTee, openTee = "╠", "╡"
+		divH = "═"
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(vChar) + strings.Repeat(" ", inner) + style.Render(vChar)
-
-	// Panel divider uses bold geometric style
-	divLeft, divRight := "╠", "╣"
-	divH := "═"
-	if selected {
-		divLeft, divRight = "┣", "┫"
-		divH = "━"
-	}
+	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
 	// Radiating accent row: geometric triangles
 	accentChar := "▲"
@@ -148,27 +161,27 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s", style.Render(tl+hBar+tr))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
 
 		case row == accentRow:
 			// Radiating geometric accent below lintel
 			pattern := buildRadiatingPattern(accentChar, inner)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), pattern, style.Render(vChar))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), pattern, style.Render(openV))
 
 		case row == anatomy.PanelDivider:
-			fmt.Fprintf(&b, "%s", style.Render(divLeft+strings.Repeat(divH, inner)+divRight))
+			fmt.Fprintf(&b, "%s", style.Render(hingeTee+strings.Repeat(divH, inner)+openTee))
 
 		case row == anatomy.HandleRow:
-			// Bold square handle
-			knobPad := inner - 4
+			// Bold square handle at rightmost content column
+			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "■", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(vChar), knobLine, style.Render(vChar))
+			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s", style.Render(bl+hBar+br))
+			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -180,9 +193,9 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 					padding = 0
 				}
 				fmt.Fprintf(&b, "%s%s%s",
-					style.Render(vChar),
+					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
-					style.Render(vChar),
+					style.Render(openV),
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)

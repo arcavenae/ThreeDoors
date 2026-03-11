@@ -235,3 +235,113 @@ func TestDoorsView_NarrowTerminal_StillRenders(t *testing.T) {
 		t.Error("Narrow terminal should still render door content")
 	}
 }
+
+// --- Story 48.2: Continuous Threshold / Floor Line ---
+
+func TestDoorsView_ThresholdLine_Present(t *testing.T) {
+	t.Parallel()
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(90)
+	dv.SetHeight(30)
+	view := dv.View()
+	if !strings.Contains(view, "▔") {
+		t.Error("View should contain threshold floor line character ▔")
+	}
+}
+
+func TestDoorsView_ThresholdLine_SpansFullWidth(t *testing.T) {
+	t.Parallel()
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(90)
+	dv.SetHeight(30)
+	view := dv.View()
+
+	// Find the continuous threshold line — longest consecutive run of ▔
+	lines := strings.Split(view, "\n")
+	maxRun := 0
+	for _, line := range lines {
+		// Count ▔ characters (may include ANSI escape codes around them)
+		stripped := stripANSI(line)
+		run := 0
+		for _, r := range stripped {
+			if r == '▔' {
+				run++
+			} else {
+				if run > maxRun {
+					maxRun = run
+				}
+				run = 0
+			}
+		}
+		if run > maxRun {
+			maxRun = run
+		}
+	}
+
+	// The continuous threshold should span at least the combined door width.
+	// Three doors at width ~28 each = ~84 chars minimum.
+	doorWidth := (90 - 6) / 3
+	minExpected := doorWidth * 3
+	if maxRun < minExpected {
+		t.Errorf("threshold line should span full door row width (>=%d chars), got %d", minExpected, maxRun)
+	}
+}
+
+func TestDoorsView_ThresholdLine_WithTheme(t *testing.T) {
+	t.Parallel()
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(90)
+	dv.SetHeight(30)
+	dv.SetThemeByName("modern")
+	view := dv.View()
+	if !strings.Contains(view, "▔") {
+		t.Error("themed view should contain threshold floor line character ▔")
+	}
+}
+
+func TestDoorsView_ThresholdLine_NarrowTerminal(t *testing.T) {
+	t.Parallel()
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(45)
+	dv.SetHeight(20)
+	view := dv.View()
+	// Should still render threshold even at narrow width
+	if !strings.Contains(view, "▔") {
+		t.Error("narrow terminal should still render threshold floor line")
+	}
+}
+
+func TestDoorsView_ThresholdLine_BelowDoors(t *testing.T) {
+	t.Parallel()
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(90)
+	dv.SetHeight(30)
+	dv.SetThemeByName("classic")
+	view := dv.View()
+
+	lines := strings.Split(view, "\n")
+
+	// Find the last line that is primarily ▔ characters (the continuous threshold).
+	// It should appear after the door content lines.
+	lastThresholdIdx := -1
+	lastDoorContentIdx := -1
+	for i, line := range lines {
+		stripped := stripANSI(line)
+		thresholdCount := strings.Count(stripped, "▔")
+		if thresholdCount > 20 {
+			lastThresholdIdx = i
+		}
+		if strings.Contains(stripped, "[todo]") {
+			lastDoorContentIdx = i
+		}
+	}
+	if lastThresholdIdx == -1 {
+		t.Fatal("no threshold line found in view")
+	}
+	if lastDoorContentIdx == -1 {
+		t.Fatal("no door content found in view")
+	}
+	if lastThresholdIdx <= lastDoorContentIdx {
+		t.Errorf("threshold line (line %d) should appear below door content (line %d)", lastThresholdIdx, lastDoorContentIdx)
+	}
+}

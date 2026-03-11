@@ -135,19 +135,36 @@ func TestModernDoorSelectedVsUnselected(t *testing.T) {
 	}
 }
 
-// TestModernDoorNoCorners verifies Modern doors use straight bars, no corners.
-func TestModernDoorNoCorners(t *testing.T) {
+// TestModernDoorHingeAsymmetry verifies Modern doors have hinge marks on left,
+// standard on right. The right side keeps minimalist no-corner style.
+func TestModernDoorHingeAsymmetry(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
 
-	for _, sel := range []bool{false, true} {
-		output := theme.Render("Task", 30, 16, sel, "")
-		for _, ch := range []string{"╭", "╮", "╰", "╯", "┏", "┓", "┗", "┛"} {
-			if strings.Contains(output, ch) {
-				t.Errorf("modern door-mode should not have corner %q (selected=%v)", ch, sel)
-			}
+	// Unselected: left hinge ╓/║/╙, right stays minimal (no corners)
+	unselected := theme.Render("Task", 30, 16, false, "")
+	if !strings.Contains(unselected, "╓") {
+		t.Error("unselected modern door should have hinge corner ╓ on left")
+	}
+	if !strings.Contains(unselected, "║") {
+		t.Error("unselected modern door should have hinge vertical ║ on left")
+	}
+
+	// Right side should NOT have heavy corners
+	for _, ch := range []string{"╮", "╯", "┓", "┛"} {
+		if strings.Contains(unselected, ch) {
+			t.Errorf("modern door right side should not have corner %q", ch)
 		}
+	}
+
+	// Selected: left hinge ┏/┃/┗, right stays standard │
+	selected := theme.Render("Task", 30, 16, true, "")
+	if !strings.Contains(selected, "┏") {
+		t.Error("selected modern door should have heavy hinge corner ┏ on left")
+	}
+	if !strings.Contains(selected, "┃") {
+		t.Error("selected modern door should have heavy hinge vertical ┃ on left")
 	}
 }
 
