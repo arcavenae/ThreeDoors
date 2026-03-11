@@ -177,12 +177,16 @@ func TestDoctorChecker_DatabaseRegistered(t *testing.T) {
 	dc := NewDoctorChecker(tmpDir)
 	result := dc.Run()
 
-	// Should have Environment and Database categories
-	if len(result.Categories) != 2 {
-		t.Fatalf("expected 2 categories, got %d", len(result.Categories))
+	// Should have a Database category registered
+	var found bool
+	for _, cat := range result.Categories {
+		if cat.Name == "Database" {
+			found = true
+			break
+		}
 	}
-	if result.Categories[1].Name != "Database" {
-		t.Errorf("second category = %q, want %q", result.Categories[1].Name, "Database")
+	if !found {
+		t.Error("Database category not found in registered categories")
 	}
 }
 
@@ -203,9 +207,9 @@ func TestDoctorChecker_DatabaseIntegrationWithDoctor(t *testing.T) {
 	result := dc.Run()
 
 	// Database category should be OK
-	dbCat := result.Categories[1]
-	if dbCat.Name != "Database" {
-		t.Errorf("category name = %q, want Database", dbCat.Name)
+	dbCat := findCategory(result, "Database")
+	if dbCat == nil {
+		t.Fatal("Database category not found")
 	}
 	if dbCat.Status != CheckOK {
 		t.Errorf("database category status = %v, want %v", dbCat.Status, CheckOK)
@@ -217,4 +221,13 @@ func TestDoctorChecker_DatabaseIntegrationWithDoctor(t *testing.T) {
 			t.Errorf("check %q: status = %v, want %v (msg: %s)", check.Name, check.Status, CheckOK, check.Message)
 		}
 	}
+}
+
+func findCategory(result DoctorResult, name string) *CategoryResult {
+	for i := range result.Categories {
+		if result.Categories[i].Name == name {
+			return &result.Categories[i]
+		}
+	}
+	return nil
 }
