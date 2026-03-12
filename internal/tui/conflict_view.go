@@ -14,6 +14,7 @@ type ConflictView struct {
 	conflictSet *core.ConflictSet
 	syncLog     *core.SyncLog
 	width       int
+	height      int
 }
 
 // NewConflictView creates a new ConflictView for the given conflict set.
@@ -27,6 +28,11 @@ func NewConflictView(cs *core.ConflictSet, syncLog *core.SyncLog) *ConflictView 
 // SetWidth sets the terminal width for rendering.
 func (cv *ConflictView) SetWidth(w int) {
 	cv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (cv *ConflictView) SetHeight(h int) {
+	cv.height = h
 }
 
 // Update handles key presses for conflict resolution.

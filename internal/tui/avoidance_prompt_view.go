@@ -10,9 +10,10 @@ import (
 
 // AvoidancePromptView displays a gentle prompt for tasks with 10+ bypasses.
 type AvoidancePromptView struct {
-	task  *core.Task
-	count int
-	width int
+	task   *core.Task
+	count  int
+	width  int
+	height int
 }
 
 // NewAvoidancePromptView creates an avoidance prompt for the given task.
@@ -26,6 +27,11 @@ func NewAvoidancePromptView(task *core.Task, bypassCount int) *AvoidancePromptVi
 // SetWidth sets the terminal width for rendering.
 func (v *AvoidancePromptView) SetWidth(w int) {
 	v.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (v *AvoidancePromptView) SetHeight(h int) {
+	v.height = h
 }
 
 // Update handles key input for the avoidance prompt.

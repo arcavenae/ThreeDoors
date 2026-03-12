@@ -446,11 +446,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.doorsView.SetWidth(msg.Width)
 		m.doorsView.SetHeight(m.contentHeight())
+		contentH := m.contentHeight()
 		if m.detailView != nil {
 			m.detailView.SetWidth(msg.Width)
+			m.detailView.SetHeight(contentH)
 		}
 		if m.moodView != nil {
 			m.moodView.SetWidth(msg.Width)
+			m.moodView.SetHeight(contentH)
 		}
 		if m.searchView != nil {
 			m.searchView.SetWidth(msg.Width)
@@ -458,30 +461,39 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.healthView != nil {
 			m.healthView.SetWidth(msg.Width)
+			m.healthView.SetHeight(contentH)
 		}
 		if m.insightsView != nil {
 			m.insightsView.SetWidth(msg.Width)
+			m.insightsView.SetHeight(contentH)
 		}
 		if m.addTaskView != nil {
 			m.addTaskView.SetWidth(msg.Width)
+			m.addTaskView.SetHeight(contentH)
 		}
 		if m.valuesView != nil {
 			m.valuesView.SetWidth(msg.Width)
+			m.valuesView.SetHeight(contentH)
 		}
 		if m.feedbackView != nil {
 			m.feedbackView.SetWidth(msg.Width)
+			m.feedbackView.SetHeight(contentH)
 		}
 		if m.nextStepsView != nil {
 			m.nextStepsView.SetWidth(msg.Width)
+			m.nextStepsView.SetHeight(contentH)
 		}
 		if m.avoidancePromptView != nil {
 			m.avoidancePromptView.SetWidth(msg.Width)
+			m.avoidancePromptView.SetHeight(contentH)
 		}
 		if m.onboardingView != nil {
 			m.onboardingView.SetWidth(msg.Width)
+			m.onboardingView.SetHeight(contentH)
 		}
 		if m.conflictView != nil {
 			m.conflictView.SetWidth(msg.Width)
+			m.conflictView.SetHeight(contentH)
 		}
 		if m.syncLogView != nil {
 			m.syncLogView.SetWidth(msg.Width)
@@ -489,13 +501,15 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.themePickerView != nil {
 			m.themePickerView.SetWidth(msg.Width)
+			m.themePickerView.SetHeight(contentH)
 		}
 		if m.devQueueView != nil {
 			m.devQueueView.SetWidth(msg.Width)
+			m.devQueueView.SetHeight(contentH)
 		}
 		if m.proposalsView != nil {
 			m.proposalsView.SetWidth(msg.Width)
-			m.proposalsView.SetHeight(m.contentHeight())
+			m.proposalsView.SetHeight(contentH)
 		}
 		if m.helpView != nil {
 			m.helpView.SetWidth(msg.Width)
@@ -503,9 +517,11 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.deferredListView != nil {
 			m.deferredListView.SetWidth(msg.Width)
+			m.deferredListView.SetHeight(contentH)
 		}
 		if m.snoozeView != nil {
 			m.snoozeView.SetWidth(msg.Width)
+			m.snoozeView.SetHeight(contentH)
 		}
 		if m.planningView != nil {
 			m.planningView.SetWidth(msg.Width)
@@ -525,6 +541,14 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.extractView != nil {
 			m.extractView.SetWidth(msg.Width)
+		}
+		if m.breakdownView != nil {
+			m.breakdownView.SetWidth(msg.Width)
+			m.breakdownView.SetHeight(contentH)
+		}
+		if m.importView != nil {
+			m.importView.SetWidth(msg.Width)
+			m.importView.SetHeight(contentH)
 		}
 		return m, nil
 
@@ -2767,14 +2791,16 @@ func (m *MainModel) View() string {
 		view += RenderValuesFooter(m.valuesConfig)
 	}
 
-	// Append keybinding bar when enabled — doors view uses inline hints instead.
+	// Build footer: keybinding bar for non-doors views.
+	var footer string
 	if m.viewMode != ViewDoors {
 		barCtx := m.buildBarContext()
 		barOutput := RenderKeybindingBarWithContext(barCtx, m.width, m.height, m.showKeyHints)
 		if barOutput != "" {
-			view += "\n" + barOutput
+			footer = barOutput
 		}
 	}
 
-	return view
+	// Pad output to exactly m.height lines so the TUI fills the terminal.
+	return layoutFull("", view, footer, m.height)
 }
