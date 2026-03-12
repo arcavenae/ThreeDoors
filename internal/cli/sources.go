@@ -67,6 +67,12 @@ to view detailed status or test connection health.`,
 	cmd.AddCommand(newSourcesStatusCmd())
 	cmd.AddCommand(newSourcesTestCmd())
 	cmd.AddCommand(newSourcesLogCmd())
+	cmd.AddCommand(newSourcesPauseCmd())
+	cmd.AddCommand(newSourcesResumeCmd())
+	cmd.AddCommand(newSourcesSyncCmd())
+	cmd.AddCommand(newSourcesDisconnectCmd())
+	cmd.AddCommand(newSourcesReauthCmd())
+	cmd.AddCommand(newSourcesEditCmd())
 
 	return cmd
 }
