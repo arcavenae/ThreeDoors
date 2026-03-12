@@ -48,6 +48,7 @@ const (
 	ViewSources
 	ViewSourceDetail
 	ViewConnectWizard
+	ViewDisconnect
 )
 
 // String returns the human-readable name of the view mode.
@@ -101,6 +102,8 @@ func (v ViewMode) String() string {
 		return "SourceDetail"
 	case ViewConnectWizard:
 		return "ConnectWizard"
+	case ViewDisconnect:
+		return "Disconnect"
 	default:
 		return "Unknown"
 	}
@@ -134,6 +137,7 @@ type MainModel struct {
 	sourcesView         *SourcesView
 	sourceDetailView    *SourceDetailView
 	connectWizard       *ConnectWizard
+	disconnectDialog    *DisconnectDialog
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -475,6 +479,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.sourceDetailView.SetWidth(msg.Width)
 			m.sourceDetailView.SetHeight(msg.Height)
 		}
+		if m.disconnectDialog != nil {
+			m.disconnectDialog.SetWidth(msg.Width)
+			m.disconnectDialog.SetHeight(msg.Height)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -499,6 +507,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.healthView = nil
 		m.insightsView = nil
 		m.sourcesView = nil
+		m.disconnectDialog = nil
 		m.addTaskView = nil
 		m.deferredListView = nil
 		m.doorsView.RefreshDoors()
@@ -594,6 +603,63 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.setViewMode(ViewSources)
 		} else {
 			m.setViewMode(ViewDoors)
+		}
+		return m, nil
+
+	case SourceActionMsg:
+		if msg.Action == "disconnect" && m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				m.disconnectDialog = NewDisconnectDialog(conn)
+				m.disconnectDialog.SetWidth(m.width)
+				m.disconnectDialog.SetHeight(m.height)
+				m.previousView = m.viewMode
+				m.setViewMode(ViewDisconnect)
+				return m, m.disconnectDialog.Init()
+			}
+		}
+		return m, nil
+
+	case ShowDisconnectDialogMsg:
+		if m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				m.disconnectDialog = NewDisconnectDialog(conn)
+				m.disconnectDialog.SetWidth(m.width)
+				m.disconnectDialog.SetHeight(m.height)
+				m.previousView = m.viewMode
+				m.setViewMode(ViewDisconnect)
+				return m, m.disconnectDialog.Init()
+			}
+		}
+		return m, nil
+
+	case DisconnectConfirmedMsg:
+		if m.connMgr != nil {
+			err := m.connMgr.Disconnect(msg.ConnectionID, msg.KeepTasks)
+			if err == nil {
+				flashText := "Connection disconnected — tasks kept locally"
+				if !msg.KeepTasks {
+					flashText = "Connection disconnected — synced tasks removed"
+				}
+				m.disconnectDialog = nil
+				m.setViewMode(ViewSources)
+				m.sourcesView = NewSourcesView(m.connMgr)
+				m.sourcesView.SetWidth(m.width)
+				m.sourcesView.SetHeight(m.height)
+				return m, func() tea.Msg { return FlashMsg{Text: flashText} }
+			}
+		}
+		m.disconnectDialog = nil
+		m.setViewMode(ViewSources)
+		return m, nil
+
+	case DisconnectCancelledMsg:
+		m.disconnectDialog = nil
+		if m.previousView == ViewSourceDetail {
+			m.setViewMode(ViewSourceDetail)
+		} else {
+			m.setViewMode(ViewSources)
 		}
 		return m, nil
 
@@ -1419,6 +1485,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSourceDetail(msg)
 	case ViewConnectWizard:
 		return m.updateConnectWizard(msg)
+	case ViewDisconnect:
+		return m.updateDisconnect(msg)
 	}
 
 	return m, nil
@@ -1619,6 +1687,14 @@ func (m *MainModel) updateConnectWizard(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.connectWizard.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateDisconnect(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.disconnectDialog == nil {
+		return m, nil
+	}
+	cmd := m.disconnectDialog.Update(msg)
 	return m, cmd
 }
 
@@ -2175,6 +2251,10 @@ func (m *MainModel) View() string {
 	case ViewConnectWizard:
 		if m.connectWizard != nil {
 			view = m.connectWizard.View()
+		}
+	case ViewDisconnect:
+		if m.disconnectDialog != nil {
+			view = m.disconnectDialog.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
