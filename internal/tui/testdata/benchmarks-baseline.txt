@@ -1,0 +1,25 @@
+BenchmarkDoorsView-8             	   19518	    304814 ns/op	   78601 B/op	     989 allocs/op
+BenchmarkDoorsView-8             	   19328	    303236 ns/op	   79466 B/op	    1010 allocs/op
+BenchmarkDoorsView-8             	   19885	    313262 ns/op	   79465 B/op	    1010 allocs/op
+BenchmarkDoorsViewSelected-8     	   18976	    332397 ns/op	   82746 B/op	    1054 allocs/op
+BenchmarkDoorsViewSelected-8     	   18198	    310484 ns/op	   81338 B/op	    1031 allocs/op
+BenchmarkDoorsViewSelected-8     	   19233	    331736 ns/op	   83018 B/op	    1054 allocs/op
+BenchmarkInsightsView-8          	   23952	    261470 ns/op	  105233 B/op	    1958 allocs/op
+BenchmarkInsightsView-8          	   23829	    252415 ns/op	  105286 B/op	    1958 allocs/op
+BenchmarkInsightsView-8          	   23512	    394656 ns/op	  104998 B/op	    1958 allocs/op
+BenchmarkInsightsViewCompact-8   	   32956	    209135 ns/op	   70229 B/op	    1559 allocs/op
+BenchmarkInsightsViewCompact-8   	   29989	    178053 ns/op	   70373 B/op	    1559 allocs/op
+BenchmarkInsightsViewCompact-8   	   33643	    178136 ns/op	   70380 B/op	    1559 allocs/op
+BenchmarkSourcesView-8           	  224466	     27739 ns/op	    3774 B/op	     136 allocs/op
+BenchmarkSourcesView-8           	  226005	     26629 ns/op	    3779 B/op	     136 allocs/op
+BenchmarkSourcesView-8           	  224535	     32081 ns/op	    3780 B/op	     136 allocs/op
+BenchmarkDetailView-8            	   62106	     91864 ns/op	   43039 B/op	     472 allocs/op
+BenchmarkDetailView-8            	   77749	     80585 ns/op	   43013 B/op	     472 allocs/op
+BenchmarkDetailView-8            	   50376	    101943 ns/op	   42946 B/op	     472 allocs/op
+PASS
+ok  	github.com/arcaven/ThreeDoors/internal/tui	250.957s
+BenchmarkResolveSeason-8   	398864398	        13.21 ns/op
+BenchmarkResolveSeason-8   	476839854	        12.57 ns/op
+BenchmarkResolveSeason-8   	477372066	        12.59 ns/op
+PASS
+ok  	github.com/arcaven/ThreeDoors/internal/tui/themes	17.805s
