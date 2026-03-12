@@ -111,6 +111,7 @@ ThreeDoors/
 │   │   ├── mood_view.go            # Mood tracking view
 │   │   ├── next_steps_view.go      # Next steps suggestions view
 │   │   ├── orphaned_view.go       # Orphaned task handling view (Epic 47)
+│   │   ├── reauth_dialog.go      # Re-authentication dialog for expired connections (Epic 44)
 │   │   ├── proposals_view.go       # Task proposals view
 │   │   ├── planning_view.go        # Planning mode view
 │   │   ├── planning_select.go      # Planning task selection
