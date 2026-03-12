@@ -182,6 +182,8 @@ ThreeDoors/
 │   │   ├── applenotes/              # Apple Notes adapter (Epic 2)
 │   │   │   ├── adapter.go          # AppleNotesAdapter
 │   │   │   └── applescript.go      # AppleScript bridge helpers
+│   │   ├── github/                  # GitHub Issues adapter (Epic 46)
+│   │   │   └── oauth.go            # GitHub OAuth device code flow integration
 │   │   └── obsidian/                # Obsidian vault adapter (Epic 8)
 │   │       ├── adapter.go          # ObsidianAdapter
 │   │       ├── markdown.go         # Markdown task parser
