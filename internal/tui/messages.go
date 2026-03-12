@@ -369,6 +369,32 @@ type BreakdownImportMsg struct {
 // BreakdownCancelMsg is sent when the user cancels the breakdown view.
 type BreakdownCancelMsg struct{}
 
+// EnrichStartMsg is sent when the user triggers task enrichment.
+type EnrichStartMsg struct {
+	TaskID   string
+	TaskText string
+}
+
+// EnrichResultMsg is sent when task enrichment completes (success or failure).
+type EnrichResultMsg struct {
+	TaskID string
+	Result *services.EnrichedTask
+	Err    error
+}
+
+// EnrichCommandMsg is sent when the user types :enrich in the search/command view.
+// The main model routes this to the detail view if one is active.
+type EnrichCommandMsg struct{}
+
+// EnrichAcceptMsg is sent when the user accepts the enrichment result.
+type EnrichAcceptMsg struct {
+	TaskID       string
+	EnrichedText string
+	Tags         []string
+	Effort       int
+	Context      string
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

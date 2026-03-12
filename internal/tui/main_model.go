@@ -171,6 +171,8 @@ type MainModel struct {
 	syncTracker         *core.SyncStatusTracker
 	agentService        *intelligence.AgentService
 	decomposing         bool
+	enricher            *services.TaskEnricher
+	enriching           bool
 
 	syncLog               *core.SyncLog
 	dedupStore            *core.DedupStore
@@ -377,6 +379,11 @@ func (m *MainModel) SetPlanningMode(enabled bool) {
 // SetAgentService sets the agent service for LLM task decomposition.
 func (m *MainModel) SetAgentService(svc *intelligence.AgentService) {
 	m.agentService = svc
+}
+
+// SetEnricher sets the task enricher for LLM task enrichment.
+func (m *MainModel) SetEnricher(enricher *services.TaskEnricher) {
+	m.enricher = enricher
 }
 
 // SetProposalStore sets the proposal store for the proposal review view.
@@ -1176,6 +1183,68 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.breakdownView = nil
 		m.setViewMode(m.previousView)
 		return m, nil
+	case EnrichStartMsg:
+		if m.enriching {
+			m.flash = "Enrichment already in progress"
+			return m, ClearFlashCmd()
+		}
+		m.enriching = true
+		m.flash = "Enriching task..."
+		return m, m.runEnrich(msg.TaskID, msg.TaskText)
+
+	case EnrichResultMsg:
+		m.enriching = false
+		// Forward to the detail view for display
+		if m.detailView != nil {
+			cmd := m.detailView.Update(msg)
+			return m, cmd
+		}
+		if msg.Err != nil {
+			m.flash = fmt.Sprintf("Enrich failed: %s", msg.Err.Error())
+		}
+		return m, ClearFlashCmd()
+
+	case EnrichAcceptMsg:
+		task := m.pool.GetTask(msg.TaskID)
+		if task != nil {
+			task.Text = msg.EnrichedText
+			if msg.Context != "" {
+				task.Context = msg.Context
+			}
+			switch {
+			case msg.Effort <= 1:
+				task.Effort = core.EffortQuickWin
+			case msg.Effort <= 3:
+				task.Effort = core.EffortMedium
+			case msg.Effort <= 5:
+				task.Effort = core.EffortDeepWork
+			}
+			task.UpdatedAt = time.Now().UTC()
+			m.flash = "Task enriched!"
+			_ = m.saveTasks()
+		} else {
+			m.flash = "Task not found"
+		}
+		m.setViewMode(ViewDoors)
+		return m, ClearFlashCmd()
+
+	case EnrichCommandMsg:
+		// :enrich command from search view — route to current detail view
+		if m.detailView != nil && m.detailView.task != nil {
+			if m.enricher == nil {
+				m.flash = "LLM not configured — enrichment unavailable"
+				return m, ClearFlashCmd()
+			}
+			desc := m.detailView.task.Text
+			taskID := m.detailView.task.ID
+			m.detailView.mode = DetailModeEnrichLoading
+			m.enriching = true
+			m.flash = "Enriching task..."
+			m.setViewMode(ViewDetail)
+			return m, m.runEnrich(taskID, desc)
+		}
+		m.flash = "Open a task detail view first, then use :enrich"
+		return m, ClearFlashCmd()
 
 	case SyncConflictMsg:
 		cv := NewConflictView(msg.ConflictSet, m.syncLog)
@@ -2073,6 +2142,7 @@ func (m *MainModel) newDetailView(task *core.Task) *DetailView {
 	dv := NewDetailView(task, m.tracker, m.enrichDB, m.pool)
 	dv.SetWidth(m.width)
 	dv.SetAgentService(m.agentService)
+	dv.SetEnricher(m.enricher)
 	dv.SetInlineHints(m.resolveHints())
 	if m.duplicateTaskIDs[task.ID] && m.dedupStore != nil {
 		pair := m.findDuplicatePair(task.ID)
@@ -2405,6 +2475,28 @@ func (m *MainModel) runBreakdown(task *core.Task) tea.Cmd {
 
 		result, err := svc.Breakdown(ctx, taskID, taskDesc)
 		return BreakdownResultMsg{
+			TaskID: taskID,
+			Result: result,
+			Err:    err,
+		}
+	}
+}
+
+// runEnrich returns a tea.Cmd that runs LLM enrichment asynchronously.
+func (m *MainModel) runEnrich(taskID, taskText string) tea.Cmd {
+	enricher := m.enricher
+	return func() tea.Msg {
+		if enricher == nil {
+			return EnrichResultMsg{
+				TaskID: taskID,
+				Err:    fmt.Errorf("LLM not configured"),
+			}
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		result, err := enricher.Enrich(ctx, taskText)
+		return EnrichResultMsg{
 			TaskID: taskID,
 			Result: result,
 			Err:    err,
