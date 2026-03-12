@@ -12,6 +12,25 @@
 
 <p align="center"><em>Progress over perfection. Three doors. One choice. Move forward.</em></p>
 
+## 📑 Table of Contents
+
+- [📦 Installation](#-installation)
+- [🚀 Quick Start](#-quick-start)
+- [✨ Features](#-features)
+- [📖 User Guide](#-user-guide)
+- [⌨️ Key Bindings](#%EF%B8%8F-key-bindings)
+- [💻 CLI Reference](#-cli-reference)
+- [🤖 MCP Server](#-mcp-server)
+- [📁 Data Directory](#-data-directory)
+- [🔒 Data & Privacy](#-data--privacy)
+- [🧭 Philosophy](#-philosophy)
+- [🛠️ Development](#%EF%B8%8F-development)
+- [🤝 Contributing](#-contributing)
+- [📚 Documentation](#-documentation)
+- [License](#license)
+
+---
+
 ## What is ThreeDoors?
 
 ThreeDoors is a **radical rethinking of task management** that reduces decision friction by showing you only **three tasks at a time**. Instead of overwhelming you with an endless list, ThreeDoors presents three carefully selected "doors" — choose one, take action, and move forward.
