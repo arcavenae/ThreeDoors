@@ -100,6 +100,38 @@ ThreeDoors/
 │   │   ├── bug_report.go           # Bug report environment collection (Epic 50)
 │   │   ├── bug_report_view.go      # Bug report TUI view (Epic 50)
 │   │   ├── breakdown_view.go       # Task breakdown TUI view (Epic 57)
+│   │   ├── extract_view.go         # :extract command — review screen for extracted tasks (Epic 57)
+│   │   ├── llm_status.go           # LLM backend status TUI view (Epic 57)
+│   │   ├── detail_view.go          # Task detail enrichment view
+│   │   ├── feedback_view.go        # User feedback collection view
+│   │   ├── deferred_list_view.go   # Deferred tasks list view
+│   │   ├── devqueue_view.go        # Developer queue view
+│   │   ├── health_view.go          # System health status view
+│   │   ├── insights_view.go        # Analytics insights view
+│   │   ├── mood_view.go            # Mood tracking view
+│   │   ├── next_steps_view.go      # Next steps suggestions view
+│   │   ├── proposals_view.go       # Task proposals view
+│   │   ├── planning_view.go        # Planning mode view
+│   │   ├── planning_select.go      # Planning task selection
+│   │   ├── planning_review.go      # Planning review screen
+│   │   ├── planning_confirm.go     # Planning confirmation screen
+│   │   ├── snooze_view.go          # Task snooze view
+│   │   ├── tag_view.go             # Tag management view
+│   │   ├── values_view.go          # Values alignment view
+│   │   ├── help_view.go            # Help overlay view
+│   │   ├── theme_picker.go         # Theme selection picker
+│   │   ├── avoidance_prompt_view.go # Avoidance pattern prompt
+│   │   ├── add_task_view.go        # Inline task creation view
+│   │   ├── sync_status_view.go     # Sync status display
+│   │   ├── synclog_view.go         # Sync log viewer
+│   │   ├── keybindings.go          # Keybinding definitions
+│   │   ├── keybinding_bar.go       # Keybinding hint bar (Epic 39)
+│   │   ├── keybinding_overlay.go   # Full keybinding overlay (Epic 39)
+│   │   ├── inline_hints.go         # Inline contextual hints
+│   │   ├── breadcrumb.go           # Navigation breadcrumb
+│   │   ├── scrollable_view.go      # Scrollable content wrapper
+│   │   ├── spinner.go              # Loading spinner component
+│   │   ├── animation.go            # Animation utilities
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
@@ -136,17 +168,73 @@ ThreeDoors/
 │   │   ├── mood.go                  # `threedoors mood` tracking
 │   │   ├── version.go               # `threedoors version` info
 │   │   ├── output.go                # Shared output formatting (JSON/text)
-│   │   └── exitcodes.go             # Standardized exit codes
+│   │   ├── exitcodes.go             # Standardized exit codes
+│   │   ├── extract.go               # `threedoors extract` task extraction from text (Epic 57)
+│   │   ├── llm.go                   # `threedoors llm` command group (Epic 57)
+│   │   ├── llm_status.go            # `threedoors llm status` backend discovery (Epic 57)
+│   │   ├── interactive.go           # Interactive mode helpers
+│   │   ├── completion.go            # Shell completion generation
+│   │   ├── flag_completions.go      # Flag-level shell completions
+│   │   ├── doc_audit.go             # `threedoors doc-audit` documentation checker
+│   │   └── task_status_cmds.go      # Task status shortcut commands
 │   │
 │   ├── core/                         # Core Domain (Phase 2+)
 │   │   ├── task.go                  # Extended Task model (source, tags, duration)
 │   │   ├── task_status.go           # TaskStatus enum, constants
 │   │   ├── task_pool.go             # Unified TaskPool (multi-source)
+│   │   ├── door_selection.go        # DoorSelection model
 │   │   ├── door_selector.go         # Intelligent door selection (learning + calendar)
-│   │   ├── status_manager.go        # Status transition validator
-│   │   ├── enrichment_store.go      # SQLite enrichment DB (Epic 6)
 │   │   ├── doctor.go                # System diagnostics checker (Epic 49)
-│   │   ├── config.go                # Configuration model, config.yaml loader
+│   │   ├── doctor_database.go       # Database diagnostics
+│   │   ├── doctor_session.go        # Session diagnostics
+│   │   ├── doctor_sync.go           # Sync diagnostics
+│   │   ├── doctor_task_data.go      # Task data diagnostics
+│   │   ├── sync_engine.go           # Core sync engine orchestrator
+│   │   ├── sync_log.go              # Sync event logging
+│   │   ├── sync_scheduler.go        # Sync scheduling logic
+│   │   ├── sync_state.go            # Sync state persistence
+│   │   ├── sync_status.go           # Sync status reporting
+│   │   ├── conflict_resolver.go     # Sync conflict resolution
+│   │   ├── field_conflict_resolver.go # Field-level conflict resolution (Epic 50)
+│   │   ├── aggregator.go            # Multi-source task aggregation
+│   │   ├── dedup_store.go           # Deduplication store
+│   │   ├── duplicate_detector.go    # Duplicate task detection
+│   │   ├── provider.go              # TaskProvider interface
+│   │   ├── provider_config.go       # Provider configuration model
+│   │   ├── provider_factory.go      # Provider factory functions
+│   │   ├── registry.go              # Provider registry
+│   │   ├── fallback_provider.go     # Fallback provider chain
+│   │   ├── wal_provider.go          # Write-ahead log provider wrapper
+│   │   ├── write_queue.go           # Batched write queue
+│   │   ├── circuit_breaker.go       # Circuit breaker for external calls
+│   │   ├── health_checker.go        # Provider health checking
+│   │   ├── credential_check.go      # Credential validation
+│   │   ├── config_paths.go          # Configuration path resolution
+│   │   ├── file_limits.go           # File size/count limits
+│   │   ├── path_validation.go       # Path validation utilities
+│   │   ├── version_check.go         # Version compatibility checking
+│   │   ├── onboarding.go            # First-run onboarding logic
+│   │   ├── session_tracker.go       # Session tracking/analytics
+│   │   ├── metrics_writer.go        # Metrics JSONL writer
+│   │   ├── completion_counter.go    # Task completion tracking
+│   │   ├── milestones.go            # Milestone celebrations (Epic 40)
+│   │   ├── pattern_analyzer.go      # User pattern analysis
+│   │   ├── greeting_insights.go     # Greeting-time insights
+│   │   ├── insights_formatter.go    # Insights display formatting
+│   │   ├── planning_metrics.go      # Planning mode metrics
+│   │   ├── fun_facts.go             # Fun facts for idle screens
+│   │   ├── energy.go                # Energy level tracking
+│   │   ├── focus.go                 # Focus mode logic
+│   │   ├── mood_selector.go         # Mood selection logic
+│   │   ├── time_context.go          # Time-of-day context
+│   │   ├── defer_return.go          # Deferred task return logic
+│   │   ├── dependency.go            # Task dependency management
+│   │   ├── tag_parser.go            # Tag parsing utilities
+│   │   ├── task_categorization.go   # Task auto-categorization
+│   │   ├── task_importer.go         # Bulk task import
+│   │   ├── inline_hints_config.go   # Inline hints configuration
+│   │   ├── theme_config.go          # Theme configuration
+│   │   └── values_config.go         # Values alignment configuration
 │   │   └── connection/              # Connection lifecycle management (Epic 43)
 │   │       ├── connection.go        # Connection model (ULID ID, state, settings)
 │   │       ├── state.go             # ConnectionState enum, state machine transitions
@@ -183,7 +271,10 @@ ThreeDoors/
 │   │   ├── applenotes/              # Apple Notes adapter (Epic 2)
 │   │   │   ├── adapter.go          # AppleNotesAdapter
 │   │   │   └── applescript.go      # AppleScript bridge helpers
-│   │   ├── github/                  # GitHub Issues adapter (Epic 46)
+│   │   ├── github/                  # GitHub Issues adapter (Epic 46, 50)
+│   │   │   ├── config.go           # GitHub adapter configuration
+│   │   │   ├── github_client.go    # GitHub API client (issues, bug reports)
+│   │   │   ├── github_provider.go  # GitHub TaskProvider implementation
 │   │   │   └── oauth.go            # GitHub OAuth device code flow integration
 │   │   └── obsidian/                # Obsidian vault adapter (Epic 8)
 │   │       ├── adapter.go          # ObsidianAdapter
@@ -211,12 +302,14 @@ ThreeDoors/
 │   │   │   ├── cli_specs.go        # Built-in specs: Claude CLI, Gemini CLI, Ollama CLI
 │   │   │   ├── runner.go           # CLIRunner interface, ExecRunner implementation
 │   │   │   ├── discovery.go        # Auto-discovery of installed CLI backends (Epic 57)
-│   │   │   ├── local.go            # Ollama/llama.cpp client
-│   │   │   ├── cloud.go            # Anthropic/OpenAI client
-│   │   │   └── git_output.go       # Git repo story writer
+│   │   │   ├── claude.go           # Claude CLI backend implementation
+│   │   │   ├── ollama.go           # Ollama backend implementation
+│   │   │   ├── story_spec.go       # Story specification model for LLM output
+│   │   │   └── git_writer.go       # Git repo story writer
 │   │   ├── services/                # Intelligence services (Epic 57)
 │   │   │   ├── extractor.go        # TaskExtractor — LLM-based task extraction from text
 │   │   │   ├── breakdown.go        # TaskBreakdown — LLM-based task decomposition
+│   │   │   ├── enricher.go         # TaskEnricher — LLM-based task detail enrichment
 │   │   │   └── prompts.go          # Extraction prompt templates
 │   │   └── learning/                # Learning engine (Epic 4, enhanced Epic 12)
 │   │       ├── engine.go            # Pattern analysis
