@@ -293,7 +293,7 @@ Document and enable remote collaboration with multiclaude via SSH, with future M
 | 53.4 | Remote Worker Dispatch | Not Started | P2 | 53.2, 53.3 |
 | 53.5 | MCP Bridge Prototype | Not Started | P2 | 53.1 |
 
-### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 5/10 stories done
+### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 5/11 stories done
 
 Continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality (did we build the right thing?) and operational efficiency (are we building efficiently?).
 
@@ -309,6 +309,7 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 | 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Done (PR #505) | P2 | 51.3, 51.6 |
 | 51.9 | Research Lifecycle Tracking | Done (PR #507) | P2 | 51.3, 51.6 |
 | 51.10 | PR Creation Authority & Trend Reporting | Done (PR #509) | P2 | 51.1-51.9 |
+| 51.11 | Retrospector Autonomy Fixes — Agent Definition Rewrite | Not Started | P1 | 51.1 |
 
 **Phasing:** Phase 0 (stories 51.1-51.2): Bootstrap — rewrite agent definitions. Phase 1 (stories 51.3-51.6): MVP monitoring. Phase 2 (stories 51.7-51.10): Advanced analysis after 2 weeks of MVP validation.
 
