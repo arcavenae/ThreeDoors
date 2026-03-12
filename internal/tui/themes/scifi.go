@@ -20,7 +20,7 @@ func NewSciFiTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "scifi",
 		Description: "Sci-fi spaceship — double-line frame, shade panels, ACCESS label",
-		Render:      scifiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"}),
+		Render:      scifiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#061425", ANSI256: "17", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"},
@@ -42,7 +42,7 @@ func NewSciFiTheme() *DoorTheme {
 	}
 }
 
-func scifiRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func scifiRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		shadeChar := "░"
@@ -78,7 +78,7 @@ func scifiRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(st
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill)
+		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill, fillLower)
 	}
 }
 
@@ -149,10 +149,9 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 // scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: outer left border stays double-line (╔║╚), outer right uses
 // single-vertical with double-horizontal connections (╕│╛) for lighter weight.
-func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
+func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
-	blankContent := bgFillLine(contentW, fill)
 
 	// Find the row for the ACCESS label: midpoint between HandleRow and ThresholdRow
 	accessRow := anatomy.HandleRow + (anatomy.ThresholdRow-anatomy.HandleRow)/2
@@ -176,6 +175,8 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 	}
 
 	for row := 0; row < height; row++ {
+		bg := panelBg(row, anatomy.PanelDivider, fill, fillLower)
+
 		switch {
 		case row == anatomy.LintelRow:
 			fmt.Fprintf(&b, "%s", style.Render(
@@ -198,7 +199,7 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			handleLine := strings.Repeat(" ", leftPad) + handleStr
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 				style.Render("║"), rail, style.Render("│"),
-				bgFillContent(handleLine, contentW, 0, fill),
+				bgFillContent(handleLine, contentW, 0, bg),
 				style.Render("│"), rail, style.Render(outerR))
 
 		case row == accessRow:
@@ -213,7 +214,7 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			}
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 				style.Render("║"), rail, style.Render("│"),
-				bgFillContent(label, contentW, leftPad, fill),
+				bgFillContent(label, contentW, leftPad, bg),
 				style.Render("│"), rail, style.Render(outerR))
 
 		case row == anatomy.ThresholdRow:
@@ -226,16 +227,16 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 				line := contentLines[lineIdx]
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 					style.Render("║"), rail, style.Render("│"),
-					bgFillContent(line, contentW, 2, fill),
+					bgFillContent(line, contentW, 2, bg),
 					style.Render("│"), rail, style.Render(outerR))
 			} else {
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-					style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render(outerR))
+					style.Render("║"), rail, style.Render("│"), bgFillLine(contentW, bg), style.Render("│"), rail, style.Render(outerR))
 			}
 
 		default:
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-				style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render(outerR))
+				style.Render("║"), rail, style.Render("│"), bgFillLine(contentW, bg), style.Render("│"), rail, style.Render(outerR))
 		}
 
 		if row < height-1 {

@@ -97,6 +97,16 @@ func HandleCharForEmphasis(emphasis float64, selected bool, frames HandleFrames)
 	return frames.SpringBack
 }
 
+// panelBg returns the appropriate background color for a given row based on
+// the panel zone. Rows above the panel divider use fill (upper panel),
+// rows at or below the divider use fillLower (lower panel).
+func panelBg(row, panelDivider int, fill, fillLower lipgloss.TerminalColor) lipgloss.TerminalColor {
+	if row >= panelDivider {
+		return fillLower
+	}
+	return fill
+}
+
 // bgFillLine renders a line of spaces with the given background color applied.
 // width is the number of space characters to fill.
 func bgFillLine(width int, bg lipgloss.TerminalColor) string {
