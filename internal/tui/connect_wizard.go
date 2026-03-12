@@ -34,6 +34,9 @@ type ProviderFormSpec struct {
 	PathHelp      string                  // help text for the path field
 	OAuthClientID string                  // OAuth App client ID (for AuthOAuth providers)
 	EnvTokenFunc  func() (string, string) // returns (token, envVarName) if env token exists
+	Detected      bool                    // true if auto-detected on the system
+	DetectInfo    string                  // detection detail: "gh CLI authenticated", "vault found at ~/docs"
+	PreFill       map[string]string       // settings pre-filled from detection (e.g., path, token_env)
 }
 
 // DefaultProviderSpecs returns the form specs for all built-in providers.
@@ -97,6 +100,39 @@ func DefaultProviderSpecs() []ProviderFormSpec {
 			AuthType:    AuthNone,
 		},
 	}
+}
+
+// ApplyDetection takes a list of provider specs and detection results, and returns
+// a new list with detected providers annotated and moved to the top.
+func ApplyDetection(specs []ProviderFormSpec, results []connection.DetectionResult) []ProviderFormSpec {
+	if len(results) == 0 {
+		return specs
+	}
+
+	// Build a map from provider name to detection result
+	detections := make(map[string]connection.DetectionResult, len(results))
+	for _, r := range results {
+		detections[r.ProviderName] = r
+	}
+
+	// Split into detected and undetected, annotating detected ones
+	var detected, undetected []ProviderFormSpec
+	for _, spec := range specs {
+		if r, ok := detections[spec.Name]; ok {
+			spec.Detected = true
+			spec.DetectInfo = r.Reason
+			spec.PreFill = r.PreFill
+			detected = append(detected, spec)
+		} else {
+			undetected = append(undetected, spec)
+		}
+	}
+
+	// Detected providers appear first, then undetected in original order
+	result := make([]ProviderFormSpec, 0, len(specs))
+	result = append(result, detected...)
+	result = append(result, undetected...)
+	return result
 }
 
 // WizardStep tracks which step the wizard is on.
@@ -197,10 +233,11 @@ func (w *ConnectWizard) SelectedProvider() string {
 func (w *ConnectWizard) buildStep1Form() {
 	options := make([]huh.Option[string], 0, len(w.specs))
 	for _, spec := range w.specs {
-		options = append(options, huh.NewOption(
-			fmt.Sprintf("%s — %s", spec.DisplayName, spec.Description),
-			spec.Name,
-		))
+		label := fmt.Sprintf("%s — %s", spec.DisplayName, spec.Description)
+		if spec.Detected {
+			label = fmt.Sprintf("%s (detected — %s)", spec.DisplayName, spec.DetectInfo)
+		}
+		options = append(options, huh.NewOption(label, spec.Name))
 	}
 
 	w.form = huh.NewForm(
@@ -302,6 +339,12 @@ func (w *ConnectWizard) buildStep2Form() {
 	}
 
 	if spec.NeedsPath {
+		// Pre-fill path from detection if available
+		if spec.Detected && spec.PreFill != nil {
+			if path, ok := spec.PreFill["path"]; ok && path != "" {
+				w.filePath = path
+			}
+		}
 		fields = append(fields, huh.NewInput().
 			Title("File/Directory Path").
 			Value(&w.filePath).
