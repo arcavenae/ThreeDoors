@@ -92,7 +92,9 @@ ThreeDoors/
 │   │   ├── source_badge.go          # Provider attribution badges (Epic 13)
 │   │   ├── decompose_view.go        # LLM decomposition results (Epic 14)
 │   │   ├── sources_view.go          # Sources dashboard — connection list/status (Epic 44)
+│   │   ├── source_detail_view.go   # Source detail: status, sync log, actions (Epic 44)
 │   │   ├── connect_wizard.go        # Setup wizard using huh forms (Epic 44)
+│   │   ├── disconnect_dialog.go    # Disconnect confirmation with task preservation (Epic 44)
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
