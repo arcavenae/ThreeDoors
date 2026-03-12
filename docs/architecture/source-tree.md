@@ -99,6 +99,22 @@ ThreeDoors/
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
+│   ├── tui/themes/                   # Door Themes — visual theming engine (Epic 48)
+│   │   ├── theme.go                 # Theme interface, DoorTheme struct
+│   │   ├── registry.go              # Theme registry, lookup by name
+│   │   ├── anatomy.go               # Door anatomy: frame, panel, handle definitions
+│   │   ├── crack.go                 # Crack of light selection effect
+│   │   ├── shadow.go                # Door shadow rendering
+│   │   ├── seasonal.go              # Seasonal theme auto-selection
+│   │   ├── classic.go               # Classic theme
+│   │   ├── modern.go                # Modern theme
+│   │   ├── scifi.go                 # Sci-fi theme
+│   │   ├── shoji.go                 # Shoji (Japanese) theme
+│   │   ├── autumn.go                # Autumn seasonal theme
+│   │   ├── winter.go                # Winter seasonal theme
+│   │   ├── spring.go                # Spring seasonal theme
+│   │   └── summer.go                # Summer seasonal theme
+│   │
 │   ├── cli/                          # CLI Layer - Cobra commands (Epic 45+)
 │   │   ├── root.go                  # Root cobra command, global flags
 │   │   ├── bootstrap.go             # CLI bootstrap: config loading, provider init
