@@ -97,6 +97,18 @@ func HandleCharForEmphasis(emphasis float64, selected bool, frames HandleFrames)
 	return frames.SpringBack
 }
 
+// bevelStyles returns two lipgloss styles for bevel lighting.
+// hiStyle colors top and left edges (Highlight), shStyle colors bottom and right
+// edges (ShadowEdge). When selected, both styles use selectedColor to maintain
+// the existing selection visual.
+func bevelStyles(highlight, shadowEdge, selectedColor lipgloss.TerminalColor, selected bool) (hi, sh lipgloss.Style) {
+	if selected {
+		s := lipgloss.NewStyle().Foreground(selectedColor)
+		return s, s
+	}
+	return lipgloss.NewStyle().Foreground(highlight), lipgloss.NewStyle().Foreground(shadowEdge)
+}
+
 // bgFillLine renders a line of spaces with the given background color applied.
 // width is the number of space characters to fill.
 func bgFillLine(width int, bg lipgloss.TerminalColor) string {

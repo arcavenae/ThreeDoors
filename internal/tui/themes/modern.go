@@ -20,7 +20,7 @@ func NewModernTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "modern",
 		Description: "Modern minimalist — clean lines, generous whitespace",
-		Render:      modernRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"}),
+		Render:      modernRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#666666", ANSI256: "241", ANSI: "7"}, lipgloss.CompleteColor{TrueColor: "#2a2a2a", ANSI256: "235", ANSI: "8"}, lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"},
@@ -42,7 +42,7 @@ func NewModernTheme() *DoorTheme {
 	}
 }
 
-func modernRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func modernRender(frameColor, selectedColor, highlight, shadowEdge, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -66,7 +66,7 @@ func modernRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(s
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis, fill)
+		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis, fill, highlight, shadowEdge, selectedColor)
 	}
 }
 
@@ -128,8 +128,9 @@ func modernCompact(content string, inner int, hChar, vChar string, style lipglos
 	return b.String()
 }
 
-func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
+func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, highlight, shadowEdge, selectedColor lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
+	hiStyle, shStyle := bevelStyles(highlight, shadowEdge, selectedColor, selected)
 	cracked := isCracked(selected, emphasis)
 
 	// Word-wrap content with 3-char padding on each side
@@ -167,7 +168,7 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
+	blankLine := hiStyle.Render(hingeV) + bgFillLine(inner, fill) + shStyle.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -181,11 +182,11 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
+			fmt.Fprintf(&b, "%s%s", hiStyle.Render(hingeTL+hBar+openTR), shade)
 
 		case row == anatomy.PanelDivider:
 			divBar := strings.Repeat(thinH, inner)
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+divBar+openTee), shade)
+			fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeTee+divBar+openTee), shade)
 
 		case row == anatomy.HandleRow:
 			knobPad := inner - 1
@@ -194,19 +195,19 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", hiStyle.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), shStyle.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
+			fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeBL+hBar+openBR), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
 				fmt.Fprintf(&b, "%s%s%s%s",
-					style.Render(hingeV),
+					hiStyle.Render(hingeV),
 					bgFillContent(line, inner, 3, fill),
-					style.Render(openV),
+					shStyle.Render(openV),
 					shade,
 				)
 			} else {

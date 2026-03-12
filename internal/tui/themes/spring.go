@@ -17,7 +17,7 @@ func NewSpringTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "spring",
 		Description: "Spring bloom — flowing curves, light open patterns",
-		Render:      springRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"}),
+		Render:      springRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#80e090", ANSI256: "114", ANSI: "10"}, lipgloss.CompleteColor{TrueColor: "#306838", ANSI256: "65", ANSI: "2"}, lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"},
@@ -43,7 +43,7 @@ func NewSpringTheme() *DoorTheme {
 	}
 }
 
-func springRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func springRender(frameColor, selectedColor, highlight, shadowEdge, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -68,7 +68,7 @@ func springRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(s
 			return springCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill)
+		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, highlight, shadowEdge, selectedColor)
 	}
 }
 
@@ -124,8 +124,9 @@ func springCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
+func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, highlight, shadowEdge, selectedColor lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
+	hiStyle, shStyle := bevelStyles(highlight, shadowEdge, selectedColor, selected)
 	cracked := isCracked(selected, emphasis)
 
 	contentWidth := inner - 6
@@ -162,7 +163,7 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
+	blankLine := hiStyle.Render(hingeV) + bgFillLine(inner, fill) + shStyle.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -173,11 +174,11 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
+			fmt.Fprintf(&b, "%s%s", hiStyle.Render(hingeTL+hBar+openTR), shade)
 
 		case row == anatomy.PanelDivider:
 			divH := "─"
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+strings.Repeat(divH, inner)+openTee), shade)
+			fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeTee+strings.Repeat(divH, inner)+openTee), shade)
 
 		case row == anatomy.HandleRow:
 			knobPad := inner - 1
@@ -186,19 +187,19 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", hiStyle.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), shStyle.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
+			fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeBL+hBar+openBR), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
 				fmt.Fprintf(&b, "%s%s%s%s",
-					style.Render(hingeV),
+					hiStyle.Render(hingeV),
 					bgFillContent(line, inner, 3, fill),
-					style.Render(openV),
+					shStyle.Render(openV),
 					shade,
 				)
 			} else {
