@@ -195,9 +195,13 @@ ThreeDoors/
 │   │   │   ├── applescript.go      # macOS Calendar.app reader
 │   │   │   ├── ics.go              # .ics file parser
 │   │   │   └── caldav.go           # CalDAV cache reader
-│   │   ├── llm/                     # LLM decomposition (Epic 14)
+│   │   ├── llm/                     # LLM decomposition (Epic 14, 57)
 │   │   │   ├── decomposer.go       # LLMTaskDecomposer
-│   │   │   ├── backend.go          # LLMBackend interface
+│   │   │   ├── backend.go          # LLMBackend interface, CLIConfig, NewCLIBackend factory
+│   │   │   ├── cli_provider.go     # CLIProvider — subprocess-based LLMBackend (Epic 57)
+│   │   │   ├── cli_spec.go         # CLISpec — command/args/parsing for CLI backends
+│   │   │   ├── cli_specs.go        # Built-in specs: Claude CLI, Gemini CLI, Ollama CLI
+│   │   │   ├── runner.go           # CLIRunner interface, ExecRunner implementation
 │   │   │   ├── local.go            # Ollama/llama.cpp client
 │   │   │   ├── cloud.go            # Anthropic/OpenAI client
 │   │   │   └── git_output.go       # Git repo story writer
