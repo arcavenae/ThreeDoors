@@ -71,6 +71,7 @@ var helpContent = []helpSection{
 			{":dispatch", "Dev dispatch info"},
 			{":goals [edit]", "View or edit values/goals"},
 			{":hints [on|off]", "Toggle inline key hints"},
+			{":bug", "Report a bug"},
 			{":quit / :exit", "Quit application"},
 			{":help", "Show this help screen"},
 		},

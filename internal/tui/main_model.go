@@ -51,6 +51,7 @@ const (
 	ViewConnectWizard
 	ViewDisconnect
 	ViewImport
+	ViewBugReport
 )
 
 // String returns the human-readable name of the view mode.
@@ -110,6 +111,8 @@ func (v ViewMode) String() string {
 		return "Disconnect"
 	case ViewImport:
 		return "Import"
+	case ViewBugReport:
+		return "BugReport"
 	default:
 		return "Unknown"
 	}
@@ -146,6 +149,7 @@ type MainModel struct {
 	connectWizard       *ConnectWizard
 	disconnectDialog    *DisconnectDialog
 	importView          *ImportView
+	bugReportView       *BugReportView
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -529,6 +533,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.addTaskView = nil
 		m.deferredListView = nil
 		m.importView = nil
+		m.bugReportView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
 
@@ -1368,6 +1373,27 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setViewMode(ViewDoors)
 		return m, ClearFlashCmd()
 
+	case ShowBugReportMsg:
+		themeName := ""
+		if m.doorsView != nil {
+			themeName = m.doorsView.baseThemeName
+		}
+		taskCount := m.pool.Count()
+		providerCount := 0
+		if m.connMgr != nil {
+			providerCount = m.connMgr.Count()
+		}
+		sessionDur := time.Duration(m.tracker.GetMetricsSnapshot().DurationSeconds() * float64(time.Second))
+		env := CollectEnvironment(m.width, m.height, m.viewMode.String(), themeName, taskCount, providerCount, sessionDur)
+		breadcrumbs := m.breadcrumbs.Format()
+		bv := NewBugReportView(env, breadcrumbs)
+		bv.SetWidth(m.width)
+		bv.SetHeight(m.height)
+		m.bugReportView = bv
+		m.previousView = m.viewMode
+		m.setViewMode(ViewBugReport)
+		return m, nil
+
 	case ShowDeferredListMsg:
 		m.deferredListView = NewDeferredListView(m.pool)
 		m.deferredListView.SetWidth(m.width)
@@ -1556,6 +1582,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateDisconnect(msg)
 	case ViewImport:
 		return m.updateImport(msg)
+	case ViewBugReport:
+		return m.updateBugReport(msg)
 	}
 
 	return m, nil
@@ -1783,6 +1811,14 @@ func (m *MainModel) updateDisconnect(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func (m *MainModel) updateBugReport(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.bugReportView == nil {
+		return m, nil
+	}
+	cmd := m.bugReportView.Update(msg)
+	return m, cmd
+}
+
 func (m *MainModel) updateSearch(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.searchView == nil {
 		return m, nil
@@ -1935,6 +1971,8 @@ func (m *MainModel) isTextInputActive() bool {
 		return true
 	case ViewImport:
 		return m.importView != nil && m.importView.step == importStepPath
+	case ViewBugReport:
+		return m.bugReportView != nil && m.bugReportView.state == bugReportInput
 	case ViewFeedback:
 		return m.feedbackView != nil && m.feedbackView.isCustom
 	case ViewMood:
@@ -2350,6 +2388,10 @@ func (m *MainModel) View() string {
 	case ViewImport:
 		if m.importView != nil {
 			view = m.importView.View()
+		}
+	case ViewBugReport:
+		if m.bugReportView != nil {
+			view = m.bugReportView.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
