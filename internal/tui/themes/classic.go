@@ -30,7 +30,7 @@ func NewClassicTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "classic",
 		Description: "Classic rounded border — the original ThreeDoors look",
-		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle, fillColor),
+		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle, fillColor, lipgloss.CompleteColor{TrueColor: "#080820", ANSI256: "17", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0d0d2a", ANSI256: "17", ANSI: "0"},
@@ -52,7 +52,7 @@ func NewClassicTheme() *DoorTheme {
 	}
 }
 
-func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use original Lipgloss card style
 		if height < 10 {
@@ -115,10 +115,6 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 		}
 
 		hBar := strings.Repeat(hChar, inner)
-		blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
-		if cracked {
-			blankLine += crackShade
-		}
 
 		shade := ""
 		if cracked {
@@ -126,6 +122,8 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 		}
 
 		for row := 0; row < height; row++ {
+			bg := panelBg(row, anatomy.PanelDivider, fill, fillLower)
+
 			switch {
 			case row == anatomy.LintelRow:
 				fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
@@ -140,7 +138,7 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 				}
 				handleChar := HandleCharForEmphasis(emphasis, selected, RoundKnobFrames)
 				knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-				bgKnob := bgFillContent(knobLine, inner, 0, fill)
+				bgKnob := bgFillContent(knobLine, inner, 0, bg)
 				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeTee), bgKnob, style.Render(openV), shade)
 
 			case row == anatomy.ThresholdRow:
@@ -152,16 +150,16 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 					line := contentLines[lineIdx]
 					fmt.Fprintf(&b, "%s%s%s%s",
 						style.Render(hingeV),
-						bgFillContent(line, inner, 2, fill),
+						bgFillContent(line, inner, 2, bg),
 						style.Render(openV),
 						shade,
 					)
 				} else {
-					fmt.Fprintf(&b, "%s", blankLine)
+					fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillLine(inner, bg), style.Render(openV), shade)
 				}
 
 			default:
-				fmt.Fprintf(&b, "%s", blankLine)
+				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillLine(inner, bg), style.Render(openV), shade)
 			}
 
 			if row < height-1 {
