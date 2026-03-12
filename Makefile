@@ -10,7 +10,7 @@ LDFLAGS := -X main.version=$(VERSION) \
            -X github.com/arcaven/ThreeDoors/internal/cli.Commit=$(COMMIT) \
            -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=$(BUILD_DATE)
 
-.PHONY: build build-mcp run clean fmt lint test test-docker bench analyze test-scripts sign pkg release-local test-dist release-tag
+.PHONY: build build-mcp run clean fmt lint test test-fast test-docker bench analyze test-scripts sign pkg release-local test-dist release-tag
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/threedoors ./cmd/threedoors
@@ -32,6 +32,9 @@ lint:
 
 test:
 	go test ./... -v
+
+test-fast:
+	go test -short ./...
 
 test-docker:
 	@command -v docker >/dev/null 2>&1 || { echo "Error: Docker is required but not found. Install from https://docs.docker.com/get-docker/"; exit 1; }
