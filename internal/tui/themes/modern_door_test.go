@@ -30,7 +30,7 @@ func TestModernDoorProportions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			output := theme.Render("Buy groceries", 30, tt.height, false, "")
+			output := theme.Render("Buy groceries", 30, tt.height, false, "", 0.0)
 			lines := strings.Split(output, "\n")
 
 			// Should have height rows + 1 threshold line + 1 shadow bottom
@@ -80,7 +80,7 @@ func TestModernDoorCompactFallback(t *testing.T) {
 	theme := NewModernTheme()
 
 	// height=0 (compact) should NOT contain door-mode elements
-	output := theme.Render("Task text", 30, 0, false, "")
+	output := theme.Render("Task text", 30, 0, false, "", 0.0)
 
 	if strings.Contains(output, "○") {
 		t.Error("compact mode should not contain minimalist handle ○")
@@ -101,8 +101,8 @@ func TestModernDoorSelectedVsUnselected(t *testing.T) {
 
 	theme := NewModernTheme()
 
-	unselected := theme.Render("Task", 30, 16, false, "")
-	selected := theme.Render("Task", 30, 16, true, "")
+	unselected := theme.Render("Task", 30, 16, false, "", 0.0)
+	selected := theme.Render("Task", 30, 16, true, "", 0.0)
 
 	if unselected == selected {
 		t.Error("selected and unselected door-mode output should differ")
@@ -143,7 +143,7 @@ func TestModernDoorHingeAsymmetry(t *testing.T) {
 	theme := NewModernTheme()
 
 	// Unselected: left hinge ╓/║/╙, right stays minimal (no corners)
-	unselected := theme.Render("Task", 30, 16, false, "")
+	unselected := theme.Render("Task", 30, 16, false, "", 0.0)
 	if !strings.Contains(unselected, "╓") {
 		t.Error("unselected modern door should have hinge corner ╓ on left")
 	}
@@ -159,7 +159,7 @@ func TestModernDoorHingeAsymmetry(t *testing.T) {
 	}
 
 	// Selected: left hinge ┏/┃/┗, right stays standard │
-	selected := theme.Render("Task", 30, 16, true, "")
+	selected := theme.Render("Task", 30, 16, true, "", 0.0)
 	if !strings.Contains(selected, "┏") {
 		t.Error("selected modern door should have heavy hinge corner ┏ on left")
 	}
@@ -190,7 +190,7 @@ func TestModernDoorVisualWidth(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			output := theme.Render("Buy groceries for the week", tt.width, tt.height, tt.selected, "")
+			output := theme.Render("Buy groceries for the week", tt.width, tt.height, tt.selected, "", 0.0)
 			lines := strings.Split(output, "\n")
 
 			if len(lines) < 2 {
@@ -221,7 +221,7 @@ func TestModernDoorContentPresent(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Write unit tests", 30, 16, false, "")
+	output := theme.Render("Write unit tests", 30, 16, false, "", 0.0)
 
 	if !strings.Contains(output, "Write unit tests") {
 		t.Errorf("door-mode output should contain content text, got:\n%s", output)
@@ -251,7 +251,7 @@ func TestGolden_ModernDoorHeight(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			out := theme.Render("Buy groceries for the week", tt.width, tt.height, tt.selected, "")
+			out := theme.Render("Buy groceries for the week", tt.width, tt.height, tt.selected, "", 0.0)
 			golden.RequireEqual(t, []byte(out))
 		})
 	}

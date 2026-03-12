@@ -62,7 +62,7 @@ func TestGolden_DoorAllThemes(t *testing.T) {
 					width := w.value(ts.theme)
 					name := ts.theme.Name + "/" + h.label + "_" + w.label + "_" + state
 					t.Run(name, func(t *testing.T) {
-						out := ts.theme.Render("Buy groceries for the week", width, height, sel, "")
+						out := ts.theme.Render("Buy groceries for the week", width, height, sel, "", 0.0)
 						golden.RequireEqual(t, []byte(out))
 					})
 				}
@@ -138,7 +138,7 @@ func TestMonochromeDoorSignifiers(t *testing.T) {
 
 	for _, c := range checks {
 		t.Run(c.theme.Name, func(t *testing.T) {
-			output := c.theme.Render("Test task", 40, 16, false, "")
+			output := c.theme.Render("Test task", 40, 16, false, "", 0.0)
 			lines := strings.Split(output, "\n")
 			anatomy := NewDoorAnatomy(16)
 
@@ -205,7 +205,7 @@ func TestCompactFallbackAllThemes(t *testing.T) {
 	for _, theme := range allThemes() {
 		t.Run(theme.Name+"/height_zero", func(t *testing.T) {
 			t.Parallel()
-			output := theme.Render(content, 40, 0, false, "")
+			output := theme.Render(content, 40, 0, false, "", 0.0)
 
 			for _, elem := range themeChecks[theme.Name] {
 				if strings.Contains(output, elem) {
@@ -220,7 +220,7 @@ func TestCompactFallbackAllThemes(t *testing.T) {
 
 		t.Run(theme.Name+"/below_min_height", func(t *testing.T) {
 			t.Parallel()
-			output := theme.Render(content, 40, theme.MinHeight-1, false, "")
+			output := theme.Render(content, 40, theme.MinHeight-1, false, "", 0.0)
 
 			// Content must be present
 			if !strings.Contains(output, content) {
@@ -249,7 +249,7 @@ func TestScreenReaderTextExtraction(t *testing.T) {
 				label = "h" + itoa(height)
 			}
 			t.Run(theme.Name+"/"+label, func(t *testing.T) {
-				output := theme.Render(taskText, 40, height, false, "")
+				output := theme.Render(taskText, 40, height, false, "", 0.0)
 				plainText := stripDecorative.ReplaceAllString(output, "")
 
 				// Normalize whitespace
