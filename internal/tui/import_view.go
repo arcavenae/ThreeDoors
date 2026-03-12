@@ -25,6 +25,7 @@ type ImportView struct {
 	importResult *core.ImportResult
 	importError  string
 	width        int
+	height       int
 }
 
 // NewImportView creates a new import view, optionally pre-filling a file path.
@@ -56,6 +57,11 @@ func (iv *ImportView) SetWidth(w int) {
 	if w > 4 {
 		iv.textInput.Width = w - 4
 	}
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (iv *ImportView) SetHeight(h int) {
+	iv.height = h
 }
 
 // tryParse attempts to parse the file at the given path.

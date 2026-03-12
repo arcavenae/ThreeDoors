@@ -20,6 +20,7 @@ type NextStepsView struct {
 	header  string
 	options []NextStepOption
 	width   int
+	height  int
 }
 
 // NewNextStepsView creates a new NextStepsView with context-aware options.
@@ -102,6 +103,11 @@ func defaultOptions() []NextStepOption {
 // SetWidth sets the terminal width.
 func (nv *NextStepsView) SetWidth(w int) {
 	nv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (nv *NextStepsView) SetHeight(h int) {
+	nv.height = h
 }
 
 // Update handles key input for next-step selection.

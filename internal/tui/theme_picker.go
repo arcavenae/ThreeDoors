@@ -16,6 +16,7 @@ type ThemePicker struct {
 	cursor       int
 	currentTheme string
 	width        int
+	height       int
 	title        string
 	seasonal     bool
 }
@@ -69,6 +70,11 @@ func (tp *ThemePicker) IsSeasonal() bool {
 // SetWidth sets the available width for rendering.
 func (tp *ThemePicker) SetWidth(w int) {
 	tp.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (tp *ThemePicker) SetHeight(h int) {
+	tp.height = h
 }
 
 // Update handles key input for the theme picker.
