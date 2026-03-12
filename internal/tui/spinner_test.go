@@ -164,9 +164,11 @@ func TestRenderSyncStatusBarWithSpinnerNilSpinner(t *testing.T) {
 	tracker := core.NewSyncStatusTracker()
 	tracker.Register("Local")
 
-	// Should fall back to regular rendering when spinner is nil
-	got := RenderSyncStatusBarWithSpinner(tracker, nil)
-	want := RenderSyncStatusBar(tracker)
+	// Should fall back to regular rendering when spinner is nil.
+	// Strip ANSI codes before comparing because lipgloss color profile
+	// is global state that parallel tests may mutate.
+	got := stripANSI(RenderSyncStatusBarWithSpinner(tracker, nil))
+	want := stripANSI(RenderSyncStatusBar(tracker))
 	if got != want {
 		t.Errorf("nil spinner should fall back to regular render\ngot:  %q\nwant: %q", got, want)
 	}
@@ -179,8 +181,8 @@ func TestRenderSyncStatusBarWithSpinnerInactive(t *testing.T) {
 
 	sp := NewSyncSpinner()
 	// Not started — should fall back to regular rendering
-	got := RenderSyncStatusBarWithSpinner(tracker, sp)
-	want := RenderSyncStatusBar(tracker)
+	got := stripANSI(RenderSyncStatusBarWithSpinner(tracker, sp))
+	want := stripANSI(RenderSyncStatusBar(tracker))
 	if got != want {
 		t.Errorf("inactive spinner should fall back to regular render\ngot:  %q\nwant: %q", got, want)
 	}
@@ -217,8 +219,8 @@ func TestRenderSyncStatusBarWithSpinnerBelowThreshold(t *testing.T) {
 	// regardless of CI machine speed or scheduling delays.
 	sp.startTime = time.Now().UTC().Add(time.Second)
 
-	got := RenderSyncStatusBarWithSpinner(tracker, sp)
-	want := RenderSyncStatusBar(tracker)
+	got := stripANSI(RenderSyncStatusBarWithSpinner(tracker, sp))
+	want := stripANSI(RenderSyncStatusBar(tracker))
 	if got != want {
 		t.Errorf("below-threshold spinner should fall back to regular render\ngot:  %q\nwant: %q", got, want)
 	}
