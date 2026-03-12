@@ -10,13 +10,16 @@ LDFLAGS := -X main.version=$(VERSION) \
            -X github.com/arcaven/ThreeDoors/internal/cli.Commit=$(COMMIT) \
            -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=$(BUILD_DATE)
 
-.PHONY: build build-mcp run clean fmt lint test test-fast test-docker bench analyze test-scripts sign pkg release-local test-dist release-tag docs docs-serve
+.PHONY: build build-mcp build-mcp-bridge run clean fmt lint test test-fast test-docker bench analyze test-scripts sign pkg release-local test-dist release-tag docs docs-serve
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/threedoors ./cmd/threedoors
 
 build-mcp:
 	go build -ldflags "$(LDFLAGS)" -o bin/threedoors-mcp ./cmd/threedoors-mcp
+
+build-mcp-bridge:
+	go build -ldflags "$(LDFLAGS)" -o bin/multiclaude-mcp-bridge ./cmd/multiclaude-mcp-bridge
 
 run: build
 	./bin/threedoors
