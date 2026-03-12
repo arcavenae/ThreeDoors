@@ -397,6 +397,667 @@ func TestGetByLabel(t *testing.T) {
 	})
 }
 
+func TestRunSourcesPause(t *testing.T) {
+	t.Parallel()
+
+	t.Run("pause connected connection", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		// Transition to Connected state: Disconnected -> Connecting -> Connected
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesPauseTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err != nil {
+			t.Fatalf("runSourcesPauseTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, `Paused "Work Jira"`) {
+			t.Errorf("missing pause confirmation in output:\n%s", out)
+		}
+		if !strings.Contains(out, "Sync polling has stopped") {
+			t.Errorf("missing polling message in output:\n%s", out)
+		}
+
+		// Verify state changed
+		conn, _ = manager.GetByLabel("Work Jira")
+		if conn.State != connection.StatePaused {
+			t.Errorf("state = %s, want paused", conn.State)
+		}
+	})
+
+	t.Run("pause invalid state", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesPauseTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for disconnected connection")
+		}
+		if !strings.Contains(err.Error(), "cannot pause") {
+			t.Errorf("error = %v, want contains 'cannot pause'", err)
+		}
+	})
+
+	t.Run("pause not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesPauseTo(cmd, manager, svc, "Nonexistent", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for nonexistent connection")
+		}
+		if !strings.Contains(err.Error(), "not found") {
+			t.Errorf("error = %v, want contains 'not found'", err)
+		}
+	})
+
+	t.Run("json output", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesPauseTo(cmd, manager, svc, "Work Jira", &buf, true)
+		if err != nil {
+			t.Fatalf("runSourcesPauseTo: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Command != "sources pause" {
+			t.Errorf("command = %q, want %q", env.Command, "sources pause")
+		}
+		data, ok := env.Data.(map[string]interface{})
+		if !ok {
+			t.Fatalf("data type = %T, want map", env.Data)
+		}
+		if data["action"] != "paused" {
+			t.Errorf("action = %v, want paused", data["action"])
+		}
+	})
+
+	t.Run("json not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesPauseTo(cmd, manager, svc, "Nope", &buf, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Error == nil {
+			t.Fatal("expected JSON error envelope")
+		}
+		if env.Error.Code != ExitNotFound {
+			t.Errorf("error code = %d, want %d", env.Error.Code, ExitNotFound)
+		}
+	})
+
+	t.Run("no service", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesPauseTo(cmd, manager, nil, "Work Jira", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for nil service")
+		}
+		if !strings.Contains(err.Error(), "no connection service") {
+			t.Errorf("error = %v, want contains 'no connection service'", err)
+		}
+	})
+}
+
+func TestRunSourcesResume(t *testing.T) {
+	t.Parallel()
+
+	t.Run("resume paused connection", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+		_ = manager.Transition(conn.ID, connection.StatePaused)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesResumeTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err != nil {
+			t.Fatalf("runSourcesResumeTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, `Resumed "Work Jira"`) {
+			t.Errorf("missing resume confirmation in output:\n%s", out)
+		}
+		if !strings.Contains(out, "Sync polling is active") {
+			t.Errorf("missing polling message in output:\n%s", out)
+		}
+
+		conn, _ = manager.GetByLabel("Work Jira")
+		if conn.State != connection.StateConnected {
+			t.Errorf("state = %s, want connected", conn.State)
+		}
+	})
+
+	t.Run("resume not paused", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesResumeTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for non-paused connection")
+		}
+		if !strings.Contains(err.Error(), "cannot resume") {
+			t.Errorf("error = %v, want contains 'cannot resume'", err)
+		}
+	})
+
+	t.Run("json output", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+		_ = manager.Transition(conn.ID, connection.StatePaused)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesResumeTo(cmd, manager, svc, "Work Jira", &buf, true)
+		if err != nil {
+			t.Fatalf("runSourcesResumeTo: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Command != "sources resume" {
+			t.Errorf("command = %q, want %q", env.Command, "sources resume")
+		}
+		data, ok := env.Data.(map[string]interface{})
+		if !ok {
+			t.Fatalf("data type = %T, want map", env.Data)
+		}
+		if data["action"] != "resumed" {
+			t.Errorf("action = %v, want resumed", data["action"])
+		}
+	})
+}
+
+func TestRunSourcesSync(t *testing.T) {
+	t.Parallel()
+
+	t.Run("sync connected connection", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		syncer := &stubSyncer{}
+		svc := newTestServiceWithSyncer(t, manager, nil, syncer)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesSyncTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err != nil {
+			t.Fatalf("runSourcesSyncTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, `Synced "Work Jira"`) {
+			t.Errorf("missing sync confirmation in output:\n%s", out)
+		}
+		if !syncer.called {
+			t.Error("syncer.Sync was not called")
+		}
+	})
+
+	t.Run("sync not connected", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		syncer := &stubSyncer{}
+		svc := newTestServiceWithSyncer(t, manager, nil, syncer)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesSyncTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for disconnected connection")
+		}
+		if !strings.Contains(err.Error(), "sync") {
+			t.Errorf("error = %v, want contains 'sync'", err)
+		}
+	})
+
+	t.Run("json output", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		syncer := &stubSyncer{}
+		svc := newTestServiceWithSyncer(t, manager, nil, syncer)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesSyncTo(cmd, manager, svc, "Work Jira", &buf, true)
+		if err != nil {
+			t.Fatalf("runSourcesSyncTo: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Command != "sources sync" {
+			t.Errorf("command = %q, want %q", env.Command, "sources sync")
+		}
+		data, ok := env.Data.(map[string]interface{})
+		if !ok {
+			t.Fatalf("data type = %T, want map", env.Data)
+		}
+		if data["action"] != "synced" {
+			t.Errorf("action = %v, want synced", data["action"])
+		}
+	})
+
+	t.Run("json not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesSyncTo(cmd, manager, svc, "Nope", &buf, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Error == nil {
+			t.Fatal("expected JSON error envelope")
+		}
+		if env.Error.Code != ExitNotFound {
+			t.Errorf("error code = %d, want %d", env.Error.Code, ExitNotFound)
+		}
+	})
+}
+
+func TestRunSourcesDisconnect(t *testing.T) {
+	t.Parallel()
+
+	t.Run("disconnect with keep-tasks flag", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesDisconnectTo(cmd, manager, svc, "Work Jira", &buf, nil, false, true)
+		if err != nil {
+			t.Fatalf("runSourcesDisconnectTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, `Disconnected "Work Jira"`) {
+			t.Errorf("missing disconnect confirmation in output:\n%s", out)
+		}
+		if !strings.Contains(out, "Tasks kept") {
+			t.Errorf("missing tasks kept message in output:\n%s", out)
+		}
+	})
+
+	t.Run("disconnect interactive keep", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		input := strings.NewReader("keep\n")
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesDisconnectTo(cmd, manager, svc, "Work Jira", &buf, input, false, false)
+		if err != nil {
+			t.Fatalf("runSourcesDisconnectTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, "Tasks kept") {
+			t.Errorf("missing tasks kept message in output:\n%s", out)
+		}
+	})
+
+	t.Run("disconnect interactive remove", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		input := strings.NewReader("remove\n")
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesDisconnectTo(cmd, manager, svc, "Work Jira", &buf, input, false, false)
+		if err != nil {
+			t.Fatalf("runSourcesDisconnectTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, "Tasks removed") {
+			t.Errorf("missing tasks removed message in output:\n%s", out)
+		}
+	})
+
+	t.Run("disconnect interactive invalid choice", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		input := strings.NewReader("maybe\n")
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesDisconnectTo(cmd, manager, svc, "Work Jira", &buf, input, false, false)
+		if err == nil {
+			t.Fatal("expected error for invalid choice")
+		}
+		if !strings.Contains(err.Error(), "invalid choice") {
+			t.Errorf("error = %v, want contains 'invalid choice'", err)
+		}
+	})
+
+	t.Run("disconnect not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesDisconnectTo(cmd, manager, svc, "Nonexistent", &buf, nil, false, true)
+		if err == nil {
+			t.Fatal("expected error for nonexistent connection")
+		}
+		if !strings.Contains(err.Error(), "not found") {
+			t.Errorf("error = %v, want contains 'not found'", err)
+		}
+	})
+
+	t.Run("json output with keep-tasks", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesDisconnectTo(cmd, manager, svc, "Work Jira", &buf, nil, true, true)
+		if err != nil {
+			t.Fatalf("runSourcesDisconnectTo: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Command != "sources disconnect" {
+			t.Errorf("command = %q, want %q", env.Command, "sources disconnect")
+		}
+		data, ok := env.Data.(map[string]interface{})
+		if !ok {
+			t.Fatalf("data type = %T, want map", env.Data)
+		}
+		if data["action"] != "disconnected" {
+			t.Errorf("action = %v, want disconnected", data["action"])
+		}
+		if data["tasks_kept"] != true {
+			t.Errorf("tasks_kept = %v, want true", data["tasks_kept"])
+		}
+	})
+}
+
+func TestRunSourcesReauth(t *testing.T) {
+	t.Parallel()
+
+	t.Run("reauth connected connection", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesReauthTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err != nil {
+			t.Fatalf("runSourcesReauthTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, `Re-authenticated "Work Jira"`) {
+			t.Errorf("missing reauth confirmation in output:\n%s", out)
+		}
+		if !strings.Contains(out, "credentials have been refreshed") {
+			t.Errorf("missing credentials message in output:\n%s", out)
+		}
+	})
+
+	t.Run("reauth auth_expired connection", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateAuthExpired)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesReauthTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err != nil {
+			t.Fatalf("runSourcesReauthTo: %v", err)
+		}
+
+		out := buf.String()
+		if !strings.Contains(out, `Re-authenticated "Work Jira"`) {
+			t.Errorf("missing reauth confirmation in output:\n%s", out)
+		}
+	})
+
+	t.Run("reauth disconnected fails", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesReauthTo(cmd, manager, svc, "Work Jira", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for disconnected connection")
+		}
+		if !strings.Contains(err.Error(), "disconnected") {
+			t.Errorf("error = %v, want contains 'disconnected'", err)
+		}
+	})
+
+	t.Run("json output", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		conn, _ := manager.GetByLabel("Work Jira")
+		_ = manager.Transition(conn.ID, connection.StateConnecting)
+		_ = manager.Transition(conn.ID, connection.StateConnected)
+
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesReauthTo(cmd, manager, svc, "Work Jira", &buf, true)
+		if err != nil {
+			t.Fatalf("runSourcesReauthTo: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Command != "sources reauth" {
+			t.Errorf("command = %q, want %q", env.Command, "sources reauth")
+		}
+		data, ok := env.Data.(map[string]interface{})
+		if !ok {
+			t.Fatalf("data type = %T, want map", env.Data)
+		}
+		if data["action"] != "reauthenticated" {
+			t.Errorf("action = %v, want reauthenticated", data["action"])
+		}
+	})
+
+	t.Run("json not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+		svc := newTestService(t, manager, nil)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesReauthTo(cmd, manager, svc, "Nope", &buf, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Error == nil {
+			t.Fatal("expected JSON error envelope")
+		}
+		if env.Error.Code != ExitNotFound {
+			t.Errorf("error code = %d, want %d", env.Error.Code, ExitNotFound)
+		}
+	})
+}
+
+func TestRunSourcesEdit(t *testing.T) {
+	t.Parallel()
+
+	t.Run("edit existing connection returns not-available", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesEditTo(cmd, manager, "Work Jira", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for not-yet-available wizard")
+		}
+		if !strings.Contains(err.Error(), "not yet available") {
+			t.Errorf("error = %v, want contains 'not yet available'", err)
+		}
+	})
+
+	t.Run("edit not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesEditTo(cmd, manager, "Nonexistent", &buf, false)
+		if err == nil {
+			t.Fatal("expected error for nonexistent connection")
+		}
+		if !strings.Contains(err.Error(), "not found") {
+			t.Errorf("error = %v, want contains 'not found'", err)
+		}
+	})
+
+	t.Run("json not found", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesEditTo(cmd, manager, "Nope", &buf, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Error == nil {
+			t.Fatal("expected JSON error envelope")
+		}
+		if env.Error.Code != ExitNotFound {
+			t.Errorf("error code = %d, want %d", env.Error.Code, ExitNotFound)
+		}
+	})
+
+	t.Run("json not available", func(t *testing.T) {
+		t.Parallel()
+		manager := newTestManager(t)
+
+		var buf bytes.Buffer
+		cmd := newSourcesCmd()
+		err := runSourcesEditTo(cmd, manager, "Work Jira", &buf, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var env JSONEnvelope
+		if err := json.Unmarshal(buf.Bytes(), &env); err != nil {
+			t.Fatalf("json decode: %v", err)
+		}
+		if env.Error == nil {
+			t.Fatal("expected JSON error envelope")
+		}
+		if env.Error.Code != ExitGeneralError {
+			t.Errorf("error code = %d, want %d", env.Error.Code, ExitGeneralError)
+		}
+	})
+}
+
 // stubHealthChecker implements connection.HealthChecker for tests.
 type stubHealthChecker struct {
 	result connection.HealthCheckResult
@@ -414,6 +1075,17 @@ func (s *stubCredentialStore) Get(_ string) (string, error) { return "", nil }
 func (s *stubCredentialStore) Set(_, _ string) error        { return nil }
 func (s *stubCredentialStore) Delete(_ string) error        { return nil }
 
+// stubSyncer implements connection.Syncer for tests.
+type stubSyncer struct {
+	called bool
+	err    error
+}
+
+func (s *stubSyncer) Sync(_ *connection.Connection, _ string) error {
+	s.called = true
+	return s.err
+}
+
 func newTestService(t *testing.T, manager *connection.ConnectionManager, checker connection.HealthChecker) *connection.ConnectionService {
 	t.Helper()
 
@@ -423,6 +1095,23 @@ func newTestService(t *testing.T, manager *connection.ConnectionManager, checker
 		Creds:      &stubCredentialStore{},
 		ConfigPath: dir + "/config.yaml",
 		Checker:    checker,
+	})
+	if err != nil {
+		t.Fatalf("NewConnectionService: %v", err)
+	}
+	return svc
+}
+
+func newTestServiceWithSyncer(t *testing.T, manager *connection.ConnectionManager, checker connection.HealthChecker, syncer connection.Syncer) *connection.ConnectionService {
+	t.Helper()
+
+	dir := t.TempDir()
+	svc, err := connection.NewConnectionService(connection.ServiceConfig{
+		Manager:    manager,
+		Creds:      &stubCredentialStore{},
+		ConfigPath: dir + "/config.yaml",
+		Checker:    checker,
+		Syncer:     syncer,
 	})
 	if err != nil {
 		t.Fatalf("NewConnectionService: %v", err)
