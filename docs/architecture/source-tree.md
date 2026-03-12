@@ -99,6 +99,25 @@ ThreeDoors/
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
+│   ├── cli/                          # CLI Layer - Cobra commands (Epic 45+)
+│   │   ├── root.go                  # Root cobra command, global flags
+│   │   ├── bootstrap.go             # CLI bootstrap: config loading, provider init
+│   │   ├── doctor.go                # `threedoors doctor` diagnostics (Epic 49)
+│   │   ├── sources.go               # `threedoors sources` list/status/test/log
+│   │   ├── sources_manage.go        # `threedoors sources` pause/resume/sync/disconnect/reauth/edit
+│   │   ├── sources_log.go           # `threedoors sources log` subcommand
+│   │   ├── connect.go               # `threedoors connect` provider setup
+│   │   ├── task.go                  # `threedoors task` CRUD commands
+│   │   ├── doors.go                 # `threedoors doors` display command
+│   │   ├── stats.go                 # `threedoors stats` analytics display
+│   │   ├── config.go                # `threedoors config` management
+│   │   ├── health.go                # `threedoors health` checks
+│   │   ├── plan.go                  # `threedoors plan` planning mode
+│   │   ├── mood.go                  # `threedoors mood` tracking
+│   │   ├── version.go               # `threedoors version` info
+│   │   ├── output.go                # Shared output formatting (JSON/text)
+│   │   └── exitcodes.go             # Standardized exit codes
+│   │
 │   ├── core/                         # Core Domain (Phase 2+)
 │   │   ├── task.go                  # Extended Task model (source, tags, duration)
 │   │   ├── task_status.go           # TaskStatus enum, constants
