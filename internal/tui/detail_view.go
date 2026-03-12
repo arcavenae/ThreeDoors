@@ -7,6 +7,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
+	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -23,6 +24,8 @@ const (
 	DetailModeDispatchConfirm
 	DetailModeDepBrowse
 	DetailModeDepAdd
+	DetailModeEnrichLoading
+	DetailModeEnrichResult
 )
 
 // DetailView displays full task details and status action menu.
@@ -49,6 +52,8 @@ type DetailView struct {
 	depAddCandidates    []*core.Task
 	depAddSelectedIndex int
 	hintEnabled         bool
+	enricher            *services.TaskEnricher
+	enrichResult        *services.EnrichedTask
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -97,6 +102,11 @@ func (dv *DetailView) SetDevDispatchInfo(enabled, available bool) {
 	dv.dispatcherAvailable = available
 }
 
+// SetEnricher sets the task enricher for LLM task enrichment.
+func (dv *DetailView) SetEnricher(enricher *services.TaskEnricher) {
+	dv.enricher = enricher
+}
+
 // SetInlineHints sets the inline hint display state.
 func (dv *DetailView) SetInlineHints(enabled bool) {
 	dv.hintEnabled = enabled
@@ -110,6 +120,15 @@ func (dv *DetailView) SetWidth(w int) {
 // Update handles key input in the detail view.
 func (dv *DetailView) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
+	case EnrichResultMsg:
+		if msg.Err != nil {
+			dv.mode = DetailModeView
+			errText := msg.Err.Error()
+			return func() tea.Msg { return FlashMsg{Text: "Enrich failed: " + errText} }
+		}
+		dv.enrichResult = msg.Result
+		dv.mode = DetailModeEnrichResult
+		return nil
 	case tea.KeyMsg:
 		switch dv.mode {
 		case DetailModeBlockerInput:
@@ -126,6 +145,10 @@ func (dv *DetailView) Update(msg tea.Msg) tea.Cmd {
 			return dv.handleDepBrowse(msg)
 		case DetailModeDepAdd:
 			return dv.handleDepAdd(msg)
+		case DetailModeEnrichLoading:
+			return nil // loading state, ignore keys
+		case DetailModeEnrichResult:
+			return dv.handleEnrichResult(msg)
 		default:
 			return dv.handleDetailKeys(msg)
 		}
@@ -237,6 +260,19 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 				}
 			}
 			return func() tea.Msg { return TaskUndoneMsg{Task: dv.task} }
+		}
+	case "n", "N":
+		if dv.enricher == nil {
+			return func() tea.Msg { return FlashMsg{Text: "LLM not configured — enrichment unavailable"} }
+		}
+		desc := strings.TrimSpace(dv.task.Text)
+		if desc == "" {
+			return func() tea.Msg { return FlashMsg{Text: "Task has no text to enrich"} }
+		}
+		dv.mode = DetailModeEnrichLoading
+		taskID := dv.task.ID
+		return func() tea.Msg {
+			return EnrichStartMsg{TaskID: taskID, TaskText: desc}
 		}
 	case "d", "D":
 		if dv.isDuplicate && dv.dedupStore != nil && dv.duplicatePair != nil {
@@ -486,6 +522,30 @@ func (dv *DetailView) handleDepAdd(msg tea.KeyMsg) tea.Cmd {
 	return nil
 }
 
+func (dv *DetailView) handleEnrichResult(msg tea.KeyMsg) tea.Cmd {
+	switch msg.String() {
+	case "a", "A":
+		result := dv.enrichResult
+		taskID := dv.task.ID
+		dv.mode = DetailModeView
+		dv.enrichResult = nil
+		return func() tea.Msg {
+			return EnrichAcceptMsg{
+				TaskID:       taskID,
+				EnrichedText: result.EnrichedText,
+				Tags:         result.Tags,
+				Effort:       result.Effort,
+				Context:      result.Context,
+			}
+		}
+	case "d", "D", "esc":
+		dv.mode = DetailModeView
+		dv.enrichResult = nil
+		return func() tea.Msg { return FlashMsg{Text: "Enrichment discarded"} }
+	}
+	return nil
+}
+
 func (dv *DetailView) handleDispatchConfirm(msg tea.KeyMsg) tea.Cmd {
 	switch msg.String() {
 	case "y", "Y":
@@ -694,6 +754,30 @@ func (dv *DetailView) View() string {
 			}
 			fmt.Fprintf(&s, "%s%s\n", prefix, t.Text)
 		}
+	case DetailModeEnrichLoading:
+		s.WriteString("Enriching task...\n")
+	case DetailModeEnrichResult:
+		if dv.enrichResult != nil {
+			origStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
+			enrichStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("82"))
+			labelStyle := lipgloss.NewStyle().Bold(true)
+
+			fmt.Fprintf(&s, "%s\n", labelStyle.Render("Original:"))
+			fmt.Fprintf(&s, "  %s\n\n", origStyle.Render(dv.enrichResult.OriginalText))
+			fmt.Fprintf(&s, "%s\n", labelStyle.Render("Enriched:"))
+			fmt.Fprintf(&s, "  %s\n", enrichStyle.Render(dv.enrichResult.EnrichedText))
+			if len(dv.enrichResult.Tags) > 0 {
+				fmt.Fprintf(&s, "  Tags: %s\n", strings.Join(dv.enrichResult.Tags, ", "))
+			}
+			if dv.enrichResult.Effort > 0 {
+				fmt.Fprintf(&s, "  Effort: %d/5\n", dv.enrichResult.Effort)
+			}
+			if dv.enrichResult.Context != "" {
+				fmt.Fprintf(&s, "  Context: %s\n", dv.enrichResult.Context)
+			}
+			s.WriteString("\n")
+			s.WriteString(helpStyle.Render("[A]ccept [D]iscard [Esc] Cancel"))
+		}
 	case DetailModeDispatchConfirm:
 		truncated := dv.task.Text
 		if len(truncated) > 50 {
@@ -724,6 +808,12 @@ func (dv *DetailView) View() string {
 				parts = append(parts, h("x")+" Xrefs")
 			}
 			parts = append(parts, h("g")+" Breakdown")
+			if dv.agentService != nil {
+				parts = append(parts, h("g")+" Decompose")
+			}
+			if dv.enricher != nil {
+				parts = append(parts, h("n")+" Enrich")
+			}
 			if dv.isDuplicate && dv.dedupStore != nil {
 				parts = append(parts, h("d")+" Dismiss-dup")
 				parts = append(parts, h("y")+" Merge-dup")
@@ -746,6 +836,14 @@ func (dv *DetailView) View() string {
 				browseHint = " [X]refs"
 			}
 			breakdownHint := " [G]breakdown"
+			decomposeHint := ""
+			if dv.agentService != nil {
+				decomposeHint = " [G]enerate stories"
+			}
+			enrichHint := ""
+			if dv.enricher != nil {
+				enrichHint = " [N]enrich"
+			}
 			dupHint := ""
 			if dv.isDuplicate && dv.dedupStore != nil {
 				dupHint = " [D]ismiss-dup [Y]es-merge"
@@ -763,6 +861,7 @@ func (dv *DetailView) View() string {
 				depHint = " [+]dep [-]dep"
 			}
 			s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + breakdownHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
+			s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + enrichHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
 		}
 	}
 
