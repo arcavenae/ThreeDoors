@@ -17,7 +17,7 @@ func NewAutumnTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "autumn",
 		Description: "Autumn harvest — layered block elements, angular textures",
-		Render:      autumnRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"}),
+		Render:      autumnRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#140a05", ANSI256: "232", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"},
@@ -43,7 +43,7 @@ func NewAutumnTheme() *DoorTheme {
 	}
 }
 
-func autumnRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func autumnRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -68,7 +68,7 @@ func autumnRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(s
 			return autumnCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill)
+		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower)
 	}
 }
 
@@ -124,7 +124,7 @@ func autumnCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
+func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -162,12 +162,10 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 
 	shade := ""
 	if cracked {
 		shade = crackShade
-		blankLine += crackShade
 	}
 
 	// Layered block texture rows using ▒ and ▓
@@ -177,18 +175,20 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 		textureBotRow = -1
 	}
 
-	textureRow := func(block string) string {
+	textureRow := func(block string, bg lipgloss.TerminalColor) string {
 		pattern := strings.Repeat(block, inner)
-		return style.Render(hingeV) + bgFillContent(pattern, inner, 0, fill) + style.Render(openV)
+		return style.Render(hingeV) + bgFillContent(pattern, inner, 0, bg) + style.Render(openV)
 	}
 
 	for row := 0; row < height; row++ {
+		bg := panelBg(row, anatomy.PanelDivider, fill, fillLower)
+
 		switch {
 		case row == anatomy.LintelRow:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
 
 		case row == textureTopRow:
-			fmt.Fprintf(&b, "%s%s", textureRow("▒"), shade)
+			fmt.Fprintf(&b, "%s%s", textureRow("▒", bg), shade)
 
 		case row == anatomy.PanelDivider:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+hBar+openTee), shade)
@@ -200,10 +200,10 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, RoundKnobFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, bg), style.Render(openV), shade)
 
 		case row == textureBotRow:
-			fmt.Fprintf(&b, "%s%s", textureRow("▓"), shade)
+			fmt.Fprintf(&b, "%s%s", textureRow("▓", bg), shade)
 
 		case row == anatomy.ThresholdRow:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
@@ -214,16 +214,16 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 				line := contentLines[lineIdx]
 				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
-					bgFillContent(line, inner, 3, fill),
+					bgFillContent(line, inner, 3, bg),
 					style.Render(openV),
 					shade,
 				)
 			} else {
-				fmt.Fprintf(&b, "%s", blankLine)
+				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillLine(inner, bg), style.Render(openV), shade)
 			}
 
 		default:
-			fmt.Fprintf(&b, "%s", blankLine)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillLine(inner, bg), style.Render(openV), shade)
 		}
 
 		if row < height-1 {
