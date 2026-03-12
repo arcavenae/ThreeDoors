@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 49, 52 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epics 42, 44-48, 50-51, 53-54 are NOT STARTED or IN PROGRESS. 540+ merged PRs total. Last audit: 2026-03-11.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 49, 52 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 45 (4/5), Epic 48 (3/4), Epic 55 (2/3) IN PROGRESS. Epics 46-47, 50-51, 53-54 NOT STARTED or IN PROGRESS. 585+ merged PRs total. Last audit: 2026-03-12.
 
 ## Requirements Inventory
 
@@ -4427,7 +4427,7 @@ Terminal-aware color degradation via lipgloss color profiles. Replace hardcoded 
 ## Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement
 
 **Priority:** P2
-**Status:** Not Started
+**Status:** In Progress (3/4 done)
 **Dependencies:** Epic 35 (Door Visual Appearance — complete), Epic 17 (Door Theme System — complete), Story 41.5 (Harmonica spike — complete, D-136 GO decision)
 
 ### Epic Goal
@@ -4442,7 +4442,7 @@ The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~
 |-------|-------|--------|----------|------------|
 | 48.1 | Side-Mounted Handle + Hinge Marks | Done (PR #451) | P2 | Epic 35 (done), Epic 17 (done) |
 | 48.2 | Continuous Threshold / Floor Line | Done (PR #483) | P2 | None |
-| 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
+| 48.3 | Crack of Light Effect on Selection | Done (PR #572) | P2 | 48.1 |
 | 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
 
 **Dependency graph:**
@@ -4579,7 +4579,7 @@ Bridge all 8 existing adapters to ConnectionManager. Wrap sync cycles to emit Sy
 ## Epic 44: Sources TUI
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** In Progress (6/7 done)
 **Dependencies:** Epic 43 (Connection Manager Infrastructure)
 
 ### Epic Goal
@@ -4590,12 +4590,12 @@ TUI interfaces for data source management: a 4-step setup wizard (`:connect`), s
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 44.1 | Setup Wizard with huh Forms | Not Started | P1 | Epic 43 |
-| 44.2 | Sources Dashboard View | Not Started | P1 | Epic 43 |
-| 44.3 | Source Detail View | Not Started | P1 | 44.2 |
-| 44.4 | Sync Log View | Not Started | P1 | 43.5 |
-| 44.5 | Status Bar Integration for Connection Health Alerts | Not Started | P1 | Epic 43 |
-| 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
+| 44.1 | Setup Wizard with huh Forms | Done (PR #574) | P1 | Epic 43 |
+| 44.2 | Sources Dashboard View | Done (PR #553) | P1 | Epic 43 |
+| 44.3 | Source Detail View | Done (PR #563) | P1 | 44.2 |
+| 44.4 | Sync Log View | Done (PR #582) | P1 | 43.5 |
+| 44.5 | Status Bar Integration for Connection Health Alerts | Done (PR #562) | P1 | Epic 43 |
+| 44.6 | Disconnection Flow with Task Preservation Options | Done (PR #581) | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
 ### Story Details
@@ -4655,7 +4655,7 @@ Re-auth for expired tokens without disconnect/reconnect. API token: masked input
 ## Epic 45: Sources CLI
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** In Progress (4/5 done)
 **Dependencies:** Epic 43 (Connection Manager Infrastructure), Epic 23 (CLI Interface — complete)
 
 ### Epic Goal
@@ -4666,10 +4666,10 @@ Non-interactive CLI commands for data source management. Supports both human pow
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
-| 45.2 | `threedoors sources` List/Status/Test Commands | Not Started | P1 | Epic 43 |
-| 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
-| 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
+| 45.1 | `threedoors connect` Command (Non-Interactive) | Done (PR #573) | P1 | Epic 43 |
+| 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
+| 45.3 | `threedoors sources` Management Commands | Done (PR #587) | P1 | Epic 43 |
+| 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
 
 ### Story Details
@@ -5288,7 +5288,7 @@ Stories 54.1 and 54.2 can parallelize. Stories 54.3, 54.4, and 54.5 can parallel
 **Goal:** Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only — no test code modifications. Fix Docker E2E redundancy, add benchmark path filtering, improve local dev speed.
 
 **Prerequisites:** None
-**Status:** Not Started
+**Status:** In Progress (2/3 done)
 
 ### Story 55.1: Docker E2E Push-Only and Lint Version Fix
 

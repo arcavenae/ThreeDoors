@@ -747,7 +747,7 @@
 | Epic 42: Application Security Hardening | 5 | In Progress (4/5 done) |
 | Epic 43: Connection Manager Infrastructure | 6 | Complete (6/6 done) |
 | Epic 44: Sources TUI | 7 | In Progress (6/7 done) |
-| Epic 45: Sources CLI | 5 | In Progress (3/5 done) |
+| Epic 45: Sources CLI | 5 | In Progress (4/5 done) |
 | Epic 46: OAuth Device Code Flow | 4 | In Progress (1/4 done) |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
 | Epic 48: Door-Like Doors | 4 | In Progress (3/4 done) |
@@ -757,6 +757,6 @@
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
 | Epic 53: Remote Collaboration | 5 | Not Started |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
-| Epic 55: CI Optimization Phase 1 | 3 | In Progress (1/3 done) |
+| Epic 55: CI Optimization Phase 1 | 3 | In Progress (2/3 done) |
 | **Total** | **291** | **152 complete, 9 epics in progress, 131 not started** |
 ---

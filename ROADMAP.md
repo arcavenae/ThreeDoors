@@ -173,7 +173,7 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.6 | Disconnection Flow with Task Preservation Options | Done (PR #581) | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 3/5 stories done
+### Epic 45: Sources CLI (P1) — 4/5 stories done
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
@@ -181,7 +181,7 @@ Non-interactive CLI commands for data source management: `threedoors connect`, `
 |-------|-------|--------|----------|------------|
 | 45.1 | `threedoors connect` Command (Non-Interactive) | Done (PR #573) | P1 | Epic 43 |
 | 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
-| 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
+| 45.3 | `threedoors sources` Management Commands | Done (PR #587) | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
 
@@ -328,14 +328,14 @@ Persistent research-supervisor agent that wraps the official Gemini CLI (`@googl
 
 **Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
 
-### Epic 55: CI Optimization Phase 1 (P1) — 1/3 stories done
+### Epic 55: CI Optimization Phase 1 (P1) — 2/3 stories done
 
 Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only. Docker E2E push-only, benchmark path filtering, local dev acceleration. No test code modifications.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 55.1 | Docker E2E Push-Only + Lint Version Fix | Done (PR #578) | P1 | None |
-| 55.2 | Benchmark Path Filtering | Not Started | P1 | None |
+| 55.2 | Benchmark Path Filtering | Done (PR #579) | P1 | None |
 | 55.3 | Local Dev Acceleration (make test-fast + CI Cache) | Not Started | P1 | None |
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
