@@ -5875,6 +5875,73 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 **Priority:** P1 | **Depends On:** 59.1
 
+## Epic 60: README Overhaul (P2)
+
+**Goal:** Polish the README with centered badge clusters, table of contents, foldable reference sections, updated feature list reflecting 35+ completed epics, and visual demo section with ASCII art mockup.
+
+**Prerequisites:** None (documentation-only epic)
+
+**Status:** Not Started (0/5 stories)
+
+### Story 60.1: README Badges & Header Polish
+
+**As a** potential user visiting the GitHub repository, **I want to** see meaningful status badges (CI, release, Go Report Card, platform support), **so that** I can quickly assess project health, maturity, and compatibility.
+
+**Acceptance Criteria:**
+- Centered badge cluster with CI status, latest release, Go Report Card, Go version, License, and Built with Bubbletea badges
+- CI badge shows green "passing" status linked to CI workflow
+- Release badge auto-updates to show latest version number
+- All badges centered using `<p align="center">` HTML
+- Tagline centered below badges
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 60.2: README Table of Contents
+
+**As a** user reading the README, **I want to** see a table of contents with anchor links, **so that** I can quickly navigate the 700+ line document.
+
+**Acceptance Criteria:**
+- TOC appears after hero/badges section, before main content
+- Every major section has a TOC entry with emoji prefix
+- All anchor links work on GitHub
+
+**Priority:** P2 | **Depends On:** 60.1
+
+### Story 60.3: README Foldable Content Sections
+
+**As a** casual visitor, **I want** verbose reference sections collapsed by default, **so that** I can scan the README without being overwhelmed by dense reference tables.
+
+**Acceptance Criteria:**
+- Key Bindings, CLI Reference, Provider Config, MCP Server, Development, Data Directory sections wrapped in `<details><summary>`
+- Core sections (What is ThreeDoors?, Quick Start, Features, Philosophy, etc.) remain expanded
+- All foldable sections expand/collapse correctly
+
+**Priority:** P2 | **Depends On:** 60.4
+
+### Story 60.4: README Feature List Update & Accuracy Pass
+
+**As a** potential user evaluating ThreeDoors, **I want** the Features section to accurately reflect all shipped capabilities, **so that** I understand the full scope.
+
+**Acceptance Criteria:**
+- All user-facing features from completed epics represented
+- Themes table updated to 8 entries (4 base + 4 seasonal)
+- Daily Planning Mode, Beautiful Statistics, Door Visuals, Selection Feedback features added
+- Features organized into logical categories
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 60.5: README Visual Demo Section
+
+**As a** potential user, **I want to** see what ThreeDoors looks like before installing, **so that** I can decide if it's worth trying.
+
+**Acceptance Criteria:**
+- Visual demo section after "What is ThreeDoors?"
+- ASCII art mockup of three doors view
+- `docs/assets/` directory created
+- Foldable screenshot gallery with placeholders
+
+**Priority:** P2 | **Depends On:** None
+
 ### Dependency Graph
 
 ```
@@ -5902,6 +5969,17 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 - Full research: `_bmad-output/planning-artifacts/full-terminal-layout-research.md`
 - Party mode: `_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md`
+
+60.1 (Badges)         ──▶ Independent
+60.2 (TOC)            ──▶ Depends on 60.1 (needs final section headers)
+60.4 (Feature Update) ──▶ Independent
+60.3 (Foldable)       ──▶ Depends on 60.4 (fold updated content)
+60.5 (Visual Demo)    ──▶ Independent
+```
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/readme-overhaul-plan.md`
 
 ## Epic 61: GitHub Pages User Guide (P2)
 

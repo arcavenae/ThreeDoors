@@ -757,6 +757,19 @@
 - **Research:** See `_bmad-output/planning-artifacts/full-terminal-layout-research.md` and `full-terminal-layout-party-mode.md`
 - **Decisions:** D-114 (AltScreen), D-115 (layout model), D-116 (door cap), D-117 (40/60 padding), D-118 (dynamic height), D-119 (degradation), D-120 (two-story split), D-121 (prerequisite for 39.2)
 
+**Epic 60: README Overhaul** (P2)
+- **Goal:** Polish the README with centered badge clusters, table of contents, foldable reference sections, updated feature list reflecting 35+ completed epics, and visual demo section
+- **Prerequisites:** None (documentation-only epic)
+- **Status:** Not Started
+- **Deliverables:**
+  - Centered badge cluster with CI, release, Go Report Card, platform support badges
+  - Table of contents with emoji-prefixed anchor links
+  - Foldable `<details>` sections for reference material (~400 lines collapsed)
+  - Feature list audit covering all completed epics (Daily Planning, Seasonal Themes, Door Visuals, etc.)
+  - Visual demo section with ASCII art mockup and screenshot gallery infrastructure
+- **Stories:** 60.1-60.5 (5 stories)
+- **Research:** See `_bmad-output/planning-artifacts/readme-overhaul-plan.md`
+
 **Epic 61: GitHub Pages User Guide** (P2)
 - **Goal:** Publish ThreeDoors documentation as a professional GitHub Pages site using MkDocs + Material for MkDocs, making the user guide discoverable via search engines and accessible without cloning the repo
 - **Prerequisites:** None
@@ -775,7 +788,7 @@
 - **Decisions:** D-174 (MkDocs + Material for MkDocs)
 - **Note:** Story 61.1 PR requires manual merge by project owner (workflow scope limitation)
 
-**Epic 60+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 62+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -846,6 +859,7 @@
 | Epic 57: LLM CLI Services | 8 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
 | Epic 59: Full-Terminal Vertical Layout | 2 | Not Started |
+| Epic 60: README Overhaul | 5 | Not Started |
 | Epic 61: GitHub Pages User Guide | 4 | Not Started |
-| **Total** | **316** | **152 complete, 9 epics in progress, 156 not started** |
+| **Total** | **321** | **152 complete, 9 epics in progress, 161 not started** |
 ---
