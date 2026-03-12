@@ -1,10 +1,35 @@
 package tui
 
+// E2E Scenario Coverage Audit (Story 0.53)
+//
+// COVERED workflows:
+//   - Launch → view doors → ThreeDoors header renders
+//   - Door selection: all 3 doors (a/w/d keys) → detail view → back
+//   - Task completion: select → complete (c) → verify removed from pool (Story 0.53)
+//   - Task blocking: select → block (b) → type reason → submit → verify status (Story 0.53)
+//   - Reroll/refresh doors (s key) → new tasks shown
+//   - Search: open (/) → type query → results appear → select result → detail view
+//   - Command palette: open (:) → type command → execute (:mood, :help, :plan, :connect)
+//   - Mood tracking: all 6 options (1-6) → verify mood recorded; esc cancels
+//   - Daily planning mode: entry via :plan → cancel with esc → return to doors (Story 0.53)
+//   - Source connection wizard: entry via :connect → cancel with esc → return to doors (Story 0.53)
+//   - Session metrics: doors viewed, detail views, task completion, refreshes, mood, session ID/timing
+//   - Full multi-action session: mood + reroll + complete + search in one session
+//
+// NOT COVERED (out of scope or infeasible in headless teatest):
+//   - Theme switching (visual-only, covered by golden file tests)
+//   - Onboarding wizard (first-run flow, would need separate test model setup)
+//   - Source sync operations (require real provider connections)
+//   - Dev dispatch flow (requires dispatcher infrastructure)
+//   - File persistence round-trips (covered by adapter-level tests)
+
 import (
 	"bytes"
 	"testing"
 	"time"
 
+	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/exp/teatest"
 )
@@ -509,6 +534,184 @@ func TestE2E_MoodTracking_EscCancels(t *testing.T) {
 	// No mood should have been recorded.
 	if metrics.MoodEntryCount != 0 {
 		t.Errorf("expected 0 mood entries after cancel, got %d", metrics.MoodEntryCount)
+	}
+}
+
+// --- AC2: Task Completion Flow — Verify Removal from Pool ---
+
+func TestE2E_TaskCompletion_VerifyRemovedFromPool(t *testing.T) {
+	tm := NewTestApp(t,
+		WithTasks("Finish report", "Call dentist", "Buy groceries"),
+	)
+
+	waitForContent(t, tm, "ThreeDoors")
+
+	// Select left door and open detail.
+	sendKey(t, tm, 'a')
+	time.Sleep(100 * time.Millisecond)
+	sendSpecialKey(t, tm, tea.KeyEnter)
+	time.Sleep(200 * time.Millisecond)
+
+	// Complete the task.
+	sendKey(t, tm, 'c')
+	time.Sleep(200 * time.Millisecond)
+
+	// Dismiss next-steps view.
+	sendSpecialKey(t, tm, tea.KeyEsc)
+	time.Sleep(100 * time.Millisecond)
+
+	// Quit and verify the completed task is no longer available for doors.
+	mm := finalMainModel(t, tm)
+	available := mm.pool.GetAvailableForDoors()
+	for _, task := range available {
+		if task.Text == "Finish report" || task.Text == "Call dentist" || task.Text == "Buy groceries" {
+			if task.Status == core.StatusComplete {
+				t.Errorf("completed task %q should not appear in available doors", task.Text)
+			}
+		}
+	}
+
+	// Verify pool still has 2 non-completed tasks available.
+	if len(available) != 2 {
+		t.Errorf("expected 2 available tasks after completing 1 of 3, got %d", len(available))
+	}
+}
+
+// --- AC2: Task Blocking Flow — Select → Block → Verify Status ---
+
+func TestE2E_TaskBlocking_SelectBlockVerifyStatus(t *testing.T) {
+	tm := NewTestApp(t,
+		WithTasks("Debug API", "Write docs", "Review PR"),
+	)
+
+	waitForContent(t, tm, "ThreeDoors")
+
+	// Select center door and open detail.
+	sendKey(t, tm, 'w')
+	time.Sleep(100 * time.Millisecond)
+	sendSpecialKey(t, tm, tea.KeyEnter)
+	time.Sleep(200 * time.Millisecond)
+
+	// Press 'b' to enter blocker input mode.
+	sendKey(t, tm, 'b')
+	time.Sleep(200 * time.Millisecond)
+
+	// Type a blocker reason.
+	for _, r := range "Waiting on API keys" {
+		sendKey(t, tm, r)
+		time.Sleep(30 * time.Millisecond)
+	}
+
+	// Submit the blocker reason with Enter.
+	sendSpecialKey(t, tm, tea.KeyEnter)
+	time.Sleep(200 * time.Millisecond)
+
+	// Return to doors (TaskUpdatedMsg triggers return).
+	sendSpecialKey(t, tm, tea.KeyEsc)
+	time.Sleep(100 * time.Millisecond)
+
+	// Quit and verify the task is now blocked.
+	mm := finalMainModel(t, tm)
+	metrics := mm.tracker.Finalize()
+
+	// At least one status change should have been recorded.
+	if metrics.StatusChanges < 1 {
+		t.Errorf("expected at least 1 status change for blocking, got %d", metrics.StatusChanges)
+	}
+
+	// Verify the blocked task has the correct status and blocker reason.
+	found := false
+	for _, task := range mm.pool.GetAllTasks() {
+		if task.Status == core.StatusBlocked {
+			found = true
+			if task.Blocker != "Waiting on API keys" {
+				t.Errorf("expected blocker %q, got %q", "Waiting on API keys", task.Blocker)
+			}
+			break
+		}
+	}
+	if !found {
+		t.Error("expected at least one task with StatusBlocked, found none")
+	}
+}
+
+// --- AC2: Daily Planning Mode Entry and Exit ---
+
+func TestE2E_PlanningMode_EntryViaCommandPaletteAndCancel(t *testing.T) {
+	tm := NewTestApp(t,
+		WithTasks("Task 1", "Task 2", "Task 3", "Task 4", "Task 5"),
+	)
+
+	waitForContent(t, tm, "ThreeDoors")
+
+	// Open command palette with ':'.
+	sendKey(t, tm, ':')
+	time.Sleep(200 * time.Millisecond)
+
+	// Type "plan" command.
+	for _, r := range "plan" {
+		sendKey(t, tm, r)
+		time.Sleep(50 * time.Millisecond)
+	}
+	time.Sleep(200 * time.Millisecond)
+
+	// Select the :plan command.
+	sendSpecialKey(t, tm, tea.KeyDown)
+	time.Sleep(100 * time.Millisecond)
+	sendSpecialKey(t, tm, tea.KeyEnter)
+	time.Sleep(200 * time.Millisecond)
+
+	// We should now be in planning view. Press Esc to cancel planning.
+	sendSpecialKey(t, tm, tea.KeyEsc)
+	time.Sleep(200 * time.Millisecond)
+
+	// After cancelling planning, we should return to doors view.
+	mm := finalMainModel(t, tm)
+	if mm.viewMode != ViewDoors {
+		t.Errorf("expected ViewDoors after cancelling planning, got %v", mm.viewMode)
+	}
+}
+
+// --- AC2: Source Connection Wizard Entry and Cancel ---
+
+func TestE2E_ConnectWizard_EntryViaCommandPaletteAndCancel(t *testing.T) {
+	connMgr := connection.NewConnectionManager(nil)
+	tm := NewTestApp(t,
+		WithTasks("Task 1", "Task 2", "Task 3"),
+		WithConnMgr(connMgr),
+	)
+
+	waitForContent(t, tm, "ThreeDoors")
+
+	// Open command palette with ':'.
+	sendKey(t, tm, ':')
+	time.Sleep(200 * time.Millisecond)
+
+	// Type "connect" command.
+	for _, r := range "connect" {
+		sendKey(t, tm, r)
+		time.Sleep(50 * time.Millisecond)
+	}
+	time.Sleep(200 * time.Millisecond)
+
+	// Select the :connect command.
+	sendSpecialKey(t, tm, tea.KeyDown)
+	time.Sleep(100 * time.Millisecond)
+	sendSpecialKey(t, tm, tea.KeyEnter)
+	time.Sleep(300 * time.Millisecond)
+
+	// We should now be in the connect wizard view. Press Esc to cancel.
+	sendSpecialKey(t, tm, tea.KeyEsc)
+	time.Sleep(200 * time.Millisecond)
+
+	// May need additional Esc to fully exit wizard/huh form layers.
+	sendSpecialKey(t, tm, tea.KeyEsc)
+	time.Sleep(100 * time.Millisecond)
+
+	mm := finalMainModel(t, tm)
+	// Verify we returned to a usable state (doors).
+	if mm.viewMode != ViewDoors {
+		t.Errorf("expected ViewDoors after connect wizard cancel, got %v", mm.viewMode)
 	}
 }
 

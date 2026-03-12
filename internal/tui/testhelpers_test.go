@@ -9,6 +9,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/exp/teatest"
 	"github.com/muesli/termenv"
@@ -23,6 +24,7 @@ type testAppConfig struct {
 	taskFile string
 	tasks    []string
 	provider core.TaskProvider
+	connMgr  *connection.ConnectionManager
 }
 
 // WithTermSize sets the virtual terminal dimensions for the test.
@@ -53,6 +55,13 @@ func WithTasks(texts ...string) TestOption {
 func WithProvider(p core.TaskProvider) TestOption {
 	return func(c *testAppConfig) {
 		c.provider = p
+	}
+}
+
+// WithConnMgr sets a ConnectionManager on the test model, enabling source/connect views.
+func WithConnMgr(mgr *connection.ConnectionManager) TestOption {
+	return func(c *testAppConfig) {
+		c.connMgr = mgr
 	}
 }
 
@@ -135,6 +144,10 @@ func NewTestApp(t *testing.T, opts ...TestOption) *teatest.TestModel {
 
 	tracker := core.NewSessionTracker()
 	model := NewMainModel(pool, tracker, provider, nil, false, nil)
+
+	if cfg.connMgr != nil {
+		model.SetConnectionManager(cfg.connMgr)
+	}
 
 	tm := teatest.NewTestModel(
 		t,
