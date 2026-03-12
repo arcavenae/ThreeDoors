@@ -12,6 +12,25 @@
 
 <p align="center"><em>Progress over perfection. Three doors. One choice. Move forward.</em></p>
 
+## 📑 Table of Contents
+
+- [📦 Installation](#-installation)
+- [🚀 Quick Start](#-quick-start)
+- [✨ Features](#-features)
+- [📖 User Guide](#-user-guide)
+- [⌨️ Key Bindings](#%EF%B8%8F-key-bindings)
+- [💻 CLI Reference](#-cli-reference)
+- [🤖 MCP Server](#-mcp-server)
+- [📁 Data Directory](#-data-directory)
+- [🔒 Data & Privacy](#-data--privacy)
+- [🧭 Philosophy](#-philosophy)
+- [🛠️ Development](#%EF%B8%8F-development)
+- [🤝 Contributing](#-contributing)
+- [📚 Documentation](#-documentation)
+- [License](#license)
+
+---
+
 ## What is ThreeDoors?
 
 ThreeDoors is a **radical rethinking of task management** that reduces decision friction by showing you only **three tasks at a time**. Instead of overwhelming you with an endless list, ThreeDoors presents three carefully selected "doors" — choose one, take action, and move forward.
@@ -36,6 +55,44 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 
 ---
 
+## 📸 Screenshots
+
+<p align="center"><em>Three doors. Pick one. Move forward.</em></p>
+
+```
+  ╭────────────────────────╮ ╭────────────────────────╮ ╭────────────────────────╮
+  │                        │ │                        │ │                        │
+  │  [todo]                │ │  [todo]                │ │  [todo]                │
+  │                        │ │                        │ │                        │
+  │  Buy groceries         │ │  Read Go book          │ │  Exercise for 30 min   │
+  │                        │ │                        │ │                        │
+  ╰────────────────────────╯ ╰────────────────────────╯ ╰────────────────────────╯
+
+  a/left, w/up, d/right to select │ s/down to re-roll │ Enter/Space to open
+```
+
+<!-- To capture an actual terminal recording, use charmbracelet/vhs:
+     https://github.com/charmbracelet/vhs
+     Store recordings and screenshots in docs/assets/ -->
+
+<details>
+<summary>More screenshots</summary>
+
+| View | Screenshot |
+|------|-----------|
+| Three Doors | *Coming soon — door selection flow* |
+| Task Detail | *Coming soon — task detail with actions* |
+| Dashboard | *Coming soon — insights and analytics* |
+| Themes | *Coming soon — classic, modern, scifi, shoji* |
+| Search | *Coming soon — quick search with fuzzy filtering* |
+| Onboarding | *Coming soon — first-run wizard* |
+
+Screenshots and GIFs will be stored in [`docs/assets/`](docs/assets/).
+
+</details>
+
+---
+
 ## 📦 Installation
 
 ### Option 1: Homebrew (recommended)
@@ -50,7 +107,7 @@ brew install arcaven/tap/threedoors
 brew install arcaven/tap/threedoors-a
 ```
 
-Both can be installed side-by-side. Stable runs as `threedoors`, alpha runs as `threedoors-a`.
+Both can be installed side-by-side. Stable runs as `threedoors`, alpha as `threedoors-a`.
 
 ### Option 2: Download Pre-built Binary
 
@@ -86,6 +143,8 @@ make build
 # Binary at bin/threedoors
 ```
 
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 🚀 Quick Start
@@ -112,6 +171,8 @@ threedoors doors                    # Show three doors in the terminal
 threedoors stats --daily
 ```
 
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## ✨ Features
@@ -124,6 +185,7 @@ threedoors stats --daily
 - 🏷️ **Inline Tagging** — Tag tasks as you add them: `Design homepage #creative #deep-work @work`
 - 📂 **Task Categorization** — Classify by type (creative, technical, administrative, physical), effort (quick-win, medium, deep-work), and location (home, work, errands, anywhere)
 - 🔗 **Cross-Reference Linking** — Link related tasks together; browse and navigate links from detail view
+- 🌅 **Daily Planning Mode** — Morning planning ritual (`:plan`) that guides you through reviewing, selecting, and committing to your day's tasks in a structured 3-step flow
 
 ### Search & Commands
 - 🔍 **Quick Search** — Press `/` for live task search with fuzzy filtering
@@ -133,9 +195,30 @@ threedoors stats --daily
 - 📊 **Session Metrics** — Automatic tracking of door selections, bypasses, and timing data
 - 📈 **Daily Completion Tracking** — Track completions per day with streak counting
 - 📋 **Insights Dashboard** — View trends, streaks, mood correlations, and avoidance patterns (`:dashboard`)
+- 📉 **Sparkline Charts** — Inline Unicode sparkline visualizations for completion trends
+- 🟩 **Activity Heatmap** — GitHub-style contribution heatmap showing daily activity intensity
+- 🏆 **Milestone Celebrations** — Animated counter reveals when you hit productivity milestones
 - 😊 **Mood Correlation Analysis** — Discover how your emotional state affects task selection
 - 🚨 **Avoidance Detection** — Tasks bypassed 10+ times trigger an intervention prompt offering breakdown, deferral, or archival
 - 🧠 **Pattern Analysis** — Identifies door position bias, task type preferences, and procrastination patterns
+
+### Wellbeing
+- 😊 **Mood Logging** — Capture emotional state anytime with presets: focused, energized, tired, stressed, neutral, calm, distracted
+- 🎯 **Values & Goals Display** — Persistent footer showing your values as you work
+- 💬 **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
+
+### Themes
+- 🎨 **Door Themes** — Eight themes: 4 base (`classic`, `modern`, `scifi`, `shoji`) + 4 seasonal (`spring`, `summer`, `autumn`, `winter`)
+- 🌸 **Seasonal Auto-Switching** — Themes automatically change with the seasons based on date; override with `:seasonal`
+- 🖌️ **Theme Picker** — Switch themes live with `:theme`
+- ⚙️ **Persistent Selection** — Chosen theme saved in `config.yaml`
+
+### Door Visuals
+- 🚪 **Proportional Door Rendering** — Doors scale to 60% of terminal height with anatomically correct proportions (lintel, panels, handle, threshold)
+- ✨ **Spring-Physics Selection Feedback** — Smooth 60 FPS spring animation with border emphasis when selecting doors
+- 🔳 **Side-Mounted Handles & Hinge Marks** — Structural door elements for visual realism
+- 💡 **Crack of Light Effect** — Selected door glows with a crack-of-light selection indicator
+- 🔄 **Handle Turn Micro-Animation** — Handle animates on door open
 
 ### Integrations & Providers
 - 📄 **Text File** (default) — YAML-based local task storage
@@ -147,6 +230,7 @@ threedoors stats --daily
 - ✅ **Todoist** — Sync tasks from Todoist via REST API with project and filter support
 - 🔌 **Multi-Provider Aggregation** — Run multiple providers simultaneously; tasks merge across sources
 - 🩺 **Health Check** — Run `:health` or `threedoors health` to verify provider connectivity
+- 📝 **huh Form Wizards** — Provider setup via interactive Charm huh forms (`:connect`)
 
 ### Sync & Offline-First
 - 💾 **Write-Ahead Log (WAL)** — Crash-safe task persistence with atomic writes
@@ -167,11 +251,6 @@ threedoors stats --daily
 - 📝 **Git Integration** — Write generated story specs directly to git repos
 - 💡 **Suggestions View** — Browse LLM-generated task proposals in the TUI (`:suggestions`)
 
-### Themes
-- 🎨 **Door Themes** — Four built-in themes: `classic`, `modern`, `scifi`, `shoji`
-- 🖌️ **Theme Picker** — Switch themes live with `:theme`
-- ⚙️ **Persistent Selection** — Chosen theme saved in `config.yaml`
-
 ### Task Workflow
 - ⏰ **Snooze / Defer** — Snooze a task until a specific date; auto-returns to the pool when due
 - 🔗 **Task Dependencies** — Define `depends_on` relationships; blocked tasks are filtered from door selection and auto-unblock on completion
@@ -179,9 +258,6 @@ threedoors stats --daily
 
 ### User Experience
 - 👋 **First-Run Onboarding** — Guided welcome flow with keybinding tutorial, values/goals setup, and optional task import
-- 🎯 **Values & Goals Display** — Persistent footer showing your values as you work
-- 😊 **Mood Logging** — Capture emotional state anytime with presets: focused, energized, tired, stressed, neutral, calm, distracted
-- 💬 **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
 - 💡 **Session Improvement Prompt** — On quit, optionally share improvement suggestions
 - ➡️ **Contextual Next Steps** — After completing or adding a task, see relevant next actions
 - ❓ **Keybinding Display** — Context-sensitive keybinding bar at the bottom of the screen; press `?` to open full keybinding overlay
@@ -196,6 +272,8 @@ threedoors stats --daily
 - 🔏 **Signed & Notarized** — macOS binaries are code-signed and Apple-notarized
 - 💻 **Cross-Platform Binaries** — Pre-built for macOS (ARM & Intel) and Linux (x86_64)
 - 🚀 **GitHub Releases** — Automatic releases on every merge to main
+
+[↑ Back to top](#threedoors-)
 
 ---
 
@@ -313,6 +391,9 @@ The dashboard shows:
 
 ### Configuring Providers
 
+<details>
+<summary>Provider YAML configuration examples</summary>
+
 Edit `~/.threedoors/config.yaml` to configure task sources:
 
 ```yaml
@@ -376,6 +457,8 @@ threedoors config set theme modern
 
 Multiple providers can run simultaneously — tasks are aggregated and deduplicated across all sources.
 
+</details>
+
 ### Themes
 
 Switch door themes with `:theme` in the TUI or by setting the `theme` key in config:
@@ -386,10 +469,21 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `modern` | Contemporary, clean design |
 | `scifi` | Sci-fi / cyberpunk aesthetic |
 | `shoji` | Japanese minimalist sliding doors |
+| `spring` | Light greens and curved lines (Mar–May) |
+| `summer` | Warm tones and bright accents (Jun–Aug) |
+| `autumn` | Rich amber and harvest palette (Sep–Nov) |
+| `winter` | Cool blues and frost accents (Dec–Feb) |
+
+Seasonal themes auto-switch based on the current date. Use `:seasonal` to open the seasonal theme picker, or `:theme` for base themes.
+
+[↑ Back to top](#threedoors-)
 
 ---
 
 ## ⌨️ Key Bindings
+
+<details>
+<summary>Key binding tables for all views and command palette</summary>
 
 ### Three Doors View
 | Key | Action |
@@ -441,6 +535,8 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `:mood [mood]` | Log mood (or open selector) |
 | `:tag` | Open task categorization editor |
 | `:theme` | Open theme picker |
+| `:seasonal` | Open seasonal theme picker |
+| `:plan` | Start daily planning mode |
 | `:stats` | Flash session statistics |
 | `:health` | Run system health check |
 | `:dashboard` | Open insights dashboard |
@@ -451,14 +547,23 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `:goals edit` | Edit existing values & goals |
 | `:synclog` | Show sync history |
 | `:suggestions` | Browse LLM task proposals |
+| `:connect` | Connect a new data source |
+| `:sources` | View connected data sources |
 | `:deferred` | Show deferred/snoozed tasks |
 | `:devqueue` | Open dev dispatch queue |
 | `:help` | Show all commands |
 | `:quit` / `:exit` | Exit application |
 
+</details>
+
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 💻 CLI Reference
+
+<details>
+<summary>Full CLI command reference</summary>
 
 ThreeDoors includes a full CLI for headless/scripted usage. All commands support `--json` for machine-readable output.
 
@@ -538,9 +643,16 @@ threedoors completion zsh            # Generate zsh completions
 threedoors completion fish           # Generate fish completions
 ```
 
+</details>
+
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 🤖 MCP Server
+
+<details>
+<summary>MCP setup, available tools, and Claude Desktop configuration</summary>
 
 ThreeDoors ships a separate MCP (Model Context Protocol) server binary that exposes tasks and analytics to LLM agents like Claude.
 
@@ -589,9 +701,16 @@ Add to your Claude Desktop `claude_desktop_config.json`:
 }
 ```
 
+</details>
+
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 📁 Data Directory
+
+<details>
+<summary>File layout for <code>~/.threedoors/</code></summary>
 
 All data is stored locally in `~/.threedoors/`:
 
@@ -610,6 +729,10 @@ All data is stored locally in `~/.threedoors/`:
 └── onboarding.lock     # First-run marker
 ```
 
+</details>
+
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 🔒 Data & Privacy
@@ -619,6 +742,8 @@ All data is stored locally in `~/.threedoors/`:
 - **No accounts** — No sign-ups, no servers, no tracking
 - **Offline-first** — Works without network; syncs when available
 - **Your API tokens stay local** — Provider credentials in `config.yaml` are never transmitted beyond the configured service
+
+[↑ Back to top](#threedoors-)
 
 ---
 
@@ -631,9 +756,14 @@ All data is stored locally in `~/.threedoors/`:
 5. **Power Users Welcome** — Vi-style commands without sacrificing simplicity
 6. **Local-First** — Your data stays on your machine, no accounts, no telemetry
 
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 🛠️ Development
+
+<details>
+<summary>Tech stack, project structure, and make targets</summary>
 
 ### Tech Stack
 
@@ -700,6 +830,10 @@ make fmt    # Format code
 make lint   # Run linter (must pass with zero warnings)
 ```
 
+</details>
+
+[↑ Back to top](#threedoors-)
+
 ---
 
 ## 🤝 Contributing
@@ -722,6 +856,8 @@ make lint   # Run linter (must pass with zero warnings)
 - `golangci-lint` passes with zero warnings
 - Unit tests for new logic
 - No `//nolint` without justification
+
+[↑ Back to top](#threedoors-)
 
 ---
 
