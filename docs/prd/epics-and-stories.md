@@ -4655,7 +4655,7 @@ Re-auth for expired tokens without disconnect/reconnect. API token: masked input
 ## Epic 45: Sources CLI
 
 **Priority:** P1
-**Status:** In Progress (4/5 done)
+**Status:** Complete (5/5 done)
 **Dependencies:** Epic 43 (Connection Manager Infrastructure), Epic 23 (CLI Interface — complete)
 
 ### Epic Goal
@@ -4670,7 +4670,7 @@ Non-interactive CLI commands for data source management. Supports both human pow
 | 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
 | 45.3 | `threedoors sources` Management Commands | Done (PR #587) | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
-| 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
+| 45.5 | JSON Output Support for All Sources Commands | Done (PR #589) | P1 | 45.1-45.4 |
 
 ### Story Details
 
