@@ -50,6 +50,11 @@ func NewConnectionService(cfg ServiceConfig) (*ConnectionService, error) {
 	}, nil
 }
 
+// EventLog returns the service's SyncEventLog, or nil if none was configured.
+func (s *ConnectionService) EventLog() *SyncEventLog {
+	return s.eventLog
+}
+
 // Add creates a new connection, stores its credential, and persists config.
 // credential may be empty if the provider uses env-var-based auth.
 func (s *ConnectionService) Add(providerName, label string, settings map[string]string, credential string) (*Connection, error) {
