@@ -132,20 +132,224 @@ RESEARCH priority=<high|normal|low> depth=<quick|standard|deep> [context=<bundle
 
 Pre-defined context bundles assembled based on the query. Always include `core`.
 
-| Bundle | Files | When to Use |
-|--------|-------|-------------|
-| `core` | CLAUDE.md, SOUL.md | Always included |
-| `architecture` | docs/architecture/*.md | Architecture questions |
-| `prd` | docs/prd/epic-list.md, relevant sections | Feature/scope questions |
-| `stories` | Relevant story files (pattern-matched) | Story-specific research |
-| `decisions` | docs/decisions/BOARD.md | Decision-related queries |
-| `code-sample` | Relevant source files (grep-matched) | Implementation research |
-| `tui` | internal/tui/ key files | TUI-specific research |
-| `tasks` | internal/tasks/ key files | Task domain research |
+| Bundle | Files | Size (est.) | When to Use |
+|--------|-------|-------------|-------------|
+| `core` | `CLAUDE.md`, `SOUL.md` | ~15KB | Always included — project identity and coding standards |
+| `architecture` | `docs/architecture/high-level-architecture.md`, `docs/architecture/components.md`, `docs/architecture/core-workflows.md`, `docs/architecture/data-models.md`, `docs/architecture/coding-standards.md` | ~86KB (select subset) | Architecture, design pattern, component questions |
+| `prd` | `docs/prd/epic-list.md` (headers + relevant epic sections only) | ~10KB (truncated) | Feature scope, product requirements, epic status |
+| `stories` | `docs/stories/<epic>.<story>.story.md` (pattern-matched to query) | ~5KB (1-3 files) | Story-specific research, AC clarification |
+| `decisions` | `docs/decisions/BOARD.md` | ~89KB (select entries) | Decision history, rejected alternatives, prior art |
+| `code-sample` | Relevant `.go` source files identified via `grep` on query keywords | ~20KB (2-5 files) | Implementation patterns, existing code analysis |
+| `tui` | `internal/tui/main_model.go`, `internal/tui/doors_view.go`, `internal/tui/messages.go`, `internal/tui/styles.go` | ~25KB (key files) | TUI rendering, Bubbletea patterns, view architecture |
+| `tasks` | `internal/tasks/provider.go`, `internal/tasks/task.go`, `internal/tasks/task_pool.go`, `internal/tasks/persistence.go` | ~15KB (key files) | Task domain model, persistence, provider interface |
 
-If the request specifies `context=<names>`, include those bundles. If no context is specified, auto-detect from query keywords (e.g., "architecture" or "design" maps to the architecture bundle).
+### Context Delivery Mechanisms
 
-**Budget:** Keep assembled context under 60KB per query.
+Two mechanisms are available for injecting context. Choose based on bundle type:
+
+**1. `--include-directories` — for directory-aligned bundles**
+
+Use when the bundle maps cleanly to a directory. Gemini CLI reads all files in the specified directories.
+
+```bash
+# Architecture + PRD + Decisions bundles
+gemini -m gemini-2.5-pro \
+  -p "<query>" \
+  --include-directories docs/architecture,docs/prd,docs/decisions \
+  --output-format json
+```
+
+Best for: `architecture`, `prd`, `decisions` bundles where the entire directory is relevant.
+
+**2. Stdin piping — for assembled/cherry-picked bundles**
+
+Use when the bundle combines files from multiple directories or needs selective file inclusion.
+
+```bash
+# Assemble core + specific code samples into a single context document
+{
+  echo "# Project Context"
+  echo "## CLAUDE.md"
+  cat CLAUDE.md
+  echo ""
+  echo "## SOUL.md"
+  cat SOUL.md
+  echo ""
+  echo "## Relevant Source Code"
+  cat internal/tasks/provider.go
+} | gemini -m gemini-2.5-pro \
+  -p "Given the project context above, research: <query>" \
+  --output-format json
+```
+
+Best for: `core`, `code-sample`, `tui`, `tasks`, `stories` bundles where specific files are cherry-picked.
+
+### GEMINI.md and GEMINI_SYSTEM_MD Interaction
+
+The Gemini CLI has two native context injection mechanisms that supplement per-query bundles:
+
+**`GEMINI.md`** (project root) — Loaded automatically by the CLI on every invocation within the project directory. Contains persistent project context (language, framework, structure). Already created at project root by Story 54.2. This provides baseline grounding for ALL queries without explicit bundle assembly.
+
+**`GEMINI_SYSTEM_MD`** (environment variable) — Points to a custom system prompt file. Use this for research-specific instructions that should apply to every query but aren't project context:
+
+```bash
+GEMINI_SYSTEM_MD=agents/research-system-prompt.md \
+  gemini -m gemini-2.5-pro -p "<query>" --output-format json
+```
+
+**Layering order:** `GEMINI.md` (always, automatic) → `GEMINI_SYSTEM_MD` (always, if set) → per-query bundles (selective, assembled per request). All three layers combine — they don't override each other.
+
+### Keyword-to-Bundle Auto-Detection
+
+When a request does not specify `context=<names>`, auto-detect bundles from query keywords:
+
+| Keyword Pattern | Bundle(s) |
+|-----------------|-----------|
+| architecture, design, pattern, component, module | `architecture` |
+| epic, story, feature, scope, requirement, sprint | `prd` + `stories` |
+| decision, rejected, alternative, trade-off, chose | `decisions` |
+| bubbletea, view, tui, render, lipgloss, keymap, update, model | `tui` |
+| task, provider, pool, persistence, yaml, storage, session | `tasks` |
+| code, implement, function, struct, interface, method | `code-sample` |
+| security, vulnerability, CVE, auth, injection | `code-sample` + `decisions` |
+| test, coverage, benchmark, race | `code-sample` |
+
+**Matching rules:**
+- Case-insensitive matching against the question text
+- Multiple keyword matches → include all matched bundles (union)
+- `core` is always included regardless of keyword matches
+- If no keywords match, include only `core` (let Gemini's GoogleSearch do the heavy lifting)
+
+### Context Budget and Priority Shedding
+
+**Budget cap:** 60KB total assembled context per query (~15K tokens).
+
+The 60KB cap keeps grounding focused — Gemini does its own web search via GoogleSearch for general knowledge. Our context provides project-specific grounding only.
+
+**Priority shedding order** when assembled context exceeds 60KB:
+
+| Priority | Action | Resulting Size |
+|----------|--------|----------------|
+| 1 (first to drop) | Drop `code-sample` bundle | Removes ~20KB |
+| 2 | Truncate `stories` to headers + acceptance criteria only (strip tasks, dev notes) | Saves ~3KB |
+| 3 | Truncate `prd` to epic headers + status only (strip story lists) | Saves ~5KB |
+| 4 | Truncate `decisions` to last 20 entries only | Saves ~50KB |
+| 5 | Truncate `architecture` to `high-level-architecture.md` only | Saves ~70KB |
+| Irreducible minimum | `core` + `architecture` (high-level only) + `decisions` (recent 20) | ~31KB |
+
+**Never drop `core`** — it defines the project identity and coding standards that ground every query.
+
+### Standard Prompt Template
+
+Every research query is wrapped in this template before dispatch. The template is reusable across all queries — only `[CONTEXT_BUNDLES]` and `[QUESTION]` vary.
+
+```markdown
+## Research Context
+
+You are researching a question for the ThreeDoors project — a Go TUI application
+built with Bubbletea (charmbracelet/bubbletea) that shows only three tasks at a time
+to reduce decision friction. The project uses YAML for task persistence, follows
+strict Go idioms (see attached CLAUDE.md), and prioritizes simplicity over features
+(see SOUL.md).
+
+## Grounding Instructions
+
+- Use GoogleSearch to find current, authoritative information. Do not rely solely
+  on training data.
+- Cite sources with URLs where possible.
+- Cross-reference findings with the attached project files when relevant.
+- Prefer primary sources (official docs, RFCs, GitHub repos) over blog posts.
+
+[CONTEXT_BUNDLES]
+
+## Research Question
+
+[QUESTION]
+
+## Output Requirements
+
+1. **Executive Summary** (≤300 words): Key findings, top recommendation, confidence level
+2. **Detailed Findings**: Full analysis with citations, code examples where relevant
+3. **Relevance to ThreeDoors**: Map findings to our specific constraints (Go, Bubbletea, YAML, simplicity-first)
+4. **Rejected Approaches**: Inferior or inapplicable approaches with brief rationale for exclusion
+5. **Recommendations**: Concrete next steps ranked by confidence (high/medium/low)
+```
+
+### Context Assembly Examples
+
+**Example 1: Architecture query with explicit context**
+
+Request: `RESEARCH priority=normal depth=standard context=architecture,tui: Best practices for Bubbletea state management in apps with 10+ views.`
+
+Assembly:
+1. `core` (always): CLAUDE.md + SOUL.md → 15KB
+2. `architecture` (explicit): high-level-architecture.md + components.md + core-workflows.md → 45KB → **over budget**
+3. Apply shedding: truncate architecture to high-level-architecture.md only → 17KB
+4. `tui` (explicit): main_model.go + doors_view.go + messages.go + styles.go → 25KB → **total 57KB, within budget**
+
+Delivery: stdin piping (assembles files from multiple directories)
+
+```bash
+{
+  cat CLAUDE.md
+  cat SOUL.md
+  cat docs/architecture/high-level-architecture.md
+  cat internal/tui/main_model.go
+  cat internal/tui/doors_view.go
+  cat internal/tui/messages.go
+  cat internal/tui/styles.go
+} | gemini -m gemini-2.5-pro \
+  -p "$(cat <<'PROMPT'
+## Research Context
+[... standard template ...]
+## Research Question
+Best practices for Bubbletea state management in apps with 10+ views.
+PROMPT
+)" --output-format json
+```
+
+**Example 2: Quick lookup with auto-detected context**
+
+Request: `RESEARCH priority=normal depth=quick: What is the current state of Charm's Huh library for form inputs?`
+
+Assembly:
+1. `core` (always): CLAUDE.md + SOUL.md → 15KB
+2. Auto-detect: "Charm" doesn't match keywords, but it's a quick lookup — `core` only is fine
+3. Total: 15KB, well within budget
+
+Delivery: `--include-directories` not needed; pipe core only
+
+```bash
+cat CLAUDE.md SOUL.md | gemini -m gemini-2.5-flash \
+  -p "Given the project context above, research: What is the current state of Charm's Huh library for form inputs?" \
+  --output-format json
+```
+
+**Example 3: Security research with auto-detected context**
+
+Request: `RESEARCH priority=high depth=deep: YAML parsing security in Go — known CVEs, safe parsers, mitigation strategies.`
+
+Assembly:
+1. `core` (always): CLAUDE.md + SOUL.md → 15KB
+2. Auto-detect: "YAML" + "security" → `tasks` + `code-sample` + `decisions`
+3. `tasks`: provider.go + task.go + persistence.go → 15KB
+4. `code-sample`: grep for "yaml" in internal/ → relevant files → 10KB
+5. `decisions`: last 20 entries from BOARD.md → 15KB
+6. Total: ~55KB, within budget
+
+Delivery: stdin piping (cherry-picked files from multiple directories)
+
+**Example 4: Feature scope query with directory-aligned context**
+
+Request: `RESEARCH priority=normal depth=standard context=prd,stories: What UX patterns do other task managers use for deferred/snoozed tasks?`
+
+Assembly:
+1. `core` (always): CLAUDE.md + SOUL.md → 15KB
+2. `prd` (explicit): epic-list.md headers only → 10KB
+3. `stories` (explicit): grep for "defer" in docs/stories/ → matching story files → 5KB
+4. Total: ~30KB, within budget
+
+Delivery: `--include-directories docs/prd` + stdin pipe for core and stories
 
 ## Result Processing
 
