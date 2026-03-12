@@ -3,7 +3,6 @@ package intelligence
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
@@ -72,21 +71,14 @@ func (s *AgentService) DecomposeAndWrite(ctx context.Context, taskDescription st
 	return result, nil
 }
 
-// newBackendFromConfig creates the appropriate LLM backend based on config.
+// newBackendFromConfig creates the appropriate LLM backend using auto-discovery.
+// If cfg.Backend is set, it uses that backend directly. Otherwise, it discovers
+// the best available backend via the priority-ordered fallback chain.
 func newBackendFromConfig(cfg llm.Config) (llm.LLMBackend, error) {
-	switch cfg.Backend {
-	case "ollama", "":
-		return llm.NewOllamaBackend(cfg.Ollama), nil
-	case "claude":
-		claudeCfg := cfg.Claude
-		if claudeCfg.APIKey == "" {
-			claudeCfg.APIKey = os.Getenv("ANTHROPIC_API_KEY")
-		}
-		if claudeCfg.APIKey == "" {
-			return nil, fmt.Errorf("claude backend requires ANTHROPIC_API_KEY environment variable")
-		}
-		return llm.NewClaudeBackend(claudeCfg), nil
-	default:
-		return nil, fmt.Errorf("unknown LLM backend: %q", cfg.Backend)
+	ctx := context.Background()
+	backend, _, err := llm.DiscoverBackend(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("select LLM backend: %w", err)
 	}
+	return backend, nil
 }
