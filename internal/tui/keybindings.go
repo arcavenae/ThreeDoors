@@ -603,6 +603,7 @@ func commandBindingGroup() KeyBindingGroup {
 			{Key: ":deferred", Description: "deferred tasks", Priority: PriorityOverlay},
 			{Key: ":devqueue", Description: "dev queue", Priority: PriorityOverlay},
 			{Key: ":suggestions", Description: "task proposals", Priority: PriorityOverlay},
+			{Key: ":connect", Description: "connect data source", Priority: PriorityOverlay},
 			{Key: ":sources", Description: "connected sources", Priority: PriorityOverlay},
 			{Key: ":help", Description: "help view", Priority: PriorityOverlay},
 			{Key: ":quit", Description: "exit app", Priority: PriorityOverlay},
