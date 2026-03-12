@@ -117,6 +117,21 @@ func (c *GitHubClient) GetAuthenticatedUser(ctx context.Context) (string, error)
 	return user.GetLogin(), nil
 }
 
+// CreateIssue creates a new issue in the given repository and returns the created issue.
+func (c *GitHubClient) CreateIssue(ctx context.Context, owner, repo, title, body string) (*GitHubIssue, error) {
+	req := &gogithub.IssueRequest{
+		Title: &title,
+		Body:  &body,
+	}
+
+	issue, _, err := c.client.Issues.Create(ctx, owner, repo, req)
+	if err != nil {
+		return nil, c.wrapError("create issue", err)
+	}
+
+	return mapIssue(issue, owner+"/"+repo), nil
+}
+
 // wrapError converts go-github errors into adapter error types.
 func (c *GitHubClient) wrapError(operation string, err error) error {
 	var rateLimitErr *gogithub.RateLimitError

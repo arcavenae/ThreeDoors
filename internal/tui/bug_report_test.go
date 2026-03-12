@@ -1,7 +1,10 @@
 package tui
 
 import (
+	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -228,5 +231,253 @@ func TestEnvironmentInfo_NoTaskContent(t *testing.T) {
 	md := report.FormatMarkdown()
 	if !strings.Contains(md, "| Task Count | 42 |") {
 		t.Error("expected task count in markdown output")
+	}
+}
+
+func newTestReport() *BugReport {
+	return &BugReport{
+		Description: "The app crashes when I press Enter",
+		Environment: EnvironmentInfo{
+			Version:   "1.0.0",
+			Commit:    "abc1234",
+			OS:        "darwin",
+			Arch:      "arm64",
+			TaskCount: 5,
+		},
+		Breadcrumbs: "trail",
+		Timestamp:   time.Date(2025, 1, 15, 10, 0, 30, 0, time.UTC),
+	}
+}
+
+func TestBuildIssueURL_ContainsRequiredParts(t *testing.T) {
+	t.Parallel()
+
+	report := newTestReport()
+	issueURL := BuildIssueURL(report)
+
+	checks := []struct {
+		name   string
+		substr string
+	}{
+		{"github base", "https://github.com/arcaven/ThreeDoors/issues/new"},
+		{"title param", "title="},
+		{"body param", "body="},
+		{"label param", "labels=type.bug"},
+	}
+
+	for _, tc := range checks {
+		if !strings.Contains(issueURL, tc.substr) {
+			t.Errorf("BuildIssueURL missing %s: expected substring %q in URL", tc.name, tc.substr)
+		}
+	}
+}
+
+func TestBuildIssueURL_EncodesSpecialCharacters(t *testing.T) {
+	t.Parallel()
+
+	report := newTestReport()
+	report.Description = "crash with special chars: <>&\"'"
+	issueURL := BuildIssueURL(report)
+
+	// The URL should be properly encoded — no raw < > & in query string.
+	parsed, err := url.Parse(issueURL)
+	if err != nil {
+		t.Fatalf("BuildIssueURL returned invalid URL: %v", err)
+	}
+
+	title := parsed.Query().Get("title")
+	if !strings.Contains(title, "crash with special chars") {
+		t.Errorf("title should contain description, got %q", title)
+	}
+}
+
+func TestBuildIssueURL_TruncatesBreadcrumbsWhenTooLong(t *testing.T) {
+	t.Parallel()
+
+	report := newTestReport()
+	// Create breadcrumbs long enough to exceed the URL limit.
+	report.Breadcrumbs = strings.Repeat("2025-01-15T10:00:00Z [Doors] view:Doors\n", 300)
+
+	issueURL := BuildIssueURL(report)
+
+	if len(issueURL) > maxIssueURLLen {
+		t.Errorf("URL length %d exceeds max %d after truncation", len(issueURL), maxIssueURLLen)
+	}
+
+	// Breadcrumbs should be removed from the body.
+	if strings.Contains(issueURL, "Navigation+Trail") || strings.Contains(issueURL, "Navigation%20Trail") {
+		t.Error("truncated URL should not contain Navigation Trail section")
+	}
+}
+
+func TestBuildIssueURL_ShortReportNoTruncation(t *testing.T) {
+	t.Parallel()
+
+	report := newTestReport()
+	report.Breadcrumbs = "short trail"
+
+	issueURL := BuildIssueURL(report)
+
+	// Short breadcrumbs should be preserved.
+	if !strings.Contains(issueURL, url.QueryEscape("short trail")) && !strings.Contains(issueURL, "short+trail") {
+		t.Error("short breadcrumbs should be preserved in URL")
+	}
+}
+
+func TestBuildIssueURL_TitleTruncation(t *testing.T) {
+	t.Parallel()
+
+	report := newTestReport()
+	report.Description = strings.Repeat("a", 200)
+
+	issueURL := BuildIssueURL(report)
+	parsed, err := url.Parse(issueURL)
+	if err != nil {
+		t.Fatalf("invalid URL: %v", err)
+	}
+
+	title := parsed.Query().Get("title")
+	// Title should be truncated: "[Bug] " + 80 chars max
+	if len(title) > 90 {
+		t.Errorf("title too long: %d chars", len(title))
+	}
+	if !strings.HasSuffix(title, "...") {
+		t.Error("truncated title should end with ...")
+	}
+}
+
+func TestTruncateString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		input  string
+		maxLen int
+		want   string
+	}{
+		{"short string", "hello", 10, "hello"},
+		{"exact length", "hello", 5, "hello"},
+		{"truncated", "hello world", 8, "hello..."},
+		{"very short max", "hello", 2, "he"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := truncateString(tt.input, tt.maxLen)
+			if got != tt.want {
+				t.Errorf("truncateString(%q, %d) = %q, want %q", tt.input, tt.maxLen, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSaveBugReportCmd_CreatesFile(t *testing.T) {
+	t.Parallel()
+
+	report := newTestReport()
+
+	// Use a temp directory to avoid writing to the real home dir.
+	tmpDir := t.TempDir()
+
+	// Directly test atomicWriteBugReport and file content.
+	ts := report.Timestamp.Format(time.RFC3339)
+	ts = strings.ReplaceAll(ts, ":", "-")
+	filename := fmt.Sprintf("bug-%s.md", ts)
+	path := filepath.Join(tmpDir, filename)
+
+	content := []byte(report.FormatMarkdown())
+	if err := atomicWriteBugReport(path, content); err != nil {
+		t.Fatalf("atomicWriteBugReport: %v", err)
+	}
+
+	// Verify file exists and has correct content.
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read saved file: %v", err)
+	}
+
+	if !strings.Contains(string(data), "## Bug Report") {
+		t.Error("saved file should contain bug report markdown")
+	}
+	if !strings.Contains(string(data), report.Description) {
+		t.Error("saved file should contain the description")
+	}
+
+	// Verify file permissions.
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("stat saved file: %v", err)
+	}
+	perm := info.Mode().Perm()
+	if perm != 0o600 {
+		t.Errorf("file permissions = %o, want 0600", perm)
+	}
+}
+
+func TestAtomicWriteBugReport_NoTempFileOnSuccess(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	path := filepath.Join(tmpDir, "test.md")
+
+	if err := atomicWriteBugReport(path, []byte("test content")); err != nil {
+		t.Fatalf("atomicWriteBugReport: %v", err)
+	}
+
+	// Temp file should not exist after successful write.
+	if _, err := os.Stat(path + ".tmp"); !os.IsNotExist(err) {
+		t.Error("temp file should be removed after successful write")
+	}
+
+	// Final file should exist.
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read file: %v", err)
+	}
+	if string(data) != "test content" {
+		t.Errorf("content = %q, want %q", string(data), "test content")
+	}
+}
+
+func TestBugReportFilenameFormat(t *testing.T) {
+	t.Parallel()
+
+	ts := time.Date(2025, 3, 15, 14, 30, 0, 0, time.UTC)
+	formatted := ts.Format(time.RFC3339)
+	formatted = strings.ReplaceAll(formatted, ":", "-")
+
+	want := "2025-03-15T14-30-00Z"
+	if formatted != want {
+		t.Errorf("timestamp = %q, want %q", formatted, want)
+	}
+
+	filename := fmt.Sprintf("bug-%s.md", formatted)
+	if filename != "bug-2025-03-15T14-30-00Z.md" {
+		t.Errorf("filename = %q", filename)
+	}
+}
+
+func TestHasGitHubToken_Set(t *testing.T) {
+	t.Setenv("GITHUB_TOKEN", "test-token-123")
+
+	if !hasGitHubToken() {
+		t.Error("hasGitHubToken should return true when GITHUB_TOKEN is set")
+	}
+}
+
+func TestHasGitHubToken_Empty(t *testing.T) {
+	t.Setenv("GITHUB_TOKEN", "")
+
+	if hasGitHubToken() {
+		t.Error("hasGitHubToken should return false when GITHUB_TOKEN is empty")
+	}
+}
+
+func TestBugReportTarget(t *testing.T) {
+	t.Parallel()
+
+	if bugReportTarget != "arcaven/ThreeDoors" {
+		t.Errorf("bugReportTarget = %q, want %q", bugReportTarget, "arcaven/ThreeDoors")
 	}
 }

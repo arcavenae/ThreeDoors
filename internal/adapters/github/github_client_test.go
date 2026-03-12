@@ -440,6 +440,84 @@ func TestMapIssueTimestampsUTC(t *testing.T) {
 	}
 }
 
+func TestCreateIssue(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("expected POST, got %s", r.Method)
+		}
+		if r.URL.Path != "/repos/arcaven/ThreeDoors/issues" {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+
+		var req map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		if req["title"] != "[Bug] App crashes" {
+			t.Errorf("title = %v", req["title"])
+		}
+		if req["body"] == nil || req["body"] == "" {
+			t.Error("body should not be empty")
+		}
+
+		resp := map[string]any{
+			"number":     42,
+			"title":      req["title"],
+			"body":       req["body"],
+			"state":      "open",
+			"html_url":   "https://github.com/arcaven/ThreeDoors/issues/42",
+			"created_at": "2026-03-12T10:00:00Z",
+			"updated_at": "2026-03-12T10:00:00Z",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			t.Fatalf("encode: %v", err)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	client := newTestClient(t, server.URL)
+	issue, err := client.CreateIssue(context.Background(), "arcaven", "ThreeDoors", "[Bug] App crashes", "## Bug Report\n\nDetails here")
+	if err != nil {
+		t.Fatalf("CreateIssue: %v", err)
+	}
+
+	if issue.Number != 42 {
+		t.Errorf("number = %d, want 42", issue.Number)
+	}
+	if issue.HTMLURL != "https://github.com/arcaven/ThreeDoors/issues/42" {
+		t.Errorf("html_url = %q", issue.HTMLURL)
+	}
+	if issue.Repo != "arcaven/ThreeDoors" {
+		t.Errorf("repo = %q, want %q", issue.Repo, "arcaven/ThreeDoors")
+	}
+}
+
+func TestCreateIssueError(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		resp := map[string]any{
+			"message": "Validation Failed",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			t.Fatalf("encode: %v", err)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	client := newTestClient(t, server.URL)
+	_, err := client.CreateIssue(context.Background(), "o", "r", "title", "body")
+	if err == nil {
+		t.Fatal("expected error for 422")
+	}
+}
+
 // newTestClient creates a GitHubClient pointing at a test server.
 func newTestClient(t *testing.T, baseURL string) *GitHubClient {
 	t.Helper()
