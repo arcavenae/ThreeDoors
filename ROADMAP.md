@@ -159,7 +159,7 @@ Transform rectangular card/panel doors into visually convincing doors using side
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 44: Sources TUI (P1) — 1/7 stories done
+### Epic 44: Sources TUI (P1) — 2/7 stories done
 
 TUI interfaces for data source management: setup wizard (`:connect`), sources dashboard (`:sources`), source detail view, sync log view, status bar health alerts, disconnection flow, and re-authentication flow. Uses `charmbracelet/huh` for wizard forms.
 
@@ -169,7 +169,7 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.2 | Sources Dashboard View | Done (PR #553) | P1 | Epic 43 |
 | 44.3 | Source Detail View | Not Started | P1 | 44.2 |
 | 44.4 | Sync Log View | Not Started | P1 | 43.5 |
-| 44.5 | Status Bar Integration for Connection Health Alerts | Not Started | P1 | Epic 43 |
+| 44.5 | Status Bar Integration for Connection Health Alerts | Done (PR #562) | P1 | Epic 43 |
 | 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
