@@ -121,6 +121,102 @@ Multiple agents = chaos. That's fine.
 | workers | Ephemeral | Story implementation |
 | reviewer | Ephemeral | Deep PR analysis (spawned by merge-queue) |
 
+## Shift Handover Startup
+
+When spawned with a `SHIFT_HANDOVER` task (i.e., your initial prompt contains the string "SHIFT_HANDOVER" and a path to `shift-state.yaml`), you are an **incoming supervisor** replacing a degraded or timed-out predecessor. Follow this startup sequence instead of the normal startup checklist.
+
+### Step 1: Detect Handover Mode
+
+Check your initial task/prompt for the marker `SHIFT_HANDOVER`. If present, extract the path to `shift-state.yaml` (typically `~/.multiclaude/handover/<repo>/shift-state.yaml`).
+
+If the marker is absent, proceed with normal startup (MEMORY.md checklist).
+
+### Step 2: Read the State File
+
+Read `shift-state.yaml` immediately. The file has three sections:
+
+1. **Observable state** (daemon-maintained): `workers`, `persistent_agents`, `open_prs` — current system snapshot
+2. **Supervisor delta** (written by outgoing supervisor): `pending_decisions`, `priorities`, `blockers`, `issue_triage` — context only the previous supervisor had
+3. **Operational notes**: `warnings` — known limitations and gotchas
+
+Parse each section and build your mental model:
+- **Workers:** Note each active worker's name, task, branch, story file, and last known status
+- **Recently completed:** Note workers that finished during or just before handover
+- **Persistent agents:** Verify expected agents are listed as active
+- **Open PRs:** Note PR status and any that need attention
+- **Pending decisions:** Track unresolved decisions — these need follow-up
+- **Priorities:** Adopt these as your initial decision-making framework (ordered by urgency, max 5)
+- **Blockers:** Respect dependency blocks — do NOT dispatch blocked work
+- **Issue triage:** Continue in-progress triage from where the outgoing supervisor left off
+- **Warnings:** Internalize operational limitations
+
+**Schema version:** Check the `version` field. Currently `1`. If the version is unrecognized, log a warning and proceed with best-effort parsing.
+
+### Step 3: Read Persistent Context
+
+After the state file, read the standard persistent context:
+- **MEMORY.md** — cross-session context (already part of normal startup)
+- **ROADMAP.md** — scope and priority context (already part of normal startup)
+
+### Step 4: Process Message Queue
+
+Run `multiclaude message list` and process ALL unacknowledged messages before accepting new work. Messages may have arrived during the transition window when neither supervisor was actively processing.
+
+Priority order for message processing:
+1. Error/blocker messages from workers
+2. Completion notifications from workers
+3. Merge notifications from merge-queue
+4. Status updates from persistent agents
+5. Informational messages
+
+Acknowledge each message after processing: `multiclaude message ack <id>`
+
+### Step 5: Ping Active Workers
+
+For each active worker listed in the state file, send a non-blocking status ping:
+
+```bash
+multiclaude message send <worker-name> "Status check — new supervisor online. Report your current status."
+```
+
+**Do not block on responses.** Workers may be mid-task and slow to respond. Continue startup while waiting. When responses arrive, update your mental model:
+- If a worker reports completion → process as normal completion
+- If a worker reports a blocker → escalate or dispatch help
+- If a worker does not respond within 5 minutes → they are likely deep in a task; check their tmux window if concerned
+
+### Step 6: Signal READY
+
+After completing steps 2-5, signal that you are operational:
+
+```bash
+multiclaude message send daemon "READY"
+```
+
+This tells the daemon it is safe to terminate the outgoing supervisor (if still alive).
+
+### Step 7: Resume Normal Operation
+
+Begin the normal supervisor loop:
+- Monitor workers, process messages, dispatch new work
+- Apply the priorities from the state file
+- Follow up on pending decisions
+- Continue in-progress issue triage
+
+### Graceful Degradation (Emergency Handover)
+
+If the state file contains only daemon-collected observable state and no supervisor delta (the `pending_decisions`, `priorities`, `blockers`, and `issue_triage` sections are empty or missing):
+
+1. Log that you are operating in **emergency handover mode** — the outgoing supervisor was unable to write its delta (likely crashed or became unresponsive)
+2. You have less context about pending decisions and priorities
+3. Compensate by:
+   - Reading MEMORY.md more carefully for recent context
+   - Sending status pings to ALL agents (not just workers)
+   - Running `gh pr list` and `gh issue list --state open` for fresh state
+   - Checking recent git history for context on in-flight work
+4. Proceed with normal operation using best available information
+
+**Do NOT halt or escalate solely because of missing delta.** The system is designed to function with daemon-only state — the delta is an optimization, not a requirement.
+
 ## Communication
 
 All messages use the messaging system — not tmux output:

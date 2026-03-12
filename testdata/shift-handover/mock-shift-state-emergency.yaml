@@ -1,0 +1,49 @@
+# Mock shift-state.yaml for testing emergency handover (Story 58.4, AC-8)
+# This file simulates an emergency handover where the outgoing supervisor was
+# unresponsive and only daemon-collected observable state is available.
+# The supervisor delta sections are empty.
+
+version: 1
+timestamp: "2026-03-12T10:30:00Z"
+outgoing_supervisor: "gentle-hawk"
+
+# Section 1: Observable State (daemon-maintained)
+workers:
+  active:
+    - name: "bold-eagle"
+      task: "Implement story 42.3 — task pool analytics"
+      story_file: "docs/stories/42.3.story.md"
+      branch: "work/bold-eagle"
+      pr: null
+      dispatched_at: "2026-03-12T09:45:00Z"
+  recently_completed: []
+
+persistent_agents:
+  - name: "merge-queue"
+    status: "active"
+  - name: "pr-shepherd"
+    status: "active"
+  - name: "project-watchdog"
+    status: "active"
+  - name: "arch-watchdog"
+    status: "active"
+  - name: "envoy"
+    status: "active"
+
+open_prs:
+  - number: 565
+    title: "feat: session duration tracking (Story 42.2)"
+    status: "ready"
+    ci: "passing"
+
+# Section 2: Supervisor Delta — EMPTY (emergency handover)
+# Outgoing supervisor was unresponsive and could not write its delta.
+pending_decisions: []
+priorities: []
+issue_triage: []
+blockers: []
+
+# Section 3: Operational Notes
+warnings:
+  - "EMERGENCY HANDOVER — outgoing supervisor was unresponsive, delta unavailable"
+  - "merge-queue can't merge workflow PRs (OAuth scope limitation)"
