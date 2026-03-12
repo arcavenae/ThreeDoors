@@ -1,8 +1,16 @@
 # ThreeDoors 🚪🚪🚪
 
-[![Go Version](https://img.shields.io/badge/Go-1.25.4+-00ADD8?style=flat&logo=go)](https://golang.org/doc/devel/release.html)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Built with Bubbletea](https://img.shields.io/badge/Built%20with-Bubbletea-purple)](https://github.com/charmbracelet/bubbletea)
+<p align="center">
+  <a href="https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml"><img src="https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/arcaven/ThreeDoors/releases/latest"><img src="https://img.shields.io/github/v/release/arcaven/ThreeDoors?style=flat&label=release&color=green" alt="Latest Release"></a>
+  <a href="https://goreportcard.com/report/github.com/arcaven/ThreeDoors"><img src="https://goreportcard.com/badge/github.com/arcaven/ThreeDoors" alt="Go Report Card"></a>
+  <a href="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey"><img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey" alt="Platform"></a>
+  <a href="https://golang.org/doc/devel/release.html"><img src="https://img.shields.io/badge/Go-1.25.4+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go Version"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
+  <a href="https://github.com/charmbracelet/bubbletea"><img src="https://img.shields.io/badge/Built%20with-Bubbletea-purple" alt="Built with Bubbletea"></a>
+</p>
+
+<p align="center"><em>Progress over perfection. Three doors. One choice. Move forward.</em></p>
 
 ## What is ThreeDoors?
 
