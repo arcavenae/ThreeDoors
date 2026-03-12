@@ -37,8 +37,8 @@ func NewSpringTheme() *DoorTheme {
 	}
 }
 
-func springRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
-	return func(content string, width int, height int, selected bool, hint string) string {
+func springRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
 		vChar := "│"
@@ -62,7 +62,7 @@ func springRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 			return springCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint)
+		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis)
 	}
 }
 
@@ -118,8 +118,9 @@ func springCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string) string {
+func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
 	anatomy := NewDoorAnatomy(height)
+	cracked := isCracked(selected, emphasis)
 
 	contentWidth := inner - 6
 	if contentWidth < 1 {
@@ -145,34 +146,43 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 		hingeTee, openTee = "╟", "┤"
 	}
 
+	if cracked {
+		openTR = crackTR
+		openBR = crackBR
+		openV = crackV
+		inner--
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
 	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
 
+	shade := ""
+	if cracked {
+		shade = crackShade
+		blankLine += crackShade
+	}
+
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Hinge left, curved right corner
-			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
 
 		case row == anatomy.PanelDivider:
-			// Light divider with hinge junctions
 			divH := "─"
-			fmt.Fprintf(&b, "%s", style.Render(hingeTee+strings.Repeat(divH, inner)+openTee))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+strings.Repeat(divH, inner)+openTee), shade)
 
 		case row == anatomy.HandleRow:
-			// Open circle handle at rightmost content column
 			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "○", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
-			// Hinge left, curved right corner
-			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -183,10 +193,11 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 				if padding < 0 {
 					padding = 0
 				}
-				fmt.Fprintf(&b, "%s%s%s",
+				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
 					style.Render(openV),
+					shade,
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)
@@ -205,5 +216,8 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	threshold := strings.Repeat("▔", width)
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
+	if cracked {
+		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+	}
 	return ApplyShadow(b.String(), width, 15, selected)
 }

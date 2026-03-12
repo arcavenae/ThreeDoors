@@ -36,8 +36,8 @@ func NewSciFiTheme() *DoorTheme {
 	}
 }
 
-func scifiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
-	return func(content string, width int, height int, selected bool, hint string) string {
+func scifiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		shadeChar := "░"
 		if selected {
@@ -72,7 +72,7 @@ func scifiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, 
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint)
+		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis)
 	}
 }
 
@@ -143,8 +143,9 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 // scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: outer left border stays double-line (╔║╚), outer right uses
 // single-vertical with double-horizontal connections (╕│╛) for lighter weight.
-func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string) string {
+func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64) string {
 	anatomy := NewDoorAnatomy(height)
+	cracked := isCracked(selected, emphasis)
 	blankContent := strings.Repeat(" ", contentW)
 
 	// Find the row for the ACCESS label: midpoint between HandleRow and ThresholdRow
@@ -158,22 +159,29 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 
 	var b strings.Builder
 
+	// Scifi crack: outer right border │ → ╎, corners ╕ → ╮, ╛ → ╯
+	outerR := "│"
+	outerTR := "╕"
+	outerBR := "╛"
+	if cracked {
+		outerR = crackV
+		outerTR = crackTR
+		outerBR = crackBR
+	}
+
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Top border: ╔═╤══════════════════════╤═╕ (hinge left ╔, lighter right ╕)
 			fmt.Fprintf(&b, "%s", style.Render(
-				"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+"╕"))
+				"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+outerTR))
 
 		case row == anatomy.PanelDivider:
-			// Bulkhead divider: ║░╞═════════════════════╡░│ (hinge ║, lighter right │)
 			fmt.Fprintf(&b, "%s%s%s%s%s",
 				style.Render("║"), rail,
 				style.Render("╞"+strings.Repeat("═", contentW)+"╡"),
-				rail, style.Render("│"))
+				rail, style.Render(outerR))
 
 		case row == anatomy.HandleRow:
-			// Access panel handle: ◈──┤ at rightmost content column
 			handleStr := "◈──┤"
 			handleWidth := ansi.StringWidth(handleStr)
 			leftPad := contentW - handleWidth
@@ -183,10 +191,9 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 				style.Render("║"), rail, style.Render("│"),
 				strings.Repeat(" ", leftPad)+handleStr,
-				style.Render("│"), rail, style.Render("│"))
+				style.Render("│"), rail, style.Render(outerR))
 
 		case row == accessRow:
-			// ACCESS label right-aligned with 2-char padding, with optional hint
 			label := "[ACCESS]"
 			if hint != "" {
 				label = hint + " " + label
@@ -203,15 +210,13 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 				style.Render("║"), rail, style.Render("│"),
 				strings.Repeat(" ", leftPad)+label+strings.Repeat(" ", rightPad),
-				style.Render("│"), rail, style.Render("│"))
+				style.Render("│"), rail, style.Render(outerR))
 
 		case row == anatomy.ThresholdRow:
-			// Bottom border: ╚═╧══════════════════════╧═╛ (hinge left ╚, lighter right ╛)
 			fmt.Fprintf(&b, "%s", style.Render(
-				"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+"╛"))
+				"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+outerBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
-			// Content area with 2-char padding
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
@@ -223,16 +228,15 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 					style.Render("║"), rail, style.Render("│"),
 					"  "+line+strings.Repeat(" ", pad),
-					style.Render("│"), rail, style.Render("│"))
+					style.Render("│"), rail, style.Render(outerR))
 			} else {
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-					style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("│"))
+					style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render(outerR))
 			}
 
 		default:
-			// Blank interior row
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-				style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render("│"))
+				style.Render("║"), rail, style.Render("│"), blankContent, style.Render("│"), rail, style.Render(outerR))
 		}
 
 		if row < height-1 {
@@ -245,5 +249,8 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 	grating := strings.Repeat(gratingChar, width)
 	fmt.Fprintf(&b, "\n%s", style.Render(grating))
 
+	if cracked {
+		return ApplyShadowWithCrack(b.String(), width, 16, selected)
+	}
 	return ApplyShadow(b.String(), width, 16, selected)
 }

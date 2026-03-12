@@ -20,6 +20,39 @@ var (
 	shadowColorSelected lipgloss.TerminalColor = lipgloss.CompleteColor{TrueColor: "#bcbcbc", ANSI256: "250", ANSI: "7"}
 )
 
+// ApplyShadowWithCrack is like ApplyShadow but uses the crack-of-light shade
+// character (░) for the right-edge shadow, simulating light leaking through
+// a cracked-open door.
+func ApplyShadowWithCrack(rendered string, width, minWidth int, selected bool) string {
+	if width < minWidth+2 {
+		return rendered
+	}
+
+	rightChar := crackShade
+	color := shadowColorSelected
+	style := lipgloss.NewStyle().Foreground(color)
+
+	lines := strings.Split(rendered, "\n")
+	var b strings.Builder
+
+	for i, line := range lines {
+		if i == 0 {
+			// First row: no right shadow (shadow starts one row down for offset effect)
+			fmt.Fprintf(&b, "%s %s", line, "")
+		} else {
+			fmt.Fprintf(&b, "%s%s", line, style.Render(rightChar))
+		}
+		if i < len(lines)-1 {
+			fmt.Fprintf(&b, "\n")
+		}
+	}
+
+	// Bottom shadow row: offset 1 char to the right, spans width of door
+	fmt.Fprintf(&b, "\n %s", style.Render(strings.Repeat(shadowBottom, width)))
+
+	return b.String()
+}
+
 // ApplyShadow adds a right-edge shadow column and a bottom shadow row to a
 // rendered door string. The shadow creates a 3D depth illusion by placing
 // dark half-block characters on the right and bottom edges.

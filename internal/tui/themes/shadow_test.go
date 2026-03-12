@@ -120,7 +120,7 @@ func TestApplyShadow_AllThemesIntegration(t *testing.T) {
 	for _, theme := range themes {
 		t.Run(theme.Name, func(t *testing.T) {
 			// Render at sufficient width for shadow
-			output := theme.Render("Test task", 40, 16, false, "")
+			output := theme.Render("Test task", 40, 16, false, "", 0.0)
 			lines := strings.Split(output, "\n")
 
 			// Last line should be shadow bottom row with ▄
@@ -151,7 +151,7 @@ func TestApplyShadow_CompactModeNoShadow(t *testing.T) {
 	for _, theme := range themes {
 		t.Run(theme.Name, func(t *testing.T) {
 			// Compact mode (height=0) should not have shadow elements
-			output := theme.Render("Test task", 40, 0, false, "")
+			output := theme.Render("Test task", 40, 0, false, "", 0.0)
 
 			if strings.Contains(output, shadowBottom) {
 				t.Error("compact mode should not contain bottom shadow ▄")

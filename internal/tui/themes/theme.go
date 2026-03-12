@@ -34,7 +34,7 @@ type MonthDay struct {
 type DoorTheme struct {
 	Name        string
 	Description string
-	Render      func(content string, width int, height int, selected bool, hint string) string
+	Render      func(content string, width int, height int, selected bool, hint string, emphasis float64) string
 	Colors      ThemeColors
 	MinWidth    int
 	MinHeight   int
