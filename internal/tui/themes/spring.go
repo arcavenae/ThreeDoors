@@ -17,12 +17,18 @@ func NewSpringTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "spring",
 		Description: "Spring bloom — flowing curves, light open patterns",
-		Render:      springRender(frameColor, selectedColor),
+		Render:      springRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1f0a", ANSI256: "22", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"},
 			Accent:   lipgloss.CompleteColor{TrueColor: "#98d898", ANSI256: "121", ANSI: "10"},
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#061408", ANSI256: "232", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#80e090", ANSI256: "114", ANSI: "10"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#306838", ANSI256: "65", ANSI: "2"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#204a28", ANSI256: "22", ANSI: "2"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#102a14", ANSI256: "233", ANSI: "0"},
 
 			StatsAccent:        "#77DD77",
 			StatsGradientStart: "#2E7D32",
@@ -37,7 +43,7 @@ func NewSpringTheme() *DoorTheme {
 	}
 }
 
-func springRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func springRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -62,7 +68,7 @@ func springRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 			return springCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis)
+		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill)
 	}
 }
 
@@ -118,7 +124,7 @@ func springCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
+func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -156,7 +162,7 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -180,7 +186,7 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
@@ -189,14 +195,9 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
-				lineWidth := ansi.StringWidth(line)
-				padding := inner - 3 - lineWidth
-				if padding < 0 {
-					padding = 0
-				}
 				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
-					"   "+line+strings.Repeat(" ", padding),
+					bgFillContent(line, inner, 3, fill),
 					style.Render(openV),
 					shade,
 				)

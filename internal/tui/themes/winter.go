@@ -18,12 +18,18 @@ func NewWinterTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "winter",
 		Description: "Winter crystalline — angular frames, dense dot patterns",
-		Render:      winterRender(frameColor, selectedColor),
+		Render:      winterRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a0f1a", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#1a1a2e", ANSI256: "17", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#0a0f1a", ANSI256: "233", ANSI: "0"},
 			Accent:   lipgloss.CompleteColor{TrueColor: "#a0d2db", ANSI256: "152", ANSI: "14"},
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#060a14", ANSI256: "232", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#a0d2e8", ANSI256: "152", ANSI: "14"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#4a6a80", ANSI256: "66", ANSI: "4"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#354f60", ANSI256: "59", ANSI: "8"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#1a2a38", ANSI256: "236", ANSI: "0"},
 
 			StatsAccent:        "#87CEEB",
 			StatsGradientStart: "#1E3A5F",
@@ -38,7 +44,7 @@ func NewWinterTheme() *DoorTheme {
 	}
 }
 
-func winterRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func winterRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -63,7 +69,7 @@ func winterRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 			return winterCompact(content, inner, hChar, vChar, cornerTL, cornerTR, cornerBL, cornerBR, style, hint)
 		}
 
-		return winterDoor(content, width, height, inner, hChar, vChar, cornerTL, cornerTR, cornerBL, cornerBR, style, selected, hint, emphasis)
+		return winterDoor(content, width, height, inner, hChar, vChar, cornerTL, cornerTR, cornerBL, cornerBR, style, selected, hint, emphasis, fill)
 	}
 }
 
@@ -124,7 +130,7 @@ func winterCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
+func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -162,7 +168,7 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -179,11 +185,7 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 		if len(pattern) > inner {
 			pattern = pattern[:inner]
 		}
-		padLen := inner - ansi.StringWidth(pattern)
-		if padLen < 0 {
-			padLen = 0
-		}
-		return style.Render(hingeV) + pattern + strings.Repeat(" ", padLen) + style.Render(openV)
+		return style.Render(hingeV) + bgFillContent(pattern, inner, 0, fill) + style.Render(openV)
 	}
 
 	// Row just below lintel gets frost
@@ -213,7 +215,7 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, DiamondHandleFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
 
 		case row == frostBotRow:
 			fmt.Fprintf(&b, "%s%s", frostRow(), shade)
@@ -225,14 +227,9 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
-				lineWidth := ansi.StringWidth(line)
-				padding := inner - 3 - lineWidth
-				if padding < 0 {
-					padding = 0
-				}
 				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
-					"   "+line+strings.Repeat(" ", padding),
+					bgFillContent(line, inner, 3, fill),
 					style.Render(openV),
 					shade,
 				)
