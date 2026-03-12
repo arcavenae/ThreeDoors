@@ -24,6 +24,7 @@ const (
 	EventStateChange    SyncEventType = "state_change"
 	EventSyncStart      SyncEventType = "sync_start"
 	EventReauthRequired SyncEventType = "reauth_required"
+	EventTokenRefreshed SyncEventType = "token_refreshed"
 )
 
 // SyncEvent represents a single sync-related event for a connection.
@@ -143,6 +144,16 @@ func (l *SyncEventLog) LogConflict(connectionID, taskID, taskText, resolution st
 		ConflictTaskText: taskText,
 		Resolution:       resolution,
 		Summary:          fmt.Sprintf("Conflict on '%s' resolved: %s", taskText, resolution),
+	})
+}
+
+// LogTokenRefreshed logs a successful token refresh event.
+func (l *SyncEventLog) LogTokenRefreshed(connectionID string) error {
+	return l.Append(SyncEvent{
+		Timestamp:    time.Now().UTC(),
+		ConnectionID: connectionID,
+		Type:         EventTokenRefreshed,
+		Summary:      "Access token refreshed silently",
 	})
 }
 

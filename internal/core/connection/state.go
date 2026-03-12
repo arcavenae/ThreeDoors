@@ -62,7 +62,7 @@ var validTransitions = map[ConnectionState][]ConnectionState{
 	StateDisconnected: {StateConnecting},
 	StateConnecting:   {StateConnected, StateError, StateAuthExpired},
 	StateConnected:    {StateSyncing, StateError, StateAuthExpired, StatePaused, StateDisconnected},
-	StateSyncing:      {StateConnected, StateError},
+	StateSyncing:      {StateConnected, StateError, StateAuthExpired},
 	StateError:        {StateConnecting, StateDisconnected},
 	StateAuthExpired:  {StateConnecting, StateDisconnected},
 	StatePaused:       {StateConnected, StateDisconnected},
