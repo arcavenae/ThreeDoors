@@ -1,12 +1,14 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcaven/ThreeDoors/internal/core/connection/oauth"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -23,13 +25,15 @@ const (
 
 // ProviderFormSpec describes how a provider appears in the connect wizard.
 type ProviderFormSpec struct {
-	Name        string           // registry name: "todoist", "github", etc.
-	DisplayName string           // human-friendly: "Todoist", "GitHub Issues"
-	Description string           // one-line description for provider select
-	AuthType    ProviderAuthType // what auth flow to show
-	TokenHelp   string           // where to find the token (for AuthAPIToken)
-	NeedsPath   bool             // whether the provider needs a file/directory path
-	PathHelp    string           // help text for the path field
+	Name          string                  // registry name: "todoist", "github", etc.
+	DisplayName   string                  // human-friendly: "Todoist", "GitHub Issues"
+	Description   string                  // one-line description for provider select
+	AuthType      ProviderAuthType        // what auth flow to show
+	TokenHelp     string                  // where to find the token (for AuthAPIToken)
+	NeedsPath     bool                    // whether the provider needs a file/directory path
+	PathHelp      string                  // help text for the path field
+	OAuthClientID string                  // OAuth App client ID (for AuthOAuth providers)
+	EnvTokenFunc  func() (string, string) // returns (token, envVarName) if env token exists
 }
 
 // DefaultProviderSpecs returns the form specs for all built-in providers.
@@ -43,10 +47,12 @@ func DefaultProviderSpecs() []ProviderFormSpec {
 			TokenHelp:   "Settings → Integrations → Developer → API token",
 		},
 		{
-			Name:        "github",
-			DisplayName: "GitHub Issues",
-			Description: "GitHub repository issues",
-			AuthType:    AuthOAuth,
+			Name:          "github",
+			DisplayName:   "GitHub Issues",
+			Description:   "GitHub repository issues",
+			AuthType:      AuthOAuth,
+			OAuthClientID: os.Getenv("THREEDOORS_GITHUB_CLIENT_ID"),
+			EnvTokenFunc:  defaultGitHubEnvTokenFunc,
 		},
 		{
 			Name:        "jira",
@@ -99,6 +105,7 @@ type WizardStep int
 const (
 	StepProviderSelect WizardStep = iota
 	StepProviderConfig
+	StepOAuthFlow // device code flow: show user code, poll for token
 	StepSyncConfig
 	StepTestConfirm
 )
@@ -110,12 +117,28 @@ type ConnectWizardCompleteMsg struct {
 	Settings     map[string]string
 	SyncMode     string
 	PollInterval time.Duration
+	Token        string // OAuth/PAT token for credential store (not persisted to config)
 }
 
 // ConnectWizardCancelMsg is sent when the wizard is cancelled.
 type ConnectWizardCancelMsg struct{}
 
-// ConnectWizard implements the 4-step connection setup wizard using huh forms.
+// oauthFlowState tracks the state of an in-progress OAuth device code flow.
+type oauthFlowState struct {
+	userCode        string
+	verificationURI string
+	status          string // "waiting", "success", "error"
+	errorMsg        string
+	browserOpened   bool
+}
+
+// oauthTokenResultMsg is sent when the OAuth polling completes.
+type oauthTokenResultMsg struct {
+	token string
+	err   error
+}
+
+// ConnectWizard implements the connection setup wizard using huh forms.
 type ConnectWizard struct {
 	specs     []ProviderFormSpec
 	connMgr   *connection.ConnectionManager
@@ -133,6 +156,11 @@ type ConnectWizard struct {
 	filePath         string
 	syncMode         string
 	pollInterval     string
+
+	// OAuth flow state
+	authMethod  string             // "oauth", "pat", "env" — chosen auth method for OAuth providers
+	oauthState  *oauthFlowState    // non-nil during StepOAuthFlow
+	oauthCancel context.CancelFunc // cancel polling
 }
 
 // NewConnectWizard creates a new wizard with the given provider specs.
@@ -223,18 +251,51 @@ func (w *ConnectWizard) buildStep2Form() {
 			}))
 
 	case AuthOAuth:
-		// OAuth placeholder — device code flow is a future story (46.1)
-		fields = append(fields, huh.NewNote().
-			Title("OAuth Authentication").
-			Description("OAuth device code flow will be available in a future update.\nFor now, please use an API token or personal access token."))
+		w.authMethod = "pat" // default
 
+		// Check for existing env token.
+		var envToken, envVarName string
+		if spec.EnvTokenFunc != nil {
+			envToken, envVarName = spec.EnvTokenFunc()
+		}
+
+		// Build auth method options.
+		var authOptions []huh.Option[string]
+		if envToken != "" {
+			authOptions = append(authOptions, huh.NewOption(
+				fmt.Sprintf("Use existing token from %s", envVarName),
+				"env",
+			))
+			w.authMethod = "env" // default to env if available
+		}
+		if spec.OAuthClientID != "" {
+			authOptions = append(authOptions, huh.NewOption(
+				"Authenticate with browser (OAuth)",
+				"oauth",
+			))
+			if envToken == "" {
+				w.authMethod = "oauth" // default to OAuth if no env token
+			}
+		}
+		authOptions = append(authOptions, huh.NewOption(
+			"Enter a Personal Access Token",
+			"pat",
+		))
+
+		fields = append(fields, huh.NewSelect[string]().
+			Title("Authentication method").
+			Options(authOptions...).
+			Value(&w.authMethod))
+
+		// PAT input field — shown for all methods but only validated when authMethod is "pat".
 		fields = append(fields, huh.NewInput().
 			Title("Personal Access Token").
 			EchoMode(huh.EchoModePassword).
 			Value(&w.apiToken).
+			Description("Required if using PAT method").
 			Validate(func(s string) error {
-				if strings.TrimSpace(s) == "" {
-					return fmt.Errorf("token is required")
+				if w.authMethod == "pat" && strings.TrimSpace(s) == "" {
+					return fmt.Errorf("token is required for PAT method")
 				}
 				return nil
 			}))
@@ -360,32 +421,94 @@ func (w *ConnectWizard) Init() tea.Cmd {
 
 // Update handles messages for the connect wizard.
 func (w *ConnectWizard) Update(msg tea.Msg) tea.Cmd {
-	// Check for Esc to cancel at any step
+	// Check for Esc to cancel at any step.
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		if keyMsg.Type == tea.KeyEsc {
+			w.cancelOAuthFlow()
 			w.cancelled = true
 			return func() tea.Msg { return ConnectWizardCancelMsg{} }
 		}
 	}
 
-	// Pass to the huh form
+	// Handle OAuth-specific messages during StepOAuthFlow.
+	if w.step == StepOAuthFlow {
+		return w.updateOAuthFlow(msg)
+	}
+
+	// Pass to the huh form.
 	model, cmd := w.form.Update(msg)
 	if f, ok := model.(*huh.Form); ok {
 		w.form = f
 	}
 
-	// Check if the current form completed
+	// Check if the current form completed.
 	if w.form.State == huh.StateCompleted {
 		return w.advanceStep()
 	}
 
-	// Check if the form was aborted (huh uses StateAborted for Esc)
+	// Check if the form was aborted (huh uses StateAborted for Esc).
 	if w.form.State == huh.StateAborted {
 		w.cancelled = true
 		return func() tea.Msg { return ConnectWizardCancelMsg{} }
 	}
 
 	return cmd
+}
+
+// updateOAuthFlow handles messages during the device code flow step.
+func (w *ConnectWizard) updateOAuthFlow(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case oauthDeviceCodeMsg:
+		if msg.err != nil {
+			w.oauthState = &oauthFlowState{
+				status:   "error",
+				errorMsg: msg.err.Error(),
+			}
+			return nil
+		}
+
+		// Display user code and verification URI.
+		w.oauthState = &oauthFlowState{
+			userCode:        msg.resp.UserCode,
+			verificationURI: msg.resp.VerificationURI,
+			status:          "waiting",
+		}
+
+		// Open browser.
+		_ = oauth.OpenBrowser(context.Background(), msg.resp.VerificationURI)
+		w.oauthState.browserOpened = true
+
+		// Start polling for token.
+		ctx, cancel := context.WithCancel(context.Background())
+		w.oauthCancel = cancel
+
+		config := msg.config
+		dcResp := msg.resp
+		return func() tea.Msg {
+			client := oauth.NewClient(nil)
+			tokenResp, err := client.PollForToken(ctx, config, dcResp)
+			if err != nil {
+				return oauthTokenResultMsg{err: err}
+			}
+			return oauthTokenResultMsg{token: tokenResp.AccessToken}
+		}
+
+	case oauthTokenResultMsg:
+		if msg.err != nil {
+			w.oauthState = &oauthFlowState{
+				status:   "error",
+				errorMsg: msg.err.Error(),
+			}
+			return nil
+		}
+
+		// Success — store token and advance.
+		w.apiToken = msg.token
+		w.oauthState.status = "success"
+		return w.advanceStep()
+	}
+
+	return nil
 }
 
 // advanceStep moves to the next wizard step when the current form completes.
@@ -397,13 +520,40 @@ func (w *ConnectWizard) advanceStep() tea.Cmd {
 		return w.form.Init()
 
 	case StepProviderConfig:
-		// Default label if empty
+		// Default label if empty.
 		if w.label == "" {
 			spec := w.getSelectedSpec()
 			if spec != nil {
 				w.label = spec.DisplayName
 			}
 		}
+
+		spec := w.getSelectedSpec()
+
+		// Handle env token: use it directly, skip OAuth flow.
+		if spec != nil && spec.AuthType == AuthOAuth && w.authMethod == "env" {
+			if spec.EnvTokenFunc != nil {
+				envToken, _ := spec.EnvTokenFunc()
+				w.apiToken = envToken
+			}
+			w.step = StepSyncConfig
+			w.buildStep3Form()
+			return w.form.Init()
+		}
+
+		// Handle OAuth flow: enter the device code step.
+		if spec != nil && spec.AuthType == AuthOAuth && w.authMethod == "oauth" {
+			w.step = StepOAuthFlow
+			return w.startOAuthFlow()
+		}
+
+		// PAT or non-OAuth: proceed to sync config.
+		w.step = StepSyncConfig
+		w.buildStep3Form()
+		return w.form.Init()
+
+	case StepOAuthFlow:
+		// OAuth flow completed — token is in w.apiToken.
 		w.step = StepSyncConfig
 		w.buildStep3Form()
 		return w.form.Init()
@@ -440,7 +590,114 @@ func (w *ConnectWizard) completeWizard() tea.Cmd {
 			Settings:     settings,
 			SyncMode:     w.syncMode,
 			PollInterval: pollDuration,
+			Token:        w.apiToken,
 		}
+	}
+}
+
+// startOAuthFlow initiates the device code flow for the selected OAuth provider.
+func (w *ConnectWizard) startOAuthFlow() tea.Cmd {
+	spec := w.getSelectedSpec()
+	if spec == nil || spec.OAuthClientID == "" {
+		w.oauthState = &oauthFlowState{
+			status:   "error",
+			errorMsg: "OAuth is not configured for this provider",
+		}
+		return nil
+	}
+
+	w.oauthState = &oauthFlowState{status: "waiting"}
+
+	config := w.buildOAuthConfig(spec)
+
+	return func() tea.Msg {
+		client := oauth.NewClient(nil)
+		dcResp, err := client.StartDeviceCodeFlow(context.Background(), config)
+		if err != nil {
+			return oauthDeviceCodeMsg{err: err}
+		}
+		return oauthDeviceCodeMsg{resp: dcResp, config: config}
+	}
+}
+
+// oauthDeviceCodeMsg carries the device code response to the Update loop.
+type oauthDeviceCodeMsg struct {
+	resp   *oauth.DeviceCodeResponse
+	config oauth.DeviceCodeConfig
+	err    error
+}
+
+// buildOAuthConfig constructs a DeviceCodeConfig from the provider spec.
+func (w *ConnectWizard) buildOAuthConfig(spec *ProviderFormSpec) oauth.DeviceCodeConfig {
+	config := oauth.DeviceCodeConfig{
+		ClientID: spec.OAuthClientID,
+	}
+
+	switch spec.Name {
+	case "github":
+		config.AuthEndpoint = "https://github.com/login/device/code"
+		config.TokenEndpoint = "https://github.com/login/oauth/access_token"
+		config.Scopes = []string{"repo"}
+	}
+
+	return config
+}
+
+// cancelOAuthFlow cleans up any in-progress OAuth polling.
+func (w *ConnectWizard) cancelOAuthFlow() {
+	if w.oauthCancel != nil {
+		w.oauthCancel()
+		w.oauthCancel = nil
+	}
+	w.oauthState = nil
+}
+
+// defaultGitHubEnvTokenFunc checks for GH_TOKEN or GITHUB_TOKEN.
+func defaultGitHubEnvTokenFunc() (string, string) {
+	if v := os.Getenv("GH_TOKEN"); v != "" {
+		return v, "GH_TOKEN"
+	}
+	if v := os.Getenv("GITHUB_TOKEN"); v != "" {
+		return v, "GITHUB_TOKEN"
+	}
+	return "", ""
+}
+
+// stepDisplayName returns the user-visible step name for the current step.
+func (w *ConnectWizard) stepDisplayName() string {
+	switch w.step {
+	case StepProviderSelect:
+		return "Select Provider"
+	case StepProviderConfig:
+		return "Configure"
+	case StepOAuthFlow:
+		return "Authenticate"
+	case StepSyncConfig:
+		return "Sync Settings"
+	case StepTestConfirm:
+		return "Confirm"
+	default:
+		return "Unknown"
+	}
+}
+
+// stepDisplayNumber returns the user-visible step number (OAuth flow is folded
+// into the configure step so users see a stable 4-step flow).
+func (w *ConnectWizard) stepDisplayNumber() (current, total int) {
+	total = 4 // always 4 user-visible steps
+	switch w.step {
+	case StepProviderSelect:
+		return 1, total
+	case StepProviderConfig:
+		return 2, total
+	case StepOAuthFlow:
+		return 2, total // part of configure step
+	case StepSyncConfig:
+		return 3, total
+	case StepTestConfirm:
+		return 4, total
+	default:
+		return 1, total
 	}
 }
 
@@ -452,23 +709,62 @@ func (w *ConnectWizard) View() string {
 		Bold(true).
 		Padding(0, 1)
 
-	// Step indicator
-	stepNames := []string{"Select Provider", "Configure", "Sync Settings", "Confirm"}
-	stepNum := int(w.step) + 1
-	stepTotal := len(stepNames)
+	// Step indicator.
+	stepNum, stepTotal := w.stepDisplayNumber()
+	stepName := w.stepDisplayName()
 
 	fmt.Fprintf(&s, "%s\n", headerStyle.Render(
-		fmt.Sprintf("Connect a Data Source (%d/%d: %s)", stepNum, stepTotal, stepNames[w.step]),
+		fmt.Sprintf("Connect a Data Source (%d/%d: %s)", stepNum, stepTotal, stepName),
 	))
 	fmt.Fprintf(&s, "\n")
 
-	// Render the huh form
-	fmt.Fprintf(&s, "%s", w.form.View())
+	// Render step content.
+	if w.step == StepOAuthFlow {
+		fmt.Fprintf(&s, "%s", w.viewOAuthFlow())
+	} else {
+		fmt.Fprintf(&s, "%s", w.form.View())
+	}
 
-	// Footer hint
+	// Footer hint.
 	fmt.Fprintf(&s, "\n")
 	hintStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("243"))
 	fmt.Fprintf(&s, "%s", hintStyle.Render(" esc:cancel"))
+
+	return s.String()
+}
+
+// viewOAuthFlow renders the device code flow step.
+func (w *ConnectWizard) viewOAuthFlow() string {
+	if w.oauthState == nil {
+		return "  Initializing OAuth flow...\n"
+	}
+
+	var s strings.Builder
+
+	switch w.oauthState.status {
+	case "waiting":
+		codeStyle := lipgloss.NewStyle().
+			Bold(true).
+			Foreground(lipgloss.Color("212")).
+			Padding(0, 1)
+
+		fmt.Fprintf(&s, "  Open your browser and enter this code:\n\n")
+		fmt.Fprintf(&s, "  %s\n\n", codeStyle.Render(w.oauthState.userCode))
+		fmt.Fprintf(&s, "  Verification URL: %s\n", w.oauthState.verificationURI)
+		if w.oauthState.browserOpened {
+			fmt.Fprintf(&s, "  (Browser opened automatically)\n")
+		}
+		fmt.Fprintf(&s, "\n  Waiting for authorization...\n")
+
+	case "success":
+		fmt.Fprintf(&s, "  Authentication successful!\n")
+
+	case "error":
+		errorStyle := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("196"))
+		fmt.Fprintf(&s, "  %s\n", errorStyle.Render("Authentication failed: "+w.oauthState.errorMsg))
+		fmt.Fprintf(&s, "  Press Esc to cancel and try again.\n")
+	}
 
 	return s.String()
 }
