@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-24, 26-29, 32, 34-38, 41 are COMPLETE. Epic 0 is partial (10/13). Epic 16 is ICEBOX. Epics 25, 30-31, 33, 39-40, 42-49 are NOT STARTED or IN PROGRESS. 390+ merged PRs total. Last audit: 2026-03-10.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 49, 52 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epics 42, 44-48, 50-51, 53-54 are NOT STARTED or IN PROGRESS. 540+ merged PRs total. Last audit: 2026-03-11.
 
 ## Requirements Inventory
 
@@ -4218,9 +4218,9 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Not Started | P1 | None |
-| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Not Started | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | Not Started | P1 | 29.1 |
+| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
+| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ---
@@ -4239,7 +4239,7 @@ Integrate Linear as a task source for engineering teams via the Linear GraphQL A
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 30.1 | Linear GraphQL Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 30.1 | Linear GraphQL Client & Auth Configuration | In Review | P2 | Epic 7 (done) |
 | 30.2 | Read-Only Linear Provider with Field Mapping | Not Started | P2 | 30.1 |
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
@@ -4440,8 +4440,8 @@ The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 48.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
-| 48.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
+| 48.1 | Side-Mounted Handle + Hinge Marks | Done (PR #451) | P2 | Epic 35 (done), Epic 17 (done) |
+| 48.2 | Continuous Threshold / Floor Line | Done (PR #483) | P2 | None |
 | 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
 | 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
 
@@ -4498,7 +4498,7 @@ Highest-scoring proposal (15/15). On selection, replace right border chars with 
 ## Epic 43: Connection Manager Infrastructure
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** COMPLETE (6/6 stories done)
 **Dependencies:** Epic 7 (Adapter SDK — complete), Epic 11 (Sync Observability — complete)
 
 ### Epic Goal
@@ -4509,12 +4509,12 @@ Build the connection lifecycle layer for data source integrations. ThreeDoors ha
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 43.1 | Connection State Machine and ConnectionManager Type | Not Started | P1 | None |
-| 43.2 | Keyring Integration with Environment Variable Fallback | Not Started | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | Not Started | P1 | None |
-| 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
-| 43.5 | Sync Event Logging Infrastructure | Not Started | P1 | None |
-| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
+| 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
+| 43.2 | Keyring Integration with Environment Variable Fallback | Done (PR #442) | P1 | None |
+| 43.3 | Config Schema v3 Migration with Connections Support | Done (PR #467) | P1 | None |
+| 43.4 | Connection CRUD Operations | Done (PR #526) | P1 | 43.1, 43.2, 43.3 |
+| 43.5 | Sync Event Logging Infrastructure | Done (PR #439) | P1 | None |
+| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Done (PR #540) | P1 | 43.1-43.5 |
 
 **Dependency graph:**
 ```
@@ -4888,16 +4888,16 @@ Comprehensive self-diagnosis command (`threedoors doctor`) with flutter-style ca
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 49.1 | Doctor Command Skeleton & Health Alias | Not Started | P1 | None |
-| 49.2 | Environment Checks | Not Started | P1 | 49.1 |
-| 49.3 | Task Data Integrity Checks | Not Started | P1 | 49.1 |
-| 49.4 | Provider Health Checks | Not Started | P1 | 49.1 |
-| 49.5 | Session & Analytics Checks | Not Started | P1 | 49.1 |
-| 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
-| 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
-| 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
-| 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
-| 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
+| 49.1 | Doctor Command Skeleton & Health Alias | Done (PR #444) | P1 | None |
+| 49.2 | Environment Checks | Done (PR #473) | P1 | 49.1 |
+| 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
+| 49.4 | Provider Health Checks | Done (PR #475) | P1 | 49.1 |
+| 49.5 | Session & Analytics Checks | Done (PR #474) | P1 | 49.1 |
+| 49.6 | Sync & Offline Queue Checks | Done (PR #472) | P1 | 49.1 |
+| 49.7 | Enrichment Database Checks | Done (PR #470) | P1 | 49.1 |
+| 49.8 | Auto-Repair (`--fix` flag) | Done (PR #529) | P1 | 49.2-49.7 |
+| 49.9 | Channel-Aware Version Checking | Done (PR #476) | P1 | 49.1 |
+| 49.10 | Verbose Mode, Category Filter & Polish | Done (PR #530) | P1 | 49.2-49.9 |
 
 **Dependency graph:**
 ```
@@ -4993,7 +4993,7 @@ GitHub Releases API with 24h cache. Channel-aware comparison. Opt-out controls. 
 **Epic Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission methods.
 
 **Prerequisites:** None (standalone feature)
-**Status:** Not Started
+**Status:** In Progress (0/3 done; 50.1 In Review)
 **Priority:** P2
 
 ### Overview
@@ -5006,7 +5006,7 @@ The implementation follows strict privacy principles: a ring buffer captures nav
 
 #### Story 50.1: Breadcrumb Tracking System
 
-**Status:** Not Started
+**Status:** In Review
 **Priority:** P2
 **Depends On:** None
 **Effort:** Small
@@ -5063,7 +5063,7 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 
 **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
 
-**Status:** Not Started (0/10 stories)
+**Status:** In Progress (5/10 stories done; 5 In Review)
 
 **Phasing:**
 - Phase 0 (Bootstrap): Stories 51.1-51.2 — Agent definition rewrites
@@ -5156,3 +5156,211 @@ Expand retrospector authority to create PRs proposing improvements. Generate wee
 
 - SLAES Party Mode: `_bmad-output/planning-artifacts/agentic-engineering-agent-party-mode.md`
 - Subagent Abuse Investigation: `_bmad-output/planning-artifacts/subagent-abuse-investigation.md`
+
+---
+
+## Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (Rearchitected) (P2)
+
+**Goal:** Deploy a persistent research-supervisor agent that wraps the official Gemini CLI (`@google/gemini-cli`) with OAuth authentication, providing web-grounded research with context packaging, result shielding, and dual-tier budget management (Pro + Flash).
+
+**Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), Node.js/npm, Google Account
+
+**Dependencies:** None (agent infrastructure, not application code)
+
+**Status:** In Progress (2/5 stories done — PRs #537, #538)
+
+**Rearchitecture Note:** This epic was originally designed around `24601/agent-deep-research` (Python, paid API key). Rearchitected per user request to use the official Gemini CLI with OAuth (free tier). See D-164 (supersedes D-154).
+
+### Story 54.1: Research-Supervisor Agent Definition (Gemini CLI + OAuth)
+
+**As** the supervisor agent,
+**I want** a persistent research-supervisor agent that invokes the Gemini CLI via OAuth for web-grounded research, with a clear definition file, message-check loop, request protocol, and authority matrix,
+**So that** any agent can request research via messaging and receive structured findings without blocking.
+
+**Acceptance Criteria:**
+- Agent definition at `agents/research-supervisor.md` follows Responsibility+WHY format (Story 51.2)
+- 5-minute message-check loop documented: check messages → dispatch queued via `gemini -p` → process results
+- Synchronous execution model: `gemini -p "<query>" --output-format json` (no async polling)
+- Model selection: `gemini-2.5-pro` for deep/standard, `gemini-2.5-flash` for quick
+- Request protocol: `RESEARCH priority=<high|normal|low> depth=<quick|standard|deep> [context=<bundles>]: <question>`
+- Authority matrix: CAN (receive, queue, dispatch, store, summarize, deliver) / CANNOT (decide, execute, create stories, modify code) / ESCALATE (budget exhausted, OAuth failure, repeated failures)
+- Communication protocols: RESEARCH-RESULT, RESEARCH-ERROR, RESEARCH-BUDGET message formats
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 54.2: Gemini CLI Installation, OAuth Setup & Wrapper Script
+
+**As** the research-supervisor agent,
+**I want** the Gemini CLI installed via npm, authenticated via OAuth, and wrapped in a research-oriented shell script,
+**So that** I can dispatch research queries with `scripts/gemini-research.sh` and receive structured JSON responses.
+
+**Acceptance Criteria:**
+- Gemini CLI installable via `npm install -g @google/gemini-cli` (documented)
+- OAuth flow: `gemini` → browser sign-in → token cached and auto-refreshed (documented)
+- Verification: `gemini -p "Hello" --output-format json` returns valid JSON
+- Wrapper script at `scripts/gemini-research.sh` with `--depth` (model selection) and `--query` parameters
+- `GEMINI.md` research system prompt in project root (automatic context for all queries)
+- `_bmad-output/research-reports/` directory created with `.gitkeep`
+- Report directories gitignored; `budget.json` tracked
+- No `_tools/` directory, no Python, no API key
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 54.3: Context Packaging & Prompt Engineering (Gemini CLI)
+
+**As** the research-supervisor agent,
+**I want** pre-defined context bundles and a prompt template that tailor each query via `--include-directories` and stdin piping,
+**So that** Gemini receives focused, project-specific grounding that improves result relevance within token budgets.
+
+**Acceptance Criteria:**
+- 8 context bundles documented: core, architecture, prd, stories, decisions, code-sample, tui, tasks
+- Keyword-to-bundle auto-detection mapping
+- 60KB context budget with priority shedding order (drop code-sample → truncate stories → drop prd)
+- Standard prompt template with: project context, grounding instructions (use GoogleSearch), question, output requirements
+- `--include-directories` for directory-aligned bundles; stdin piping for assembled bundles
+- `GEMINI.md` and `GEMINI_SYSTEM_MD` interaction documented
+
+**Priority:** P2 | **Depends On:** 54.1
+
+### Story 54.4: Result Shielding & Artifact Storage (Gemini CLI JSON)
+
+**As** the supervisor (or any requesting agent),
+**I want** research results delivered as concise executive summaries with full reports on disk,
+**So that** context windows are not overwhelmed by lengthy research output.
+
+**Acceptance Criteria:**
+- Three-layer summary architecture: executive summary (≤500 words) → detailed report → raw JSON
+- Per-query directory: `YYYYMMDD-HHMMSS-<slug>/` with report.md, executive-summary.md, response.json, request.json, context-bundle.md
+- JSON parsing: `.response` field extracted from `gemini -p --output-format json` output
+- Only executive summary sent via messaging; full report path included
+- RESEARCH-RESULT message format documented
+- Gating flow documented: research → summary → human/supervisor decision → optional action
+- No autonomous action restriction in CANNOT section
+
+**Priority:** P2 | **Depends On:** 54.1, 54.2
+
+### Story 54.5: Rate Limiting, Budget Management & Model Selection
+
+**As** the supervisor,
+**I want** dual-tier daily query count tracking (Pro + Flash), priority queuing, model selection, and deduplication,
+**So that** the free-tier limits (50 Pro/day, 1,000 Flash/day) are used efficiently.
+
+**Acceptance Criteria:**
+- `budget.json` schema: date, pro_limit/used/remaining, flash_limit/used/remaining, query history
+- Daily reset at midnight UTC
+- Reserve pool: 5 Pro queries held back after 6pm UTC for high-priority
+- Priority queue: high=immediate, normal=FIFO, low=budget-permitting
+- Model selection: quick→Flash, standard/deep→Pro, with Pro→Flash fallback on exhaustion
+- Batch optimization: 3+ related queries combined with merged prompt
+- Deduplication: 7-day lookback against existing `request.json` files
+- 2-minute cooldown for Pro dispatches (60 RPM for Flash)
+- 80% Pro budget warning threshold
+- RESEARCH-BUDGET escalation message for exhausted budget
+- 429 rate-limit fallback: Pro → Flash downgrade with logging
+
+**Priority:** P2 | **Depends On:** 54.1, 54.2
+
+### Dependency Graph
+
+```
+54.1 (Agent Definition)      ─┬──▶ 54.3 (Context Packaging)
+54.2 (CLI + OAuth + Wrapper)  ─┤
+                                ├──▶ 54.4 (Result Shielding) ← depends on 54.1 + 54.2
+                                └──▶ 54.5 (Rate Limiting)    ← depends on 54.1 + 54.2
+```
+
+Stories 54.1 and 54.2 can parallelize. Stories 54.3, 54.4, and 54.5 can parallelize after 54.1+54.2 complete.
+
+### Decisions
+
+- D-164: Gemini CLI + OAuth as research execution layer (supersedes D-154: agent-deep-research)
+- Rejected: keep agent-deep-research (paid API key), deep-research extension (paid key), direct API (manual polling), Python SDK (retains Python dep)
+
+### Research
+
+- Rearchitecture Research: `_bmad-output/planning-artifacts/gemini-cli-oauth-research.md`
+- Original Design (superseded): `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md`
+
+---
+
+## Epic 55: CI Optimization Phase 1
+
+**Goal:** Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only — no test code modifications. Fix Docker E2E redundancy, add benchmark path filtering, improve local dev speed.
+
+**Prerequisites:** None
+**Status:** Not Started
+
+### Story 55.1: Docker E2E Push-Only and Lint Version Fix
+
+**As** a contributor,
+**I want** the Docker E2E job to run only on push-to-main (not on PRs),
+**So that** PR CI cost is reduced without losing defense-in-depth on the main branch.
+
+**Acceptance Criteria:**
+- Docker E2E job (`test-docker-e2e`) does NOT execute on pull requests
+- Docker E2E job continues to execute on push-to-main
+- `Dockerfile.test` `GOLANGCI_LINT_VERSION` updated from `v2.1.6` to `v2.10.1` (matching CI)
+- Required checks (Quality Gate, Benchmarks) unaffected
+
+**Technical Notes:**
+- Change `test-docker-e2e` `if` to `github.event_name == 'push'`
+- Remove `needs: changes` (no path filtering needed when always running on push)
+- Fix lint version in `Dockerfile.test` line 9
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 55.2: Benchmark Path Filtering
+
+**As** a contributor,
+**I want** benchmarks to only run on PRs that touch performance-relevant code,
+**So that** non-performance PRs complete faster (3m33s → 2m08s).
+
+**Acceptance Criteria:**
+- `changes` job outputs a `perf` filter matching `internal/core/**`, `internal/adapters/textfile/**`, `go.mod`
+- Benchmarks skip on PRs where `perf` is false
+- Benchmarks always run on push-to-main (safety net)
+- PR critical path becomes Quality Gate (~2m08s) for non-perf PRs
+
+**Technical Notes:**
+- Add `perf` output to `changes` job with dorny/paths-filter
+- Update `benchmarks` `if` to: `github.event_name == 'push' || (code == 'true' && perf == 'true')`
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 55.3: Local Dev Acceleration (make test-fast + CI Cache)
+
+**As** a developer,
+**I want** a `make test-fast` target that runs tests in short mode,
+**So that** I can get rapid local feedback (~10s) without running the full test suite (~33s).
+
+**Acceptance Criteria:**
+- `make test-fast` runs `go test -short ./...`
+- `test-fast` listed in `.PHONY` declaration
+- All `setup-go@v6` steps in CI have `cache-dependency-path: go.sum`
+- Existing `make test` behavior unchanged
+
+**Technical Notes:**
+- Add `test-fast` target to Makefile
+- Add `cache-dependency-path: go.sum` to 3 `setup-go` steps in CI
+
+**Priority:** P1 | **Depends On:** None
+
+### Dependency Graph
+
+```
+55.1 (Docker E2E Push-Only)    ──▶ Independent
+55.2 (Benchmark Path Filter)   ──▶ Independent
+55.3 (Local Dev Acceleration)  ──▶ Independent
+```
+
+All three stories are fully independent and can be implemented in parallel.
+
+### Decisions
+
+- D-166: CI Optimization Phase 1 scope (Docker E2E push-only, benchmark path filtering, make test-fast)
+- Rejected: remove Docker E2E entirely (defense-in-depth value), incremental linting (can miss cross-file issues), benchmarks only on push (delays detection), split Quality Gate (marginal gain), `-short` in CI (risks missing bugs)
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
+- Synthesis: `_bmad-output/planning-artifacts/ci-test-optimization/05-synthesis-optimization-roadmap.md`

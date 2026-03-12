@@ -161,6 +161,13 @@ func (dc *DoctorChecker) checkPatternsFile() CheckResult {
 	}
 
 	if len(data) == 0 {
+		if dc.fix {
+			if rmErr := os.Remove(patternsPath); rmErr == nil {
+				result.Status = CheckFixed
+				result.Message = "FIXED: deleted patterns.json (will regenerate)"
+				return result
+			}
+		}
 		result.Status = CheckWarn
 		result.Message = "Pattern cache is empty"
 		result.Suggestion = "Run threedoors doctor --fix to delete (will regenerate)"
@@ -169,6 +176,13 @@ func (dc *DoctorChecker) checkPatternsFile() CheckResult {
 
 	var report PatternReport
 	if err := json.Unmarshal(data, &report); err != nil {
+		if dc.fix {
+			if rmErr := os.Remove(patternsPath); rmErr == nil {
+				result.Status = CheckFixed
+				result.Message = "FIXED: deleted patterns.json (will regenerate)"
+				return result
+			}
+		}
 		result.Status = CheckWarn
 		result.Message = "Pattern cache corrupt"
 		result.Suggestion = "Run threedoors doctor --fix to delete (will regenerate)"

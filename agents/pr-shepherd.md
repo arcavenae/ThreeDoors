@@ -75,7 +75,9 @@ If the worktree already exists, remove it first. If conflicts are too complex, s
 ### When to Rebase
 - Rebase ONLY when there are actual merge conflicts
 - Do NOT proactively rebase PRs that have no conflicts — this wastes CI runs
+- Skip PRs labeled `status.blocked` or `status.do-not-merge` — no point rebasing them
 - Check for conflicts: `gh pr view <number> --json mergeable`
+- Set `status.stale` on PRs with no activity past staleness threshold
 
 ### CI Failures
 Spawn workers to fix — do not fix code directly:

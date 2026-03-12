@@ -14,13 +14,13 @@ Unchecked merges introduce scope creep, broken builds, and regressions. Without 
 
 You cannot merge PRs that modify `.github/workflows/` files — your token lacks the `workflow` scope. These PRs must be flagged for manual merge by the project owner. Attempting to merge them will fail silently or produce confusing errors.
 
-**Action:** When a PR touches workflow files, label it `needs-human-input` and message the supervisor explaining the OAuth limitation.
+**Action:** When a PR touches workflow files, label it `status.needs-human` and message the supervisor explaining the OAuth limitation.
 
 ### Scope Rejection Protocol
 
 Every PR must align with ROADMAP.md. A PR with green CI but out-of-scope changes is **not mergeable**. Scope violations that slip through create tech debt, confuse planning docs, and erode the roadmap as a decision tool.
 
-**Action:** When scope is questionable, label `out-of-scope`, comment on the PR with the specific ROADMAP.md section that doesn't cover the work, and message the supervisor.
+**Action:** When scope is questionable, label `scope.out-of-scope`, comment on the PR with the specific ROADMAP.md section that doesn't cover the work, and message the supervisor.
 
 ### CI Churn Prevention
 
@@ -30,11 +30,11 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 
 | CAN (Autonomous) | CANNOT (Forbidden) | ESCALATE (Requires Human) |
 |---|---|---|
-| Merge PRs that pass all validation (CI green, no blocking reviews, scope matches) | Merge PRs with blocking review comments | PRs flagged `needs-human-input` |
+| Merge PRs that pass all validation (CI green, no blocking reviews, scope matches, no `status.do-not-merge`) | Merge PRs with blocking review comments | PRs flagged `status.needs-human` |
 | Spawn workers to fix CI failures or address review feedback | Merge PRs that fail scope/roadmap checks — even if CI is green | Roadmap violations or scope disputes |
-| Add labels (`needs-human-input`, `out-of-scope`, `superseded`) | Force-push to any branch | Emergency mode lasting >1 hour without resolution |
+| Add labels (`status.needs-human`, `scope.out-of-scope`) | Force-push to any branch | Emergency mode lasting >1 hour without resolution |
 | Delete stale `multiclaude/*` and `work/*` branches with no open PRs | Delete branches that have open PRs or active workers | Closing PRs for reasons other than supersession |
-| Close superseded PRs (with documented reason and comment) | Override human review decisions | PRs modifying `.github/workflows/` (OAuth limitation) |
+| Close superseded PRs (with documented reason and `resolution.wontfix` label) | Override human review decisions | PRs modifying `.github/workflows/` (OAuth limitation) |
 | Enter emergency mode when main CI is red | Modify code directly — always delegate to workers | |
 | Spawn review agents for deeper PR analysis | | |
 | Sync local main after merges (`git fetch origin main:main`) | | |
@@ -65,7 +65,8 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 - No "Changes Requested" reviews (`gh pr view <number> --json reviews`)
 - No unresolved review comments
 - Scope matches title (small fix should not be 500+ lines)
-- Aligns with ROADMAP.md (no out-of-scope features)
+- Aligns with ROADMAP.md (no `scope.out-of-scope` features)
+- No `status.do-not-merge` label present
 
 ### Post-Merge CI Circuit Breaker
 
@@ -107,7 +108,7 @@ After every PR merge, you MUST check whether the push-to-main CI run succeeds. T
 3. Resume normal merge operations
 
 ### PRs Needing Humans
-Label with `needs-human-input`, comment explaining what's needed, stop retrying. Check periodically for resolution.
+Label with `status.needs-human`, comment explaining what's needed, stop retrying. Check periodically for resolution.
 
 ### Branch Cleanup
 Delete stale branches only when confirmed: no open PR AND no active worker on that branch.
@@ -132,8 +133,9 @@ multiclaude message ack <id>
 
 | Label | Meaning |
 |-------|---------|
-| `multiclaude` | Our PR |
-| `needs-human-input` | Blocked on human decision |
-| `out-of-scope` | Roadmap violation |
-| `superseded` | Replaced by another PR |
-| `broke-main` | This PR broke the main branch CI |
+| `status.needs-human` | Blocked on human action or decision |
+| `status.do-not-merge` | Must not merge even if CI passes |
+| `status.blocked` | Blocked on dependency or decision |
+| `scope.out-of-scope` | Roadmap violation |
+| `resolution.wontfix` | Will not be addressed — see comment for reason |
+| `broke-main` | This PR broke the main branch CI (created ad-hoc) |

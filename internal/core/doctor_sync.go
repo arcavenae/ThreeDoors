@@ -165,20 +165,33 @@ func (dc *DoctorChecker) checkOrphanedTmpFiles() CheckResult {
 	}
 
 	now := time.Now().UTC()
-	var orphaned int
+	var orphanedPaths []string
 	for _, match := range matches {
 		info, err := os.Stat(match)
 		if err != nil {
 			continue
 		}
 		if now.Sub(info.ModTime()) > orphanedTmpAge {
-			orphaned++
+			orphanedPaths = append(orphanedPaths, match)
 		}
 	}
 
-	if orphaned > 0 {
+	if len(orphanedPaths) > 0 {
+		if dc.fix {
+			removed := 0
+			for _, p := range orphanedPaths {
+				if rmErr := os.Remove(p); rmErr == nil {
+					removed++
+				}
+			}
+			if removed > 0 {
+				result.Status = CheckFixed
+				result.Message = fmt.Sprintf("FIXED: removed %d stale .tmp files", removed)
+				return result
+			}
+		}
 		result.Status = CheckWarn
-		result.Message = fmt.Sprintf("%d orphaned temp files found", orphaned)
+		result.Message = fmt.Sprintf("%d orphaned temp files found", len(orphanedPaths))
 		result.Suggestion = "Run threedoors doctor --fix"
 		return result
 	}

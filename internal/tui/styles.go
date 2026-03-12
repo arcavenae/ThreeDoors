@@ -184,10 +184,6 @@ var (
 				Bold(true).
 				Foreground(lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"})
 
-	improvementHeaderStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.CompleteColor{TrueColor: "#5fffd7", ANSI256: "86", ANSI: "6"})
-
 	valuesFooterSeparator = "  ·  "
 
 	valuesSelectedPrefix = "▸ "

@@ -15,6 +15,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/adapters/todoist"
 	"github.com/arcaven/ThreeDoors/internal/cli"
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 	"github.com/arcaven/ThreeDoors/internal/dist"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
@@ -69,7 +70,38 @@ func main() {
 	}
 
 	var provider core.TaskProvider
-	if len(cfg.Providers) > 1 {
+	var resolved *connection.ResolvedConnections
+
+	if len(cfg.Connections) > 0 && configErr == nil {
+		// Connection-managed mode: create providers via ConnectionManager
+		configPath := filepath.Join(configDir, "config.yaml")
+		eventLog := connection.NewSyncEventLog(configDir)
+		var resolveErr error
+		resolved, resolveErr = connection.ResolveFromConfig(cfg, core.DefaultRegistry(), configPath, eventLog)
+		if resolveErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: connection init failed: %v, falling back to legacy\n", resolveErr)
+		}
+	}
+
+	if resolved != nil {
+		// Use connection-managed providers via aggregator
+		providerMap := make(map[string]core.TaskProvider, len(resolved.Providers))
+		var firstProvider string
+		for connID, p := range resolved.Providers {
+			conn, _ := resolved.Manager.Get(connID)
+			if conn != nil {
+				// Transition to Connected state: Disconnected → Connecting → Connected
+				_ = resolved.Manager.Transition(connID, connection.StateConnecting)
+				_ = resolved.Manager.Transition(connID, connection.StateConnected)
+			}
+			providerMap[p.Name()] = p
+			if firstProvider == "" {
+				firstProvider = p.Name()
+			}
+		}
+		agg := core.NewMultiSourceAggregatorWithDefault(providerMap, firstProvider)
+		provider = agg
+	} else if len(cfg.Providers) > 1 {
 		// Multi-provider mode: aggregate tasks from all configured providers
 		agg, aggErr := core.ResolveAllProviders(cfg, core.DefaultRegistry())
 		if aggErr != nil {
@@ -182,6 +214,9 @@ func main() {
 	}
 	if agentSvc != nil {
 		model.SetAgentService(agentSvc)
+	}
+	if resolved != nil {
+		model.SetConnectionManager(resolved.Manager)
 	}
 	if isPlanMode {
 		model.SetPlanningMode(true)

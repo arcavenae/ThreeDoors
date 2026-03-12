@@ -44,9 +44,15 @@ Operationalize merge-queue emergency mode: proactively check push-to-main CI aft
 
 Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-skip rate). Validates Story 0.20 improvements and monitors ADR-0030 re-entry gate for GitHub merge queue.
 
-### Story 0.47: Alpha Version Chronological Sorting (P1)
+### Story 0.50: Remove Session Reflection Quit Intercept (P0)
 
 **Status:** Not Started.
+
+Remove the ImprovementView ("Session Reflection") that intercepts quit after productive sessions. Quit must be immediate — no confirmation, no prompt, no second keypress. Reverses Story 3.6. SOUL.md violation (D-165).
+
+### Story 0.47: Alpha Version Chronological Sorting (P1)
+
+**Status:** Done (PR #523).
 
 Insert UTC HHMMSS timecode into alpha version format so same-day releases sort chronologically. Changes `0.1.0-alpha.YYYYMMDD.SHA` to `0.1.0-alpha.YYYYMMDD.HHMMSS.SHA`. One-line CI fix, SemVer 2.0 compliant. Unblocks Story 49.9 (channel-aware version checking).
 
@@ -88,23 +94,34 @@ Fix data accuracy in BOARD.md Epic Number Registry (wrong epic mappings, missing
 
 ### Story 0.44: Scoped Label Migration — Rename and Create GitHub Labels (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #513).
 
 Migrate all 21 GitHub labels to scoped `.` separator format per finalized 27-label taxonomy (D-106, D-107). Rename-first strategy preserves label-issue associations (D-110). Create 6 new labels, delete 2 obsolete ones.
 
 ### Story 0.45: Agent Definition Updates for Scoped Labels (P1)
 
-**Status:** Not Started. Depends on Story 0.44.
+**Status:** Done (PR #520).
 
 Update all agent definition files (envoy, merge-queue, pr-shepherd) to reference new scoped label names. Text-only changes — agents must be restarted after merge.
 
 ### Story 0.46: Label Authority & Triage Flow Documentation (P1)
 
-**Status:** Not Started. Depends on Stories 0.44, 0.45.
+**Status:** Done (PR #519).
 
 Document label authority matrix (who sets/removes each label) and end-to-end triage flow. Covers BOARD recommendations P-003 and P-005. Consolidates party mode consensus into operational reference.
 
 ## Active Epics
+
+### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 3/4 stories done
+
+Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
+| 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
+| 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ### Epic 30: Linear Integration (P2) — 0/4 stories done
 
@@ -112,7 +129,7 @@ Linear as task source via GraphQL API. Best task model alignment of all evaluate
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 30.1 | Linear GraphQL Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 30.1 | Linear GraphQL Client & Auth Configuration | In Review | P2 | Epic 7 (done) |
 | 30.2 | Read-Only Linear Provider with Field Mapping | Not Started | P2 | 30.1 |
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
@@ -129,65 +146,41 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 33: Seasonal Door Theme Variants (P2) — 4/4 stories done — COMPLETE
-
-Time-based seasonal theme variants that auto-switch based on current date. Extends Epic 17's theme infrastructure.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 33.1 | Seasonal Theme Metadata Model and Date-Range Resolver | Done (PR #403) | P2 | Epic 17 (done) |
-| 33.2 | Four Seasonal Theme Implementations | Done (PR #409) | P2 | 33.1 |
-| 33.3 | Auto-Switch Integration in DoorsView and Config | Done (PR #410) | P2 | 33.1 |
-| 33.4 | Seasonal Theme Picker and `:seasonal` Command | Done (PR #447) | P2 | 33.2, 33.3 |
-
-### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 0/4 stories done
+### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 2/4 stories done
 
 Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations. Based on 5-round party mode research with 7 agents.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 48.1 | Side-Mounted Handle + Hinge Marks | Not Started | P2 | Epic 35 (done), Epic 17 (done) |
-| 48.2 | Continuous Threshold / Floor Line | Not Started | P2 | None |
+| 48.1 | Side-Mounted Handle + Hinge Marks | Done (PR #451) | P2 | Epic 35 (done), Epic 17 (done) |
+| 48.2 | Continuous Threshold / Floor Line | Done (PR #483) | P2 | None |
 | 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
 | 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 43: Connection Manager Infrastructure (P1) — 4/6 stories done
-
-Connection lifecycle layer for data source integrations. State machine, credential storage (system keychain), config schema v3 (named connections), CRUD operations, sync event logging, and migration of existing adapters to the new pattern.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 43.1 | Connection State Machine and ConnectionManager Type | Done (PR #428) | P1 | None |
-| 43.2 | Keyring Integration with Environment Variable Fallback | Done (PR #442) | P1 | None |
-| 43.3 | Config Schema v3 Migration with Connections Support | In Review (PR #441) | P1 | None |
-| 43.4 | Connection CRUD Operations | Not Started | P1 | 43.1, 43.2, 43.3 |
-| 43.5 | Sync Event Logging Infrastructure | Done (PR #439) | P1 | None |
-| 43.6 | Migrate Existing Adapters to ConnectionManager Pattern | Not Started | P1 | 43.1-43.5 |
-
-### Epic 44: Sources TUI (P1) — 0/7 stories done
+### Epic 44: Sources TUI (P1) — 1/7 stories done
 
 TUI interfaces for data source management: setup wizard (`:connect`), sources dashboard (`:sources`), source detail view, sync log view, status bar health alerts, disconnection flow, and re-authentication flow. Uses `charmbracelet/huh` for wizard forms.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 44.1 | Setup Wizard with huh Forms | Not Started | P1 | Epic 43 |
-| 44.2 | Sources Dashboard View | Not Started | P1 | Epic 43 |
+| 44.2 | Sources Dashboard View | Done (PR #553) | P1 | Epic 43 |
 | 44.3 | Source Detail View | Not Started | P1 | 44.2 |
 | 44.4 | Sync Log View | Not Started | P1 | 43.5 |
 | 44.5 | Status Bar Integration for Connection Health Alerts | Not Started | P1 | Epic 43 |
 | 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 0/5 stories done
+### Epic 45: Sources CLI (P1) — 1/5 stories done
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
-| 45.2 | `threedoors sources` List/Status/Test Commands | Not Started | P1 | Epic 43 |
+| 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
 | 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
@@ -216,36 +209,19 @@ Conflict resolution (last-writer-wins with field-level strategy), orphaned task 
 
 **Epic 43-47 dependency graph:** Epic 43 is the critical path — all other epics depend on it. Epics 44 (TUI) and 45 (CLI) can parallelize after Epic 43. Epic 46 (OAuth) is independent. Epic 47 (Advanced) depends on 43+44.
 
-### Epic 49: ThreeDoors Doctor — Self-Diagnosis Command (P1) — 3/10 stories done
-
-Comprehensive self-diagnosis command with flutter-style category-based output, conservative auto-repair, and channel-aware version checking. Supersedes existing `health` command.
-
-| Story | Title | Status | Priority | Depends On |
-|-------|-------|--------|----------|------------|
-| 49.1 | Doctor Command Skeleton & Health Alias | In Review | P1 | None |
-| 49.2 | Environment Checks | Done (PR #473) | P1 | 49.1 |
-| 49.3 | Task Data Integrity Checks | Done (PR #471) | P1 | 49.1 |
-| 49.4 | Provider Health Checks | In Review | P1 | 49.1 |
-| 49.5 | Session & Analytics Checks | In Review | P1 | 49.1 |
-| 49.6 | Sync & Offline Queue Checks | Not Started | P1 | 49.1 |
-| 49.7 | Enrichment Database Checks | Not Started | P1 | 49.1 |
-| 49.8 | Auto-Repair (`--fix` flag) | Not Started | P1 | 49.2-49.7 |
-| 49.9 | Channel-Aware Version Checking | Not Started | P1 | 49.1 |
-| 49.10 | Verbose Mode, Category Filter & Polish | Not Started | P1 | 49.2-49.9 |
-
-### Epic 42: Application Security Hardening (P1) — 1/5 stories done
+### Epic 42: Application Security Hardening (P1) — 4/5 stories done
 
 Remediate findings from the application security audit. Fix permissive file permissions, add symlink validation, enforce input size limits, protect credentials in config, and harden CI supply chain.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 42.1 | File Permission Standardization (0o700/0o600) | Done (PR #437) | P1 | None |
-| 42.2 | Symlink Validation for File Operations | In Review | P1 | None |
-| 42.3 | Input Size Limits for YAML and JSONL Readers | Not Started | P1 | None |
-| 42.4 | Credential Protection in Config Files | Not Started | P2 | 42.1 |
+| 42.2 | Symlink Validation for File Operations | Done (PR #440) | P1 | None |
+| 42.3 | Input Size Limits for YAML and JSONL Readers | Done (PR #448) | P1 | None |
+| 42.4 | Credential Protection in Config Files | Done (PR #477) | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Not Started | P1 | None |
 
-### Epic 50: In-App Bug Reporting (P2) — 1/3 stories done
+### Epic 50: In-App Bug Reporting (P2) — 0/3 stories done
 
 In-app `:bug` command for frictionless bug reporting without leaving the TUI. Breadcrumb navigation trail, environment data collection with strict privacy allowlist, mandatory preview, and tiered submission (browser URL, GitHub API, local file).
 
@@ -292,35 +268,77 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 35 | Door Visual Appearance — Door-Like Proportions | 7/7 |
 | 36 | Door Selection Interaction Feedback | 4/4 |
 | 37 | Persistent BMAD Agent Infrastructure | 4/4 |
-| 29 | Task Dependencies & Blocked-Task Filtering | 4/4 |
+| 29 | Task Dependencies & Blocked-Task Filtering | 3/4 (29.3 In Review) |
 | 32 | Undo Task Completion | 3/3 |
+| 33 | Seasonal Door Theme Variants | 4/4 |
 | 38 | Dual Homebrew Distribution | 6/6 |
 | 27 | Daily Planning Mode | 5/5 |
 | 28 | Snooze/Defer as First-Class Action | 4/4 |
 | 39 | Keybinding Display System | 12/13 (1 cancelled) |
 | 40 | Beautiful Stats Display | 10/10 |
 | 41 | Charm Ecosystem Adoption & TUI Polish | 6/6 |
+| 43 | Connection Manager Infrastructure | 6/6 |
+| 49 | ThreeDoors Doctor | 10/10 |
+| 52 | Envoy Three-Layer Firewall | 4/4 |
 
-### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 1/10 stories done
+### Epic 53: Remote Collaboration — multiclaude Cross-Machine Access (P2) — 0/5 stories done
+
+Document and enable remote collaboration with multiclaude via SSH, with future MCP bridge support.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 53.1 | SSH Tunnel Setup & Documentation | Not Started | P2 | None |
+| 53.2 | Remote Agent Attachment | Not Started | P2 | 53.1 |
+| 53.3 | Cross-Machine Message Routing | Not Started | P2 | 53.1 |
+| 53.4 | Remote Worker Dispatch | Not Started | P2 | 53.2, 53.3 |
+| 53.5 | MCP Bridge Prototype | Not Started | P2 | 53.1 |
+
+### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 5/10 stories done
 
 Continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality (did we build the right thing?) and operational efficiency (are we building efficiently?).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | Not Started | P1 | None |
+| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | In Review | P1 | None |
 | 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Done (PR #460) | P1 | None |
-| 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | Not Started | P1 | 51.1 |
-| 51.4 | Saga Detection (Dispatch Waste Alerting) | Not Started | P1 | 51.1 |
+| 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | In Review (PR #462) | P1 | 51.1 |
+| 51.4 | Saga Detection (Dispatch Waste Alerting) | In Review | P1 | 51.1 |
 | 51.5 | Doc Consistency Audit (Periodic Cross-Check) | In Review | P1 | 51.1 |
-| 51.6 | BOARD.md Recommendation Pipeline | Not Started | P1 | 51.3, 51.4, 51.5 |
-| 51.7 | Merge Conflict Rate Analysis | Not Started | P2 | 51.3, 51.6 |
-| 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Not Started | P2 | 51.3, 51.6 |
-| 51.9 | Research Lifecycle Tracking | Not Started | P2 | 51.3, 51.6 |
-| 51.10 | PR Creation Authority & Trend Reporting | Not Started | P2 | 51.1-51.9 |
+| 51.6 | BOARD.md Recommendation Pipeline | In Review | P1 | 51.3, 51.4, 51.5 |
+| 51.7 | Merge Conflict Rate Analysis | Done (PR #506) | P2 | 51.3, 51.6 |
+| 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Done (PR #505) | P2 | 51.3, 51.6 |
+| 51.9 | Research Lifecycle Tracking | Done (PR #507) | P2 | 51.3, 51.6 |
+| 51.10 | PR Creation Authority & Trend Reporting | Done (PR #509) | P2 | 51.1-51.9 |
 
 **Phasing:** Phase 0 (stories 51.1-51.2): Bootstrap — rewrite agent definitions. Phase 1 (stories 51.3-51.6): MVP monitoring. Phase 2 (stories 51.7-51.10): Advanced analysis after 2 weeks of MVP validation.
 
 **Dependency graph:** Stories 51.1 & 51.2 can parallelize. Stories 51.3-51.5 can parallelize after 51.1. Story 51.6 depends on 51.3-51.5. Phase 2 stories depend on Phase 1 validation.
+
+### Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (Rearchitected) (P2) — 2/5 stories done
+
+Persistent research-supervisor agent that wraps the official Gemini CLI (`@google/gemini-cli`) with OAuth authentication for web-grounded research. **Rearchitected** from the original Python/API-key approach (D-154 → D-164). Uses free tier: 50 Pro/day + 1,000 Flash/day. Features context packaging (8 bundles, `--include-directories`), three-layer result shielding, and dual-tier budget management. No Python, no API key, no third-party tools.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 54.1 | Research-Supervisor Agent Definition (Gemini CLI + OAuth) | Done (PR #537) | P2 | None |
+| 54.2 | Gemini CLI Installation, OAuth Setup & Wrapper Script | Done (PR #538) | P2 | None |
+| 54.3 | Context Packaging & Prompt Engineering (Gemini CLI) | Not Started | P2 | 54.1 |
+| 54.4 | Result Shielding & Artifact Storage (Gemini CLI JSON) | Not Started | P2 | 54.1, 54.2 |
+| 54.5 | Rate Limiting, Budget Management & Model Selection | Not Started | P2 | 54.1, 54.2 |
+
+**Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
+
+### Epic 55: CI Optimization Phase 1 (P1) — 0/3 stories done
+
+Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only. Docker E2E push-only, benchmark path filtering, local dev acceleration. No test code modifications.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 55.1 | Docker E2E Push-Only + Lint Version Fix | Not Started | P1 | None |
+| 55.2 | Benchmark Path Filtering | Not Started | P1 | None |
+| 55.3 | Local Dev Acceleration (make test-fast + CI Cache) | Not Started | P1 | None |
+
+**Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
 ## Icebox (Deferred Indefinitely)
 
