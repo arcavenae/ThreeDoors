@@ -47,6 +47,7 @@ const (
 	ViewPlanning
 	ViewSources
 	ViewSourceDetail
+	ViewSyncLogDetail
 	ViewConnectWizard
 	ViewDisconnect
 )
@@ -100,6 +101,8 @@ func (v ViewMode) String() string {
 		return "Sources"
 	case ViewSourceDetail:
 		return "SourceDetail"
+	case ViewSyncLogDetail:
+		return "SyncLogDetail"
 	case ViewConnectWizard:
 		return "ConnectWizard"
 	case ViewDisconnect:
@@ -136,6 +139,7 @@ type MainModel struct {
 	planningView        *PlanningView
 	sourcesView         *SourcesView
 	sourceDetailView    *SourceDetailView
+	syncLogDetailView   *SyncLogDetailView
 	connectWizard       *ConnectWizard
 	disconnectDialog    *DisconnectDialog
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
@@ -163,6 +167,7 @@ type MainModel struct {
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
 	connMgr               *connection.ConnectionManager
+	syncEventLog          *connection.SyncEventLog
 	milestoneChecker      *core.MilestoneChecker
 	pollingActive         bool
 	syncSpinner           *SyncSpinner
@@ -374,6 +379,11 @@ func (m *MainModel) SetConnectionManager(mgr *connection.ConnectionManager) {
 	m.connMgr = mgr
 }
 
+// SetSyncEventLog sets the sync event log for viewing connection-specific sync events.
+func (m *MainModel) SetSyncEventLog(log *connection.SyncEventLog) {
+	m.syncEventLog = log
+}
+
 // SetDispatcher sets the Dispatcher used for worker status polling.
 func (m *MainModel) SetDispatcher(d dispatch.Dispatcher) {
 	m.dispatcher = d
@@ -483,6 +493,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.disconnectDialog.SetWidth(msg.Width)
 			m.disconnectDialog.SetHeight(msg.Height)
 		}
+		if m.syncLogDetailView != nil {
+			m.syncLogDetailView.SetWidth(msg.Width)
+			m.syncLogDetailView.SetHeight(msg.Height)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -573,6 +587,45 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
+	case ShowSyncLogDetailMsg:
+		if m.syncEventLog != nil {
+			events, err := m.syncEventLog.SyncLog(msg.ConnectionID, 0)
+			if err != nil {
+				events = nil
+			}
+			m.syncLogDetailView = NewSyncLogDetailView(msg.ConnectionID, events)
+			m.syncLogDetailView.SetWidth(m.width)
+			m.syncLogDetailView.SetHeight(m.height)
+			m.previousView = m.viewMode
+			m.setViewMode(ViewSyncLogDetail)
+		}
+		return m, nil
+
+	case SourceActionMsg:
+		if msg.Action == "sync_log" && m.syncEventLog != nil {
+			events, err := m.syncEventLog.SyncLog(msg.ConnectionID, 0)
+			if err != nil {
+				events = nil
+			}
+			m.syncLogDetailView = NewSyncLogDetailView(msg.ConnectionID, events)
+			m.syncLogDetailView.SetWidth(m.width)
+			m.syncLogDetailView.SetHeight(m.height)
+			m.previousView = m.viewMode
+			m.setViewMode(ViewSyncLogDetail)
+		}
+		if msg.Action == "disconnect" && m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				m.disconnectDialog = NewDisconnectDialog(conn)
+				m.disconnectDialog.SetWidth(m.width)
+				m.disconnectDialog.SetHeight(m.height)
+				m.previousView = m.viewMode
+				m.setViewMode(ViewDisconnect)
+				return m, m.disconnectDialog.Init()
+			}
+		}
+		return m, nil
+
 	case ShowConnectWizardMsg:
 		if m.connMgr != nil {
 			m.connectWizard = NewConnectWizard(DefaultProviderSpecs(), m.connMgr)
@@ -603,20 +656,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.setViewMode(ViewSources)
 		} else {
 			m.setViewMode(ViewDoors)
-		}
-		return m, nil
-
-	case SourceActionMsg:
-		if msg.Action == "disconnect" && m.connMgr != nil {
-			conn, err := m.connMgr.Get(msg.ConnectionID)
-			if err == nil {
-				m.disconnectDialog = NewDisconnectDialog(conn)
-				m.disconnectDialog.SetWidth(m.width)
-				m.disconnectDialog.SetHeight(m.height)
-				m.previousView = m.viewMode
-				m.setViewMode(ViewDisconnect)
-				return m, m.disconnectDialog.Init()
-			}
 		}
 		return m, nil
 
@@ -1483,6 +1522,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSources(msg)
 	case ViewSourceDetail:
 		return m.updateSourceDetail(msg)
+	case ViewSyncLogDetail:
+		return m.updateSyncLogDetail(msg)
 	case ViewConnectWizard:
 		return m.updateConnectWizard(msg)
 	case ViewDisconnect:
@@ -1679,6 +1720,14 @@ func (m *MainModel) updateSourceDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.sourceDetailView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSyncLogDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.syncLogDetailView == nil {
+		return m, nil
+	}
+	cmd := m.syncLogDetailView.Update(msg)
 	return m, cmd
 }
 
@@ -2247,6 +2296,10 @@ func (m *MainModel) View() string {
 	case ViewSourceDetail:
 		if m.sourceDetailView != nil {
 			view = m.sourceDetailView.View()
+		}
+	case ViewSyncLogDetail:
+		if m.syncLogDetailView != nil {
+			view = m.syncLogDetailView.View()
 		}
 	case ViewConnectWizard:
 		if m.connectWizard != nil {

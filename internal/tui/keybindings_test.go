@@ -12,7 +12,7 @@ func allViewModes() []ViewMode {
 		ViewAddTask, ViewValuesGoals, ViewFeedback,
 		ViewNextSteps, ViewAvoidancePrompt, ViewInsights, ViewOnboarding,
 		ViewConflict, ViewSyncLog, ViewThemePicker, ViewDevQueue, ViewProposals,
-		ViewHelp, ViewDeferred, ViewSnooze,
+		ViewHelp, ViewDeferred, ViewSnooze, ViewSyncLogDetail,
 	}
 }
 
