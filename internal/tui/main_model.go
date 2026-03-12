@@ -613,6 +613,17 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.previousView = m.viewMode
 			m.setViewMode(ViewSyncLogDetail)
 		}
+		if msg.Action == "disconnect" && m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				m.disconnectDialog = NewDisconnectDialog(conn)
+				m.disconnectDialog.SetWidth(m.width)
+				m.disconnectDialog.SetHeight(m.height)
+				m.previousView = m.viewMode
+				m.setViewMode(ViewDisconnect)
+				return m, m.disconnectDialog.Init()
+			}
+		}
 		return m, nil
 
 	case ShowConnectWizardMsg:
@@ -645,20 +656,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.setViewMode(ViewSources)
 		} else {
 			m.setViewMode(ViewDoors)
-		}
-		return m, nil
-
-	case SourceActionMsg:
-		if msg.Action == "disconnect" && m.connMgr != nil {
-			conn, err := m.connMgr.Get(msg.ConnectionID)
-			if err == nil {
-				m.disconnectDialog = NewDisconnectDialog(conn)
-				m.disconnectDialog.SetWidth(m.width)
-				m.disconnectDialog.SetHeight(m.height)
-				m.previousView = m.viewMode
-				m.setViewMode(ViewDisconnect)
-				return m, m.disconnectDialog.Init()
-			}
 		}
 		return m, nil
 
