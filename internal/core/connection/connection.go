@@ -10,17 +10,17 @@ import (
 
 // Connection represents a configured instance of a data source.
 type Connection struct {
-	ID           string // unique instance ID (ULID)
-	ProviderName string // adapter name: "jira", "todoist", "github"
-	Label        string // user-friendly: "Work Jira", "Personal Todoist"
-	State        ConnectionState
-	LastSync     time.Time
-	LastError    string
-	SyncMode     string // "bidirectional", "readonly"
-	PollInterval time.Duration
-	Settings     map[string]string // provider-specific non-secret config
-	TaskCount    int               // cached active task count
-	CreatedAt    time.Time
+	ID           string            `json:"id"`
+	ProviderName string            `json:"provider"`
+	Label        string            `json:"label"`
+	State        ConnectionState   `json:"state"`
+	LastSync     time.Time         `json:"last_sync"`
+	LastError    string            `json:"last_error,omitempty"`
+	SyncMode     string            `json:"sync_mode"`
+	PollInterval time.Duration     `json:"poll_interval"`
+	Settings     map[string]string `json:"settings,omitempty"`
+	TaskCount    int               `json:"task_count"`
+	CreatedAt    time.Time         `json:"created_at"`
 }
 
 // NewConnection creates a Connection with a ULID ID and state Disconnected.
@@ -57,9 +57,9 @@ func NewConnection(providerName, label string, settings map[string]string) (*Con
 
 // StateChangeEvent is emitted when a connection's state changes.
 type StateChangeEvent struct {
-	ConnectionID string
-	From         ConnectionState
-	To           ConnectionState
-	Timestamp    time.Time
-	Error        string // populated when transitioning to Error or AuthExpired
+	ConnectionID string          `json:"connection_id"`
+	From         ConnectionState `json:"from"`
+	To           ConnectionState `json:"to"`
+	Timestamp    time.Time       `json:"timestamp"`
+	Error        string          `json:"error,omitempty"`
 }

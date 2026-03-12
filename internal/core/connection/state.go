@@ -1,6 +1,9 @@
 package connection
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // ConnectionState represents the lifecycle state of a data source connection.
 type ConnectionState int
@@ -31,6 +34,26 @@ func (s ConnectionState) String() string {
 		return stateNames[s]
 	}
 	return fmt.Sprintf("unknown(%d)", int(s))
+}
+
+// MarshalJSON encodes the state as its string name.
+func (s ConnectionState) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
+// UnmarshalJSON decodes a state from its string name.
+func (s *ConnectionState) UnmarshalJSON(data []byte) error {
+	var name string
+	if err := json.Unmarshal(data, &name); err != nil {
+		return err
+	}
+	for i, n := range stateNames {
+		if n == name {
+			*s = ConnectionState(i)
+			return nil
+		}
+	}
+	return fmt.Errorf("unknown connection state: %q", name)
 }
 
 // validTransitions defines which state transitions are allowed.

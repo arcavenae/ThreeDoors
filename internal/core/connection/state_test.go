@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 )
@@ -130,6 +131,65 @@ func TestValidateTransition_SameState(t *testing.T) {
 			err := ValidateTransition(s, s)
 			if err == nil {
 				t.Errorf("ValidateTransition(%s, %s) = nil, want error (same-state transition)", s, s)
+			}
+		})
+	}
+}
+
+func TestConnectionState_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		state ConnectionState
+		want  string
+	}{
+		{"disconnected", StateDisconnected, `"disconnected"`},
+		{"connected", StateConnected, `"connected"`},
+		{"syncing", StateSyncing, `"syncing"`},
+		{"error", StateError, `"error"`},
+		{"auth_expired", StateAuthExpired, `"auth_expired"`},
+		{"paused", StatePaused, `"paused"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			data, err := json.Marshal(tt.state)
+			if err != nil {
+				t.Fatalf("MarshalJSON: %v", err)
+			}
+			if string(data) != tt.want {
+				t.Errorf("MarshalJSON() = %s, want %s", data, tt.want)
+			}
+		})
+	}
+}
+
+func TestConnectionState_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		input   string
+		want    ConnectionState
+		wantErr bool
+	}{
+		{"disconnected", `"disconnected"`, StateDisconnected, false},
+		{"connected", `"connected"`, StateConnected, false},
+		{"error", `"error"`, StateError, false},
+		{"unknown", `"bogus"`, 0, true},
+		{"invalid json", `123`, 0, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var got ConnectionState
+			err := json.Unmarshal([]byte(tt.input), &got)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("UnmarshalJSON() = %v, want %v", got, tt.want)
 			}
 		})
 	}

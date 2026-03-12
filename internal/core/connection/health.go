@@ -2,11 +2,11 @@ package connection
 
 // HealthCheckResult contains the outcome of a connection health check.
 type HealthCheckResult struct {
-	APIReachable bool
-	TokenValid   bool
-	RateLimitOK  bool
-	TaskCount    int
-	Details      map[string]string
+	APIReachable bool              `json:"api_reachable"`
+	TokenValid   bool              `json:"token_valid"`
+	RateLimitOK  bool              `json:"rate_limit_ok"`
+	TaskCount    int               `json:"task_count"`
+	Details      map[string]string `json:"details,omitempty"`
 }
 
 // Healthy returns true when the API is reachable, the token is valid,
