@@ -5280,3 +5280,87 @@ Stories 54.1 and 54.2 can parallelize. Stories 54.3, 54.4, and 54.5 can parallel
 
 - Rearchitecture Research: `_bmad-output/planning-artifacts/gemini-cli-oauth-research.md`
 - Original Design (superseded): `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md`
+
+---
+
+## Epic 55: CI Optimization Phase 1
+
+**Goal:** Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only — no test code modifications. Fix Docker E2E redundancy, add benchmark path filtering, improve local dev speed.
+
+**Prerequisites:** None
+**Status:** Not Started
+
+### Story 55.1: Docker E2E Push-Only and Lint Version Fix
+
+**As** a contributor,
+**I want** the Docker E2E job to run only on push-to-main (not on PRs),
+**So that** PR CI cost is reduced without losing defense-in-depth on the main branch.
+
+**Acceptance Criteria:**
+- Docker E2E job (`test-docker-e2e`) does NOT execute on pull requests
+- Docker E2E job continues to execute on push-to-main
+- `Dockerfile.test` `GOLANGCI_LINT_VERSION` updated from `v2.1.6` to `v2.10.1` (matching CI)
+- Required checks (Quality Gate, Benchmarks) unaffected
+
+**Technical Notes:**
+- Change `test-docker-e2e` `if` to `github.event_name == 'push'`
+- Remove `needs: changes` (no path filtering needed when always running on push)
+- Fix lint version in `Dockerfile.test` line 9
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 55.2: Benchmark Path Filtering
+
+**As** a contributor,
+**I want** benchmarks to only run on PRs that touch performance-relevant code,
+**So that** non-performance PRs complete faster (3m33s → 2m08s).
+
+**Acceptance Criteria:**
+- `changes` job outputs a `perf` filter matching `internal/core/**`, `internal/adapters/textfile/**`, `go.mod`
+- Benchmarks skip on PRs where `perf` is false
+- Benchmarks always run on push-to-main (safety net)
+- PR critical path becomes Quality Gate (~2m08s) for non-perf PRs
+
+**Technical Notes:**
+- Add `perf` output to `changes` job with dorny/paths-filter
+- Update `benchmarks` `if` to: `github.event_name == 'push' || (code == 'true' && perf == 'true')`
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 55.3: Local Dev Acceleration (make test-fast + CI Cache)
+
+**As** a developer,
+**I want** a `make test-fast` target that runs tests in short mode,
+**So that** I can get rapid local feedback (~10s) without running the full test suite (~33s).
+
+**Acceptance Criteria:**
+- `make test-fast` runs `go test -short ./...`
+- `test-fast` listed in `.PHONY` declaration
+- All `setup-go@v6` steps in CI have `cache-dependency-path: go.sum`
+- Existing `make test` behavior unchanged
+
+**Technical Notes:**
+- Add `test-fast` target to Makefile
+- Add `cache-dependency-path: go.sum` to 3 `setup-go` steps in CI
+
+**Priority:** P1 | **Depends On:** None
+
+### Dependency Graph
+
+```
+55.1 (Docker E2E Push-Only)    ──▶ Independent
+55.2 (Benchmark Path Filter)   ──▶ Independent
+55.3 (Local Dev Acceleration)  ──▶ Independent
+```
+
+All three stories are fully independent and can be implemented in parallel.
+
+### Decisions
+
+- D-166: CI Optimization Phase 1 scope (Docker E2E push-only, benchmark path filtering, make test-fast)
+- Rejected: remove Docker E2E entirely (defense-in-depth value), incremental linting (can miss cross-file issues), benchmarks only on push (delays detection), split Quality Gate (marginal gain), `-short` in CI (risks missing bugs)
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
+- Synthesis: `_bmad-output/planning-artifacts/ci-test-optimization/05-synthesis-optimization-roadmap.md`

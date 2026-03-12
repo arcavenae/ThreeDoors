@@ -677,7 +677,21 @@
 - **Research:** See `_bmad-output/planning-artifacts/gemini-cli-oauth-research.md`, `_bmad-output/planning-artifacts/gemini-research-supervisor-design.md` (original)
 - **Decisions:** D-164 (Gemini CLI + OAuth as execution layer, supersedes D-154)
 
-**Epic 55+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 55: CI Optimization Phase 1** (P1)
+- **Goal:** Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only — no test code modifications. Fix Docker E2E redundancy, add benchmark path filtering, improve local dev speed.
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Deliverables:**
+  - Docker E2E job moved to push-only (eliminates ~2.5min runner cost per PR)
+  - golangci-lint version skew fixed in Dockerfile.test (v2.1.6 → v2.10.1)
+  - Benchmark path filtering (benchmarks only run when core/textfile code changes on PRs)
+  - `make test-fast` target for rapid local development feedback (~10s)
+  - CI Go build cache verification (`cache-dependency-path: go.sum`)
+- **Stories:** 55.1 (Docker E2E Push-Only + Lint Fix), 55.2 (Benchmark Path Filtering), 55.3 (Local Dev Acceleration)
+- **Research:** See `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
+- **Decisions:** D-166 (CI Optimization Phase 1 scope and rejected alternatives)
+
+**Epic 56+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -743,5 +757,6 @@
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
 | Epic 53: Remote Collaboration | 5 | Not Started |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
-| **Total** | **288** | **152 complete, 9 epics in progress, 128 not started** |
+| Epic 55: CI Optimization Phase 1 | 3 | Not Started |
+| **Total** | **291** | **152 complete, 9 epics in progress, 131 not started** |
 ---
