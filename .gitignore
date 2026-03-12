@@ -5,6 +5,8 @@
 *key*
 !**/keybinding*
 *token*
+!**/token_metadata*
+!**/token_refresh*
 *password*
 
 # API Keys and Credentials (keep BMad files, exclude actual secrets)
