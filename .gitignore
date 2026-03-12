@@ -113,5 +113,8 @@ temp/
 _bmad-output/research-reports/*/
 !_bmad-output/research-reports/budget.json
 
+# MkDocs build output
+docs-site/site/
+
 # multiclaude enhancements repo (local subproject)
 multiclaude-enhancements/
