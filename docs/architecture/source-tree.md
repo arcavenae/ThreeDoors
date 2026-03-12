@@ -91,6 +91,8 @@ ThreeDoors/
 │   │   ├── conflict_view.go         # Sync conflict visualization (Epic 11)
 │   │   ├── source_badge.go          # Provider attribution badges (Epic 13)
 │   │   ├── decompose_view.go        # LLM decomposition results (Epic 14)
+│   │   ├── sources_view.go          # Sources dashboard — connection list/status (Epic 44)
+│   │   ├── connect_wizard.go        # Setup wizard using huh forms (Epic 44)
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
@@ -114,6 +116,7 @@ ThreeDoors/
 │   │       ├── bridge.go            # ProviderBridge — adapts TaskProvider to HealthChecker/Syncer
 │   │       ├── conn_scheduler.go    # ConnAwareScheduler — state-aware polling per connection
 │   │       ├── resolve.go           # ResolveFromConfig — wires config → manager → providers
+│   │       ├── form_spec.go         # FormSpec/FormField — provider config form definitions
 │   │       ├── sync_event.go        # SyncEventLog — per-connection JSONL audit log
 │   │       └── oauth/               # OAuth device code flow
 │   │           ├── devicecode.go    # Device code grant implementation
