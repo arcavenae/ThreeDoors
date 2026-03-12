@@ -181,6 +181,7 @@ threedoors stats --daily
 - 🏷️ **Inline Tagging** — Tag tasks as you add them: `Design homepage #creative #deep-work @work`
 - 📂 **Task Categorization** — Classify by type (creative, technical, administrative, physical), effort (quick-win, medium, deep-work), and location (home, work, errands, anywhere)
 - 🔗 **Cross-Reference Linking** — Link related tasks together; browse and navigate links from detail view
+- 🌅 **Daily Planning Mode** — Morning planning ritual (`:plan`) that guides you through reviewing, selecting, and committing to your day's tasks in a structured 3-step flow
 
 ### Search & Commands
 - 🔍 **Quick Search** — Press `/` for live task search with fuzzy filtering
@@ -190,9 +191,30 @@ threedoors stats --daily
 - 📊 **Session Metrics** — Automatic tracking of door selections, bypasses, and timing data
 - 📈 **Daily Completion Tracking** — Track completions per day with streak counting
 - 📋 **Insights Dashboard** — View trends, streaks, mood correlations, and avoidance patterns (`:dashboard`)
+- 📉 **Sparkline Charts** — Inline Unicode sparkline visualizations for completion trends
+- 🟩 **Activity Heatmap** — GitHub-style contribution heatmap showing daily activity intensity
+- 🏆 **Milestone Celebrations** — Animated counter reveals when you hit productivity milestones
 - 😊 **Mood Correlation Analysis** — Discover how your emotional state affects task selection
 - 🚨 **Avoidance Detection** — Tasks bypassed 10+ times trigger an intervention prompt offering breakdown, deferral, or archival
 - 🧠 **Pattern Analysis** — Identifies door position bias, task type preferences, and procrastination patterns
+
+### Wellbeing
+- 😊 **Mood Logging** — Capture emotional state anytime with presets: focused, energized, tired, stressed, neutral, calm, distracted
+- 🎯 **Values & Goals Display** — Persistent footer showing your values as you work
+- 💬 **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
+
+### Themes
+- 🎨 **Door Themes** — Eight themes: 4 base (`classic`, `modern`, `scifi`, `shoji`) + 4 seasonal (`spring`, `summer`, `autumn`, `winter`)
+- 🌸 **Seasonal Auto-Switching** — Themes automatically change with the seasons based on date; override with `:seasonal`
+- 🖌️ **Theme Picker** — Switch themes live with `:theme`
+- ⚙️ **Persistent Selection** — Chosen theme saved in `config.yaml`
+
+### Door Visuals
+- 🚪 **Proportional Door Rendering** — Doors scale to 60% of terminal height with anatomically correct proportions (lintel, panels, handle, threshold)
+- ✨ **Spring-Physics Selection Feedback** — Smooth 60 FPS spring animation with border emphasis when selecting doors
+- 🔳 **Side-Mounted Handles & Hinge Marks** — Structural door elements for visual realism
+- 💡 **Crack of Light Effect** — Selected door glows with a crack-of-light selection indicator
+- 🔄 **Handle Turn Micro-Animation** — Handle animates on door open
 
 ### Integrations & Providers
 - 📄 **Text File** (default) — YAML-based local task storage
@@ -204,6 +226,7 @@ threedoors stats --daily
 - ✅ **Todoist** — Sync tasks from Todoist via REST API with project and filter support
 - 🔌 **Multi-Provider Aggregation** — Run multiple providers simultaneously; tasks merge across sources
 - 🩺 **Health Check** — Run `:health` or `threedoors health` to verify provider connectivity
+- 📝 **huh Form Wizards** — Provider setup via interactive Charm huh forms (`:connect`)
 
 ### Sync & Offline-First
 - 💾 **Write-Ahead Log (WAL)** — Crash-safe task persistence with atomic writes
@@ -224,11 +247,6 @@ threedoors stats --daily
 - 📝 **Git Integration** — Write generated story specs directly to git repos
 - 💡 **Suggestions View** — Browse LLM-generated task proposals in the TUI (`:suggestions`)
 
-### Themes
-- 🎨 **Door Themes** — Four built-in themes: `classic`, `modern`, `scifi`, `shoji`
-- 🖌️ **Theme Picker** — Switch themes live with `:theme`
-- ⚙️ **Persistent Selection** — Chosen theme saved in `config.yaml`
-
 ### Task Workflow
 - ⏰ **Snooze / Defer** — Snooze a task until a specific date; auto-returns to the pool when due
 - 🔗 **Task Dependencies** — Define `depends_on` relationships; blocked tasks are filtered from door selection and auto-unblock on completion
@@ -236,9 +254,6 @@ threedoors stats --daily
 
 ### User Experience
 - 👋 **First-Run Onboarding** — Guided welcome flow with keybinding tutorial, values/goals setup, and optional task import
-- 🎯 **Values & Goals Display** — Persistent footer showing your values as you work
-- 😊 **Mood Logging** — Capture emotional state anytime with presets: focused, energized, tired, stressed, neutral, calm, distracted
-- 💬 **Door Feedback** — Rate doors as blocked, not-now, or needs-breakdown to improve selection
 - 💡 **Session Improvement Prompt** — On quit, optionally share improvement suggestions
 - ➡️ **Contextual Next Steps** — After completing or adding a task, see relevant next actions
 - ❓ **Keybinding Display** — Context-sensitive keybinding bar at the bottom of the screen; press `?` to open full keybinding overlay
@@ -443,6 +458,12 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `modern` | Contemporary, clean design |
 | `scifi` | Sci-fi / cyberpunk aesthetic |
 | `shoji` | Japanese minimalist sliding doors |
+| `spring` | Light greens and curved lines (Mar–May) |
+| `summer` | Warm tones and bright accents (Jun–Aug) |
+| `autumn` | Rich amber and harvest palette (Sep–Nov) |
+| `winter` | Cool blues and frost accents (Dec–Feb) |
+
+Seasonal themes auto-switch based on the current date. Use `:seasonal` to open the seasonal theme picker, or `:theme` for base themes.
 
 ---
 
@@ -498,6 +519,8 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `:mood [mood]` | Log mood (or open selector) |
 | `:tag` | Open task categorization editor |
 | `:theme` | Open theme picker |
+| `:seasonal` | Open seasonal theme picker |
+| `:plan` | Start daily planning mode |
 | `:stats` | Flash session statistics |
 | `:health` | Run system health check |
 | `:dashboard` | Open insights dashboard |
@@ -508,6 +531,8 @@ Switch door themes with `:theme` in the TUI or by setting the `theme` key in con
 | `:goals edit` | Edit existing values & goals |
 | `:synclog` | Show sync history |
 | `:suggestions` | Browse LLM task proposals |
+| `:connect` | Connect a new data source |
+| `:sources` | View connected data sources |
 | `:deferred` | Show deferred/snoozed tasks |
 | `:devqueue` | Open dev dispatch queue |
 | `:help` | Show all commands |
