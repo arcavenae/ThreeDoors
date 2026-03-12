@@ -79,7 +79,7 @@ func TestNewAgentService(t *testing.T) {
 				Output:  llm.OutputConfig{OutputRepo: "/tmp/test-repo"},
 			},
 			wantErr: true,
-			errMsg:  "unknown LLM backend",
+			errMsg:  "unknown backend",
 		},
 		{
 			name: "claude without api key",
