@@ -1,26 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# handover-orchestrator.sh — Daemon Handover Coordination Logic (Story 58.3)
+# handover-orchestrator.sh — Daemon Handover Coordination Logic (Stories 58.3, 58.5)
 # Orchestrates the full handover sequence: detect signal, notify outgoing,
 # wait for delta, spawn incoming, wait for ready, kill outgoing.
+# Includes emergency handover protocol: force-kill unresponsive supervisors,
+# spawn with emergency flag, retry on spawn failure, alert user.
 # Designed to run from the daemon refresh loop when a handover signal is detected.
 #
 # Usage:
 #   ./scripts/handover-orchestrator.sh [--repo NAME] [--handover-dir DIR]
 #                                       [--delta-timeout SECS] [--ready-timeout SECS]
-#                                       [--poll-interval SECS]
+#                                       [--poll-interval SECS] [--spawn-retry-delay SECS]
 #
 # Options:
-#   --repo NAME             Repository name (default: auto-detected)
-#   --handover-dir DIR      Override handover directory
-#   --delta-timeout SECS    Timeout waiting for outgoing delta (default: 120)
-#   --ready-timeout SECS    Timeout waiting for incoming ready (default: 180)
-#   --poll-interval SECS    Polling interval for message checks (default: 5)
-#   --help, -h              Show this help message
+#   --repo NAME              Repository name (default: auto-detected)
+#   --handover-dir DIR       Override handover directory
+#   --delta-timeout SECS     Timeout waiting for outgoing delta (default: 120)
+#   --ready-timeout SECS     Timeout waiting for incoming ready (default: 180)
+#   --poll-interval SECS     Polling interval for message checks (default: 5)
+#   --spawn-retry-delay SECS Delay before retrying failed spawn (default: 30)
+#   --help, -h               Show this help message
 #
 # References:
-#   - Story: docs/stories/58.3.story.md
+#   - Story: docs/stories/58.3.story.md, docs/stories/58.5.story.md
 #   - Research: _bmad-output/planning-artifacts/supervisor-shift-handover/
 
 # --- Defaults (configurable via CLI flags) ---
@@ -29,6 +32,7 @@ HANDOVER_DIR=""
 DELTA_TIMEOUT=120
 READY_TIMEOUT=180
 POLL_INTERVAL=5
+SPAWN_RETRY_DELAY=30
 
 # --- Parse arguments ---
 while [[ $# -gt 0 ]]; do
@@ -38,6 +42,7 @@ while [[ $# -gt 0 ]]; do
         --delta-timeout) DELTA_TIMEOUT="$2"; shift 2 ;;
         --ready-timeout) READY_TIMEOUT="$2"; shift 2 ;;
         --poll-interval) POLL_INTERVAL="$2"; shift 2 ;;
+        --spawn-retry-delay) SPAWN_RETRY_DELAY="$2"; shift 2 ;;
         --help|-h)
             echo "Usage: handover-orchestrator.sh [--repo NAME] [--handover-dir DIR]"
             echo ""
@@ -49,6 +54,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --delta-timeout SECS    Timeout for outgoing delta (default: 120)"
             echo "  --ready-timeout SECS    Timeout for incoming ready (default: 180)"
             echo "  --poll-interval SECS    Poll interval for messages (default: 5)"
+            echo "  --spawn-retry-delay SECS  Delay before spawn retry (default: 30)"
             echo "  --help, -h              Show this help message"
             exit 0
             ;;
@@ -168,8 +174,7 @@ wait_for_delta() {
 
 # --- Task 4: Incoming supervisor spawn (AC-4) ---
 spawn_incoming() {
-    local state_file="$HANDOVER_DIR/shift-state.yaml"
-    local task_msg="SHIFT_HANDOVER: Read $state_file and assume control"
+    local task_msg="$1"
 
     log "INFO" "Spawning incoming supervisor"
 
@@ -180,6 +185,99 @@ spawn_incoming() {
 
     log "INFO" "Incoming supervisor spawned successfully"
     return 0
+}
+
+# --- Story 58.5: Force-kill outgoing supervisor (AC-2) ---
+force_kill_outgoing() {
+    local tmux_session="mc-$REPO_NAME"
+
+    log "WARN" "EMERGENCY_HANDOVER: outgoing supervisor unresponsive, force-killed after ${DELTA_TIMEOUT}s timeout"
+
+    # Kill supervisor tmux window if it exists
+    if tmux list-windows -t "$tmux_session" -F '#{window_name}' 2>/dev/null | grep -q "^supervisor$"; then
+        tmux kill-window -t "$tmux_session:supervisor" 2>/dev/null || true
+        log "INFO" "Force-killed supervisor tmux window"
+    fi
+
+    # Also kill any supervisor-outgoing window
+    if tmux list-windows -t "$tmux_session" -F '#{window_name}' 2>/dev/null | grep -q "supervisor-outgoing"; then
+        tmux kill-window -t "$tmux_session:supervisor-outgoing" 2>/dev/null || true
+        log "INFO" "Force-killed supervisor-outgoing tmux window"
+    fi
+
+    # Verify no supervisor process remains
+    if tmux list-windows -t "$tmux_session" -F '#{window_name}' 2>/dev/null | grep -q "^supervisor"; then
+        log "ERROR" "Supervisor process may still be running after force-kill"
+        return 1
+    fi
+
+    log "INFO" "Outgoing supervisor force-killed and verified dead"
+    return 0
+}
+
+# --- Story 58.5: Spawn incoming with retry (AC-3, AC-6) ---
+spawn_incoming_with_retry() {
+    local task_msg="$1"
+
+    if spawn_incoming "$task_msg"; then
+        return 0
+    fi
+
+    log "WARN" "First spawn attempt failed, retrying in ${SPAWN_RETRY_DELAY}s"
+    sleep "$SPAWN_RETRY_DELAY"
+
+    if spawn_incoming "$task_msg"; then
+        log "INFO" "Incoming supervisor spawned on retry"
+        return 0
+    fi
+
+    log "ERROR" "CRITICAL: Both spawn attempts failed — system has NO supervisor"
+    return 1
+}
+
+# --- Story 58.5: User alerting (AC-5) ---
+write_emergency_alert() {
+    local alert_type="$1"
+    local details="$2"
+    local alert_file="$HANDOVER_DIR/emergency-alert.md"
+    local tmp_file="$HANDOVER_DIR/.emergency-alert.md.tmp"
+    local timestamp
+    timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+    {
+        echo "# Emergency Handover Alert"
+        echo ""
+        echo "**Timestamp:** $timestamp"
+        echo "**Repository:** $REPO_NAME"
+        echo "**Alert Type:** $alert_type"
+        echo ""
+        echo "## What Happened"
+        echo ""
+        echo "$details"
+        echo ""
+        echo "## Action Required"
+        echo ""
+        case "$alert_type" in
+            emergency_handover)
+                echo "- The incoming supervisor is performing a full worker audit"
+                echo "- Check the handover log at: $LOG_FILE"
+                echo "- Review any discrepancies reported by the incoming supervisor"
+                echo "- If issues persist, consider manual intervention"
+                ;;
+            spawn_failure)
+                echo "- **CRITICAL: The system has NO active supervisor**"
+                echo "- Manually spawn a supervisor: \`multiclaude agents spawn --name supervisor --class persistent --prompt-file agents/supervisor.md\`"
+                echo "- Check daemon logs: \`multiclaude daemon logs\`"
+                echo "- Check tmux session: \`tmux list-windows -t mc-$REPO_NAME\`"
+                ;;
+        esac
+    } > "$tmp_file"
+
+    mv "$tmp_file" "$alert_file"
+    log "INFO" "Emergency alert written to $alert_file"
+
+    # Also try to send a multiclaude message for visibility
+    multiclaude message send supervisor "EMERGENCY_ALERT: $alert_type — check $alert_file for details" 2>/dev/null || true
 }
 
 # --- Task 5: Ready confirmation wait (AC-5) ---
@@ -243,11 +341,14 @@ log_handover_completion() {
     local timestamp
     timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+    local handover_type="${5:-normal}"
+
     {
         echo "timestamp: \"$timestamp\""
         echo "duration_seconds: $duration"
         echo "delta_received: $delta_received"
         echo "ready_confirmed: $ready_confirmed"
+        echo "handover_type: \"$handover_type\""
         echo "anomalies: \"$anomalies\""
         echo "repo: \"$REPO_NAME\""
     } > "$tmp_file"
@@ -296,35 +397,65 @@ if ! check_outgoing_alive; then
     log "WARN" "Outgoing supervisor already dead — skipping notification and delta wait"
 fi
 
+# Track whether this is an emergency handover
+EMERGENCY_HANDOVER=false
+
 # AC-2 & AC-3: Notify outgoing and wait for delta
 if $OUTGOING_ALIVE; then
     if notify_outgoing; then
         if wait_for_delta; then
             DELTA_RECEIVED="true"
         else
-            ANOMALIES="${ANOMALIES:+${ANOMALIES},}delta_timeout"
+            # Delta timeout — activate emergency protocol (Story 58.5)
+            EMERGENCY_HANDOVER=true
+            ANOMALIES="${ANOMALIES:+${ANOMALIES},}delta_timeout,emergency_handover"
+
+            # Force-kill the unresponsive outgoing supervisor
+            if force_kill_outgoing; then
+                OUTGOING_ALIVE=false
+            else
+                ANOMALIES="${ANOMALIES:+${ANOMALIES},}force_kill_incomplete"
+            fi
         fi
     else
         ANOMALIES="${ANOMALIES:+${ANOMALIES},}notification_failed"
     fi
 fi
 
-# AC-4: Spawn incoming supervisor
-if ! spawn_incoming; then
-    log "ERROR" "Fatal: Could not spawn incoming supervisor"
-    ANOMALIES="${ANOMALIES:+${ANOMALIES},}spawn_failed"
-    log_handover_completion "$HANDOVER_START" "$DELTA_RECEIVED" "$READY_CONFIRMED" "${ANOMALIES:-none}"
-    exit 1
+# Build spawn task message based on handover type
+STATE_FILE="$HANDOVER_DIR/shift-state.yaml"
+if $EMERGENCY_HANDOVER; then
+    SPAWN_TASK="EMERGENCY_SHIFT_HANDOVER: Previous supervisor was unresponsive. Using daemon snapshot only (no supervisor delta). Read $STATE_FILE and assume control. Verify all worker states manually."
+else
+    SPAWN_TASK="SHIFT_HANDOVER: Read $STATE_FILE and assume control"
 fi
 
-# AC-5: Wait for ready confirmation
+# Spawn incoming supervisor (with retry for emergency, fatal-exit for normal)
+if $EMERGENCY_HANDOVER; then
+    if ! spawn_incoming_with_retry "$SPAWN_TASK"; then
+        ANOMALIES="${ANOMALIES:+${ANOMALIES},}spawn_failed"
+        write_emergency_alert "spawn_failure" "Both spawn attempts failed after emergency handover. The outgoing supervisor was force-killed but no replacement could be started. The system currently has NO active supervisor."
+        log_handover_completion "$HANDOVER_START" "$DELTA_RECEIVED" "$READY_CONFIRMED" "${ANOMALIES:-none}"
+        exit 1
+    fi
+    write_emergency_alert "emergency_handover" "The outgoing supervisor was unresponsive and was force-killed after ${DELTA_TIMEOUT}s timeout. The incoming supervisor was spawned in emergency mode and is performing a full worker audit. Some context from the previous supervisor may have been lost."
+else
+    if ! spawn_incoming "$SPAWN_TASK"; then
+        log "ERROR" "Fatal: Could not spawn incoming supervisor"
+        ANOMALIES="${ANOMALIES:+${ANOMALIES},}spawn_failed"
+        log_handover_completion "$HANDOVER_START" "$DELTA_RECEIVED" "$READY_CONFIRMED" "${ANOMALIES:-none}"
+        exit 1
+    fi
+fi
+
+# Wait for ready confirmation
 if wait_for_ready; then
     READY_CONFIRMED="true"
 else
     ANOMALIES="${ANOMALIES:+${ANOMALIES},}ready_timeout"
 fi
 
-# AC-6: Terminate outgoing
+# Terminate outgoing (graceful path only — emergency path already force-killed)
 if $OUTGOING_ALIVE; then
     terminate_outgoing
 fi
@@ -332,6 +463,10 @@ fi
 # AC-7 is maintained throughout — at most one supervisor dispatches (daemon is mutex)
 
 # AC-8: Log handover metadata
-log_handover_completion "$HANDOVER_START" "$DELTA_RECEIVED" "$READY_CONFIRMED" "${ANOMALIES:-none}"
+HANDOVER_TYPE="normal"
+if $EMERGENCY_HANDOVER; then
+    HANDOVER_TYPE="emergency"
+fi
+log_handover_completion "$HANDOVER_START" "$DELTA_RECEIVED" "$READY_CONFIRMED" "${ANOMALIES:-none}" "$HANDOVER_TYPE"
 
 log "INFO" "=== Handover sequence complete ==="
