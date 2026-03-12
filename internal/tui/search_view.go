@@ -33,6 +33,7 @@ var commandRegistry = []commandDef{
 	{"quit", "Quit application"},
 	{"seasonal", "Pick seasonal theme (session only)"},
 	{"stats", "Show session statistics"},
+	{"connect", "Connect a new data source"},
 	{"sources", "View connected data sources"},
 	{"suggestions", "View AI task suggestions"},
 	{"synclog", "View sync operation log"},
@@ -238,6 +239,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 
 	case "dashboard":
 		return func() tea.Msg { return ShowInsightsMsg{} }
+
+	case "connect":
+		return func() tea.Msg { return ShowConnectWizardMsg{} }
 
 	case "sources":
 		return func() tea.Msg { return ShowSourcesMsg{} }
