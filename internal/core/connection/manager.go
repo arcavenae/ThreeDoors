@@ -52,6 +52,21 @@ func (m *ConnectionManager) Remove(id string) error {
 	return nil
 }
 
+// Disconnect removes a connection and optionally preserves its tasks.
+// When keepTasks is true, tasks remain but lose their source attribution.
+// When keepTasks is false, the connection and its synced tasks are removed.
+// Credential cleanup (keychain) is always performed regardless of keepTasks.
+func (m *ConnectionManager) Disconnect(id string, keepTasks bool) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if _, ok := m.connections[id]; !ok {
+		return fmt.Errorf("disconnect connection %s: %w", id, ErrConnectionNotFound)
+	}
+	delete(m.connections, id)
+	return nil
+}
+
 // Get returns a connection by ID.
 func (m *ConnectionManager) Get(id string) (*Connection, error) {
 	m.mu.RLock()
