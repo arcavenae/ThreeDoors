@@ -117,7 +117,17 @@ func extractJSON(raw string) string {
 	}
 
 	trimmed := strings.TrimSpace(raw)
+
+	objStart := strings.Index(trimmed, "{")
 	arrayStart := strings.Index(trimmed, "[")
+
+	// Pick whichever JSON structure appears first.
+	if objStart >= 0 && (arrayStart < 0 || objStart < arrayStart) {
+		end := strings.LastIndexByte(trimmed, '}')
+		if end > objStart {
+			return trimmed[objStart : end+1]
+		}
+	}
 	if arrayStart >= 0 {
 		end := strings.LastIndexByte(trimmed, ']')
 		if end > arrayStart {

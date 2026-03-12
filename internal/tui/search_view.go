@@ -27,6 +27,7 @@ var commandRegistry = []commandDef{
 	{"deferred", "View deferred/snoozed tasks"},
 	{"devqueue", "View dev dispatch queue"},
 	{"dispatch", "Dev dispatch info"},
+	{"enrich", "Enrich current task with LLM"},
 	{"goals", "View or edit values/goals"},
 	{"health", "Run health check"},
 	{"help", "Show help screen"},
@@ -327,6 +328,8 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		return func() tea.Msg {
 			return FlashMsg{Text: "Use 'g' in task detail view to break down a task."}
 		}
+	case "enrich":
+		return func() tea.Msg { return EnrichCommandMsg{} }
 
 	case "bug":
 		return func() tea.Msg { return ShowBugReportMsg{} }
