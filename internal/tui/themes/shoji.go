@@ -240,7 +240,8 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 			if knobPad < 1 {
 				knobPad = 1
 			}
-			knobLine := renderHandleWithHint(innerW, knobPad, "○", hint)
+			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
+			knobLine := renderHandleWithHint(innerW, knobPad, handleChar, hint)
 			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
 
 		case row == latticeBar2Row:
