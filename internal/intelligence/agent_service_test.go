@@ -90,14 +90,10 @@ func TestNewAgentService(t *testing.T) {
 			wantErr: true,
 			errMsg:  "ANTHROPIC_API_KEY",
 		},
-		{
-			name: "empty backend defaults to ollama",
-			cfg: llm.Config{
-				Backend: "",
-				Output:  llm.OutputConfig{OutputRepo: "/tmp/test-repo"},
-			},
-			wantErr: false,
-		},
+		// Auto-discovery with empty Backend is environment-dependent
+		// (probes PATH for CLI tools). It's tested via discoverBackendWith
+		// in the llm package with mock LookPath. Omitted here to avoid
+		// flaky results across CI vs local environments.
 	}
 
 	for _, tt := range tests {
