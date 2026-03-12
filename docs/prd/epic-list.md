@@ -739,7 +739,25 @@
 - **Research:** See `_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md` (5-round party mode, 6 agents)
 - **Decisions:** D-172 (three-layer depth system), X-109 through X-112 (4 rejected alternatives)
 
-**Epic 59+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 59: Full-Terminal Vertical Layout** (P1)
+- **Goal:** Transform ThreeDoors from a content-driven partial-terminal app into a full-terminal experience using AltScreen, a fixed-header/flex-content/fixed-footer layout engine, capped door height with perceptual centering, and graceful degradation across terminal sizes
+- **Prerequisites:** None (foundational layout work)
+- **Status:** Not Started
+- **Deliverables:**
+  - AltScreen for full-terminal ownership (standard TUI pattern)
+  - Layout engine: fixed header + flex middle + fixed footer (layoutFull function)
+  - Door height capped at 25 lines with `min(max(10, available * 0.5), 25)` formula
+  - 40/60 top/bottom padding split for perceptual centering
+  - Help view dynamic page size (replaces hardcoded 20 lines)
+  - SetHeight propagation to all views
+  - Header/footer extraction from DoorsView into MainModel
+  - Breakpoint-based graceful degradation (<10, 10-15, 16-24, 25-40, 40+ lines)
+  - All secondary views fill available terminal height
+- **Stories:** 59.1-59.2 (2 stories: MVP + follow-up per D-120)
+- **Research:** See `_bmad-output/planning-artifacts/full-terminal-layout-research.md` and `full-terminal-layout-party-mode.md`
+- **Decisions:** D-114 (AltScreen), D-115 (layout model), D-116 (door cap), D-117 (40/60 padding), D-118 (dynamic height), D-119 (degradation), D-120 (two-story split), D-121 (prerequisite for 39.2)
+
+**Epic 60+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -809,5 +827,6 @@
 | Epic 56: Door Visual Redesign | 5 | Not Started |
 | Epic 57: LLM CLI Services | 8 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
+| Epic 59: Full-Terminal Vertical Layout | 2 | Not Started |
 | **Total** | **312** | **152 complete, 9 epics in progress, 152 not started** |
 ---

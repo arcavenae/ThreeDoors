@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (1/4), Epic 51 (5/11), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 58 NOT STARTED or IN PROGRESS. 590+ merged PRs total. Last audit: 2026-03-12.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (1/4), Epic 51 (5/11), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 58-59 NOT STARTED or IN PROGRESS. 590+ merged PRs total. Last audit: 2026-03-12.
 
 ## Requirements Inventory
 
@@ -5772,3 +5772,84 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 - Full research: `_bmad-output/planning-artifacts/supervisor-shift-handover/` (5 party mode sessions)
 - Synthesis: `_bmad-output/planning-artifacts/supervisor-shift-handover/synthesis-supervisor-shift-handover.md`
+
+## Epic 59: Full-Terminal Vertical Layout (P1)
+
+**Goal:** Transform ThreeDoors from a content-driven partial-terminal app into a full-terminal experience using AltScreen, a fixed-header/flex-content/fixed-footer layout engine, capped door height with perceptual centering, and graceful degradation across terminal sizes.
+
+**Prerequisites:** None (foundational layout work)
+
+**Status:** Not Started (0/2 stories)
+
+**Phasing:**
+- Story A (MVP): AltScreen, layout engine, door height cap, vertical centering, help dynamic height, SetHeight propagation
+- Story B (Follow-up): Header/footer extraction from DoorsView, graceful degradation breakpoints, all secondary views fill terminal height
+
+### Story 59.1: AltScreen + Layout Engine + Door Height Cap
+
+**As a** user, **I want** ThreeDoors to fill my entire terminal with a clean layout, **so that** the app feels like a focused, deliberate experience that owns its space.
+
+**Acceptance Criteria:**
+- Program uses `tea.WithAltScreen()` — terminal content preserved/restored on exit
+- `layoutFull()` function pads output to exactly terminal height
+- Door height: `min(max(10, available * 0.5), 25)` — capped at 25 lines
+- 40/60 top/bottom padding split for perceptual centering
+- Help view uses terminal height instead of hardcoded 20 lines
+- `SetHeight()` propagated to all views that currently lack it
+- All tests pass including `go test -race ./internal/tui/...`
+
+**Technical Notes:**
+- One-line change for AltScreen at `cmd/threedoors/main.go:173`
+- Layout engine in `MainModel.View()` — reference: `keybinding_overlay.go` already does full-height
+- Door height change in `doors_view.go:268-273`
+- Help view in `help_view.go` — replace `helpPageSize = 20` with dynamic
+- Height propagation in `main_model.go:253-308`
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 59.2: Header/Footer Extraction + Graceful Degradation + Secondary Views Fill Height
+
+**As a** user, **I want** all views to fill my terminal height and the app to degrade gracefully on small terminals, **so that** every screen feels consistent and works well at any size.
+
+**Acceptance Criteria:**
+- `DoorsView.RenderDoors()` returns only doors; `RenderStatusSection()` returns status indicators
+- Header (greeting, time context) and footer (help text, footer message) rendered by MainModel
+- Breakpoint degradation: <10 minimal, 10-15 compact, 16-24 standard, 25-40 comfortable, 40+ spacious
+- All secondary views (stats, search, sync log, themes, etc.) fill available terminal height
+- Degradation is invisible — no error messages or warnings
+- All tests pass including `go test -race ./internal/tui/...`
+
+**Technical Notes:**
+- DoorsView refactor: split View() into RenderDoors() and RenderStatusSection()
+- Breakpoint function: `layoutBreakpoint(height int)` returns tier
+- Secondary views use their height parameter for content sizing
+
+**Priority:** P1 | **Depends On:** 59.1
+
+### Dependency Graph
+
+```
+59.1 (AltScreen + Layout Engine + Door Cap)
+ └──▶ 59.2 (Header/Footer Extraction + Degradation + All Views)
+```
+
+59.1 is foundation. 59.2 depends on 59.1. Sequential implementation required.
+
+### Decisions
+
+- D-114: Use `tea.WithAltScreen()` for full-terminal ownership
+- D-115: Fixed header + Flex middle + Fixed footer layout model
+- D-116: Door height capped at 25 lines: `min(max(10, available * 0.5), 25)`
+- D-117: 40/60 top/bottom padding split for vertical centering
+- D-118: Help/stats/search views use full available terminal height
+- D-119: Breakpoint-based graceful degradation for small terminals
+- D-120: Two-story implementation (MVP + refactor)
+- D-121: Layout engine is prerequisite for Story 39.2 (keybinding bar)
+- X-059: Stay in normal scrollback buffer (rejected)
+- X-060: Unlimited door height growth (rejected)
+- X-065: Single large story (rejected — too much scope risk)
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/full-terminal-layout-research.md`
+- Party mode: `_bmad-output/planning-artifacts/full-terminal-layout-party-mode.md`
