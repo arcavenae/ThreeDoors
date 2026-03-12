@@ -6,6 +6,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -346,6 +347,27 @@ type DisconnectConfirmedMsg struct {
 
 // DisconnectCancelledMsg is sent when the user cancels the disconnect dialog.
 type DisconnectCancelledMsg struct{}
+
+// BreakdownStartMsg is sent when the user triggers task breakdown.
+type BreakdownStartMsg struct {
+	Task *core.Task
+}
+
+// BreakdownResultMsg is sent when task breakdown completes (success or failure).
+type BreakdownResultMsg struct {
+	TaskID string
+	Result *services.BreakdownResult
+	Err    error
+}
+
+// BreakdownImportMsg is sent when the user confirms importing selected subtasks.
+type BreakdownImportMsg struct {
+	ParentTask *core.Task
+	Subtasks   []services.Subtask
+}
+
+// BreakdownCancelMsg is sent when the user cancels the breakdown view.
+type BreakdownCancelMsg struct{}
 
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
