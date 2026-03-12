@@ -21,6 +21,7 @@ type commandDef struct {
 var commandRegistry = []commandDef{
 	{"add", "Create a new task"},
 	{"add-ctx", "Add task with context (why it matters)"},
+	{"bug", "Report a bug"},
 	{"dashboard", "Open insights dashboard"},
 	{"deferred", "View deferred/snoozed tasks"},
 	{"devqueue", "View dev dispatch queue"},
@@ -320,6 +321,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		return func() tea.Msg {
 			return ShowPlanningMsg{}
 		}
+
+	case "bug":
+		return func() tea.Msg { return ShowBugReportMsg{} }
 
 	case "quit", "exit":
 		return func() tea.Msg { return RequestQuitMsg{} }

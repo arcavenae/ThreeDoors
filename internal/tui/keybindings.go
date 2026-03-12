@@ -82,6 +82,8 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return sourcesBindings()
 	case ViewSyncLogDetail:
 		return syncLogDetailBindings()
+	case ViewBugReport:
+		return bugReportBindings()
 	default:
 		return nil
 	}
@@ -185,6 +187,7 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewSnooze, false},
 		{ViewSources, false},
 		{ViewSyncLogDetail, false},
+		{ViewBugReport, false},
 	}
 
 	for _, m := range allModes {
@@ -444,6 +447,19 @@ func syncLogDetailBindings() []KeyBindingGroup {
 			{Key: "j/k", Description: "scroll", Priority: PriorityAlways},
 			{Key: "pgdn/pgup", Description: "page", Priority: PriorityIfSpace},
 			{Key: "space", Description: "page down", Priority: PriorityOverlay},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
+func bugReportBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "esc", Description: "back/cancel", Priority: PriorityAlways},
+			{Key: "enter", Description: "preview", Priority: PriorityAlways},
+			{Key: "j/k", Description: "scroll", Priority: PriorityIfSpace},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},
