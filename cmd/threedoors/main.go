@@ -71,11 +71,12 @@ func main() {
 
 	var provider core.TaskProvider
 	var resolved *connection.ResolvedConnections
+	var eventLog *connection.SyncEventLog
 
 	if len(cfg.Connections) > 0 && configErr == nil {
 		// Connection-managed mode: create providers via ConnectionManager
 		configPath := filepath.Join(configDir, "config.yaml")
-		eventLog := connection.NewSyncEventLog(configDir)
+		eventLog = connection.NewSyncEventLog(configDir)
 		var resolveErr error
 		resolved, resolveErr = connection.ResolveFromConfig(cfg, core.DefaultRegistry(), configPath, eventLog)
 		if resolveErr != nil {
@@ -217,6 +218,9 @@ func main() {
 	}
 	if resolved != nil {
 		model.SetConnectionManager(resolved.Manager)
+	}
+	if eventLog != nil {
+		model.SetSyncEventLog(eventLog)
 	}
 	if isPlanMode {
 		model.SetPlanningMode(true)
