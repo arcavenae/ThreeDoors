@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (1/4), Epic 51 (5/10), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 58 NOT STARTED or IN PROGRESS. 590+ merged PRs total. Last audit: 2026-03-12.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (1/4), Epic 51 (5/11), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 58 NOT STARTED or IN PROGRESS. 590+ merged PRs total. Last audit: 2026-03-12.
 
 ## Requirements Inventory
 
@@ -5063,7 +5063,7 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 
 **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
 
-**Status:** In Progress (5/10 stories done; 5 In Review)
+**Status:** In Progress (5/11 stories done; 5 In Review)
 
 **Phasing:**
 - Phase 0 (Bootstrap): Stories 51.1-51.2 — Agent definition rewrites
@@ -5131,6 +5131,12 @@ Track research artifacts through lifecycle: active → formalized → stale → 
 Expand retrospector authority to create PRs proposing improvements. Generate weekly trend reports with project health metrics.
 
 **AC:** PR creation on `slaes/` branches for high-confidence recommendations pending >48 hours. Self-modification safeguard (never touch own definition). Weekly trend report with CI first-pass rate, rebase count, saga count, recommendation acceptance rate. Metric regression detection. Depends on all Phase 1 + Phase 2 stories.
+
+#### Story 51.11: Retrospector Autonomy Fixes — Agent Definition Rewrite
+
+Rewrite `agents/retrospector.md` to eliminate language that causes Claude to seek human confirmation. Five targeted changes: add imperative "Your Rhythm" polling loop with bash commands, reframe "Periodic Human Review" as passive/async, change "Kill Switch" to self-monitor BOARD.md, move communication rules higher in doc, add anti-prompting guardrail. Text-only changes — no code modifications.
+
+**AC:** Imperative polling loop with explicit bash commands (matching arch-watchdog/envoy/project-watchdog pattern). "Periodic Human Review" reframed as passive — not agent's responsibility. "Kill Switch" detects rejections via BOARD.md state, not interactive feedback. Communication section positioned before Watchmen Safeguards. Anti-prompting guardrail in Incident-Hardened Guardrails section. All 5 Watchmen safeguards preserved (reframed, not removed). Retrospector operates autonomously after restart.
 
 ### Design Decisions
 

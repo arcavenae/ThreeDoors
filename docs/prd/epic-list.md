@@ -646,7 +646,7 @@
   - Phase 1 (MVP): JSONL findings log with per-merge lightweight retro, saga detection (2+ workers on same fix), doc consistency audit (periodic cross-check of planning docs), BOARD.md recommendation pipeline with confidence scoring
   - Phase 2: Merge conflict rate analysis (hot files, parallelization safety), CI failure taxonomy and spec-chain tracing, research lifecycle tracking, PR creation authority, weekly trend reporting
   - 5 Watchmen safeguards: no self-modification, audit trail, confidence scoring, periodic human review, kill switch (3 rejections → read-only)
-- **Stories:** 51.1-51.10 (10 stories)
+- **Stories:** 51.1-51.11 (11 stories)
 - **Research:** See `_bmad-output/planning-artifacts/agentic-engineering-agent-party-mode.md`, `_bmad-output/planning-artifacts/subagent-abuse-investigation.md`
 - **Decisions:** D-1 (single agent), D-2 (SLAES/retrospector naming), D-3 (persistent 15-min polling), D-4 (Level 2 authority), D-5 (consumer model), D-6 (dual-loop), D-7 (per-PR + batch), D-8 (5 Watchmen safeguards), D-9 (mode rotation), D-10 (responsibility+WHY definitions)
 
@@ -784,12 +784,12 @@
 | Epic 48: Door-Like Doors | 4 | Complete (4/4 done) |
 | Epic 49: ThreeDoors Doctor | 10 | Complete (10/10 done) |
 | Epic 50: In-App Bug Reporting | 3 | In Progress (50.1 In Review) |
-| Epic 51: SLAES | 10 | In Progress (5/10 done) |
+| Epic 51: SLAES | 11 | In Progress (5/11 done) |
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
 | Epic 53: Remote Collaboration | 5 | Not Started |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
 | Epic 56: Door Visual Redesign | 5 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
-| **Total** | **303** | **152 complete, 9 epics in progress, 143 not started** |
+| **Total** | **304** | **152 complete, 9 epics in progress, 144 not started** |
 ---
