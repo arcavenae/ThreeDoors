@@ -61,6 +61,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
+          cache-dependency-path: go.sum
 
       - name: Install gofumpt
         run: go install mvdan.cc/gofumpt@v0.7.0
@@ -147,6 +148,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
+          cache-dependency-path: go.sum
 
       - name: Run benchmarks
         run: go test -bench=. -benchmem -count=3 -run='^$' ./internal/core/ ./internal/adapters/textfile/ | tee benchmark-results.txt
@@ -232,6 +234,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
+          cache-dependency-path: go.sum
 
       - name: Generate version
         id: version
