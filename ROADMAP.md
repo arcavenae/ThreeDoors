@@ -392,6 +392,19 @@ Detect supervisor context window degradation via daemon monitoring, serialize op
 
 **Dependency graph:** Stories 58.1 & 58.2 can parallelize. Story 58.3 depends on both. Story 58.4 depends on 58.2 & 58.3. Phase 2 stories (58.5-58.7) can parallelize after Phase 1 completes.
 
+### Epic 59: Full-Terminal Vertical Layout (P1) — 0/2 stories done
+
+Transform ThreeDoors from a content-driven partial-terminal app into a full-terminal experience. AltScreen, fixed-header/flex-content/fixed-footer layout engine, capped door height with perceptual centering, and graceful degradation across terminal sizes. Based on full-terminal layout research (PR #329) and party mode consensus.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 59.1 | AltScreen + Layout Engine + Door Height Cap | Not Started | P1 | None |
+| 59.2 | Header/Footer Extraction + Graceful Degradation + Secondary Views Fill Height | Not Started | P1 | 59.1 |
+
+**Dependency graph:** Linear chain: 59.1 → 59.2. Story 59.1 is the foundation (AltScreen, layout engine, door cap). Story 59.2 is the follow-up (header/footer extraction, degradation breakpoints, all views fill height).
+
+**Note:** Story 59.1 is a prerequisite for Story 39.2 (keybinding bar footer slot) per D-121.
+
 ## Icebox (Deferred Indefinitely)
 
 | Epic | Title | Stories | Decision Date | Rationale |
