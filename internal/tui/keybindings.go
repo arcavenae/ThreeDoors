@@ -54,8 +54,6 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return valuesBindings()
 	case ViewFeedback:
 		return feedbackBindings()
-	case ViewImprovement:
-		return improvementBindings()
 	case ViewNextSteps:
 		return nextStepsBindings()
 	case ViewAvoidancePrompt:
@@ -171,7 +169,6 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewAddTask, false},
 		{ViewValuesGoals, false},
 		{ViewFeedback, false},
-		{ViewImprovement, false},
 		{ViewNextSteps, false},
 		{ViewAvoidancePrompt, false},
 		{ViewInsights, false},
@@ -350,18 +347,6 @@ func feedbackBindings() []KeyBindingGroup {
 			{Key: "2", Description: "not now", Priority: PriorityAlways},
 			{Key: "3", Description: "needs breakdown", Priority: PriorityIfSpace},
 			{Key: "4", Description: "custom", Priority: PriorityIfSpace},
-		}},
-		{Name: "Display", Bindings: []KeyBinding{
-			{Key: "?", Description: "help", Priority: PriorityAlways},
-		}},
-	}
-}
-
-func improvementBindings() []KeyBindingGroup {
-	return []KeyBindingGroup{
-		{Name: "Actions", Bindings: []KeyBinding{
-			{Key: "enter", Description: "submit", Priority: PriorityAlways},
-			{Key: "esc", Description: "skip", Priority: PriorityAlways},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
 			{Key: "?", Description: "help", Priority: PriorityAlways},

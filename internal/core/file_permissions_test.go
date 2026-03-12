@@ -32,25 +32,6 @@ func TestSyncLogCreatesFileWith0600(t *testing.T) {
 	}
 }
 
-func TestImprovementWriterCreatesFileWith0600(t *testing.T) {
-	t.Parallel()
-	tmpDir := t.TempDir()
-
-	if err := WriteImprovement(tmpDir, "sess-1", "test improvement"); err != nil {
-		t.Fatalf("WriteImprovement: %v", err)
-	}
-
-	info, err := os.Stat(filepath.Join(tmpDir, "improvements.txt"))
-	if err != nil {
-		t.Fatalf("stat: %v", err)
-		return
-	}
-	perm := info.Mode().Perm()
-	if perm != 0o600 {
-		t.Errorf("improvements.txt permissions = %o, want 0600", perm)
-	}
-}
-
 func TestPlanningMetricsCreatesFileWith0600(t *testing.T) {
 	t.Parallel()
 	tmpDir := t.TempDir()

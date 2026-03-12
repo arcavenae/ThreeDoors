@@ -32,7 +32,6 @@ const (
 	ViewAddTask
 	ViewValuesGoals
 	ViewFeedback
-	ViewImprovement
 	ViewNextSteps
 	ViewAvoidancePrompt
 	ViewInsights
@@ -68,8 +67,6 @@ func (v ViewMode) String() string {
 		return "ValuesGoals"
 	case ViewFeedback:
 		return "Feedback"
-	case ViewImprovement:
-		return "Improvement"
 	case ViewNextSteps:
 		return "NextSteps"
 	case ViewAvoidancePrompt:
@@ -115,7 +112,6 @@ type MainModel struct {
 	addTaskView         *AddTaskView
 	valuesView          *ValuesView
 	feedbackView        *FeedbackView
-	improvementView     *ImprovementView
 	nextStepsView       *NextStepsView
 	avoidancePromptView *AvoidancePromptView
 	insightsView        *InsightsView
@@ -426,9 +422,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.feedbackView != nil {
 			m.feedbackView.SetWidth(msg.Width)
-		}
-		if m.improvementView != nil {
-			m.improvementView.SetWidth(msg.Width)
 		}
 		if m.nextStepsView != nil {
 			m.nextStepsView.SetWidth(msg.Width)
@@ -746,30 +739,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, ClearFlashCmd()
 
 	case RequestQuitMsg:
-		// Show improvement prompt if session qualifies (5+ min OR 1+ completions)
-		if m.tracker != nil {
-			metrics := m.tracker.GetMetricsSnapshot()
-			if metrics.TasksCompleted >= 1 || metrics.DurationSeconds() >= 300 {
-				m.improvementView = NewImprovementView()
-				m.improvementView.SetWidth(m.width)
-				m.setViewMode(ViewImprovement)
-				return m, nil
-			}
-		}
-		return m, tea.Quit
-
-	case ImprovementSubmittedMsg:
-		if m.tracker != nil && msg.Text != "" {
-			configDir, err := core.GetConfigDirPath()
-			if err == nil {
-				if writeErr := core.WriteImprovement(configDir, m.tracker.GetSessionID(), msg.Text); writeErr != nil {
-					fmt.Fprintf(os.Stderr, "warning: failed to save improvement: %v\n", writeErr)
-				}
-			}
-		}
-		return m, tea.Quit
-
-	case ImprovementSkippedMsg:
 		return m, tea.Quit
 
 	case ShowNextStepsMsg:
@@ -1362,8 +1331,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateValues(msg)
 	case ViewFeedback:
 		return m.updateFeedback(msg)
-	case ViewImprovement:
-		return m.updateImprovement(msg)
 	case ViewNextSteps:
 		return m.updateNextSteps(msg)
 	case ViewAvoidancePrompt:
@@ -1453,14 +1420,6 @@ func (m *MainModel) updateSnooze(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.snoozeView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateImprovement(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.improvementView == nil {
-		return m, nil
-	}
-	cmd := m.improvementView.Update(msg)
 	return m, cmd
 }
 
@@ -1731,8 +1690,6 @@ func (m *MainModel) isTextInputActive() bool {
 	case ViewSearch:
 		return true
 	case ViewAddTask:
-		return true
-	case ViewImprovement:
 		return true
 	case ViewOnboarding:
 		// Onboarding has text input during the values step
@@ -2144,10 +2101,6 @@ func (m *MainModel) View() string {
 	case ViewFeedback:
 		if m.feedbackView != nil {
 			view = m.feedbackView.View()
-		}
-	case ViewImprovement:
-		if m.improvementView != nil {
-			view = m.improvementView.View()
 		}
 	case ViewNextSteps:
 		if m.nextStepsView != nil {

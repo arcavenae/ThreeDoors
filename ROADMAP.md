@@ -44,6 +44,12 @@ Operationalize merge-queue emergency mode: proactively check push-to-main CI aft
 
 Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-skip rate). Validates Story 0.20 improvements and monitors ADR-0030 re-entry gate for GitHub merge queue.
 
+### Story 0.50: Remove Session Reflection Quit Intercept (P0)
+
+**Status:** Not Started.
+
+Remove the ImprovementView ("Session Reflection") that intercepts quit after productive sessions. Quit must be immediate — no confirmation, no prompt, no second keypress. Reverses Story 3.6. SOUL.md violation (D-165).
+
 ### Story 0.47: Alpha Version Chronological Sorting (P1)
 
 **Status:** Done (PR #523).

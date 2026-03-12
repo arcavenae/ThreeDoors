@@ -18,20 +18,6 @@ func TestSetAgentService(t *testing.T) {
 	}
 }
 
-// --- updateImprovement ---
-
-func TestUpdateImprovement_NilView(t *testing.T) {
-	m := makeModel("task1", "task2", "task3")
-	m.viewMode = ViewImprovement
-	m.improvementView = nil
-
-	_, cmd := m.Update(keyMsg("esc"))
-	if cmd != nil {
-		// nil improvementView should return nil cmd
-		_ = cmd
-	}
-}
-
 // --- updateHealth: transition to health view ---
 
 func TestHealthView_TransitionAndBack(t *testing.T) {
