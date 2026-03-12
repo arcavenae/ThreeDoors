@@ -46,6 +46,7 @@ const (
 	ViewSnooze
 	ViewPlanning
 	ViewSources
+	ViewDisconnect
 )
 
 // String returns the human-readable name of the view mode.
@@ -95,6 +96,8 @@ func (v ViewMode) String() string {
 		return "Planning"
 	case ViewSources:
 		return "Sources"
+	case ViewDisconnect:
+		return "Disconnect"
 	default:
 		return "Unknown"
 	}
@@ -126,6 +129,7 @@ type MainModel struct {
 	snoozeView          *SnoozeView
 	planningView        *PlanningView
 	sourcesView         *SourcesView
+	disconnectDialog    *DisconnectDialog
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -487,6 +491,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.healthView = nil
 		m.insightsView = nil
 		m.sourcesView = nil
+		m.disconnectDialog = nil
 		m.addTaskView = nil
 		m.deferredListView = nil
 		m.doorsView.RefreshDoors()
@@ -537,6 +542,48 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.previousView = m.viewMode
 			m.setViewMode(ViewSources)
 		}
+		return m, nil
+
+	case SourceActionMsg:
+		if msg.Action == "disconnect" && m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				return m, func() tea.Msg {
+					return ShowDisconnectDialogMsg{
+						ConnectionID:    conn.ID,
+						ConnectionLabel: conn.Label,
+					}
+				}
+			}
+		}
+		return m, nil
+
+	case ShowDisconnectDialogMsg:
+		m.disconnectDialog = NewDisconnectDialog(msg.ConnectionID, msg.ConnectionLabel)
+		m.disconnectDialog.SetWidth(m.width)
+		m.previousView = m.viewMode
+		m.setViewMode(ViewDisconnect)
+		return m, nil
+
+	case DisconnectConfirmedMsg:
+		if m.connMgr != nil {
+			_ = m.connMgr.Disconnect(msg.ConnectionID, msg.KeepTasks)
+		}
+		m.disconnectDialog = nil
+		m.setViewMode(ViewSources)
+		if m.sourcesView != nil {
+			m.sourcesView.SetWidth(m.width)
+		}
+		if msg.KeepTasks {
+			m.flash = "Disconnected — tasks kept locally"
+		} else {
+			m.flash = "Disconnected — synced tasks removed"
+		}
+		return m, ClearFlashCmd()
+
+	case DisconnectCancelledMsg:
+		m.disconnectDialog = nil
+		m.setViewMode(ViewSources)
 		return m, nil
 
 	case ReturnToSearchMsg:
@@ -1357,6 +1404,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updatePlanning(msg)
 	case ViewSources:
 		return m.updateSources(msg)
+	case ViewDisconnect:
+		return m.updateDisconnect(msg)
 	}
 
 	return m, nil
@@ -1541,6 +1590,14 @@ func (m *MainModel) updateSources(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.sourcesView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateDisconnect(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.disconnectDialog == nil {
+		return m, nil
+	}
+	cmd := m.disconnectDialog.Update(msg)
 	return m, cmd
 }
 
@@ -2089,6 +2146,10 @@ func (m *MainModel) View() string {
 	case ViewSources:
 		if m.sourcesView != nil {
 			view = m.sourcesView.View()
+		}
+	case ViewDisconnect:
+		if m.disconnectDialog != nil {
+			view = m.disconnectDialog.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {

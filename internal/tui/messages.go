@@ -317,6 +317,21 @@ type SnoozeCancelledMsg struct{}
 // MilestoneDismissMsg dismisses the milestone celebration banner.
 type MilestoneDismissMsg struct{}
 
+// ShowDisconnectDialogMsg is sent to open the disconnect confirmation dialog.
+type ShowDisconnectDialogMsg struct {
+	ConnectionID    string
+	ConnectionLabel string
+}
+
+// DisconnectConfirmedMsg is sent when the user confirms disconnecting a source.
+type DisconnectConfirmedMsg struct {
+	ConnectionID string
+	KeepTasks    bool
+}
+
+// DisconnectCancelledMsg is sent when the user cancels the disconnect dialog.
+type DisconnectCancelledMsg struct{}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

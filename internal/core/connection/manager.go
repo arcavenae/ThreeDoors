@@ -42,11 +42,19 @@ func (m *ConnectionManager) Add(providerName, label string, settings map[string]
 
 // Remove deletes a connection by ID.
 func (m *ConnectionManager) Remove(id string) error {
+	return m.Disconnect(id, false)
+}
+
+// Disconnect removes a connection by ID. If keepTasks is true, the caller
+// should preserve synced tasks locally (strip source attribution). If false,
+// synced tasks should also be removed. The keepTasks preference is returned
+// via DisconnectResult so the caller can act on it.
+func (m *ConnectionManager) Disconnect(id string, keepTasks bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if _, ok := m.connections[id]; !ok {
-		return fmt.Errorf("remove connection %s: %w", id, ErrConnectionNotFound)
+		return fmt.Errorf("disconnect connection %s: %w", id, ErrConnectionNotFound)
 	}
 	delete(m.connections, id)
 	return nil
