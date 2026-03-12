@@ -170,7 +170,7 @@ func TestSeasonalThemes_DistinctVisualIdentity(t *testing.T) {
 
 	outputs := make(map[string]string)
 	for _, theme := range seasonalThemes {
-		outputs[theme.Name] = theme.Render("Test task content", 40, 16, false, "")
+		outputs[theme.Name] = theme.Render("Test task content", 40, 16, false, "", 0.0)
 	}
 
 	for i, a := range seasonalThemes {
@@ -202,7 +202,7 @@ func TestSeasonalThemes_UnicodeSafety(t *testing.T) {
 		t.Run(theme.Name, func(t *testing.T) {
 			t.Parallel()
 
-			output := theme.Render("Test task", 40, 16, false, "")
+			output := theme.Render("Test task", 40, 16, false, "", 0.0)
 
 			for _, r := range output {
 				if r <= 0x007F {

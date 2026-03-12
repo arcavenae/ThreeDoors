@@ -46,14 +46,14 @@ type shojiChars struct {
 	tRght string // right T-junction
 }
 
-func shojiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
-	return func(content string, width int, height int, selected bool, hint string) string {
+func shojiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use existing fixed layout
 		if height < 14 {
 			return shojiCompactRender(content, width, selected, frameColor, selectedColor, hint)
 		}
 
-		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, hint)
+		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, hint, emphasis)
 	}
 }
 
@@ -115,8 +115,9 @@ func shojiCompactRender(content string, width int, selected bool, frameColor, se
 // shojiDoorRender renders the Shoji theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: left uses heavier junctions (double-vert unselected, heavy selected),
 // right uses standard-weight junctions.
-func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string) string {
+func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string, emphasis float64) string {
 	anatomy := NewDoorAnatomy(height)
+	cracked := isCracked(selected, emphasis)
 
 	color := frameColor
 	// Left (hinge) and right (opening) character sets
@@ -142,9 +143,18 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		cross = "┼"
 		h = "─"
 	}
+
+	if cracked {
+		openTop = crackTR
+		openBot = crackBR
+		openV = crackV
+	}
 	style := lipgloss.NewStyle().Foreground(color)
 
 	innerW := width - 2
+	if cracked {
+		innerW = width - 3 // reduce for shade column
+	}
 	if innerW < 1 {
 		innerW = 1
 	}
@@ -159,8 +169,13 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 
 	crossPos := innerW / 2
 
+	shade := ""
+	if cracked {
+		shade = crackShade
+	}
+
 	// Helper for empty row with hinge asymmetry
-	emptyRow := style.Render(hingeV) + strings.Repeat(" ", innerW) + style.Render(openV)
+	emptyRow := style.Render(hingeV) + strings.Repeat(" ", innerW) + style.Render(openV) + shade
 
 	// Helper for content row with hinge asymmetry
 	contentRow := func(text string) string {
@@ -177,7 +192,7 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		if rightPad < 0 {
 			rightPad = 0
 		}
-		return style.Render(hingeV) + " " + text + strings.Repeat(" ", rightPad) + " " + style.Render(openV)
+		return style.Render(hingeV) + " " + text + strings.Repeat(" ", rightPad) + " " + style.Render(openV) + shade
 	}
 
 	// Helper for horizontal bar with hinge asymmetry
@@ -212,36 +227,29 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Top rail: hinge left, standard right
-			fmt.Fprintf(&b, "%s", style.Render(hingeTop+strings.Repeat(h, innerW)+openTop))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTop+strings.Repeat(h, innerW)+openTop), shade)
 
 		case row == latticeBarRow:
-			// Lattice bar above content
-			fmt.Fprintf(&b, "%s", hBar())
+			fmt.Fprintf(&b, "%s%s", hBar(), shade)
 
 		case row == anatomy.PanelDivider:
-			// Mid-cross bar at panel divider
-			fmt.Fprintf(&b, "%s", crossBar())
+			fmt.Fprintf(&b, "%s%s", crossBar(), shade)
 
 		case row == anatomy.HandleRow:
-			// Handle row: ○ at rightmost content column
 			knobPad := innerW - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(innerW, knobPad, "○", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
 
 		case row == latticeBar2Row:
-			// Lattice bar below handle
-			fmt.Fprintf(&b, "%s", hBar())
+			fmt.Fprintf(&b, "%s%s", hBar(), shade)
 
 		case row == anatomy.ThresholdRow:
-			// Bottom rail: hinge left, standard right
-			fmt.Fprintf(&b, "%s", style.Render(hingeBot+strings.Repeat(h, innerW)+openBot))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeBot+strings.Repeat(h, innerW)+openBot), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
-			// Content area
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				fmt.Fprintf(&b, "%s", contentRow(contentLines[lineIdx]))
@@ -250,7 +258,6 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 			}
 
 		default:
-			// Empty pane row
 			fmt.Fprintf(&b, "%s", emptyRow)
 		}
 
@@ -262,6 +269,9 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	// Threshold line below the door
 	fmt.Fprintf(&b, "\n%s", style.Render(strings.Repeat("▔", width)))
 
+	if cracked {
+		return ApplyShadowWithCrack(b.String(), width, 19, selected)
+	}
 	return ApplyShadow(b.String(), width, 19, selected)
 }
 

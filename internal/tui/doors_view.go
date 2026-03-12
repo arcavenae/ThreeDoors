@@ -439,9 +439,17 @@ func (dv *DoorsView) View() string {
 			hint = renderDoorHint(doorHintKeys[i], true, isSelected, hasSelection)
 		}
 
+		// Compute emphasis for this door (for crack-of-light and spring sync)
+		doorEmphasis := 0.0
+		if dv.doorAnimation != nil {
+			doorEmphasis = dv.doorAnimation.Emphasis(i)
+		} else if isSelected {
+			doorEmphasis = 1.0
+		}
+
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
-			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected, hint))
+			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected, hint, doorEmphasis))
 		} else if animating {
 			// Spring-interpolated border color based on emphasis
 			emphasis := dv.doorAnimation.Emphasis(i)

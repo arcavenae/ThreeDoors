@@ -36,8 +36,8 @@ func NewModernTheme() *DoorTheme {
 	}
 }
 
-func modernRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
-	return func(content string, width int, height int, selected bool, hint string) string {
+func modernRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
 		vChar := "│"
@@ -60,7 +60,7 @@ func modernRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint)
+		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis)
 	}
 }
 
@@ -122,8 +122,9 @@ func modernCompact(content string, inner int, hChar, vChar string, style lipglos
 	return b.String()
 }
 
-func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string) string {
+func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
 	anatomy := NewDoorAnatomy(height)
+	cracked := isCracked(selected, emphasis)
 
 	// Word-wrap content with 3-char padding on each side
 	contentWidth := inner - 6
@@ -150,10 +151,23 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 		hingeTee, openTee = "╟", "┤"
 	}
 
+	if cracked {
+		openTR = crackTR
+		openBR = crackBR
+		openV = crackV
+		inner--
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
 	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+
+	shade := ""
+	if cracked {
+		shade = crackShade
+		blankLine += crackShade
+	}
 
 	// Panel divider always uses thin line for minimalist look
 	thinH := "─"
@@ -161,29 +175,24 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			// Top border: hinge corner left, minimalist right
-			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
 
 		case row == anatomy.PanelDivider:
-			// Minimalist panel divider: thin line regardless of selection
 			divBar := strings.Repeat(thinH, inner)
-			fmt.Fprintf(&b, "%s", style.Render(hingeTee+divBar+openTee))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+divBar+openTee), shade)
 
 		case row == anatomy.HandleRow:
-			// Minimalist handle: ○ at rightmost content column
 			knobPad := inner - 1
 			if knobPad < 1 {
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "○", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
-			// Bottom border: hinge corner left, minimalist right
-			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
-			// Content area with 3-char left padding
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
@@ -192,17 +201,17 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 				if padding < 0 {
 					padding = 0
 				}
-				fmt.Fprintf(&b, "%s%s%s",
+				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
 					style.Render(openV),
+					shade,
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)
 			}
 
 		default:
-			// Blank interior row
 			fmt.Fprintf(&b, "%s", blankLine)
 		}
 
@@ -215,5 +224,8 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	threshold := strings.Repeat("▔", width)
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
+	if cracked {
+		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+	}
 	return ApplyShadow(b.String(), width, 15, selected)
 }

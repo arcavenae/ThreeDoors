@@ -37,8 +37,8 @@ func NewAutumnTheme() *DoorTheme {
 	}
 }
 
-func autumnRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string) string {
-	return func(content string, width int, height int, selected bool, hint string) string {
+func autumnRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
 		vChar := "│"
@@ -62,7 +62,7 @@ func autumnRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 			return autumnCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint)
+		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis)
 	}
 }
 
@@ -118,8 +118,9 @@ func autumnCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string) string {
+func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
 	anatomy := NewDoorAnatomy(height)
+	cracked := isCracked(selected, emphasis)
 
 	contentWidth := inner - 6
 	if contentWidth < 1 {
@@ -145,10 +146,23 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 		hingeTee, openTee = "╟", "┤"
 	}
 
+	if cracked {
+		openTR = crackTR
+		openBR = crackBR
+		openV = crackV
+		inner--
+	}
+
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
 	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+
+	shade := ""
+	if cracked {
+		shade = crackShade
+		blankLine += crackShade
+	}
 
 	// Layered block texture rows using ▒ and ▓
 	textureTopRow := anatomy.LintelRow + 1
@@ -165,14 +179,13 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	for row := 0; row < height; row++ {
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s", style.Render(hingeTL+hBar+openTR))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
 
 		case row == textureTopRow:
-			// Light block texture below lintel
-			fmt.Fprintf(&b, "%s", textureRow("▒"))
+			fmt.Fprintf(&b, "%s%s", textureRow("▒"), shade)
 
 		case row == anatomy.PanelDivider:
-			fmt.Fprintf(&b, "%s", style.Render(hingeTee+hBar+openTee))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+hBar+openTee), shade)
 
 		case row == anatomy.HandleRow:
 			knobPad := inner - 1
@@ -180,14 +193,13 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 				knobPad = 1
 			}
 			knobLine := renderHandleWithHint(inner, knobPad, "●", hint)
-			fmt.Fprintf(&b, "%s%s%s", style.Render(hingeV), knobLine, style.Render(openV))
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
 
 		case row == textureBotRow:
-			// Dense block texture above threshold
-			fmt.Fprintf(&b, "%s", textureRow("▓"))
+			fmt.Fprintf(&b, "%s%s", textureRow("▓"), shade)
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s", style.Render(hingeBL+hBar+openBR))
+			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -198,10 +210,11 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 				if padding < 0 {
 					padding = 0
 				}
-				fmt.Fprintf(&b, "%s%s%s",
+				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
 					"   "+line+strings.Repeat(" ", padding),
 					style.Render(openV),
+					shade,
 				)
 			} else {
 				fmt.Fprintf(&b, "%s", blankLine)
@@ -220,5 +233,8 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	threshold := strings.Repeat("▒", width)
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
+	if cracked {
+		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+	}
 	return ApplyShadow(b.String(), width, 15, selected)
 }

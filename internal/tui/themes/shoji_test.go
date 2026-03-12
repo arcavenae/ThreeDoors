@@ -44,7 +44,7 @@ func TestShojiRenderContainsContent(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Clean up backlog", 30, 0, false, "")
+	output := theme.Render("Clean up backlog", 30, 0, false, "", 0.0)
 
 	if !strings.Contains(output, "Clean up") {
 		t.Errorf("output should contain content text, got:\n%s", output)
@@ -55,7 +55,7 @@ func TestShojiRenderHasLatticePattern(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 
 	// Single cross junction on mid-cross bar (AC3)
 	if !strings.Contains(output, "┼") {
@@ -73,7 +73,7 @@ func TestShojiRenderFewLatticeColumns(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 	lines := strings.Split(output, "\n")
 
 	// AC1: no more than 3-4 columns — with the new design the side frame
@@ -94,7 +94,7 @@ func TestShojiRenderHasTopBottomRails(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 	lines := strings.Split(output, "\n")
 
 	if len(lines) < 3 {
@@ -114,7 +114,7 @@ func TestShojiRenderHasEdgeConnectors(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 
 	if !strings.Contains(output, "├") {
 		t.Error("shoji theme should have left edge connectors (├)")
@@ -128,8 +128,8 @@ func TestShojiRenderSelectedDiffers(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	unselected := theme.Render("Task", 30, 0, false, "")
-	selected := theme.Render("Task", 30, 0, true, "")
+	unselected := theme.Render("Task", 30, 0, false, "", 0.0)
+	selected := theme.Render("Task", 30, 0, true, "", 0.0)
 
 	if selected == unselected {
 		t.Error("selected and unselected output should differ")
@@ -143,7 +143,7 @@ func TestShojiRenderSelectedHasHeavyChars(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	selected := theme.Render("Task", 30, 0, true, "")
+	selected := theme.Render("Task", 30, 0, true, "", 0.0)
 
 	// AC4: selected state uses heavy characters
 	if !strings.Contains(selected, "━") {
@@ -181,7 +181,7 @@ func TestShojiRenderVaryingWidths(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			output := theme.Render("Task text", tt.width, 0, false, "")
+			output := theme.Render("Task text", tt.width, 0, false, "", 0.0)
 			if output == "" {
 				t.Error("output should not be empty")
 			}
@@ -197,7 +197,7 @@ func TestShojiRenderWordWraps(t *testing.T) {
 
 	theme := NewShojiTheme()
 	longText := "This is a very long task description that should definitely be wrapped across multiple lines"
-	output := theme.Render(longText, 30, 0, false, "")
+	output := theme.Render(longText, 30, 0, false, "", 0.0)
 
 	lines := strings.Split(output, "\n")
 	if len(lines) < 5 {
@@ -209,7 +209,7 @@ func TestShojiRenderUnicodeInAllowedRanges(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Test", 30, 0, false, "")
+	output := theme.Render("Test", 30, 0, false, "", 0.0)
 
 	for _, r := range output {
 		if r <= 0x7F || r == '\n' {
@@ -228,7 +228,7 @@ func TestShojiRenderConsistentLineWidths(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 	lines := strings.Split(output, "\n")
 
 	if len(lines) < 3 {
@@ -250,7 +250,7 @@ func TestShojiRenderContentWidth(t *testing.T) {
 	theme := NewShojiTheme()
 
 	// AC5: minimum 15 chars of usable text width at MinWidth
-	output := theme.Render("exactly15charss", theme.MinWidth, 0, false, "")
+	output := theme.Render("exactly15charss", theme.MinWidth, 0, false, "", 0.0)
 	if !strings.Contains(output, "exactly15charss") {
 		t.Errorf("at MinWidth %d, should fit 15+ chars of text, got:\n%s", theme.MinWidth, output)
 	}
@@ -260,7 +260,7 @@ func TestShojiRenderContentDominates(t *testing.T) {
 	t.Parallel()
 
 	theme := NewShojiTheme()
-	output := theme.Render("Task", 28, 0, false, "")
+	output := theme.Render("Task", 28, 0, false, "", 0.0)
 	lines := strings.Split(output, "\n")
 
 	// AC2: content-to-decoration ratio favors content
