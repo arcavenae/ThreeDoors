@@ -55,6 +55,7 @@ const (
 	ViewBugReport
 	ViewBreakdown
 	ViewExtract
+	ViewOrphaned
 )
 
 // String returns the human-readable name of the view mode.
@@ -120,6 +121,8 @@ func (v ViewMode) String() string {
 		return "Breakdown"
 	case ViewExtract:
 		return "Extract"
+	case ViewOrphaned:
+		return "Orphaned"
 	default:
 		return "Unknown"
 	}
@@ -159,6 +162,7 @@ type MainModel struct {
 	bugReportView       *BugReportView
 	breakdownView       *BreakdownView
 	extractView         *ExtractView
+	orphanedView        *OrphanedView
 	breakdownService    *services.BreakdownService
 	extractor           *services.TaskExtractor
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
@@ -531,6 +535,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.sourceDetailView.SetWidth(msg.Width)
 			m.sourceDetailView.SetHeight(msg.Height)
 		}
+		if m.orphanedView != nil {
+			m.orphanedView.SetWidth(msg.Width)
+			m.orphanedView.SetHeight(msg.Height)
+		}
 		if m.disconnectDialog != nil {
 			m.disconnectDialog.SetWidth(msg.Width)
 			m.disconnectDialog.SetHeight(msg.Height)
@@ -618,6 +626,59 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		milestoneCmd := m.insightsView.CheckAndShowMilestone(totalTasks, currentStreak, sessionCount)
 		cmd := tea.Batch(animCmd, milestoneCmd)
 		return m, cmd
+
+	case ShowOrphanedMsg:
+		m.orphanedView = NewOrphanedView(m.pool)
+		m.orphanedView.SetWidth(m.width)
+		m.orphanedView.SetHeight(m.height)
+		m.previousView = m.viewMode
+		m.setViewMode(ViewOrphaned)
+		return m, nil
+
+	case OrphanedTaskActionMsg:
+		switch msg.Action {
+		case "keep":
+			kept := m.pool.KeepOrphanedTask(msg.TaskID)
+			if kept != nil {
+				if err := m.saveTasks(); err != nil {
+					log.Printf("save after orphan keep: %v", err)
+				}
+				if m.orphanedView != nil {
+					m.orphanedView.refreshTasks()
+				}
+				if len(m.pool.GetOrphanedTasks()) == 0 {
+					m.setViewMode(ViewDoors)
+					return m, func() tea.Msg {
+						return FlashMsg{Text: fmt.Sprintf("Kept '%s' as local task. No more orphaned tasks.", kept.Text)}
+					}
+				}
+				return m, func() tea.Msg {
+					return FlashMsg{Text: fmt.Sprintf("Kept '%s' as local task.", kept.Text)}
+				}
+			}
+		case "delete":
+			task := m.pool.GetTask(msg.TaskID)
+			if task != nil {
+				text := task.Text
+				m.pool.RemoveTask(msg.TaskID)
+				if err := m.saveTasks(); err != nil {
+					log.Printf("save after orphan delete: %v", err)
+				}
+				if m.orphanedView != nil {
+					m.orphanedView.refreshTasks()
+				}
+				if len(m.pool.GetOrphanedTasks()) == 0 {
+					m.setViewMode(ViewDoors)
+					return m, func() tea.Msg {
+						return FlashMsg{Text: fmt.Sprintf("Deleted '%s'. No more orphaned tasks.", text)}
+					}
+				}
+				return m, func() tea.Msg {
+					return FlashMsg{Text: fmt.Sprintf("Deleted '%s'.", text)}
+				}
+			}
+		}
+		return m, nil
 
 	case ShowSourcesMsg:
 		if m.connMgr != nil {
@@ -1782,6 +1843,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSnooze(msg)
 	case ViewPlanning:
 		return m.updatePlanning(msg)
+	case ViewOrphaned:
+		return m.updateOrphaned(msg)
 	case ViewSources:
 		return m.updateSources(msg)
 	case ViewSourceDetail:
@@ -1984,6 +2047,14 @@ func (m *MainModel) updateInsights(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.insightsView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateOrphaned(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.orphanedView == nil {
+		return m, nil
+	}
+	cmd := m.orphanedView.Update(msg)
 	return m, cmd
 }
 
@@ -2680,6 +2751,10 @@ func (m *MainModel) View() string {
 	case ViewInsights:
 		if m.insightsView != nil {
 			view = m.insightsView.View()
+		}
+	case ViewOrphaned:
+		if m.orphanedView != nil {
+			view = m.orphanedView.View()
 		}
 	case ViewSources:
 		if m.sourcesView != nil {

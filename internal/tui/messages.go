@@ -428,6 +428,15 @@ type ExtractImportMsg struct {
 // ExtractCancelMsg is sent when the user cancels the extraction flow.
 type ExtractCancelMsg struct{}
 
+// ShowOrphanedMsg is sent to open the orphaned tasks view.
+type ShowOrphanedMsg struct{}
+
+// OrphanedTaskActionMsg is sent when the user acts on an orphaned task.
+type OrphanedTaskActionMsg struct {
+	TaskID string
+	Action string // "keep" or "delete"
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

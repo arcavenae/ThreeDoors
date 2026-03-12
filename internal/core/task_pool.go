@@ -76,21 +76,27 @@ func (tp *TaskPool) GetTasksByStatus(status TaskStatus) []*Task {
 }
 
 // GetAvailableForDoors returns tasks eligible for door selection.
-// Eligible: status is todo, blocked, or in-progress, not recently shown,
-// and not blocked by unmet dependencies.
+// Eligible: status is todo, blocked, or in-progress, not orphaned,
+// not recently shown, and not blocked by unmet dependencies.
 func (tp *TaskPool) GetAvailableForDoors() []*Task {
 	var result []*Task
 	for _, t := range tp.tasks {
+		if t.Orphaned {
+			continue
+		}
 		if t.Status == StatusTodo || t.Status == StatusBlocked || t.Status == StatusInProgress {
 			if !tp.IsRecentlyShown(t.ID) && !HasUnmetDependencies(t, tp) {
 				result = append(result, t)
 			}
 		}
 	}
-	// If not enough non-recent tasks, include recently shown ones (still excluding dependency-blocked)
+	// If not enough non-recent tasks, include recently shown ones (still excluding dependency-blocked and orphaned)
 	if len(result) < 3 {
 		result = nil
 		for _, t := range tp.tasks {
+			if t.Orphaned {
+				continue
+			}
 			if t.Status == StatusTodo || t.Status == StatusBlocked || t.Status == StatusInProgress {
 				if !HasUnmetDependencies(t, tp) {
 					result = append(result, t)
@@ -99,6 +105,33 @@ func (tp *TaskPool) GetAvailableForDoors() []*Task {
 		}
 	}
 	return result
+}
+
+// GetOrphanedTasks returns all tasks marked as orphaned.
+func (tp *TaskPool) GetOrphanedTasks() []*Task {
+	var result []*Task
+	for _, t := range tp.tasks {
+		if t.Orphaned {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+// KeepOrphanedTask converts an orphaned task to a local-only task by clearing
+// orphaned flags and removing source attribution.
+func (tp *TaskPool) KeepOrphanedTask(id string) *Task {
+	task := tp.GetTask(id)
+	if task == nil || !task.Orphaned {
+		return nil
+	}
+	task.Orphaned = false
+	task.OrphanedAt = nil
+	task.SourceProvider = ""
+	task.SourceRefs = nil
+	task.UpdatedAt = time.Now().UTC()
+	tp.UpdateTask(task)
+	return task
 }
 
 // MarkRecentlyShown adds a task ID to the recently shown ring buffer.
