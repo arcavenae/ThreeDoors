@@ -405,6 +405,20 @@ Transform ThreeDoors from a content-driven partial-terminal app into a full-term
 
 **Note:** Story 59.1 is a prerequisite for Story 39.2 (keybinding bar footer slot) per D-121.
 
+### Epic 60: README Overhaul (P2) — 1/5 stories done
+
+Polish the README with centered badge clusters, table of contents, foldable reference sections, updated feature list reflecting 35+ completed epics, and visual demo section with ASCII art mockup.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 60.1 | README Badges & Header Polish | Done (PR #604) | P2 | None |
+| 60.2 | README Table of Contents | Not Started | P2 | None |
+| 60.3 | Foldable Reference Sections | Not Started | P2 | None |
+| 60.4 | Feature List Audit & Update | Not Started | P2 | None |
+| 60.5 | Visual Demo Section | Not Started | P2 | 60.4 |
+
+**Dependency graph:** Stories 60.1-60.4 can parallelize. Story 60.5 depends on 60.4.
+
 ## Icebox (Deferred Indefinitely)
 
 | Epic | Title | Stories | Decision Date | Rationale |
