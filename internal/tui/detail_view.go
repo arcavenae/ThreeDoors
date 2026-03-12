@@ -199,15 +199,13 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		task := dv.task
 		return func() tea.Msg { return ShowSnoozeMsg{Task: task} }
 	case "g", "G":
-		if dv.agentService == nil {
-			return func() tea.Msg { return FlashMsg{Text: "LLM not configured"} }
-		}
 		desc := strings.TrimSpace(dv.task.Text)
 		if desc == "" {
-			return func() tea.Msg { return FlashMsg{Text: "Task has no description to decompose"} }
+			return func() tea.Msg { return FlashMsg{Text: "Task has no description to break down"} }
 		}
+		task := dv.task
 		return func() tea.Msg {
-			return DecomposeStartMsg{TaskID: dv.task.ID, TaskDescription: desc}
+			return BreakdownStartMsg{Task: task}
 		}
 	case "+":
 		if dv.pool == nil {
@@ -725,9 +723,7 @@ func (dv *DetailView) View() string {
 			if len(dv.crossRefs) > 0 {
 				parts = append(parts, h("x")+" Xrefs")
 			}
-			if dv.agentService != nil {
-				parts = append(parts, h("g")+" Decompose")
-			}
+			parts = append(parts, h("g")+" Breakdown")
 			if dv.isDuplicate && dv.dedupStore != nil {
 				parts = append(parts, h("d")+" Dismiss-dup")
 				parts = append(parts, h("y")+" Merge-dup")
@@ -749,10 +745,7 @@ func (dv *DetailView) View() string {
 			if len(dv.crossRefs) > 0 {
 				browseHint = " [X]refs"
 			}
-			decomposeHint := ""
-			if dv.agentService != nil {
-				decomposeHint = " [G]enerate stories"
-			}
+			breakdownHint := " [G]breakdown"
 			dupHint := ""
 			if dv.isDuplicate && dv.dedupStore != nil {
 				dupHint = " [D]ismiss-dup [Y]es-merge"
@@ -769,7 +762,7 @@ func (dv *DetailView) View() string {
 			if dv.pool != nil {
 				depHint = " [+]dep [-]dep"
 			}
-			s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + decomposeHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
+			s.WriteString(helpStyle.Render("[C]omplete [B]locked [I]n-progress [E]xpand [F]ork [P]rocrastinate [R]ework [M]ood [Z]Snooze" + undoHint + linkHint + browseHint + breakdownHint + dupHint + dispatchHint + depHint + " [Esc]Back"))
 		}
 	}
 

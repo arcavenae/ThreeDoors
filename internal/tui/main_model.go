@@ -14,6 +14,7 @@ import (
 	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
+	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
 	"github.com/arcaven/ThreeDoors/internal/mcp"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -52,6 +53,7 @@ const (
 	ViewDisconnect
 	ViewImport
 	ViewBugReport
+	ViewBreakdown
 )
 
 // String returns the human-readable name of the view mode.
@@ -113,6 +115,8 @@ func (v ViewMode) String() string {
 		return "Import"
 	case ViewBugReport:
 		return "BugReport"
+	case ViewBreakdown:
+		return "Breakdown"
 	default:
 		return "Unknown"
 	}
@@ -150,6 +154,8 @@ type MainModel struct {
 	disconnectDialog    *DisconnectDialog
 	importView          *ImportView
 	bugReportView       *BugReportView
+	breakdownView       *BreakdownView
+	breakdownService    *services.BreakdownService
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -1125,6 +1131,52 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.flash = fmt.Sprintf("Decomposed into %d stories", len(msg.Result.Stories))
 		return m, ClearFlashCmd()
 
+	case BreakdownStartMsg:
+		if m.breakdownService == nil {
+			m.flash = "LLM not configured for breakdown"
+			return m, ClearFlashCmd()
+		}
+		bv := NewBreakdownViewLoading(msg.Task)
+		bv.SetWidth(m.width)
+		m.breakdownView = bv
+		m.previousView = m.viewMode
+		m.setViewMode(ViewBreakdown)
+		return m, m.runBreakdown(msg.Task)
+
+	case BreakdownResultMsg:
+		if m.breakdownView == nil {
+			return m, nil
+		}
+		if msg.Err != nil {
+			m.breakdownView.SetError(msg.Err.Error())
+			return m, nil
+		}
+		m.breakdownView.SetResult(msg.Result)
+		return m, nil
+
+	case BreakdownImportMsg:
+		var tasks []*core.Task
+		for _, st := range msg.Subtasks {
+			t := core.NewTask(st.Text)
+			tasks = append(tasks, t)
+		}
+		for _, t := range tasks {
+			m.pool.AddTask(t)
+		}
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		m.breakdownView = nil
+		m.setViewMode(ViewDoors)
+		m.doorsView.RefreshDoors()
+		m.flash = fmt.Sprintf("Imported %d subtasks", len(tasks))
+		return m, ClearFlashCmd()
+
+	case BreakdownCancelMsg:
+		m.breakdownView = nil
+		m.setViewMode(m.previousView)
+		return m, nil
+
 	case SyncConflictMsg:
 		cv := NewConflictView(msg.ConflictSet, m.syncLog)
 		cv.SetWidth(m.width)
@@ -1584,6 +1636,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateImport(msg)
 	case ViewBugReport:
 		return m.updateBugReport(msg)
+	case ViewBreakdown:
+		return m.updateBreakdown(msg)
 	}
 
 	return m, nil
@@ -1816,6 +1870,14 @@ func (m *MainModel) updateBugReport(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.bugReportView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateBreakdown(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.breakdownView == nil {
+		return m, nil
+	}
+	cmd := m.breakdownView.Update(msg)
 	return m, cmd
 }
 
@@ -2332,6 +2394,29 @@ func (m *MainModel) runDecompose(taskID, taskDescription string) tea.Cmd {
 	}
 }
 
+// runBreakdown returns a tea.Cmd that runs LLM task breakdown asynchronously.
+func (m *MainModel) runBreakdown(task *core.Task) tea.Cmd {
+	svc := m.breakdownService
+	taskID := task.ID
+	taskDesc := task.Text
+	return func() tea.Msg {
+		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+		defer cancel()
+
+		result, err := svc.Breakdown(ctx, taskID, taskDesc)
+		return BreakdownResultMsg{
+			TaskID: taskID,
+			Result: result,
+			Err:    err,
+		}
+	}
+}
+
+// SetBreakdownService sets the breakdown service for LLM task breakdown.
+func (m *MainModel) SetBreakdownService(svc *services.BreakdownService) {
+	m.breakdownService = svc
+}
+
 // View implements tea.Model.
 func (m *MainModel) View() string {
 	// Overlay takes over the entire screen when visible.
@@ -2453,6 +2538,10 @@ func (m *MainModel) View() string {
 	case ViewPlanning:
 		if m.planningView != nil {
 			view = m.planningView.View()
+		}
+	case ViewBreakdown:
+		if m.breakdownView != nil {
+			view = m.breakdownView.View()
 		}
 	default:
 		view = m.doorsView.View()

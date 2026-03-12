@@ -21,6 +21,7 @@ type commandDef struct {
 var commandRegistry = []commandDef{
 	{"add", "Create a new task"},
 	{"add-ctx", "Add task with context (why it matters)"},
+	{"breakdown", "Break down a task into subtasks"},
 	{"bug", "Report a bug"},
 	{"dashboard", "Open insights dashboard"},
 	{"deferred", "View deferred/snoozed tasks"},
@@ -320,6 +321,11 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "plan":
 		return func() tea.Msg {
 			return ShowPlanningMsg{}
+		}
+
+	case "breakdown":
+		return func() tea.Msg {
+			return FlashMsg{Text: "Use 'g' in task detail view to break down a task."}
 		}
 
 	case "bug":
