@@ -691,7 +691,23 @@
 - **Research:** See `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
 - **Decisions:** D-166 (CI Optimization Phase 1 scope and rejected alternatives)
 
-**Epic 56+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation** (P2)
+- **Goal:** Detect supervisor context window degradation via daemon monitoring, serialize operational state, and transfer control to a fresh supervisor instance while workers continue uninterrupted
+- **Prerequisites:** None (multiclaude daemon infrastructure already exists)
+- **Status:** Not Started
+- **Deliverables:**
+  - Shift clock: daemon-side transcript monitoring with three-tier thresholds (green/yellow/red), hybrid time floor + usage ceiling
+  - Rolling state snapshot: daemon-maintained YAML with worker state, persistent agent status, open PRs (updated every 5 min from external sources)
+  - Handover orchestrator: 5-step protocol (request → delta → spawn → ready → kill) with daemon as authority mutex
+  - Supervisor startup with state file: incoming supervisor reads shift-state.yaml, pings workers, signals READY
+  - Emergency handover: 120s timeout force-kill for unresponsive supervisors, full worker audit by incoming
+  - Handover history: archived state files, JSONL event log, anomaly alerting
+  - Manual trigger: `multiclaude supervisor handover` command with anti-oscillation override
+- **Stories:** 58.1-58.7 (7 stories, 2 phases: MVP 58.1-58.4, Hardening 58.5-58.7)
+- **Research:** See `_bmad-output/planning-artifacts/supervisor-shift-handover/` (5 party mode sessions + synthesis)
+- **Decisions:** D-167 (external monitoring), D-168 (cold start), D-169 (rolling snapshot), D-170 (hybrid shift clock), D-171 (role-based addressing)
+
+**Epic 59+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -758,5 +774,6 @@
 | Epic 53: Remote Collaboration | 5 | Not Started |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
-| **Total** | **291** | **152 complete, 9 epics in progress, 131 not started** |
+| Epic 58: Supervisor Shift Handover | 7 | Not Started |
+| **Total** | **298** | **152 complete, 9 epics in progress, 138 not started** |
 ---

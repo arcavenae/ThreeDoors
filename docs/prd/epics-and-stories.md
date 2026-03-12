@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 49, 52 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 45 (4/5), Epic 48 (3/4), Epic 55 (2/3) IN PROGRESS. Epics 46-47, 50-51, 53-54 NOT STARTED or IN PROGRESS. 585+ merged PRs total. Last audit: 2026-03-12.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (1/4), Epic 51 (5/10), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 58 NOT STARTED or IN PROGRESS. 590+ merged PRs total. Last audit: 2026-03-12.
 
 ## Requirements Inventory
 
@@ -5364,3 +5364,177 @@ All three stories are fully independent and can be implemented in parallel.
 
 - Full research: `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
 - Synthesis: `_bmad-output/planning-artifacts/ci-test-optimization/05-synthesis-optimization-roadmap.md`
+
+## Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation (P2)
+
+**Goal:** Detect supervisor context window degradation via daemon monitoring, serialize operational state, and transfer control to a fresh supervisor instance — all while workers continue uninterrupted.
+
+**Prerequisites:** None (multiclaude daemon infrastructure already exists)
+
+**Status:** Not Started (0/7 stories)
+
+**Phasing:**
+- Phase 1 (MVP): Stories 58.1-58.4 — Shift clock, rolling snapshot, handover orchestrator, supervisor startup
+- Phase 2 (Hardening): Stories 58.5-58.7 — Emergency protocol, audit trail, manual trigger
+
+### Story 58.1: Shift Clock — Transcript Monitoring in Daemon Refresh Loop
+
+**As a** multiclaude daemon, **I want to** monitor the supervisor's JSONL transcript for context window utilization signals, **so that** I can detect when the supervisor is approaching degradation and trigger a handover.
+
+**Acceptance Criteria:**
+- Locates supervisor's active JSONL transcript file
+- Collects three metrics: file size (bytes), compression event count, assistant message count
+- Classifies session as Green/Yellow/Red zone using three-tier thresholds
+- Enforces 30-minute time floor (no premature handover)
+- Anti-oscillation: 30-minute minimum between handovers
+- Natural seam detection: waits for task boundary (no active dispatches, no pending acks)
+- Writes signal file when handover conditions met
+
+**Technical Notes:**
+- Shell script in daemon's existing 5-minute refresh loop
+- No Go code changes needed for v1
+- Thresholds: Yellow at compression count >= 3 or JSONL > 5MB; Red at >= 6 or > 10MB
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 58.2: Rolling State Snapshot Generator
+
+**As a** multiclaude daemon, **I want to** maintain a rolling snapshot of system state from external sources, **so that** incoming supervisors have immediate operational context without relying on a potentially degraded outgoing supervisor.
+
+**Acceptance Criteria:**
+- Produces YAML file at `~/.multiclaude/handover/<repo>/shift-state.yaml`
+- Contains worker state (name, task, branch, PR, dispatch time)
+- Contains persistent agent status (from tmux session list)
+- Contains open PR list (number, title, CI status)
+- Schema versioned (`version: 1`) with UTC ISO-8601 timestamps
+- Warns if file exceeds 10KB
+- Atomic writes (write to .tmp, rename)
+- Preserves existing supervisor delta sections when updating observable state
+
+**Technical Notes:**
+- Shell script in daemon's existing refresh loop
+- Data sources: `multiclaude worker list`, `gh pr list`, `tmux list-windows`
+
+**Priority:** P2 | **Depends On:** None
+
+### Story 58.3: Handover Orchestrator — Daemon Coordination Logic
+
+**As a** multiclaude daemon, **I want to** orchestrate the full handover sequence from outgoing to incoming supervisor, **so that** authority transfers cleanly without message loss, split-brain, or worker disruption.
+
+**Acceptance Criteria:**
+- Detects handover signal file and removes it to prevent re-triggering
+- Sends HANDOVER_REQUESTED to outgoing supervisor
+- Waits up to 120s for HANDOVER_COMPLETE (stubs emergency path for 58.5)
+- Spawns incoming supervisor with state file reference
+- Waits up to 180s for incoming READY signal
+- Kills outgoing supervisor after incoming confirms ready
+- At no point: zero supervisors watching, or two supervisors dispatching
+- Records handover metadata (timing, type, anomalies)
+
+**Technical Notes:**
+- Shell script extending daemon's existing bash logic
+- Authority transfer implicit via tmux window replacement
+- File-based messaging survives supervisor lifecycle transitions
+
+**Priority:** P2 | **Depends On:** 58.1, 58.2
+
+### Story 58.4: Supervisor Startup with State File
+
+**As an** incoming supervisor agent, **I want to** read a shift-state.yaml file on startup and assume operational control, **so that** I can seamlessly continue managing workers and agents without losing context.
+
+**Acceptance Criteria:**
+- Detects SHIFT_HANDOVER task and reads shift-state.yaml
+- Knows each active worker's name, task, branch, and last status
+- Pings each active worker for status verification
+- Adopts priorities from state file
+- Tracks unresolved pending decisions
+- Processes all unacknowledged messages before accepting new work
+- Signals READY to daemon
+- Operates correctly with daemon-only snapshot (no supervisor delta) in emergency mode
+
+**Technical Notes:**
+- Modifies supervisor agent definition (`agents/supervisor.md`)
+- Conditional startup branch: SHIFT_HANDOVER vs normal startup
+- Worker pings are non-blocking
+
+**Priority:** P2 | **Depends On:** 58.2, 58.3
+
+### Story 58.5: Emergency Handover Protocol
+
+**As a** multiclaude daemon, **I want to** handle the case where the outgoing supervisor is unresponsive during handover, **so that** the system never gets permanently stuck due to a broken supervisor.
+
+**Acceptance Criteria:**
+- Emergency protocol activates after 120s timeout
+- Force-kills outgoing supervisor (tmux session and Claude process)
+- Spawns incoming with emergency flag
+- Incoming does full worker audit (pings ALL workers, checks ALL PRs, reconciles messages)
+- Reports discrepancies to user
+- Retries spawn once after 30s on failure; alerts user on second failure
+
+**Technical Notes:**
+- Extends orchestrator from Story 58.3 (replaces timeout stub)
+- Updates supervisor definition for emergency mode detection
+
+**Priority:** P2 | **Depends On:** 58.3, 58.4
+
+### Story 58.6: Handover History & Audit Trail
+
+**As a** multiclaude operator, **I want** handover events archived with timing metrics and anomaly tracking, **so that** I can debug handover issues, tune thresholds, and monitor system health.
+
+**Acceptance Criteria:**
+- State file archived to `~/.multiclaude/handover/<repo>/history/` with ISO timestamp suffix
+- JSONL event log appended after each handover (timestamp, names, type, metrics, duration, anomalies)
+- History directory capped at 50 files (rolling window)
+- Summary command displays recent handover events
+- Alerts on high handover frequency (>3/hour)
+
+**Technical Notes:**
+- Archive directory and JSONL log managed by daemon
+- Summary could be `multiclaude supervisor history` subcommand
+
+**Priority:** P2 | **Depends On:** 58.3
+
+### Story 58.7: Manual Handover Trigger & User Notification
+
+**As a** multiclaude user, **I want to** manually trigger a supervisor handover and be notified when automatic handovers occur, **so that** I can intervene when I notice degradation the shift clock missed, and stay informed about system state changes.
+
+**Acceptance Criteria:**
+- `multiclaude supervisor handover` command triggers handover via signal file
+- Anti-oscillation warning with manual override (`--force` flag)
+- Notification on handover start (automatic or manual) with trigger metrics
+- Notification on handover completion with duration and mode
+- `multiclaude status` includes shift clock data (zone, JSONL size, compression count, session duration)
+
+**Technical Notes:**
+- New subcommand: `multiclaude supervisor handover`
+- Extends `multiclaude status` output
+
+**Priority:** P2 | **Depends On:** 58.1, 58.3
+
+### Dependency Graph
+
+```
+58.1 (Shift Clock)        ──▶ Independent (daemon monitoring)
+58.2 (Rolling Snapshot)   ──▶ Independent (daemon state collection)
+58.3 (Orchestrator)       ──▶ Depends on 58.1, 58.2
+58.4 (Supervisor Startup) ──▶ Depends on 58.2, 58.3
+58.5 (Emergency Protocol) ──▶ Depends on 58.3, 58.4
+58.6 (History & Audit)    ──▶ Depends on 58.3
+58.7 (Manual Trigger)     ──▶ Depends on 58.1, 58.3
+
+Phase 1 (MVP):        58.1 + 58.2 can parallelize → 58.3 → 58.4
+Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
+```
+
+### Decisions
+
+- D-167: External daemon monitoring (not supervisor self-reporting)
+- D-168: Cold start (no hot/warm standby)
+- D-169: Daemon-maintained rolling snapshot
+- D-170: Hybrid shift clock (time floor + usage ceiling)
+- D-171: Role-based agent addressing
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/supervisor-shift-handover/` (5 party mode sessions)
+- Synthesis: `_bmad-output/planning-artifacts/supervisor-shift-handover/synthesis-supervisor-shift-handover.md`
