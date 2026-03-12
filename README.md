@@ -55,6 +55,44 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 
 ---
 
+## 📸 Screenshots
+
+<p align="center"><em>Three doors. Pick one. Move forward.</em></p>
+
+```
+  ╭────────────────────────╮ ╭────────────────────────╮ ╭────────────────────────╮
+  │                        │ │                        │ │                        │
+  │  [todo]                │ │  [todo]                │ │  [todo]                │
+  │                        │ │                        │ │                        │
+  │  Buy groceries         │ │  Read Go book          │ │  Exercise for 30 min   │
+  │                        │ │                        │ │                        │
+  ╰────────────────────────╯ ╰────────────────────────╯ ╰────────────────────────╯
+
+  a/left, w/up, d/right to select │ s/down to re-roll │ Enter/Space to open
+```
+
+<!-- To capture an actual terminal recording, use charmbracelet/vhs:
+     https://github.com/charmbracelet/vhs
+     Store recordings and screenshots in docs/assets/ -->
+
+<details>
+<summary>More screenshots</summary>
+
+| View | Screenshot |
+|------|-----------|
+| Three Doors | *Coming soon — door selection flow* |
+| Task Detail | *Coming soon — task detail with actions* |
+| Dashboard | *Coming soon — insights and analytics* |
+| Themes | *Coming soon — classic, modern, scifi, shoji* |
+| Search | *Coming soon — quick search with fuzzy filtering* |
+| Onboarding | *Coming soon — first-run wizard* |
+
+Screenshots and GIFs will be stored in [`docs/assets/`](docs/assets/).
+
+</details>
+
+---
+
 ## 📦 Installation
 
 ### Option 1: Homebrew (recommended)
