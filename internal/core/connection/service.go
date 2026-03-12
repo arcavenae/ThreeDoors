@@ -210,6 +210,64 @@ func (s *ConnectionService) ForceSync(id string) error {
 	return nil
 }
 
+// ReAuthenticate updates the credential for an AuthExpired connection, verifies
+// it with a health check, and transitions the connection back to Connected on
+// success. On failure, the connection remains in (or returns to) AuthExpired.
+func (s *ConnectionService) ReAuthenticate(id, newToken string) error {
+	conn, err := s.manager.Get(id)
+	if err != nil {
+		return fmt.Errorf("service reauth: %w", err)
+	}
+
+	if conn.State != StateAuthExpired {
+		return fmt.Errorf("service reauth %s: connection must be in auth-expired state, got %s", id, conn.State)
+	}
+
+	if newToken == "" {
+		return fmt.Errorf("service reauth %s: token must not be empty", id)
+	}
+
+	// Update credential in the store.
+	credKey := ConnCredentialKey(conn)
+	if err := s.creds.Set(credKey, newToken); err != nil {
+		return fmt.Errorf("service reauth credential %s: %w", id, err)
+	}
+
+	// Transition to Connecting.
+	if err := s.manager.Transition(id, StateConnecting); err != nil {
+		return fmt.Errorf("service reauth transition connecting %s: %w", id, err)
+	}
+
+	// Verify the new token with a health check if a checker is configured.
+	if s.checker != nil {
+		result, checkErr := s.checker.CheckHealth(conn, newToken)
+		if checkErr != nil || !result.Healthy() {
+			// Roll back to AuthExpired.
+			_ = s.manager.TransitionWithError(id, StateAuthExpired, "re-authentication failed: health check unsuccessful")
+			if checkErr != nil {
+				return fmt.Errorf("service reauth health check %s: %w", id, checkErr)
+			}
+			return fmt.Errorf("service reauth %s: health check unhealthy", id)
+		}
+	}
+
+	// Success — transition to Connected.
+	if err := s.manager.Transition(id, StateConnected); err != nil {
+		return fmt.Errorf("service reauth transition connected %s: %w", id, err)
+	}
+
+	if s.eventLog != nil {
+		_ = s.eventLog.LogTokenRefreshed(id)
+	}
+
+	return nil
+}
+
+// Manager returns the underlying ConnectionManager.
+func (s *ConnectionService) Manager() *ConnectionManager {
+	return s.manager
+}
+
 // persistConfig loads the current config, updates connections from the manager's
 // state, and saves it atomically.
 func (s *ConnectionService) persistConfig() error {

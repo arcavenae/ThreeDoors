@@ -56,6 +56,7 @@ const (
 	ViewBreakdown
 	ViewExtract
 	ViewOrphaned
+	ViewReauth
 )
 
 // String returns the human-readable name of the view mode.
@@ -123,6 +124,8 @@ func (v ViewMode) String() string {
 		return "Extract"
 	case ViewOrphaned:
 		return "Orphaned"
+	case ViewReauth:
+		return "Reauth"
 	default:
 		return "Unknown"
 	}
@@ -158,6 +161,7 @@ type MainModel struct {
 	syncLogDetailView   *SyncLogDetailView
 	connectWizard       *ConnectWizard
 	disconnectDialog    *DisconnectDialog
+	reauthDialog        *ReauthDialog
 	importView          *ImportView
 	bugReportView       *BugReportView
 	breakdownView       *BreakdownView
@@ -192,6 +196,7 @@ type MainModel struct {
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
 	connMgr               *connection.ConnectionManager
+	connSvc               *connection.ConnectionService
 	syncEventLog          *connection.SyncEventLog
 	milestoneChecker      *core.MilestoneChecker
 	pollingActive         bool
@@ -409,6 +414,11 @@ func (m *MainModel) SetConnectionManager(mgr *connection.ConnectionManager) {
 	m.connMgr = mgr
 }
 
+// SetConnectionService sets the connection service for re-authentication.
+func (m *MainModel) SetConnectionService(svc *connection.ConnectionService) {
+	m.connSvc = svc
+}
+
 // SetSyncEventLog sets the sync event log for viewing connection-specific sync events.
 func (m *MainModel) SetSyncEventLog(log *connection.SyncEventLog) {
 	m.syncEventLog = log
@@ -543,6 +553,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.disconnectDialog.SetWidth(msg.Width)
 			m.disconnectDialog.SetHeight(msg.Height)
 		}
+		if m.reauthDialog != nil {
+			m.reauthDialog.SetWidth(msg.Width)
+			m.reauthDialog.SetHeight(msg.Height)
+		}
 		if m.syncLogDetailView != nil {
 			m.syncLogDetailView.SetWidth(msg.Width)
 			m.syncLogDetailView.SetHeight(msg.Height)
@@ -583,6 +597,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.insightsView = nil
 		m.sourcesView = nil
 		m.disconnectDialog = nil
+		m.reauthDialog = nil
 		m.addTaskView = nil
 		m.deferredListView = nil
 		m.importView = nil
@@ -729,6 +744,37 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.previousView = m.viewMode
 			m.setViewMode(ViewSyncLogDetail)
 		}
+		if msg.Action == "reauth" && m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				if conn.State != connection.StateAuthExpired {
+					return m, func() tea.Msg {
+						return FlashMsg{Text: "Re-authentication only available for expired connections"}
+					}
+				}
+				// Look up auth type from provider specs.
+				authType := AuthNone
+				tokenHelp := ""
+				for _, spec := range DefaultProviderSpecs() {
+					if spec.Name == conn.ProviderName {
+						authType = spec.AuthType
+						tokenHelp = spec.TokenHelp
+						break
+					}
+				}
+				if authType == AuthOAuth {
+					return m, func() tea.Msg {
+						return FlashMsg{Text: "OAuth re-authentication not yet supported — disconnect and reconnect"}
+					}
+				}
+				m.reauthDialog = NewReauthDialog(conn, tokenHelp)
+				m.reauthDialog.SetWidth(m.width)
+				m.reauthDialog.SetHeight(m.height)
+				m.previousView = m.viewMode
+				m.setViewMode(ViewReauth)
+				return m, m.reauthDialog.Init()
+			}
+		}
 		if msg.Action == "disconnect" && m.connMgr != nil {
 			conn, err := m.connMgr.Get(msg.ConnectionID)
 			if err == nil {
@@ -811,6 +857,35 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case DisconnectCancelledMsg:
 		m.disconnectDialog = nil
+		if m.previousView == ViewSourceDetail {
+			m.setViewMode(ViewSourceDetail)
+		} else {
+			m.setViewMode(ViewSources)
+		}
+		return m, nil
+
+	case ReauthCompleteMsg:
+		if m.connSvc != nil {
+			err := m.connSvc.ReAuthenticate(msg.ConnectionID, msg.NewToken)
+			if err == nil {
+				m.reauthDialog = nil
+				m.setViewMode(ViewSourceDetail)
+				return m, func() tea.Msg {
+					return FlashMsg{Text: "Re-authenticated successfully"}
+				}
+			}
+			m.reauthDialog = nil
+			m.setViewMode(ViewSourceDetail)
+			return m, func() tea.Msg {
+				return FlashMsg{Text: "Re-authentication failed: " + err.Error()}
+			}
+		}
+		m.reauthDialog = nil
+		m.setViewMode(ViewSourceDetail)
+		return m, nil
+
+	case ReauthCancelledMsg:
+		m.reauthDialog = nil
 		if m.previousView == ViewSourceDetail {
 			m.setViewMode(ViewSourceDetail)
 		} else {
@@ -1855,6 +1930,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateConnectWizard(msg)
 	case ViewDisconnect:
 		return m.updateDisconnect(msg)
+	case ViewReauth:
+		return m.updateReauth(msg)
 	case ViewImport:
 		return m.updateImport(msg)
 	case ViewBugReport:
@@ -2095,6 +2172,14 @@ func (m *MainModel) updateDisconnect(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.disconnectDialog.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateReauth(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.reauthDialog == nil {
+		return m, nil
+	}
+	cmd := m.reauthDialog.Update(msg)
 	return m, cmd
 }
 
@@ -2775,6 +2860,10 @@ func (m *MainModel) View() string {
 	case ViewDisconnect:
 		if m.disconnectDialog != nil {
 			view = m.disconnectDialog.View()
+		}
+	case ViewReauth:
+		if m.reauthDialog != nil {
+			view = m.reauthDialog.View()
 		}
 	case ViewImport:
 		if m.importView != nil {
