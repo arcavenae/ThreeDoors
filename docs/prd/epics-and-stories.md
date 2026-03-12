@@ -5365,6 +5365,67 @@ All three stories are fully independent and can be implemented in parallel.
 - Full research: `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
 - Synthesis: `_bmad-output/planning-artifacts/ci-test-optimization/05-synthesis-optimization-roadmap.md`
 
+## Epic 56: Door Visual Redesign — Three-Layer Depth System (P1)
+
+**Goal:** Transform door rendering from imperceptible wireframe shadows into solid, 3D-feeling surfaces using a three-layer approach: background fill for visual mass, bevel lighting for raised-surface perception, and gradient shadow for spatial depth.
+
+**Prerequisites:** Epic 48 (Door-Like Doors — complete), Epic 17 (Door Theme System — complete)
+
+**Status:** Not Started (0/5 stories)
+
+### Story 56.1: ThemeColors Extension + Background Fill
+- **As a** user, **I want** door interiors to have a solid background color instead of being transparent wireframes, **so that** doors look like physical surfaces with visual mass rather than flat line drawings.
+- **Scope:** Extend `ThemeColors` struct with 5 new depth color fields (`FillLower`, `Highlight`, `ShadowEdge`, `ShadowNear`, `ShadowFar`). Add background fill to all 8 themes' `Render()` functions using `lipgloss.Style.Background(Fill)` for interior rows. ~80 LOC, zero width cost.
+- **Depends on:** None (foundational story)
+- **AC:** ThemeColors has 5 new fields; all 8 themes render interior bg; zero width cost; golden files updated
+- **Story file:** `docs/stories/56.1.story.md`
+
+### Story 56.2: Bevel Lighting
+- **As a** user, **I want** door borders to have a "raised surface" bevel effect with lighter top/left edges and darker bottom/right edges, **so that** doors appear as 3D raised surfaces rather than flat outlines.
+- **Scope:** Top/left borders use `Highlight` color, bottom/right use `ShadowEdge`. Classic "raised button" GUI effect. All 8 themes. ~120 LOC, zero width cost.
+- **Depends on:** None (can parallelize with 56.1)
+- **AC:** Bevel colors on all 8 themes; Selected overrides bevel; zero width cost; golden files updated
+- **Story file:** `docs/stories/56.2.story.md`
+
+### Story 56.3: Shadow Overhaul
+- **As a** user, **I want** doors to cast a visible gradient shadow instead of the current imperceptible 1-character shadow, **so that** doors appear to "lift off" the terminal background with proper spatial depth.
+- **Scope:** Refactor `ApplyShadow()` from post-processor into per-theme `Render()`. Width-adaptive 0-3 column gradient shadow. Integrate with crack-of-light. ~150 LOC, +1-2 chars width (adaptive).
+- **Depends on:** Story 56.1 (needs ShadowNear/ShadowFar fields)
+- **AC:** Gradient shadow at 2+ cols; width-adaptive; crack-of-light integration; golden files updated
+- **Story file:** `docs/stories/56.3.story.md`
+
+### Story 56.4: Panel Zone Shading
+- **As a** user, **I want** the upper and lower door panels to have differentiated background colors, **so that** the two-panel door structure is visually distinct and adds depth.
+- **Scope:** Upper panel uses `Fill`, lower panel uses `FillLower` (darker). Switchover at `DoorAnatomy.PanelDividerRow`. ~60 LOC, zero width cost.
+- **Depends on:** Story 56.1 (needs FillLower field and bg fill infrastructure)
+- **AC:** Upper/lower panels visually differentiated; divider row belongs to lower; golden files updated
+- **Story file:** `docs/stories/56.4.story.md`
+
+### Story 56.5: Width-Adaptive Shadow Tuning
+- **As a** user, **I want** the shadow gradient to be fine-tuned across terminal widths and all 8 themes, **so that** shadows look correct at every width.
+- **Scope:** Tuning and golden file pass — validate shadow contrast ratios, add width-tier tests (narrow/medium/wide), adjust colors if needed. ~40 LOC.
+- **Depends on:** Story 56.3 (shadow overhaul must be complete)
+- **AC:** Golden files at 3 width tiers per theme; ShadowNear ≥ 4:1 contrast; selected gets wider shadow
+- **Story file:** `docs/stories/56.5.story.md`
+
+### Dependency Graph
+```
+Story 56.1 (ThemeColors + Bg Fill) ──┬──→ Story 56.3 (Shadow Overhaul) ──→ Story 56.5 (Tuning)
+                                     └──→ Story 56.4 (Panel Zones)
+Story 56.2 (Bevel) ─────────────────────→ (independent)
+```
+
+Stories 56.1 & 56.2 can parallelize. Stories 56.3 & 56.4 can parallelize after 56.1.
+
+### Decisions
+
+- D-172: Three-layer depth system (background fill + bevel lighting + shadow gradient)
+- Rejected: X-109 Full Corridor (width cost too high), X-110 Adaptive Depth/terminal detection (over-engineering), X-111 Interior Texture (hurts readability), X-112 Braille Patterns (accessibility concerns)
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md` (5-round party mode, 6 agents)
+
 ## Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation (P2)
 
 **Goal:** Detect supervisor context window degradation via daemon monitoring, serialize operational state, and transfer control to a fresh supervisor instance — all while workers continue uninterrupted.
