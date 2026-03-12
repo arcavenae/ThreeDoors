@@ -195,6 +195,7 @@ ThreeDoors/
 │   │   └── log.go                   # SyncLog (rotating)
 │   │
 │   ├── intelligence/                 # Intelligence Layer (Phase 3-4)
+│   │   ├── agent_service.go         # AgentService — auto-discovery + fallback chain (Epic 57)
 │   │   ├── calendar/                # Calendar awareness (Epic 12)
 │   │   │   ├── reader.go           # CalendarReader interface
 │   │   │   ├── applescript.go      # macOS Calendar.app reader
@@ -207,6 +208,7 @@ ThreeDoors/
 │   │   │   ├── cli_spec.go         # CLISpec — command/args/parsing for CLI backends
 │   │   │   ├── cli_specs.go        # Built-in specs: Claude CLI, Gemini CLI, Ollama CLI
 │   │   │   ├── runner.go           # CLIRunner interface, ExecRunner implementation
+│   │   │   ├── discovery.go        # Auto-discovery of installed CLI backends (Epic 57)
 │   │   │   ├── local.go            # Ollama/llama.cpp client
 │   │   │   ├── cloud.go            # Anthropic/OpenAI client
 │   │   │   └── git_output.go       # Git repo story writer
