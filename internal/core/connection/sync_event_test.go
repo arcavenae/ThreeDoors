@@ -495,6 +495,116 @@ func TestCorruptEntriesSkipped(t *testing.T) {
 	}
 }
 
+func TestLogFieldConflict(t *testing.T) {
+	t.Parallel()
+	log := newTestLog(t)
+	connID := "conn-field-conflict"
+
+	fields := []FieldConflict{
+		{Field: "text", LocalValue: "local text", RemoteValue: "remote text", Winner: "remote"},
+		{Field: "effort", LocalValue: "small", RemoteValue: "large", Winner: "local"},
+	}
+
+	err := log.LogFieldConflict(connID, "task-99", "Buy groceries", fields)
+	if err != nil {
+		t.Fatalf("LogFieldConflict: %v", err)
+	}
+
+	events, err := log.EventsByType(connID, EventConflict, 1)
+	if err != nil {
+		t.Fatalf("EventsByType: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 event, got %d", len(events))
+	}
+
+	e := events[0]
+	if e.ConflictTaskID != "task-99" {
+		t.Errorf("task ID: got %q, want %q", e.ConflictTaskID, "task-99")
+	}
+	if e.Resolution != "field-level" {
+		t.Errorf("resolution: got %q, want %q", e.Resolution, "field-level")
+	}
+	if len(e.ConflictFields) != 2 {
+		t.Fatalf("conflict_fields: got %d, want 2", len(e.ConflictFields))
+	}
+	if e.ConflictFields[0].Field != "text" {
+		t.Errorf("field[0]: got %q, want %q", e.ConflictFields[0].Field, "text")
+	}
+	if e.ConflictFields[0].Winner != "remote" {
+		t.Errorf("field[0] winner: got %q, want %q", e.ConflictFields[0].Winner, "remote")
+	}
+	if e.ConflictFields[1].Field != "effort" {
+		t.Errorf("field[1]: got %q, want %q", e.ConflictFields[1].Field, "effort")
+	}
+	if e.ConflictFields[1].Winner != "local" {
+		t.Errorf("field[1] winner: got %q, want %q", e.ConflictFields[1].Winner, "local")
+	}
+}
+
+func TestLogFieldConflict_JSONRoundTrip(t *testing.T) {
+	t.Parallel()
+	log := newTestLog(t)
+	connID := "conn-field-roundtrip"
+
+	fields := []FieldConflict{
+		{Field: "status", LocalValue: "in_progress", RemoteValue: "todo", Winner: "remote"},
+	}
+
+	err := log.LogFieldConflict(connID, "task-1", "My task", fields)
+	if err != nil {
+		t.Fatalf("LogFieldConflict: %v", err)
+	}
+
+	events, err := log.SyncLog(connID, 0)
+	if err != nil {
+		t.Fatalf("SyncLog: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 event, got %d", len(events))
+	}
+
+	// Verify field details survived JSONL round-trip
+	e := events[0]
+	if len(e.ConflictFields) != 1 {
+		t.Fatalf("conflict_fields: got %d after round-trip, want 1", len(e.ConflictFields))
+	}
+	cf := e.ConflictFields[0]
+	if cf.LocalValue != "in_progress" {
+		t.Errorf("local_value: got %q, want %q", cf.LocalValue, "in_progress")
+	}
+	if cf.RemoteValue != "todo" {
+		t.Errorf("remote_value: got %q, want %q", cf.RemoteValue, "todo")
+	}
+}
+
+func TestLogOrphan(t *testing.T) {
+	t.Parallel()
+	log := newTestLog(t)
+	connID := "conn-orphan"
+
+	err := log.LogOrphan(connID, "task-orphan", "Deleted remotely")
+	if err != nil {
+		t.Fatalf("LogOrphan: %v", err)
+	}
+
+	events, err := log.EventsByType(connID, EventConflict, 1)
+	if err != nil {
+		t.Fatalf("EventsByType: %v", err)
+	}
+	if len(events) != 1 {
+		t.Fatalf("expected 1 event, got %d", len(events))
+	}
+
+	e := events[0]
+	if e.ConflictTaskID != "task-orphan" {
+		t.Errorf("task ID: got %q, want %q", e.ConflictTaskID, "task-orphan")
+	}
+	if e.Resolution != "orphaned" {
+		t.Errorf("resolution: got %q, want %q", e.Resolution, "orphaned")
+	}
+}
+
 func TestSyncLogDirCreation(t *testing.T) {
 	t.Parallel()
 

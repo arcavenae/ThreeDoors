@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // ChangeSet represents the differences detected between local and remote task lists.
 type ChangeSet struct {
@@ -36,12 +39,26 @@ type SyncResult struct {
 	Summary   string // e.g. "Synced: 2 new, 1 updated, 1 removed"
 }
 
-// SyncEngine performs three-way sync between local and remote task lists.
-type SyncEngine struct{}
+// FieldConflictResolution extends Resolution with per-field detail.
+type FieldConflictResolution struct {
+	Resolution
+	FieldResolutions []FieldResolution
+}
 
-// NewSyncEngine creates a new SyncEngine.
+// SyncEngine performs three-way sync between local and remote task lists.
+type SyncEngine struct {
+	conflictResolver ConflictResolver
+}
+
+// NewSyncEngine creates a new SyncEngine with default last-write-wins conflict resolution.
 func NewSyncEngine() *SyncEngine {
 	return &SyncEngine{}
+}
+
+// NewSyncEngineWithResolver creates a SyncEngine with a custom ConflictResolver
+// for field-level conflict resolution.
+func NewSyncEngineWithResolver(resolver ConflictResolver) *SyncEngine {
+	return &SyncEngine{conflictResolver: resolver}
 }
 
 // DetectChanges compares local and remote tasks against the last-known sync state
@@ -147,6 +164,60 @@ func (e *SyncEngine) ResolveConflicts(conflicts []Conflict) []Resolution {
 	return resolutions
 }
 
+// ResolveFieldConflicts applies field-level conflict resolution using the configured
+// ConflictResolver. Metadata fields use remote-wins, ThreeDoors fields use local-wins.
+// Returns FieldConflictResolution which includes per-field detail for logging.
+func (e *SyncEngine) ResolveFieldConflicts(conflicts []Conflict) []FieldConflictResolution {
+	resolver := e.conflictResolver
+	if resolver == nil {
+		resolver = NewDefaultConflictResolver()
+	}
+
+	resolutions := make([]FieldConflictResolution, 0, len(conflicts))
+
+	for _, c := range conflicts {
+		merged, fieldRes := ResolveTaskConflict(resolver, c.LocalTask, c.RemoteTask)
+
+		// No field differences = identical changes, no real conflict
+		if len(fieldRes) == 0 {
+			resolutions = append(resolutions, FieldConflictResolution{
+				Resolution: Resolution{
+					TaskID:          c.LocalTask.ID,
+					Winner:          "remote",
+					WinningTask:     c.RemoteTask,
+					LocalOverridden: false,
+				},
+			})
+			continue
+		}
+
+		// Determine overall winner for the Resolution summary.
+		// If any metadata field was overridden (remote won), local was partially overridden.
+		localOverridden := false
+		for _, fr := range fieldRes {
+			if fr.Winner == "remote" {
+				localOverridden = true
+				break
+			}
+		}
+
+		msg := fmt.Sprintf("Conflict on '%s': %d field(s) resolved", c.LocalTask.Text, len(fieldRes))
+
+		resolutions = append(resolutions, FieldConflictResolution{
+			Resolution: Resolution{
+				TaskID:          c.LocalTask.ID,
+				Winner:          "field-level",
+				WinningTask:     merged,
+				LocalOverridden: localOverridden,
+				Message:         msg,
+			},
+			FieldResolutions: fieldRes,
+		})
+	}
+
+	return resolutions
+}
+
 // ApplyChanges merges the detected changes and resolutions into the TaskPool.
 func (e *SyncEngine) ApplyChanges(pool *TaskPool, changes ChangeSet, resolutions []Resolution) SyncResult {
 	var result SyncResult
@@ -180,6 +251,54 @@ func (e *SyncEngine) ApplyChanges(pool *TaskPool, changes ChangeSet, resolutions
 
 	// Generate summary
 	result.Summary = fmt.Sprintf("Synced: %d new, %d updated, %d removed", result.Added, result.Updated, result.Removed)
+	if result.Conflicts > 0 {
+		result.Summary += fmt.Sprintf(", %d conflicts resolved", result.Conflicts)
+	}
+
+	return result
+}
+
+// ApplyChangesWithOrphans is like ApplyChanges but marks remotely-deleted tasks
+// as orphaned instead of removing them. This prevents data loss when the remote
+// source deletes a task that the user may still want locally.
+func (e *SyncEngine) ApplyChangesWithOrphans(pool *TaskPool, changes ChangeSet, resolutions []Resolution) SyncResult {
+	var result SyncResult
+
+	// Add new tasks
+	for _, t := range changes.NewTasks {
+		pool.AddTask(t)
+		result.Added++
+	}
+
+	// Mark deleted tasks as orphaned (never auto-delete)
+	for _, id := range changes.DeletedTasks {
+		task := pool.GetTask(id)
+		if task != nil {
+			now := time.Now().UTC()
+			task.Orphaned = true
+			task.OrphanedAt = &now
+			pool.UpdateTask(task)
+		}
+		result.Removed++ // count reflects detected deletions
+	}
+
+	// Update modified tasks (non-conflicting)
+	for _, t := range changes.ModifiedTasks {
+		pool.UpdateTask(t)
+		result.Updated++
+	}
+
+	// Apply conflict resolutions
+	for _, r := range resolutions {
+		pool.UpdateTask(r.WinningTask)
+		result.Conflicts++
+		if r.LocalOverridden {
+			result.Overrides = append(result.Overrides, r)
+		}
+	}
+
+	// Generate summary
+	result.Summary = fmt.Sprintf("Synced: %d new, %d updated, %d orphaned", result.Added, result.Updated, result.Removed)
 	if result.Conflicts > 0 {
 		result.Summary += fmt.Sprintf(", %d conflicts resolved", result.Conflicts)
 	}

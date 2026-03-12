@@ -41,6 +41,8 @@ type Task struct {
 	SourceRefs     []SourceRef           `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
 	DependsOn      []string              `yaml:"depends_on,omitempty" json:"depends_on,omitempty"`
 	DevDispatch    *dispatch.DevDispatch `yaml:"dev_dispatch,omitempty" json:"dev_dispatch,omitempty"`
+	Orphaned       bool                  `yaml:"orphaned,omitempty" json:"orphaned,omitempty"`
+	OrphanedAt     *time.Time            `yaml:"orphaned_at,omitempty" json:"orphaned_at,omitempty"`
 }
 
 // HasSourceRef returns true if the task has a SourceRef matching the given provider and native ID.

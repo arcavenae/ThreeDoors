@@ -39,9 +39,10 @@ type SyncEvent struct {
 	Removed int `json:"removed,omitempty"`
 
 	// Conflict details — populated for conflict events.
-	ConflictTaskID   string `json:"conflict_task_id,omitempty"`
-	ConflictTaskText string `json:"conflict_task_text,omitempty"`
-	Resolution       string `json:"resolution,omitempty"` // "local", "remote", "both"
+	ConflictTaskID   string          `json:"conflict_task_id,omitempty"`
+	ConflictTaskText string          `json:"conflict_task_text,omitempty"`
+	Resolution       string          `json:"resolution,omitempty"` // "local", "remote", "both", "field-level"
+	ConflictFields   []FieldConflict `json:"conflict_fields,omitempty"`
 
 	// State change details — populated for state_change events.
 	FromState string `json:"from_state,omitempty"`
@@ -52,6 +53,14 @@ type SyncEvent struct {
 
 	// Human-readable summary.
 	Summary string `json:"summary"`
+}
+
+// FieldConflict records the details of a single field-level conflict resolution.
+type FieldConflict struct {
+	Field       string `json:"field"`
+	LocalValue  string `json:"local_value"`
+	RemoteValue string `json:"remote_value"`
+	Winner      string `json:"winner"` // "local" or "remote"
 }
 
 // SyncEventLog manages per-connection JSONL sync event logging with rolling retention.
@@ -154,6 +163,34 @@ func (l *SyncEventLog) LogTokenRefreshed(connectionID string) error {
 		ConnectionID: connectionID,
 		Type:         EventTokenRefreshed,
 		Summary:      "Access token refreshed silently",
+	})
+}
+
+// LogFieldConflict logs a field-level conflict with per-field resolution details.
+func (l *SyncEventLog) LogFieldConflict(connectionID, taskID, taskText string, fields []FieldConflict) error {
+	summary := fmt.Sprintf("Conflict on '%s': %d field(s) resolved", taskText, len(fields))
+	return l.Append(SyncEvent{
+		Timestamp:        time.Now().UTC(),
+		ConnectionID:     connectionID,
+		Type:             EventConflict,
+		ConflictTaskID:   taskID,
+		ConflictTaskText: taskText,
+		Resolution:       "field-level",
+		ConflictFields:   fields,
+		Summary:          summary,
+	})
+}
+
+// LogOrphan logs when a task is marked as orphaned due to remote deletion.
+func (l *SyncEventLog) LogOrphan(connectionID, taskID, taskText string) error {
+	return l.Append(SyncEvent{
+		Timestamp:        time.Now().UTC(),
+		ConnectionID:     connectionID,
+		Type:             EventConflict,
+		ConflictTaskID:   taskID,
+		ConflictTaskText: taskText,
+		Resolution:       "orphaned",
+		Summary:          fmt.Sprintf("Task '%s' orphaned (deleted remotely, preserved locally)", taskText),
 	})
 }
 
