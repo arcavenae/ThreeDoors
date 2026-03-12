@@ -348,6 +348,15 @@ type DisconnectConfirmedMsg struct {
 // DisconnectCancelledMsg is sent when the user cancels the disconnect dialog.
 type DisconnectCancelledMsg struct{}
 
+// ReauthCompleteMsg is sent when the user submits a new token in the re-auth dialog.
+type ReauthCompleteMsg struct {
+	ConnectionID string
+	NewToken     string
+}
+
+// ReauthCancelledMsg is sent when the user cancels the re-auth dialog.
+type ReauthCancelledMsg struct{}
+
 // BreakdownStartMsg is sent when the user triggers task breakdown.
 type BreakdownStartMsg struct {
 	Task *core.Task

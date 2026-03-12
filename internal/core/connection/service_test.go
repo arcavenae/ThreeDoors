@@ -704,6 +704,198 @@ func TestHealthCheckResultHealthy(t *testing.T) {
 	}
 }
 
+func TestServiceReAuthenticate(t *testing.T) {
+	t.Parallel()
+
+	// transitionToAuthExpired transitions a connection through the valid state path
+	// to reach StateAuthExpired: Disconnected → Connecting → AuthExpired.
+	transitionToAuthExpired := func(t *testing.T, svc *ConnectionService, connID string) {
+		t.Helper()
+		if err := svc.manager.Transition(connID, StateConnecting); err != nil {
+			t.Fatalf("Transition to Connecting: %v", err)
+		}
+		if err := svc.manager.Transition(connID, StateAuthExpired); err != nil {
+			t.Fatalf("Transition to AuthExpired: %v", err)
+		}
+	}
+
+	t.Run("successful reauth with healthy check", func(t *testing.T) {
+		t.Parallel()
+		svc, creds := newTestService(t)
+		svc.checker = &stubHealthChecker{
+			result: HealthCheckResult{
+				APIReachable: true,
+				TokenValid:   true,
+				RateLimitOK:  true,
+			},
+		}
+
+		conn, err := svc.Add("todoist", "Personal", nil, "old_token")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		transitionToAuthExpired(t, svc, conn.ID)
+
+		if err := svc.ReAuthenticate(conn.ID, "new_token"); err != nil {
+			t.Fatalf("ReAuthenticate: %v", err)
+		}
+
+		// Connection should be Connected.
+		got, _ := svc.manager.Get(conn.ID)
+		if got.State != StateConnected {
+			t.Errorf("State = %s, want %s", got.State, StateConnected)
+		}
+
+		// Credential should be updated.
+		credKey := ConnCredentialKey(conn)
+		stored, err := creds.Get(credKey)
+		if err != nil {
+			t.Fatalf("Get credential: %v", err)
+		}
+		if stored != "new_token" {
+			t.Errorf("credential = %q, want %q", stored, "new_token")
+		}
+	})
+
+	t.Run("successful reauth without checker", func(t *testing.T) {
+		t.Parallel()
+		svc, _ := newTestService(t)
+		// No checker configured — should still succeed.
+
+		conn, err := svc.Add("todoist", "Personal", nil, "old_token")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		transitionToAuthExpired(t, svc, conn.ID)
+
+		if err := svc.ReAuthenticate(conn.ID, "new_token"); err != nil {
+			t.Fatalf("ReAuthenticate: %v", err)
+		}
+
+		got, _ := svc.manager.Get(conn.ID)
+		if got.State != StateConnected {
+			t.Errorf("State = %s, want %s", got.State, StateConnected)
+		}
+	})
+
+	t.Run("unhealthy check rolls back to auth expired", func(t *testing.T) {
+		t.Parallel()
+		svc, _ := newTestService(t)
+		svc.checker = &stubHealthChecker{
+			result: HealthCheckResult{
+				APIReachable: true,
+				TokenValid:   false,
+				RateLimitOK:  true,
+			},
+		}
+
+		conn, err := svc.Add("todoist", "Personal", nil, "old_token")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		transitionToAuthExpired(t, svc, conn.ID)
+
+		err = svc.ReAuthenticate(conn.ID, "bad_token")
+		if err == nil {
+			t.Fatal("expected error for unhealthy check")
+		}
+
+		got, _ := svc.manager.Get(conn.ID)
+		if got.State != StateAuthExpired {
+			t.Errorf("State = %s, want %s after unhealthy check", got.State, StateAuthExpired)
+		}
+	})
+
+	t.Run("checker error rolls back to auth expired", func(t *testing.T) {
+		t.Parallel()
+		svc, _ := newTestService(t)
+		svc.checker = &stubHealthChecker{err: fmt.Errorf("network error")}
+
+		conn, err := svc.Add("todoist", "Personal", nil, "old_token")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		transitionToAuthExpired(t, svc, conn.ID)
+
+		err = svc.ReAuthenticate(conn.ID, "new_token")
+		if err == nil {
+			t.Fatal("expected error from checker")
+		}
+
+		got, _ := svc.manager.Get(conn.ID)
+		if got.State != StateAuthExpired {
+			t.Errorf("State = %s, want %s after checker error", got.State, StateAuthExpired)
+		}
+	})
+
+	t.Run("wrong state rejects reauth", func(t *testing.T) {
+		t.Parallel()
+		svc, _ := newTestService(t)
+
+		conn, err := svc.Add("todoist", "Personal", nil, "tok")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		// Connection is Disconnected — not AuthExpired.
+
+		err = svc.ReAuthenticate(conn.ID, "new_token")
+		if err == nil {
+			t.Fatal("expected error for wrong state")
+		}
+	})
+
+	t.Run("empty token rejected", func(t *testing.T) {
+		t.Parallel()
+		svc, _ := newTestService(t)
+
+		conn, err := svc.Add("todoist", "Personal", nil, "tok")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		transitionToAuthExpired(t, svc, conn.ID)
+
+		err = svc.ReAuthenticate(conn.ID, "")
+		if err == nil {
+			t.Fatal("expected error for empty token")
+		}
+
+		// State should remain AuthExpired.
+		got, _ := svc.manager.Get(conn.ID)
+		if got.State != StateAuthExpired {
+			t.Errorf("State = %s, want %s", got.State, StateAuthExpired)
+		}
+	})
+
+	t.Run("nonexistent connection", func(t *testing.T) {
+		t.Parallel()
+		svc, _ := newTestService(t)
+
+		err := svc.ReAuthenticate("nonexistent", "tok")
+		if err == nil {
+			t.Fatal("expected error for nonexistent connection")
+		}
+	})
+
+	t.Run("credential store error", func(t *testing.T) {
+		t.Parallel()
+		svc, creds := newTestService(t)
+
+		conn, err := svc.Add("todoist", "Personal", nil, "old")
+		if err != nil {
+			t.Fatalf("Add: %v", err)
+		}
+		transitionToAuthExpired(t, svc, conn.ID)
+
+		// Now set the error so ReAuthenticate's Set call fails.
+		creds.setErr = fmt.Errorf("keyring locked")
+
+		err = svc.ReAuthenticate(conn.ID, "new_token")
+		if err == nil {
+			t.Fatal("expected error from credential store")
+		}
+	})
+}
+
 // containsString checks if s contains substr.
 func containsString(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
