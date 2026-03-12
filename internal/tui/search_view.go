@@ -28,6 +28,7 @@ var commandRegistry = []commandDef{
 	{"goals", "View or edit values/goals"},
 	{"health", "Run health check"},
 	{"help", "Show help screen"},
+	{"import", "Import tasks from a file"},
 	{"insights", "Show pattern insights"},
 	{"mood", "Record current mood"},
 	{"quit", "Quit application"},
@@ -298,6 +299,11 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		}
 		return func() tea.Msg {
 			return FlashMsg{Text: "Use 'x' in task detail view to dispatch a specific task."}
+		}
+
+	case "import":
+		return func() tea.Msg {
+			return ShowImportMsg{PrefilledPath: args}
 		}
 
 	case "hints":
