@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -20,10 +21,12 @@ func testProviderSpecs() []ProviderFormSpec {
 			TokenHelp:   "Settings → Integrations → Developer → API token",
 		},
 		{
-			Name:        "github",
-			DisplayName: "GitHub Issues",
-			Description: "GitHub repository issues",
-			AuthType:    AuthOAuth,
+			Name:          "github",
+			DisplayName:   "GitHub Issues",
+			Description:   "GitHub repository issues",
+			AuthType:      AuthOAuth,
+			OAuthClientID: "test-oauth-client-id",
+			EnvTokenFunc:  func() (string, string) { return "", "" }, // no env token in tests
 		},
 		{
 			Name:        "textfile",
@@ -472,8 +475,11 @@ func TestConnectWizard_Step2FormForOAuth(t *testing.T) {
 	w.buildStep2Form()
 
 	view := w.form.View()
-	if !strings.Contains(view, "OAuth") {
-		t.Error("step 2 for OAuth provider should contain OAuth note")
+	if !strings.Contains(view, "Authentication method") {
+		t.Error("step 2 for OAuth provider should contain auth method selection")
+	}
+	if !strings.Contains(view, "Personal Access Token") {
+		t.Error("step 2 for OAuth provider should contain PAT option")
 	}
 }
 
@@ -576,26 +582,27 @@ func TestExpandPath(t *testing.T) {
 func TestWizardStepString(t *testing.T) {
 	t.Parallel()
 
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
 	tests := []struct {
 		step WizardStep
 		want string
 	}{
 		{StepProviderSelect, "Select Provider"},
 		{StepProviderConfig, "Configure"},
+		{StepOAuthFlow, "Authenticate"},
 		{StepSyncConfig, "Sync Settings"},
 		{StepTestConfirm, "Confirm"},
 	}
 
-	stepNames := []string{"Select Provider", "Configure", "Sync Settings", "Confirm"}
-
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
 			t.Parallel()
-			if int(tt.step) >= len(stepNames) {
-				t.Fatalf("step %d out of range", tt.step)
-			}
-			if stepNames[tt.step] != tt.want {
-				t.Errorf("stepNames[%d] = %q, want %q", tt.step, stepNames[tt.step], tt.want)
+			w := *w // copy
+			w.step = tt.step
+			if got := w.stepDisplayName(); got != tt.want {
+				t.Errorf("stepDisplayName() = %q, want %q", got, tt.want)
 			}
 		})
 	}
@@ -667,5 +674,476 @@ func TestConnectWizard_GetSelectedSpec(t *testing.T) {
 	w.selectedProvider = "nonexistent"
 	if spec := w.getSelectedSpec(); spec != nil {
 		t.Error("getSelectedSpec should return nil for unknown provider")
+	}
+}
+
+func TestConnectWizard_Step2FormForOAuth_WithEnvToken(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := []ProviderFormSpec{
+		{
+			Name:          "github",
+			DisplayName:   "GitHub Issues",
+			Description:   "GitHub repository issues",
+			AuthType:      AuthOAuth,
+			OAuthClientID: "test-client-id",
+			EnvTokenFunc:  func() (string, string) { return "gho_env_token", "GH_TOKEN" },
+		},
+	}
+	w := NewConnectWizard(specs, connMgr)
+
+	w.selectedProvider = "github"
+	w.buildStep2Form()
+
+	view := w.form.View()
+	if !strings.Contains(view, "Authentication method") {
+		t.Error("should contain auth method selection")
+	}
+	if !strings.Contains(view, "GH_TOKEN") {
+		t.Error("should show env var name when env token detected")
+	}
+	// Default auth method should be env when env token is available.
+	if w.authMethod != "env" {
+		t.Errorf("authMethod = %q, want %q when env token detected", w.authMethod, "env")
+	}
+}
+
+func TestConnectWizard_Step2FormForOAuth_NoOAuthClientID(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := []ProviderFormSpec{
+		{
+			Name:        "github",
+			DisplayName: "GitHub Issues",
+			Description: "GitHub repository issues",
+			AuthType:    AuthOAuth,
+			// No OAuthClientID — falls back to PAT only
+			EnvTokenFunc: func() (string, string) { return "", "" },
+		},
+	}
+	w := NewConnectWizard(specs, connMgr)
+
+	w.selectedProvider = "github"
+	w.buildStep2Form()
+
+	// When no OAuth client ID, only PAT should be available.
+	if w.authMethod != "pat" {
+		t.Errorf("authMethod = %q, want %q when no OAuth client ID", w.authMethod, "pat")
+	}
+}
+
+func TestConnectWizard_AdvanceStep_EnvTokenUsed(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := []ProviderFormSpec{
+		{
+			Name:          "github",
+			DisplayName:   "GitHub Issues",
+			Description:   "GitHub repository issues",
+			AuthType:      AuthOAuth,
+			OAuthClientID: "test-client-id",
+			EnvTokenFunc:  func() (string, string) { return "gho_env_token_123", "GH_TOKEN" },
+		},
+	}
+	w := NewConnectWizard(specs, connMgr)
+
+	// Simulate provider selection done.
+	w.selectedProvider = "github"
+	w.step = StepProviderConfig
+	w.buildStep2Form()
+
+	// User chose "env" auth method.
+	w.authMethod = "env"
+	w.label = "My GitHub"
+
+	// Advance from config step.
+	w.advanceStep()
+
+	// Should skip OAuth flow and go to sync config.
+	if w.step != StepSyncConfig {
+		t.Errorf("step = %v, want StepSyncConfig (should skip OAuth flow)", w.step)
+	}
+	if w.apiToken != "gho_env_token_123" {
+		t.Errorf("apiToken = %q, want %q (env token should be used)", w.apiToken, "gho_env_token_123")
+	}
+}
+
+func TestConnectWizard_AdvanceStep_OAuthSelected(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := []ProviderFormSpec{
+		{
+			Name:          "github",
+			DisplayName:   "GitHub Issues",
+			Description:   "GitHub repository issues",
+			AuthType:      AuthOAuth,
+			OAuthClientID: "test-client-id",
+			EnvTokenFunc:  func() (string, string) { return "", "" },
+		},
+	}
+	w := NewConnectWizard(specs, connMgr)
+
+	w.selectedProvider = "github"
+	w.step = StepProviderConfig
+	w.buildStep2Form()
+	w.authMethod = "oauth"
+	w.label = "My GitHub"
+
+	// Advance from config step — should enter OAuth flow.
+	cmd := w.advanceStep()
+
+	if w.step != StepOAuthFlow {
+		t.Errorf("step = %v, want StepOAuthFlow", w.step)
+	}
+	if cmd == nil {
+		t.Error("OAuth flow should return a command to start device code flow")
+	}
+}
+
+func TestConnectWizard_AdvanceStep_PATSelected(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := []ProviderFormSpec{
+		{
+			Name:          "github",
+			DisplayName:   "GitHub Issues",
+			Description:   "GitHub repository issues",
+			AuthType:      AuthOAuth,
+			OAuthClientID: "test-client-id",
+			EnvTokenFunc:  func() (string, string) { return "", "" },
+		},
+	}
+	w := NewConnectWizard(specs, connMgr)
+
+	w.selectedProvider = "github"
+	w.step = StepProviderConfig
+	w.buildStep2Form()
+	w.authMethod = "pat"
+	w.apiToken = "ghp_manual_token"
+	w.label = "My GitHub"
+
+	// Advance from config step — should skip OAuth flow.
+	w.advanceStep()
+
+	if w.step != StepSyncConfig {
+		t.Errorf("step = %v, want StepSyncConfig (PAT should skip OAuth)", w.step)
+	}
+	if w.apiToken != "ghp_manual_token" {
+		t.Errorf("apiToken = %q, want %q", w.apiToken, "ghp_manual_token")
+	}
+}
+
+func TestConnectWizard_OAuthFlow_TokenResult(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.selectedProvider = "github"
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{
+		userCode:        "ABCD-1234",
+		verificationURI: "https://github.com/login/device",
+		status:          "waiting",
+	}
+	w.label = "My GitHub"
+
+	// Simulate successful token result.
+	cmd := w.updateOAuthFlow(oauthTokenResultMsg{token: "gho_oauth_token"})
+
+	if w.apiToken != "gho_oauth_token" {
+		t.Errorf("apiToken = %q, want %q", w.apiToken, "gho_oauth_token")
+	}
+	if w.oauthState.status != "success" {
+		t.Errorf("status = %q, want %q", w.oauthState.status, "success")
+	}
+	// Should have returned advanceStep command.
+	if cmd == nil {
+		t.Error("successful token result should return a command to advance")
+	}
+}
+
+func TestConnectWizard_OAuthFlow_TokenError(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.selectedProvider = "github"
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{status: "waiting"}
+
+	// Simulate token error.
+	cmd := w.updateOAuthFlow(oauthTokenResultMsg{err: fmt.Errorf("access denied")})
+
+	if w.oauthState.status != "error" {
+		t.Errorf("status = %q, want %q", w.oauthState.status, "error")
+	}
+	if !strings.Contains(w.oauthState.errorMsg, "access denied") {
+		t.Errorf("errorMsg = %q, should contain 'access denied'", w.oauthState.errorMsg)
+	}
+	if cmd != nil {
+		t.Error("error should not return a command")
+	}
+}
+
+func TestConnectWizard_OAuthFlow_DeviceCodeError(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.selectedProvider = "github"
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{status: "waiting"}
+
+	// Simulate device code request error.
+	cmd := w.updateOAuthFlow(oauthDeviceCodeMsg{err: fmt.Errorf("network error")})
+
+	if w.oauthState.status != "error" {
+		t.Errorf("status = %q, want %q", w.oauthState.status, "error")
+	}
+	if !strings.Contains(w.oauthState.errorMsg, "network error") {
+		t.Errorf("errorMsg = %q, should contain 'network error'", w.oauthState.errorMsg)
+	}
+	if cmd != nil {
+		t.Error("error should not return a command")
+	}
+}
+
+func TestConnectWizard_OAuthFlowView_Waiting(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{
+		userCode:        "ABCD-1234",
+		verificationURI: "https://github.com/login/device",
+		status:          "waiting",
+		browserOpened:   true,
+	}
+
+	view := w.viewOAuthFlow()
+	if !strings.Contains(view, "ABCD-1234") {
+		t.Error("should display user code")
+	}
+	if !strings.Contains(view, "github.com/login/device") {
+		t.Error("should display verification URL")
+	}
+	if !strings.Contains(view, "Browser opened") {
+		t.Error("should indicate browser was opened")
+	}
+	if !strings.Contains(view, "Waiting for authorization") {
+		t.Error("should show waiting message")
+	}
+}
+
+func TestConnectWizard_OAuthFlowView_Error(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{
+		status:   "error",
+		errorMsg: "token expired",
+	}
+
+	view := w.viewOAuthFlow()
+	if !strings.Contains(view, "token expired") {
+		t.Error("should display error message")
+	}
+	if !strings.Contains(view, "failed") {
+		t.Error("should indicate authentication failed")
+	}
+}
+
+func TestConnectWizard_OAuthFlowView_Success(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{status: "success"}
+
+	view := w.viewOAuthFlow()
+	if !strings.Contains(view, "successful") {
+		t.Error("should display success message")
+	}
+}
+
+func TestConnectWizard_OAuthFlowView_NilState(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.step = StepOAuthFlow
+	w.oauthState = nil
+
+	view := w.viewOAuthFlow()
+	if !strings.Contains(view, "Initializing") {
+		t.Error("should display initializing message when state is nil")
+	}
+}
+
+func TestConnectWizard_StepDisplayNumber(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	tests := []struct {
+		step      WizardStep
+		wantNum   int
+		wantTotal int
+	}{
+		{StepProviderSelect, 1, 4},
+		{StepProviderConfig, 2, 4},
+		{StepOAuthFlow, 2, 4}, // OAuth is part of configure step
+		{StepSyncConfig, 3, 4},
+		{StepTestConfirm, 4, 4},
+	}
+
+	for _, tt := range tests {
+		w.step = tt.step
+		num, total := w.stepDisplayNumber()
+		if num != tt.wantNum {
+			t.Errorf("step %v: num = %d, want %d", tt.step, num, tt.wantNum)
+		}
+		if total != tt.wantTotal {
+			t.Errorf("step %v: total = %d, want %d", tt.step, total, tt.wantTotal)
+		}
+	}
+}
+
+func TestConnectWizard_CancelDuringOAuthFlow(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.step = StepOAuthFlow
+	w.oauthState = &oauthFlowState{status: "waiting"}
+
+	// Send Esc.
+	cmd := w.Update(tea.KeyMsg{Type: tea.KeyEsc})
+
+	if !w.cancelled {
+		t.Error("wizard should be cancelled")
+	}
+	if w.oauthState != nil {
+		t.Error("OAuth state should be cleaned up on cancel")
+	}
+	if cmd == nil {
+		t.Fatal("cancel should produce a command")
+	}
+	msg := cmd()
+	if _, ok := msg.(ConnectWizardCancelMsg); !ok {
+		t.Errorf("expected ConnectWizardCancelMsg, got %T", msg)
+	}
+}
+
+func TestConnectWizard_CompleteMsgIncludesToken(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	w.selectedProvider = "github"
+	w.label = "My GitHub"
+	w.apiToken = "gho_test_token"
+	w.syncMode = "readonly"
+	w.pollInterval = "5m"
+	w.step = StepTestConfirm
+
+	cmd := w.advanceStep()
+	if cmd == nil {
+		t.Fatal("expected completion command")
+	}
+
+	msg := cmd()
+	completeMsg, ok := msg.(ConnectWizardCompleteMsg)
+	if !ok {
+		t.Fatalf("expected ConnectWizardCompleteMsg, got %T", msg)
+	}
+	if completeMsg.Token != "gho_test_token" {
+		t.Errorf("Token = %q, want %q", completeMsg.Token, "gho_test_token")
+	}
+}
+
+func TestDefaultGitHubEnvTokenFunc(t *testing.T) {
+	// This is not parallel — it modifies env vars.
+	t.Setenv("GH_TOKEN", "gho_test_env")
+	t.Setenv("GITHUB_TOKEN", "")
+
+	token, envVar := defaultGitHubEnvTokenFunc()
+	if token != "gho_test_env" {
+		t.Errorf("token = %q, want %q", token, "gho_test_env")
+	}
+	if envVar != "GH_TOKEN" {
+		t.Errorf("envVar = %q, want %q", envVar, "GH_TOKEN")
+	}
+}
+
+func TestDefaultGitHubEnvTokenFunc_GitHubToken(t *testing.T) {
+	t.Setenv("GH_TOKEN", "")
+	t.Setenv("GITHUB_TOKEN", "ghp_test_env")
+
+	token, envVar := defaultGitHubEnvTokenFunc()
+	if token != "ghp_test_env" {
+		t.Errorf("token = %q, want %q", token, "ghp_test_env")
+	}
+	if envVar != "GITHUB_TOKEN" {
+		t.Errorf("envVar = %q, want %q", envVar, "GITHUB_TOKEN")
+	}
+}
+
+func TestDefaultGitHubEnvTokenFunc_Neither(t *testing.T) {
+	t.Setenv("GH_TOKEN", "")
+	t.Setenv("GITHUB_TOKEN", "")
+
+	token, envVar := defaultGitHubEnvTokenFunc()
+	if token != "" {
+		t.Errorf("token = %q, want empty", token)
+	}
+	if envVar != "" {
+		t.Errorf("envVar = %q, want empty", envVar)
+	}
+}
+
+func TestConnectWizard_BuildOAuthConfig_GitHub(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(testProviderSpecs(), connMgr)
+
+	spec := &ProviderFormSpec{
+		Name:          "github",
+		OAuthClientID: "test-oauth-id",
+	}
+
+	config := w.buildOAuthConfig(spec)
+
+	if config.ClientID != "test-oauth-id" {
+		t.Errorf("ClientID = %q, want %q", config.ClientID, "test-oauth-id")
+	}
+	if config.AuthEndpoint != "https://github.com/login/device/code" {
+		t.Errorf("AuthEndpoint = %q", config.AuthEndpoint)
+	}
+	if config.TokenEndpoint != "https://github.com/login/oauth/access_token" {
+		t.Errorf("TokenEndpoint = %q", config.TokenEndpoint)
+	}
+	if len(config.Scopes) != 1 || config.Scopes[0] != "repo" {
+		t.Errorf("Scopes = %v, want [repo]", config.Scopes)
 	}
 }
