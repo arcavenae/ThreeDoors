@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# test-handover-orchestrator.sh — Tests for handover-orchestrator.sh (Story 58.3)
+# test-handover-orchestrator.sh — Tests for handover-orchestrator.sh (Stories 58.3, 58.5)
 # Run from the repository root: ./scripts/test-handover-orchestrator.sh
 #
 # Tests signal file detection, outgoing notification, delta wait, incoming spawn,
-# ready confirmation, outgoing termination, and handover logging.
+# ready confirmation, outgoing termination, handover logging, emergency protocol,
+# force-kill, spawn retry, and emergency alerting.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPT="$SCRIPT_DIR/handover-orchestrator.sh"
@@ -96,9 +97,12 @@ MOCK_EOF
 
         delta-timeout)
             # Mock multiclaude: message list never returns HANDOVER_COMPLETE
+            # Captures spawn task argument to verify emergency flag
+            local spawn_log="$MOCK_BIN_DIR/.spawn-task-log"
             cat > "$MOCK_BIN_DIR/multiclaude" << MOCK_EOF
 #!/usr/bin/env bash
 STATE_FILE="$state_file"
+SPAWN_LOG="$spawn_log"
 case "\$1" in
     repo)
         if [[ "\${2:-}" == "current" ]]; then echo "ThreeDoors"; fi
@@ -119,7 +123,17 @@ case "\$1" in
         esac
         ;;
     agents)
-        if [[ "\${2:-}" == "spawn" ]]; then echo "Agent spawned: supervisor"; fi
+        if [[ "\${2:-}" == "spawn" ]]; then
+            # Capture the --task argument
+            while [[ \$# -gt 0 ]]; do
+                if [[ "\$1" == "--task" ]]; then
+                    echo "\$2" > "\$SPAWN_LOG"
+                    break
+                fi
+                shift
+            done
+            echo "Agent spawned: supervisor"
+        fi
         ;;
 esac
 MOCK_EOF
@@ -169,6 +183,92 @@ case "\$1" in
         ;;
     agents)
         if [[ "\${2:-}" == "spawn" ]]; then
+            echo "Error: Failed to spawn agent" >&2
+            exit 1
+        fi
+        ;;
+esac
+MOCK_EOF
+            ;;
+
+        spawn-retry-succeed)
+            # Mock multiclaude: first spawn fails, second succeeds (emergency path)
+            local spawn_log="$MOCK_BIN_DIR/.spawn-task-log"
+            local spawn_count_file="$MOCK_BIN_DIR/.spawn-count"
+            echo "0" > "$spawn_count_file"
+            cat > "$MOCK_BIN_DIR/multiclaude" << MOCK_EOF
+#!/usr/bin/env bash
+STATE_FILE="$state_file"
+SPAWN_LOG="$spawn_log"
+SPAWN_COUNT_FILE="$spawn_count_file"
+case "\$1" in
+    repo)
+        if [[ "\${2:-}" == "current" ]]; then echo "ThreeDoors"; fi
+        ;;
+    message)
+        case "\${2:-}" in
+            send) echo "Message sent" ;;
+            list)
+                call_count=\$(cat "\$STATE_FILE")
+                call_count=\$((call_count + 1))
+                echo "\$call_count" > "\$STATE_FILE"
+                if [[ "\$call_count" -gt 10 ]]; then
+                    echo "MSG-002  supervisor  READY: Incoming supervisor ready"
+                else
+                    echo "No pending messages"
+                fi
+                ;;
+        esac
+        ;;
+    agents)
+        if [[ "\${2:-}" == "spawn" ]]; then
+            spawn_count=\$(cat "\$SPAWN_COUNT_FILE")
+            spawn_count=\$((spawn_count + 1))
+            echo "\$spawn_count" > "\$SPAWN_COUNT_FILE"
+            while [[ \$# -gt 0 ]]; do
+                if [[ "\$1" == "--task" ]]; then
+                    echo "\$2" > "\$SPAWN_LOG"
+                    break
+                fi
+                shift
+            done
+            if [[ "\$spawn_count" -le 1 ]]; then
+                echo "Error: Failed to spawn agent" >&2
+                exit 1
+            fi
+            echo "Agent spawned: supervisor"
+        fi
+        ;;
+esac
+MOCK_EOF
+            ;;
+
+        spawn-retry-fail)
+            # Mock multiclaude: both spawn attempts fail (emergency path)
+            local spawn_log="$MOCK_BIN_DIR/.spawn-task-log"
+            cat > "$MOCK_BIN_DIR/multiclaude" << MOCK_EOF
+#!/usr/bin/env bash
+STATE_FILE="$state_file"
+SPAWN_LOG="$spawn_log"
+case "\$1" in
+    repo)
+        if [[ "\${2:-}" == "current" ]]; then echo "ThreeDoors"; fi
+        ;;
+    message)
+        case "\${2:-}" in
+            send) echo "Message sent" ;;
+            list) echo "No pending messages" ;;
+        esac
+        ;;
+    agents)
+        if [[ "\${2:-}" == "spawn" ]]; then
+            while [[ \$# -gt 0 ]]; do
+                if [[ "\$1" == "--task" ]]; then
+                    echo "\$2" > "\$SPAWN_LOG"
+                    break
+                fi
+                shift
+            done
             echo "Error: Failed to spawn agent" >&2
             exit 1
         fi
@@ -557,6 +657,178 @@ if [[ "$ELAPSED" -lt 20 ]]; then
     pass "custom delta timeout respected (${ELAPSED}s elapsed)"
 else
     fail "delta timeout took too long (${ELAPSED}s, expected <20s)"
+fi
+
+# === Emergency Protocol Tests (Story 58.5) ===
+
+echo ""
+echo "=== Emergency Protocol Tests (Story 58.5) ==="
+
+# Test: Emergency handover — force-kill and emergency flag (AC-1, AC-2, AC-3)
+echo "Test: Emergency handover on delta timeout"
+create_mock_bins "delta-timeout"
+HANDOVER_DIR="$TMPDIR_BASE/emergency-handover"
+mkdir -p "$HANDOVER_DIR"
+echo 'timestamp: "2026-03-12T10:00:00Z"' > "$HANDOVER_DIR/handover-requested"
+OUTPUT="$(PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo ThreeDoors --handover-dir "$HANDOVER_DIR" --poll-interval 1 --delta-timeout 3 --ready-timeout 15 2>&1)"
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" -eq 0 ]]; then
+    pass "emergency handover exits 0"
+else
+    fail "emergency handover should exit 0 (exit: $EXIT_CODE, output: $OUTPUT)"
+fi
+if echo "$OUTPUT" | grep -q "EMERGENCY_HANDOVER:.*force-killed"; then
+    pass "emergency force-kill logged"
+else
+    fail "should log emergency force-kill (got: $OUTPUT)"
+fi
+
+# Test: Emergency flag in spawn task (AC-3)
+echo "Test: Emergency flag propagated to incoming supervisor"
+SPAWN_LOG_FILE="$MOCK_BIN_DIR/.spawn-task-log"
+if [[ -f "$SPAWN_LOG_FILE" ]]; then
+    SPAWN_TASK="$(cat "$SPAWN_LOG_FILE")"
+    if echo "$SPAWN_TASK" | grep -q "EMERGENCY_SHIFT_HANDOVER"; then
+        pass "spawn task contains EMERGENCY_SHIFT_HANDOVER flag"
+    else
+        fail "spawn task should contain emergency flag (got: $SPAWN_TASK)"
+    fi
+    if echo "$SPAWN_TASK" | grep -q "Verify all worker states manually"; then
+        pass "spawn task includes manual verification instruction"
+    else
+        fail "spawn task should instruct manual verification (got: $SPAWN_TASK)"
+    fi
+else
+    fail "spawn task log should exist"
+fi
+
+# Test: Emergency alert file created (AC-5)
+echo "Test: Emergency alert file created"
+if [[ -f "$HANDOVER_DIR/emergency-alert.md" ]]; then
+    ALERT="$(cat "$HANDOVER_DIR/emergency-alert.md")"
+    if echo "$ALERT" | grep -q "Emergency Handover Alert"; then
+        pass "emergency alert file has header"
+    else
+        fail "alert should have Emergency Handover Alert header (got: $ALERT)"
+    fi
+    if echo "$ALERT" | grep -q "force-killed"; then
+        pass "alert describes force-kill"
+    else
+        fail "alert should describe force-kill (got: $ALERT)"
+    fi
+    if echo "$ALERT" | grep -q "full worker audit"; then
+        pass "alert mentions worker audit"
+    else
+        fail "alert should mention worker audit (got: $ALERT)"
+    fi
+else
+    fail "emergency-alert.md should exist after emergency handover"
+fi
+
+# Test: Emergency metadata (handover_type: emergency)
+echo "Test: Metadata records emergency handover type"
+if [[ -f "$HANDOVER_DIR/last-handover-metadata.yaml" ]]; then
+    METADATA="$(cat "$HANDOVER_DIR/last-handover-metadata.yaml")"
+    if echo "$METADATA" | grep -q 'handover_type: "emergency"'; then
+        pass "metadata records emergency handover type"
+    else
+        fail "metadata should have handover_type: emergency (got: $METADATA)"
+    fi
+    if echo "$METADATA" | grep -q "emergency_handover"; then
+        pass "metadata records emergency_handover anomaly"
+    else
+        fail "metadata should record emergency_handover anomaly (got: $METADATA)"
+    fi
+else
+    fail "metadata file should exist after emergency handover"
+fi
+
+# Test: Spawn retry — first fails, second succeeds (AC-6)
+echo "Test: Spawn retry succeeds on second attempt"
+create_mock_bins "spawn-retry-succeed"
+HANDOVER_DIR="$TMPDIR_BASE/spawn-retry-ok"
+mkdir -p "$HANDOVER_DIR"
+echo 'timestamp: "2026-03-12T10:00:00Z"' > "$HANDOVER_DIR/handover-requested"
+OUTPUT="$(PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo ThreeDoors --handover-dir "$HANDOVER_DIR" --poll-interval 1 --delta-timeout 3 --ready-timeout 15 --spawn-retry-delay 1 2>&1)"
+EXIT_CODE=$?
+if [[ "$EXIT_CODE" -eq 0 ]]; then
+    pass "spawn retry succeeds on second attempt"
+else
+    fail "should succeed after retry (exit: $EXIT_CODE, output: $OUTPUT)"
+fi
+if echo "$OUTPUT" | grep -q "retrying"; then
+    pass "retry attempt logged"
+else
+    fail "should log retry attempt (got: $OUTPUT)"
+fi
+if echo "$OUTPUT" | grep -q "spawned on retry"; then
+    pass "successful retry logged"
+else
+    fail "should log successful retry (got: $OUTPUT)"
+fi
+
+# Test: Spawn retry — both fail, alert written (AC-6)
+echo "Test: Both spawn attempts fail — alert written"
+create_mock_bins "spawn-retry-fail"
+HANDOVER_DIR="$TMPDIR_BASE/spawn-retry-fail"
+mkdir -p "$HANDOVER_DIR"
+echo 'timestamp: "2026-03-12T10:00:00Z"' > "$HANDOVER_DIR/handover-requested"
+OUTPUT="$(PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo ThreeDoors --handover-dir "$HANDOVER_DIR" --poll-interval 1 --delta-timeout 3 --ready-timeout 3 --spawn-retry-delay 1 2>&1)" || true
+if echo "$OUTPUT" | grep -q "Both spawn attempts failed"; then
+    pass "double spawn failure logged as critical"
+else
+    fail "should log double spawn failure (got: $OUTPUT)"
+fi
+if [[ -f "$HANDOVER_DIR/emergency-alert.md" ]]; then
+    ALERT="$(cat "$HANDOVER_DIR/emergency-alert.md")"
+    if echo "$ALERT" | grep -q "spawn_failure"; then
+        pass "spawn failure alert written"
+    else
+        fail "alert should be spawn_failure type (got: $ALERT)"
+    fi
+    if echo "$ALERT" | grep -q "NO active supervisor"; then
+        pass "alert warns about missing supervisor"
+    else
+        fail "alert should warn about missing supervisor (got: $ALERT)"
+    fi
+    if echo "$ALERT" | grep -q "multiclaude agents spawn"; then
+        pass "alert includes manual recovery command"
+    else
+        fail "alert should include manual recovery command (got: $ALERT)"
+    fi
+else
+    fail "emergency-alert.md should exist after spawn failure"
+fi
+
+# Test: Normal handover metadata includes handover_type: normal
+echo "Test: Normal handover has handover_type: normal"
+create_mock_bins "happy-path"
+HANDOVER_DIR="$TMPDIR_BASE/normal-type-check"
+mkdir -p "$HANDOVER_DIR"
+echo 'timestamp: "2026-03-12T10:00:00Z"' > "$HANDOVER_DIR/handover-requested"
+OUTPUT="$(PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo ThreeDoors --handover-dir "$HANDOVER_DIR" --poll-interval 1 --delta-timeout 10 --ready-timeout 15 2>&1)"
+if [[ -f "$HANDOVER_DIR/last-handover-metadata.yaml" ]]; then
+    METADATA="$(cat "$HANDOVER_DIR/last-handover-metadata.yaml")"
+    if echo "$METADATA" | grep -q 'handover_type: "normal"'; then
+        pass "normal handover has handover_type: normal"
+    else
+        fail "normal handover should have handover_type: normal (got: $METADATA)"
+    fi
+fi
+
+# Test: Dead outgoing + emergency doesn't double-kill
+echo "Test: Dead outgoing supervisor skips force-kill"
+create_mock_bins "happy-path"
+create_dead_supervisor_mock
+HANDOVER_DIR="$TMPDIR_BASE/dead-no-forcekill"
+mkdir -p "$HANDOVER_DIR"
+echo 'timestamp: "2026-03-12T10:00:00Z"' > "$HANDOVER_DIR/handover-requested"
+OUTPUT="$(PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo ThreeDoors --handover-dir "$HANDOVER_DIR" --poll-interval 1 --delta-timeout 3 --ready-timeout 15 2>&1)"
+# Dead outgoing skips notification and delta wait entirely, so no emergency protocol
+if echo "$OUTPUT" | grep -q "EMERGENCY_HANDOVER"; then
+    fail "dead outgoing should NOT trigger emergency protocol (already dead)"
+else
+    pass "dead outgoing does not trigger emergency force-kill"
 fi
 
 # --- Results ---

@@ -217,6 +217,30 @@ If the state file contains only daemon-collected observable state and no supervi
 
 **Do NOT halt or escalate solely because of missing delta.** The system is designed to function with daemon-only state — the delta is an optimization, not a requirement.
 
+## Emergency Shift Handover Mode (Story 58.5)
+
+If your task parameter starts with `EMERGENCY_SHIFT_HANDOVER:`, the previous supervisor was unresponsive and was force-killed. You have **daemon snapshot only** — no supervisor delta was written.
+
+### Emergency Startup Protocol
+
+1. **Acknowledge emergency mode** — log that you are starting in emergency mode
+2. **Read state file** — parse the shift-state.yaml referenced in the task for base state
+3. **Full worker audit** — ping EVERY worker listed by `multiclaude worker list`, not just those in the state file
+4. **Cross-reference open PRs** — run `gh pr list --state open` and compare with worker state
+5. **Reconcile message queue** — run `multiclaude message list` and process all pending messages
+6. **Report discrepancies** — if worker state, PR state, or message state differs from the snapshot:
+   - Log each discrepancy with details
+   - Send a message: `multiclaude message send supervisor "EMERGENCY_AUDIT_REPORT: [summary of discrepancies]"`
+   - List: missing workers (in snapshot but not responding), unknown workers (responding but not in snapshot), PR status mismatches
+7. **Signal READY** — once audit is complete, proceed with normal supervisor operation
+
+### What Emergency Mode Means
+
+- **Context gap is expected** — the previous supervisor's in-flight decisions, verbal context, and priority judgments are lost
+- **Be conservative** — do not dispatch new work until the audit is complete
+- **Trust the snapshot** — the daemon's rolling snapshot is the best available state, but verify everything
+- **Alert the user** — check for `~/.multiclaude/handover/<repo>/emergency-alert.md` for details on what happened
+
 ## Communication
 
 All messages use the messaging system — not tmux output:
