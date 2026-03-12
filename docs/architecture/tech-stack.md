@@ -49,6 +49,7 @@
 | **Git Operations** | go-git or os/exec | Latest | LLM output to git repos | Write story specs for coding agents | 4 (Epic 14) |
 | **Text Similarity** | agnivade/levenshtein | Latest | Duplicate detection | Cross-provider task dedup heuristics | 3 (Epic 13) |
 | **Contract Testing** | Go testing (stdlib) | N/A | Adapter compliance validation | Verify TaskProvider implementations | 3 (Epic 9) |
+| **TUI Forms** | charmbracelet/huh | 1.0.0 | Interactive form wizards | Setup wizard for data source connections (Charm ecosystem) | 2 (Epic 44) |
 
 **Technology Selection Principles (Post-MVP):**
 
