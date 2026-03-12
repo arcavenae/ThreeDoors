@@ -20,10 +20,23 @@ type LLMBackend interface {
 
 // Config holds LLM backend configuration loaded from config.yaml.
 type Config struct {
-	Backend string       `yaml:"backend"`
-	Ollama  OllamaConfig `yaml:"ollama"`
-	Claude  ClaudeConfig `yaml:"claude"`
-	Output  OutputConfig `yaml:"decomposition"`
+	Backend   string       `yaml:"backend"`
+	Ollama    OllamaConfig `yaml:"ollama"`
+	Claude    ClaudeConfig `yaml:"claude"`
+	ClaudeCLI CLIConfig    `yaml:"claude_cli"`
+	GeminiCLI CLIConfig    `yaml:"gemini_cli"`
+	OllamaCLI CLIConfig    `yaml:"ollama_cli"`
+	Custom    CLIConfig    `yaml:"custom"`
+	Output    OutputConfig `yaml:"decomposition"`
+}
+
+// CLIConfig holds settings for a CLI-based LLM backend.
+type CLIConfig struct {
+	Provider string        `yaml:"provider"`
+	Command  string        `yaml:"command"`
+	Args     []string      `yaml:"args"`
+	Model    string        `yaml:"model"`
+	Timeout  time.Duration `yaml:"timeout"`
 }
 
 // OllamaConfig holds Ollama-specific settings.
@@ -59,6 +72,40 @@ func DefaultConfig() Config {
 			OutputBranchPrefix: "story/",
 		},
 	}
+}
+
+// NewCLIBackend creates a CLIProvider from a CLIConfig.
+// Supported providers: "claude-cli", "gemini-cli", "ollama-cli", "custom".
+func NewCLIBackend(cfg CLIConfig) (*CLIProvider, error) {
+	var spec CLISpec
+	switch cfg.Provider {
+	case "claude-cli":
+		spec = ClaudeCLISpec()
+	case "gemini-cli":
+		spec = GeminiCLISpec()
+	case "ollama-cli":
+		model := cfg.Model
+		if model == "" {
+			model = "llama3.2"
+		}
+		spec = OllamaCLISpec(model)
+	case "custom":
+		if cfg.Command == "" {
+			return nil, fmt.Errorf("custom CLI backend requires a command: %w", ErrBackendUnavailable)
+		}
+		spec = CustomCLISpec(cfg.Command, cfg.Args)
+	default:
+		return nil, fmt.Errorf("unknown CLI provider %q: %w", cfg.Provider, ErrBackendUnavailable)
+	}
+
+	if cfg.Command != "" {
+		spec.Command = cfg.Command
+	}
+	if cfg.Timeout > 0 {
+		spec.Timeout = cfg.Timeout
+	}
+
+	return NewCLIProvider(spec, &ExecRunner{}), nil
 }
 
 // ErrBackendUnavailable is returned when an LLM backend cannot be reached.

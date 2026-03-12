@@ -1,0 +1,95 @@
+site_name: ThreeDoors
+site_url: https://arcaven.github.io/ThreeDoors/
+site_description: Task management with radical simplicity — three doors, one choice
+repo_url: https://github.com/arcaven/ThreeDoors
+repo_name: arcaven/ThreeDoors
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search:
+      lang: en
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Philosophy: philosophy.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Core Concepts: getting-started/concepts.md
+  - User Guide:
+    - Task Management: guide/task-management.md
+    - Search & Commands: guide/search-and-commands.md
+    - Doors Interaction: guide/doors-interaction.md
+    - Themes: guide/themes.md
+    - Keybindings: guide/keybindings.md
+    - Sessions & Analytics: guide/sessions.md
+  - Task Sources:
+    - Overview: providers/overview.md
+    - Local Files: providers/local-files.md
+    - Apple Notes: providers/apple-notes.md
+    - Apple Reminders: providers/apple-reminders.md
+    - Jira: providers/jira.md
+    - GitHub Issues: providers/github-issues.md
+    - Todoist: providers/todoist.md
+    - Obsidian: providers/obsidian.md
+  - CLI & MCP:
+    - CLI Commands: cli/commands.md
+    - MCP Server: cli/mcp-server.md
+  - Configuration:
+    - Config File: configuration/config-file.md
+    - Environment Variables: configuration/environment.md
+    - Data Directory: configuration/data-directory.md
+  - Advanced:
+    - Task Dependencies: advanced/task-dependencies.md
+    - Custom Providers: advanced/extending.md
+  - Troubleshooting: troubleshooting.md
+  - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/arcaven/ThreeDoors
