@@ -18,6 +18,7 @@ type DevQueueView struct {
 	items      []dispatch.QueueItem
 	cursor     int
 	width      int
+	height     int
 	flash      string
 }
 
@@ -34,6 +35,11 @@ func NewDevQueueView(queue *dispatch.DevQueue, dispatcher dispatch.Dispatcher) *
 // SetWidth sets the terminal width for rendering.
 func (dv *DevQueueView) SetWidth(w int) {
 	dv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (dv *DevQueueView) SetHeight(h int) {
+	dv.height = h
 }
 
 // Update handles key input for the dev queue view.

@@ -13,6 +13,7 @@ import (
 type HealthView struct {
 	result      core.HealthCheckResult
 	width       int
+	height      int
 	hintEnabled bool
 }
 
@@ -29,6 +30,11 @@ func (hv *HealthView) SetInlineHints(enabled bool) {
 // SetWidth sets the terminal width for rendering.
 func (hv *HealthView) SetWidth(w int) {
 	hv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (hv *HealthView) SetHeight(h int) {
+	hv.height = h
 }
 
 // Update handles messages for the health view.

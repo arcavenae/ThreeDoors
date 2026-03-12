@@ -17,6 +17,7 @@ type BreakdownView struct {
 	selected    []bool
 	cursorIndex int
 	width       int
+	height      int
 	loading     bool
 	errorMsg    string
 }
@@ -45,6 +46,11 @@ func NewBreakdownViewLoading(parentTask *core.Task) *BreakdownView {
 // SetWidth sets the terminal width for rendering.
 func (bv *BreakdownView) SetWidth(w int) {
 	bv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (bv *BreakdownView) SetHeight(h int) {
+	bv.height = h
 }
 
 // SetResult populates the view with breakdown results.

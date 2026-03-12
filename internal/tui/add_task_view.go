@@ -21,6 +21,7 @@ const (
 type AddTaskView struct {
 	textInput    textinput.Model
 	width        int
+	height       int
 	withContext  bool
 	step         addTaskStep
 	capturedText string
@@ -59,6 +60,11 @@ func (av *AddTaskView) SetWidth(w int) {
 	if w > 4 {
 		av.textInput.Width = w - 4
 	}
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (av *AddTaskView) SetHeight(h int) {
+	av.height = h
 }
 
 // Update handles messages for the add task view.
