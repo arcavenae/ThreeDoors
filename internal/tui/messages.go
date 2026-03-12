@@ -276,6 +276,17 @@ type ProposalBatchApprovedMsg struct {
 	Count int
 }
 
+// ShowImportMsg is sent when the :import command is executed.
+type ShowImportMsg struct {
+	PrefilledPath string
+}
+
+// ImportConfirmedMsg is sent when the user confirms importing parsed tasks.
+type ImportConfirmedMsg struct {
+	Tasks  []*core.Task
+	Source string
+}
+
 // ShowHelpMsg is sent to open the dedicated help view.
 type ShowHelpMsg struct{}
 

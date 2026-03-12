@@ -50,6 +50,7 @@ const (
 	ViewSyncLogDetail
 	ViewConnectWizard
 	ViewDisconnect
+	ViewImport
 )
 
 // String returns the human-readable name of the view mode.
@@ -107,6 +108,8 @@ func (v ViewMode) String() string {
 		return "ConnectWizard"
 	case ViewDisconnect:
 		return "Disconnect"
+	case ViewImport:
+		return "Import"
 	default:
 		return "Unknown"
 	}
@@ -142,6 +145,7 @@ type MainModel struct {
 	syncLogDetailView   *SyncLogDetailView
 	connectWizard       *ConnectWizard
 	disconnectDialog    *DisconnectDialog
+	importView          *ImportView
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -524,6 +528,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.disconnectDialog = nil
 		m.addTaskView = nil
 		m.deferredListView = nil
+		m.importView = nil
 		m.doorsView.RefreshDoors()
 		return m, nil
 
@@ -1342,6 +1347,27 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setViewMode(ViewHelp)
 		return m, nil
 
+	case ShowImportMsg:
+		iv := NewImportView(msg.PrefilledPath)
+		iv.SetWidth(m.width)
+		m.importView = iv
+		m.previousView = m.viewMode
+		m.setViewMode(ViewImport)
+		return m, nil
+
+	case ImportConfirmedMsg:
+		for _, t := range msg.Tasks {
+			m.pool.AddTask(t)
+		}
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after import: %v\n", err)
+		}
+		m.importView = nil
+		m.flash = fmt.Sprintf("Imported %d tasks from %s", len(msg.Tasks), msg.Source)
+		m.doorsView.RefreshDoors()
+		m.setViewMode(ViewDoors)
+		return m, ClearFlashCmd()
+
 	case ShowDeferredListMsg:
 		m.deferredListView = NewDeferredListView(m.pool)
 		m.deferredListView.SetWidth(m.width)
@@ -1528,6 +1554,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateConnectWizard(msg)
 	case ViewDisconnect:
 		return m.updateDisconnect(msg)
+	case ViewImport:
+		return m.updateImport(msg)
 	}
 
 	return m, nil
@@ -1576,6 +1604,14 @@ func (m *MainModel) saveKeyHintsCmd(show bool) tea.Cmd {
 		}
 		return nil
 	}
+}
+
+func (m *MainModel) updateImport(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.importView == nil {
+		return m, nil
+	}
+	cmd := m.importView.Update(msg)
+	return m, cmd
 }
 
 func (m *MainModel) updateDeferred(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -1897,6 +1933,8 @@ func (m *MainModel) isTextInputActive() bool {
 	case ViewOnboarding:
 		// Onboarding has text input during the values step
 		return true
+	case ViewImport:
+		return m.importView != nil && m.importView.step == importStepPath
 	case ViewFeedback:
 		return m.feedbackView != nil && m.feedbackView.isCustom
 	case ViewMood:
@@ -2308,6 +2346,10 @@ func (m *MainModel) View() string {
 	case ViewDisconnect:
 		if m.disconnectDialog != nil {
 			view = m.disconnectDialog.View()
+		}
+	case ViewImport:
+		if m.importView != nil {
+			view = m.importView.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
