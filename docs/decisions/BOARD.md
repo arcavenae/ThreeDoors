@@ -184,6 +184,7 @@
 | D-169 | Daemon-maintained rolling snapshot (not supervisor-serialized at handover) | 2026-03-11 | Minimizes load on potentially degraded supervisor; daemon collects observable state from external sources every 5 min; supervisor only adds its unique delta (decisions, priorities). Rejected: supervisor serializes everything at handover (unreliable under degradation). | [Research](../../_bmad-output/planning-artifacts/supervisor-shift-handover/session-4-state-serialization.md) |
 | D-170 | Hybrid shift clock with time floor + usage ceiling | 2026-03-11 | Time-only misses burst usage; usage-only might trigger on brief sprints; hybrid combines 30-min time floor with compression-event ceiling. Three-tier thresholds (green/yellow/red) allow advisory warm-up. Anti-oscillation: 30-min minimum between handovers. Rejected: pure time-based, pure usage-based, binary go/no-go thresholds. | [Research](../../_bmad-output/planning-artifacts/supervisor-shift-handover/session-1-context-detection-shift-clock.md) |
 | D-171 | Role-based agent addressing for supervisor handover | 2026-03-11 | Workers address "supervisor" role, not instance name; daemon maintains role→instance mapping; ensures messages route to whichever supervisor is currently authoritative. Already how multiclaude works. Rejected: instance-based addressing (breaks on supervisor rotation). | [Research](../../_bmad-output/planning-artifacts/supervisor-shift-handover/session-5-failure-modes-recovery.md) |
+| D-172 | Three-layer depth system for door visual redesign (Epic 56) | 2026-03-11 | All three failure modes (no visual mass, no depth hierarchy, imperceptible shadow) must be addressed together. Background fill is the foundation — without it, shadow fixes just make a better shadow on a still-flat wireframe. Bevel lighting adds the missing "raised surface" depth cue. Gradient shadow provides spatial depth with proper contrast ratios (current ~2.7:1 is below perception threshold). Rejected: V2 Full Corridor (width cost 6+ chars too expensive), W2 Adaptive Depth/terminal detection (over-engineering), Interior Texture (competes with content readability), Braille Patterns (compatibility/accessibility concerns). | [Research](../../_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md) |
 
 ## Rejected
 
@@ -337,6 +338,10 @@
 | X-106 | Supervisor self-reporting for context degradation (Epic 56) | 2026-03-11 | Degrading agent can't trust its own assessment; external monitoring decouples detection from the entity being monitored | [Research](../../_bmad-output/planning-artifacts/supervisor-shift-handover/session-1-context-detection-shift-clock.md) |
 | X-107 | Message replay for handover context (Epic 56) | 2026-03-11 | Messages lack full context; high token cost to replay; doesn't capture verbal/conversational context from supervisor | [Research](../../_bmad-output/planning-artifacts/supervisor-shift-handover/session-2-worker-handover-protocol.md) |
 | X-108 | Instant authority cutover at handover (Epic 56) | 2026-03-11 | Risks message loss and split-brain during transition; phased transfer (outgoing→transition→incoming) is safer | [Research](../../_bmad-output/planning-artifacts/supervisor-shift-handover/session-2-worker-handover-protocol.md) |
+| X-109 | Full Corridor wall context for doors (Epic 56) | 2026-03-11 | Width cost of 6+ chars too expensive at min 15-char doors; beautiful but impractical for default experience | [Research](../../_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md) |
+| X-110 | Adaptive Depth terminal detection (Epic 56) | 2026-03-11 | Over-engineering; CompleteColor already handles ANSI fallbacks; background fill works universally on ANSI256+ | [Research](../../_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md) |
+| X-111 | Interior texture shade chars as wood grain (Epic 56) | 2026-03-11 | Competes with content readability; background color achieves "mass" without visual noise; text contrast must be preserved | [Research](../../_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md) |
+| X-112 | Braille patterns for subpixel door detail (Epic 56) | 2026-03-11 | Compatibility and accessibility concerns; not suitable for primary rendering | [Research](../../_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md) |
 
 ## Epic Number Registry
 
@@ -361,7 +366,7 @@
 | 53 | Remote Collaboration — multiclaude Cross-Machine Access | 2026-03-10 | Not Started (0/5) |
 | 54 | Gemini Research Supervisor — Deep Research Agent Infrastructure | 2026-03-11 | Not Started (0/5) |
 | 55 | CI Optimization Phase 1 | 2026-03-11 | Complete (3/3) |
-| 56 | *(skipped — registry stale)* | — | — |
+| 56 | Door Visual Redesign — Three-Layer Depth System | 2026-03-11 | Not Started (0/5) |
 | 57 | *(skipped — registry stale)* | — | — |
 | 58 | Supervisor Shift Handover — Context-Aware Supervisor Rotation | 2026-03-11 | Not Started (0/7) |
 | 59 | *(next available)* | — | — |
