@@ -1,5 +1,8 @@
 # Course Correction: Unified Door Key Indicators
 
+> **Status: Planned and Done — see Story 39.13 (Done, PR #407)**
+> Implemented as Story 39.13: Unified Door Key Indicator Toggle. Referenced in Epic 39 (epic-list.md). Decision D-137, D-138.
+
 **Date:** 2026-03-09
 **Triggered by:** User feedback on keybinding/tooltip visual approach
 **Scope:** Epic 39 — Keybinding Display System

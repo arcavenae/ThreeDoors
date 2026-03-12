@@ -1,5 +1,8 @@
 # Community Standards Plan — ThreeDoors
 
+> **Status: Planned — see Stories 0.42 (Done, PR #512) and 0.43 (Not Started)**
+> PR #498 created stories. Story 0.42 (Issue & PR Templates) is Done. Story 0.43 (Community Standards Documentation) is Not Started.
+
 > Planning artifact for adding GitHub community standards files.
 > Generated: 2026-03-10
 

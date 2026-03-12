@@ -1,5 +1,8 @@
 # Full-Terminal Vertical Layout — Research Findings
 
+> **Status: Not Yet Planned**
+> Research merged (PR #329) but no epic or stories created yet. See also `full-terminal-layout-party-mode.md`.
+
 > Research conducted: 2026-03-09
 > Scope: ThreeDoors TUI vertical height and full-terminal layout
 

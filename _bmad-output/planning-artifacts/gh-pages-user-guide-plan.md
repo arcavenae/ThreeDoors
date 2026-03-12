@@ -1,5 +1,8 @@
 # GitHub Pages User Guide — Planning Artifact
 
+> **Status: Not Yet Planned**
+> Research merged (PR #481, PR #500) but no epic or stories created yet.
+
 **Created:** 2026-03-10
 **Type:** /plan-work research → implementation stories
 **Epic:** TBD (request number from project-watchdog)
