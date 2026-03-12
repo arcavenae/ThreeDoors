@@ -159,6 +159,7 @@ ThreeDoors/
 │   │       ├── resolve.go           # ResolveFromConfig — wires config → manager → providers
 │   │       ├── form_spec.go         # FormSpec/FormField — provider config form definitions
 │   │       ├── sync_event.go        # SyncEventLog — per-connection JSONL audit log
+│   │       ├── health_warnings.go   # Proactive health notifications (Epic 47)
 │   │       └── oauth/               # OAuth device code flow
 │   │           ├── devicecode.go    # Device code grant implementation
 │   │           └── browser.go       # Cross-platform browser launcher
