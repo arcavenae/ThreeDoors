@@ -707,6 +707,21 @@
 - **Research:** See `_bmad-output/planning-artifacts/supervisor-shift-handover/` (5 party mode sessions + synthesis)
 - **Decisions:** D-167 (external monitoring), D-168 (cold start), D-169 (rolling snapshot), D-170 (hybrid shift clock), D-171 (role-based addressing)
 
+**Epic 56: Door Visual Redesign — Three-Layer Depth System** (P1)
+- **Goal:** Transform door rendering from imperceptible wireframe shadows into solid, 3D-feeling surfaces using a three-layer approach: background fill for visual mass, bevel lighting for raised-surface perception, and gradient shadow for spatial depth
+- **Prerequisites:** Epic 48 (Door-Like Doors — complete), Epic 17 (Door Theme System — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - ThemeColors extension with depth color fields (FillLower, Highlight, ShadowEdge, ShadowNear, ShadowFar)
+  - Background fill for all 8 theme door interiors (zero width cost, massive visual impact)
+  - Bevel lighting: lighter top/left borders, darker bottom/right borders (classic raised-button effect)
+  - Shadow overhaul: refactor ApplyShadow() from post-processor into per-theme rendering with gradient (▓▒░)
+  - Panel zone shading: differentiated upper/lower panel backgrounds
+  - Width-adaptive shadow: 0/1/2/3 columns based on terminal width
+- **Stories:** 56.1-56.5 (5 stories)
+- **Research:** See `_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md` (5-round party mode, 6 agents)
+- **Decisions:** D-172 (three-layer depth system), X-109 through X-112 (4 rejected alternatives)
+
 **Epic 59+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -774,6 +789,7 @@
 | Epic 53: Remote Collaboration | 5 | Not Started |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
+| Epic 56: Door Visual Redesign | 5 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
-| **Total** | **298** | **152 complete, 9 epics in progress, 138 not started** |
+| **Total** | **303** | **152 complete, 9 epics in progress, 143 not started** |
 ---
