@@ -52,3 +52,28 @@ func buildExtractionPrompt(text string) string {
 func buildRetryPrompt(text string) string {
 	return fmt.Sprintf(retryPromptTemplate, text)
 }
+
+// enrichmentPromptTemplate is the prompt sent to the LLM for task enrichment.
+const enrichmentPromptTemplate = `You are a task enrichment assistant. Given a brief task description, produce an enriched version with additional context, tags, and an effort estimate.
+
+TASK:
+%s
+
+OUTPUT FORMAT:
+Return a single JSON object with these fields:
+- "enriched_text": A clearer, more actionable version of the task (1-2 sentences max). Keep the original intent.
+- "tags": An array of 1-5 lowercase tags relevant to this task (e.g., ["finance", "personal", "urgent"]).
+- "effort": An integer 1-5 representing estimated effort (1=trivial, 2=quick, 3=moderate, 4=substantial, 5=major).
+- "context": A brief sentence explaining why this task matters or what it involves. This helps the user understand the task better.
+
+RULES:
+- Keep enriched_text concise — enhance, don't overwrite the user's intent.
+- Tags should be specific and useful for filtering, not generic ("task", "todo").
+- Effort should reflect real-world time/complexity.
+- Context should add information the user might not have written down.
+- Return ONLY valid JSON, no markdown formatting, no explanation outside the JSON.`
+
+// buildEnrichmentPrompt creates the prompt for task enrichment.
+func buildEnrichmentPrompt(taskText string) string {
+	return fmt.Sprintf(enrichmentPromptTemplate, taskText)
+}
