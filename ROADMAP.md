@@ -173,13 +173,13 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 2/5 stories done
+### Epic 45: Sources CLI (P1) — 3/5 stories done
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
+| 45.1 | `threedoors connect` Command (Non-Interactive) | Done (PR #573) | P1 | Epic 43 |
 | 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
 | 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
