@@ -9,7 +9,7 @@ import (
 func allViewModes() []ViewMode {
 	return []ViewMode{
 		ViewDoors, ViewDetail, ViewMood, ViewSearch, ViewHealth,
-		ViewAddTask, ViewValuesGoals, ViewFeedback, ViewImprovement,
+		ViewAddTask, ViewValuesGoals, ViewFeedback,
 		ViewNextSteps, ViewAvoidancePrompt, ViewInsights, ViewOnboarding,
 		ViewConflict, ViewSyncLog, ViewThemePicker, ViewDevQueue, ViewProposals,
 		ViewHelp, ViewDeferred, ViewSnooze,
