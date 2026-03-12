@@ -694,6 +694,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Task Management
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -705,6 +718,97 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#task-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Statuses
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#status-transitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status Transitions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Tasks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action-keys-in-detail-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Action Keys in Detail View
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-categorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Categorization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snooze-and-defer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Snooze and Defer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#undo-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Undo Completion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mood-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mood Tracking
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1450,6 +1554,86 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#task-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Statuses
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#status-transitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status Transitions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Tasks
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action-keys-in-detail-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Action Keys in Detail View
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-categorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Categorization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snooze-and-defer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Snooze and Defer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#undo-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Undo Completion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mood-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mood Tracking
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1468,7 +1652,200 @@
 
 
 <h1 id="task-management">Task Management<a class="headerlink" href="#task-management" title="Permanent link">&para;</a></h1>
-<p><em>Coming soon — creating, completing, snoozing, and deferring tasks.</em></p>
+<h2 id="task-statuses">Task Statuses<a class="headerlink" href="#task-statuses" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Todo</strong></td>
+<td>Default state for new tasks</td>
+</tr>
+<tr>
+<td><strong>In-Progress</strong></td>
+<td>Actively being worked on</td>
+</tr>
+<tr>
+<td><strong>Blocked</strong></td>
+<td>Cannot proceed; requires a blocker reason</td>
+</tr>
+<tr>
+<td><strong>Complete</strong></td>
+<td>Done (removed from active pool)</td>
+</tr>
+<tr>
+<td><strong>Deferred</strong></td>
+<td>Intentionally postponed</td>
+</tr>
+<tr>
+<td><strong>Archived</strong></td>
+<td>Removed from pool without completing</td>
+</tr>
+<tr>
+<td><strong>In-Review</strong></td>
+<td>Awaiting review (from in-progress)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="status-transitions">Status Transitions<a class="headerlink" href="#status-transitions" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Todo ──→ In-Progress ──→ Complete
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  │          │    │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  │          │    └──→ In-Review ──→ Complete
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  │          │              │
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  │          └──→ Blocked ──┘
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  ├──→ Blocked ──→ Todo / In-Progress / Complete
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  ├──→ Complete (terminal)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  ├──→ Deferred ──→ Todo
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  └──→ Archived (terminal)
+</code></pre></div>
+<h2 id="adding-tasks">Adding Tasks<a class="headerlink" href="#adding-tasks" title="Permanent link">&para;</a></h2>
+<p>Three ways to add a task:</p>
+<p><strong>Quick add</strong> — open the command palette with <span class="keys"><kbd class="key-colon">:</kbd></span> and type:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>:add Buy groceries
+</code></pre></div>
+<p><strong>Add with context</strong> — captures the task and why it matters:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>:add-ctx Refactor auth module
+</code></pre></div>
+<p>You'll be prompted: "Why is this important?" — your answer is stored as context.</p>
+<p><strong>Inline alternative:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>:add --why Refactor auth module
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Task text is parsed for inline categorization automatically.</p>
+</div>
+<h2 id="action-keys-in-detail-view">Action Keys in Detail View<a class="headerlink" href="#action-keys-in-detail-view" title="Permanent link">&para;</a></h2>
+<p>After opening a door, these keys act on the task:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keys"><kbd class="key-c">C</kbd></span></td>
+<td>Complete</td>
+<td>Marks the task done. Removed from active pool, logged to <code>completed.txt</code>. Shows a celebration with your daily count.</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-i">I</kbd></span></td>
+<td>In-Progress</td>
+<td>Signals you're actively working on this task.</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-b">B</kbd></span></td>
+<td>Blocked</td>
+<td>Prompts for a reason (e.g., "waiting on API key"). <span class="keys"><kbd class="key-enter">Enter</kbd></span> to confirm, <span class="keys"><kbd class="key-escape">Esc</kbd></span> to cancel.</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-p">P</kbd></span></td>
+<td>Procrastinate</td>
+<td>Returns the task to the pool. No judgment — it'll come back around.</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-r">R</kbd></span></td>
+<td>Rework</td>
+<td>Returns the task to the pool, signaling it needs more thought.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="task-categorization">Task Categorization<a class="headerlink" href="#task-categorization" title="Permanent link">&para;</a></h2>
+<p>Press <span class="keys"><kbd class="key-colon">:</kbd></span> then type <code>tag</code> to categorize a task across three dimensions:</p>
+<p><strong>Type:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Icon</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Creative</td>
+<td>:art:</td>
+<td>Design, writing, ideation</td>
+</tr>
+<tr>
+<td>Administrative</td>
+<td>:clipboard:</td>
+<td>Email, scheduling, paperwork</td>
+</tr>
+<tr>
+<td>Technical</td>
+<td>:wrench:</td>
+<td>Coding, debugging, system work</td>
+</tr>
+<tr>
+<td>Physical</td>
+<td>:muscle:</td>
+<td>Exercise, errands, hands-on tasks</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Effort:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quick Win</td>
+<td>Under 15 minutes</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>15–60 minutes</td>
+</tr>
+<tr>
+<td>Deep Work</td>
+<td>Focused, extended effort</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Location:</strong> Home, Work, Errands, Anywhere</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Categorization improves door selection over time — ThreeDoors learns which task types you prefer in different moods.</p>
+</div>
+<h2 id="snooze-and-defer">Snooze and Defer<a class="headerlink" href="#snooze-and-defer" title="Permanent link">&para;</a></h2>
+<p>Press <span class="keys"><kbd class="key-z">Z</kbd></span> in the task detail view to snooze a task:</p>
+<ul>
+<li>Set a return date — the task moves to <code>deferred</code> status with a <code>defer_until</code> timestamp</li>
+<li>When the defer date passes, the task auto-returns to <code>todo</code> status</li>
+<li>Snoozed tasks are excluded from door selection until they're due</li>
+</ul>
+<p>View all snoozed tasks with <code>:deferred</code> in the command palette.</p>
+<h2 id="undo-completion">Undo Completion<a class="headerlink" href="#undo-completion" title="Permanent link">&para;</a></h2>
+<p>Accidentally completed a task? The <code>complete → todo</code> transition lets you reverse it:</p>
+<ul>
+<li>In the detail view of a completed task, undo the completion</li>
+<li>The task returns to <code>todo</code> status and re-enters the active pool</li>
+<li>Undo events are logged in session metrics for pattern analysis</li>
+</ul>
+<h2 id="mood-tracking">Mood Tracking<a class="headerlink" href="#mood-tracking" title="Permanent link">&para;</a></h2>
+<p>Press <span class="keys"><kbd class="key-m">M</kbd></span> at any time to log how you're feeling:</p>
+<ol>
+<li>Focused</li>
+<li>Tired</li>
+<li>Stressed</li>
+<li>Energized</li>
+<li>Distracted</li>
+<li>Calm</li>
+<li>Other (type your own)</li>
+</ol>
+<p>Mood entries are timestamped and stored in your session data. Over time, ThreeDoors correlates mood with task completion patterns and adjusts door selection accordingly.</p>
 
 
 

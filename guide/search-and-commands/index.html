@@ -717,6 +717,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Search & Commands
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -728,6 +741,85 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#search-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Search Mode
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-palette" class="md-nav__link">
+    <span class="md-ellipsis">
+      Command Palette
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Command Palette">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Commands
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insights-analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Insights &amp; Analytics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration &amp; Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1450,6 +1542,74 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#search-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Search Mode
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-palette" class="md-nav__link">
+    <span class="md-ellipsis">
+      Command Palette
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Command Palette">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      Task Commands
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insights-analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Insights &amp; Analytics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration &amp; Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1468,7 +1628,172 @@
 
 
 <h1 id="search-commands">Search &amp; Commands<a class="headerlink" href="#search-commands" title="Permanent link">&para;</a></h1>
-<p><em>Coming soon — search (<code>/</code>) and command palette (<code>:</code>) reference.</em></p>
+<h2 id="search-mode">Search Mode<a class="headerlink" href="#search-mode" title="Permanent link">&para;</a></h2>
+<p>Press <span class="keys"><kbd class="key-slash">/</kbd></span> to search tasks by text. Results filter in real-time as you type.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keys"><kbd class="key-j">J</kbd></span> or <span class="keys"><kbd class="key-arrow-down">Down</kbd></span></td>
+<td>Navigate to next result</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-k">K</kbd></span> or <span class="keys"><kbd class="key-arrow-up">Up</kbd></span></td>
+<td>Navigate to previous result</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-enter">Enter</kbd></span></td>
+<td>Open selected task in detail view</td>
+</tr>
+<tr>
+<td><span class="keys"><kbd class="key-escape">Esc</kbd></span></td>
+<td>Exit search</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>After viewing a task from search, you return to search results (not the doors view) so you can continue browsing.</p>
+</div>
+<h2 id="command-palette">Command Palette<a class="headerlink" href="#command-palette" title="Permanent link">&para;</a></h2>
+<p>Press <span class="keys"><kbd class="key-colon">:</kbd></span> to enter command mode. Type a command and press <span class="keys"><kbd class="key-enter">Enter</kbd></span>.</p>
+<h3 id="task-commands">Task Commands<a class="headerlink" href="#task-commands" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:add &lt;text&gt;</code></td>
+<td>Add a new task. Without text, opens a prompt.</td>
+</tr>
+<tr>
+<td><code>:add-ctx &lt;text&gt;</code></td>
+<td>Add a task with context — prompts for task text, then why/context.</td>
+</tr>
+<tr>
+<td><code>:add --why &lt;text&gt;</code></td>
+<td>Same as <code>:add-ctx</code> — captures task and reason.</td>
+</tr>
+<tr>
+<td><code>:tag</code></td>
+<td>Categorize the selected task (type, effort, location).</td>
+</tr>
+<tr>
+<td><code>:deferred</code></td>
+<td>Show deferred/snoozed tasks.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="insights-analytics">Insights &amp; Analytics<a class="headerlink" href="#insights-analytics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:stats</code></td>
+<td>Show session metrics (tasks completed, duration, refreshes).</td>
+</tr>
+<tr>
+<td><code>:dashboard</code></td>
+<td>Open the insights dashboard.</td>
+</tr>
+<tr>
+<td><code>:insights</code></td>
+<td>Same as <code>:dashboard</code>. Accepts optional filter: <code>:insights mood</code> or <code>:insights avoidance</code>.</td>
+</tr>
+<tr>
+<td><code>:mood [mood]</code></td>
+<td>Log mood. Without argument, opens the mood selector.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="configuration-data">Configuration &amp; Data<a class="headerlink" href="#configuration-data" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:goals</code></td>
+<td>View your values and goals.</td>
+</tr>
+<tr>
+<td><code>:goals edit</code></td>
+<td>Edit your values and goals.</td>
+</tr>
+<tr>
+<td><code>:theme</code></td>
+<td>Open theme picker.</td>
+</tr>
+<tr>
+<td><code>:seasonal</code></td>
+<td>Open seasonal theme picker.</td>
+</tr>
+<tr>
+<td><code>:health</code></td>
+<td>Run system health checks on providers and data files.</td>
+</tr>
+<tr>
+<td><code>:synclog</code></td>
+<td>Show sync history.</td>
+</tr>
+<tr>
+<td><code>:connect</code></td>
+<td>Connect a new data source.</td>
+</tr>
+<tr>
+<td><code>:sources</code></td>
+<td>View connected data sources.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="other">Other<a class="headerlink" href="#other" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:suggestions</code></td>
+<td>Browse LLM task proposals.</td>
+</tr>
+<tr>
+<td><code>:devqueue</code></td>
+<td>Open dev dispatch queue.</td>
+</tr>
+<tr>
+<td><code>:plan</code></td>
+<td>Start daily planning mode.</td>
+</tr>
+<tr>
+<td><code>:help</code></td>
+<td>Display all available commands.</td>
+</tr>
+<tr>
+<td><code>:quit</code> / <code>:exit</code></td>
+<td>Exit the application.</td>
+</tr>
+</tbody>
+</table>
 
 
 

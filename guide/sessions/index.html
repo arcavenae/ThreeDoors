@@ -809,6 +809,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Sessions & Analytics
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -820,6 +833,103 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Session Tracking
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Viewing Stats
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#insights-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Insights Dashboard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Insights Dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filtered-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filtered Views
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#completion-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Completion Tracking
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mood-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mood Correlation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Analysis Scripts
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1450,6 +1560,92 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Session Tracking
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Viewing Stats
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#insights-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Insights Dashboard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Insights Dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filtered-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filtered Views
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#completion-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Completion Tracking
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mood-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mood Correlation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Files
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Analysis Scripts
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1468,7 +1664,141 @@
 
 
 <h1 id="sessions-analytics">Sessions &amp; Analytics<a class="headerlink" href="#sessions-analytics" title="Permanent link">&para;</a></h1>
-<p><em>Coming soon — session tracking, mood logging, and pattern insights.</em></p>
+<h2 id="session-tracking">Session Tracking<a class="headerlink" href="#session-tracking" title="Permanent link">&para;</a></h2>
+<p>Every session automatically records:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session ID</td>
+<td>Unique identifier per session</td>
+</tr>
+<tr>
+<td>Start/end time</td>
+<td>UTC timestamps</td>
+</tr>
+<tr>
+<td>Duration</td>
+<td>Session length in seconds</td>
+</tr>
+<tr>
+<td>Tasks completed</td>
+<td>Count of completed tasks</td>
+</tr>
+<tr>
+<td>Doors viewed</td>
+<td>How many door sets you saw</td>
+</tr>
+<tr>
+<td>Refreshes used</td>
+<td>Number of times you pressed <span class="keys"><kbd class="key-s">S</kbd></span> / <span class="keys"><kbd class="key-arrow-down">Down</kbd></span></td>
+</tr>
+<tr>
+<td>Detail views</td>
+<td>How many tasks you opened</td>
+</tr>
+<tr>
+<td>Door selections</td>
+<td>Which position (left/center/right) and which task</td>
+</tr>
+<tr>
+<td>Task bypasses</td>
+<td>Which tasks were shown but not selected</td>
+</tr>
+<tr>
+<td>Mood entries</td>
+<td>Timestamped mood logs</td>
+</tr>
+<tr>
+<td>Door feedback</td>
+<td>Feedback given via <span class="keys"><kbd class="key-n">N</kbd></span> key</td>
+</tr>
+<tr>
+<td>Time to first door</td>
+<td>Seconds from launch to first door selection</td>
+</tr>
+</tbody>
+</table>
+<h2 id="viewing-stats">Viewing Stats<a class="headerlink" href="#viewing-stats" title="Permanent link">&para;</a></h2>
+<p><strong>In-app:</strong> Type <code>:stats</code> in the command palette for a quick session summary.</p>
+<p><strong>Insights dashboard:</strong> Type <code>:dashboard</code> or <code>:insights</code> for detailed analytics.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Insights require 3+ completed sessions for meaningful data. Each app launch and quit counts as one session.</p>
+</div>
+<h2 id="insights-dashboard">Insights Dashboard<a class="headerlink" href="#insights-dashboard" title="Permanent link">&para;</a></h2>
+<p>Access via <code>:dashboard</code> or <code>:insights</code>. Shows:</p>
+<ul>
+<li><strong>Completion trends</strong> — last 7 days with sparkline visualization</li>
+<li><strong>Streaks</strong> — current and longest consecutive completion days</li>
+<li><strong>Mood and productivity</strong> — average completions per mood state</li>
+<li><strong>Door position preferences</strong> — left/center/right selection percentages</li>
+</ul>
+<h3 id="filtered-views">Filtered Views<a class="headerlink" href="#filtered-views" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:insights mood</code></td>
+<td>Mood &amp; productivity correlations</td>
+</tr>
+<tr>
+<td><code>:insights avoidance</code></td>
+<td>Avoidance pattern analysis</td>
+</tr>
+</tbody>
+</table>
+<h2 id="completion-tracking">Completion Tracking<a class="headerlink" href="#completion-tracking" title="Permanent link">&para;</a></h2>
+<p>After completing a task, ThreeDoors shows:</p>
+<ul>
+<li>How many tasks you've completed today</li>
+<li>Comparison with yesterday's count</li>
+<li>Your current streak (consecutive days with at least one completion)</li>
+</ul>
+<h2 id="mood-correlation">Mood Correlation<a class="headerlink" href="#mood-correlation" title="Permanent link">&para;</a></h2>
+<p>Over time, ThreeDoors correlates mood logs with task completion patterns:</p>
+<ul>
+<li>Which moods lead to the most completions</li>
+<li>Which task types you prefer in different moods</li>
+<li>How mood affects your door position preference</li>
+</ul>
+<p>This data powers <a href="../doors-interaction/#mood-aware-selection">mood-aware door selection</a>.</p>
+<h2 id="data-files">Data Files<a class="headerlink" href="#data-files" title="Permanent link">&para;</a></h2>
+<p>Session data is stored in <code>~/.threedoors/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sessions.jsonl</code></td>
+<td>One JSON object per line, one per session</td>
+</tr>
+<tr>
+<td><code>patterns.json</code></td>
+<td>Cached analysis report (regenerated when new sessions arrive)</td>
+</tr>
+<tr>
+<td><code>completed.txt</code></td>
+<td>Append-only completion log</td>
+</tr>
+</tbody>
+</table>
+<h2 id="analysis-scripts">Analysis Scripts<a class="headerlink" href="#analysis-scripts" title="Permanent link">&para;</a></h2>
+<p>Run <code>make analyze</code> to execute the analysis scripts in <code>scripts/</code> against your session data.</p>
 
 
 
