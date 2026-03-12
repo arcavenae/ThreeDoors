@@ -4,6 +4,38 @@ import (
 	"strings"
 )
 
+// Breakpoint represents terminal height tiers for graceful degradation (D-119).
+type Breakpoint int
+
+const (
+	// BreakpointMinimal: height < 10 — doors only, no header/footer/keybinding bar.
+	BreakpointMinimal Breakpoint = iota
+	// BreakpointCompact: height 10-15 — 1-line header, doors at min 10, 1-line footer.
+	BreakpointCompact
+	// BreakpointStandard: height 16-24 — full header, proportional doors, footer with bar.
+	BreakpointStandard
+	// BreakpointComfortable: height 25-40 — breathing room appears.
+	BreakpointComfortable
+	// BreakpointSpacious: height 40+ — doors capped at 25, generous padding.
+	BreakpointSpacious
+)
+
+// layoutBreakpoint returns the degradation tier for a given terminal height.
+func layoutBreakpoint(height int) Breakpoint {
+	switch {
+	case height < 10:
+		return BreakpointMinimal
+	case height <= 15:
+		return BreakpointCompact
+	case height <= 24:
+		return BreakpointStandard
+	case height <= 40:
+		return BreakpointComfortable
+	default:
+		return BreakpointSpacious
+	}
+}
+
 // layoutFull pads the combined header + content + footer output to exactly
 // totalHeight lines, filling the terminal vertically. Remaining vertical
 // space is inserted between the content and footer regions.

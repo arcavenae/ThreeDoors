@@ -1,6 +1,5 @@
 ThreeDoors - Technical Demo
 Pick one. Start small. That's progress.
-
 ╭────────────────────────╮╭────────────────────────╮╭────────────────────────╮
 │                        ││                        ││                        │
 │  [todo]                ││  [todo]                ││  [todo]                │
@@ -9,7 +8,6 @@ Pick one. Start small. That's progress.
 │                        ││                        ││                        │
 ╰────────────────────────╯╰────────────────────────╯╰────────────────────────╯
 ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
-
 [s] re-roll  [n] add task
 
 / search | m mood | : command | ? help | q quit

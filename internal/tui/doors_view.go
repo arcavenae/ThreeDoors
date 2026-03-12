@@ -301,9 +301,10 @@ func (dv *DoorsView) SetHeight(h int) {
 	dv.height = h
 }
 
-// View renders the doors view.
-func (dv *DoorsView) View() string {
-	// --- Header region: title + greeting ---
+// RenderHeader returns the header content: title, greeting, multi-dimensional
+// greeting, and time context badge. This is used by MainModel to compose the
+// header zone independently of the doors.
+func (dv *DoorsView) RenderHeader() string {
 	var header strings.Builder
 	header.WriteString(headerStyle.Render("ThreeDoors - Technical Demo"))
 	header.WriteString("\n")
@@ -319,87 +320,52 @@ func (dv *DoorsView) View() string {
 		header.WriteString("\n")
 		header.WriteString(badgeStyle.Render(timeStr))
 	}
+	return header.String()
+}
 
+// RenderCompactHeader returns a single-line header for compact breakpoints.
+func (dv *DoorsView) RenderCompactHeader() string {
+	return headerStyle.Render("ThreeDoors")
+}
+
+// RenderDoors returns only the rendered three doors (no header, footer, or
+// status section). Returns an empty-state message when no doors are available.
+func (dv *DoorsView) RenderDoors() string {
 	if len(dv.currentDoors) == 0 {
-		header.WriteString("\n\n")
-		header.WriteString(flashStyle.Render("All tasks done! Great work!"))
-		header.WriteString("\n\nPress 'q' to quit.\n")
-		return header.String()
+		var s strings.Builder
+		s.WriteString(flashStyle.Render("All tasks done! Great work!"))
+		s.WriteString("\n\nPress 'q' to quit.\n")
+		return s.String()
 	}
 
 	hintsEnabled := dv.showKeyHints
 
-	doorWidth := 30
-	if dv.width > 20 {
-		doorWidth = (dv.width - 6) / 3
-		if doorWidth < 15 {
-			doorWidth = 15
-		}
-	}
+	doorWidth := dv.doorWidth()
+	doorHeight := dv.doorHeight()
 
-	doorHeight := 0
-	if dv.height > 0 {
-		doorHeight = int(float64(dv.height) * 0.5)
-		if doorHeight < 10 {
-			doorHeight = 10
-		}
-		if doorHeight > 25 {
-			doorHeight = 25
-		}
-		doorHeight-- // reserve 1 row for threshold floor line (Story 48.2)
-	}
-
-	// Resolve the active theme for this render cycle.
-	// Width/height fallback: seasonal themes fall back to the user's base theme;
-	// non-seasonal themes fall back to Classic.
-	activeTheme := dv.theme
-	if activeTheme != nil && (doorWidth < activeTheme.MinWidth || (activeTheme.MinHeight > 0 && doorHeight < activeTheme.MinHeight)) {
-		if activeTheme.Season != "" && dv.baseThemeName != "" && dv.themeRegistry != nil {
-			if baseTheme, ok := dv.themeRegistry.Get(dv.baseThemeName); ok {
-				activeTheme = baseTheme
-			}
-		} else if dv.themeRegistry != nil {
-			if classic, ok := dv.themeRegistry.Get("classic"); ok {
-				activeTheme = classic
-			}
-		}
-	}
-
+	activeTheme := dv.resolveActiveTheme(doorWidth, doorHeight)
 	usePerDoorColors := dv.width >= 60
 	hasSelection := dv.selectedDoorIndex >= 0
 
 	var renderedDoors []string
 	for i, task := range dv.currentDoors {
-		// Build content parts for vertical composition via lipgloss.JoinVertical.
 		parts := []string{task.Text}
 
-		// Source provider badge
 		if srcBadge := SourceBadge(task.SourceProvider); srcBadge != "" {
 			parts = append(parts, srcBadge)
 		}
-
-		// Duplicate indicator
 		if dv.duplicateTaskIDs[task.ID] {
 			parts = append(parts, DuplicateIndicator())
 		}
-
-		// PR status badge
 		if prBadge := DevDispatchBadge(task); prBadge != "" {
 			parts = append(parts, prBadge)
 		}
-
-		// Focus badge — show when task has +focus tag and planning is active
 		if core.HasFocusTag(task) && dv.planningTimestamp != nil && !core.IsFocusExpired(*dv.planningTimestamp) {
 			parts = append(parts, focusBadgeStyle.Render("focus"))
 		}
-
-		// Category badges
-		badge := categoryBadge(task)
-		if badge != "" {
+		if badge := categoryBadge(task); badge != "" {
 			parts = append(parts, badgeStyle.Render(badge))
 		}
-
-		// Avoidance indicator — show when bypassed 5+ times, display total times shown
 		if bypassCount, ok := dv.avoidanceMap[task.Text]; ok && bypassCount >= 5 {
 			shownCount := dv.avoidanceShown[task.Text]
 			if shownCount == 0 {
@@ -420,9 +386,6 @@ func (dv *DoorsView) View() string {
 		}
 		content = statusIndicator + devBadge + "\n\n" + content
 
-		// Apply content emphasis based on selection state.
-		// When animation is active, emphasis interpolates between states via spring physics.
-		// When settled, fall back to discrete selected/unselected styling.
 		isSelected := i == dv.selectedDoorIndex
 		animating := dv.doorAnimation != nil && dv.doorAnimation.Active()
 
@@ -436,13 +399,11 @@ func (dv *DoorsView) View() string {
 			}
 		}
 
-		// Build inline hint for this door with selection-state awareness.
 		hint := ""
 		if hintsEnabled && i < len(doorHintKeys) {
 			hint = renderDoorHint(doorHintKeys[i], true, isSelected, hasSelection)
 		}
 
-		// Compute emphasis for this door (for crack-of-light and spring sync)
 		doorEmphasis := 0.0
 		if dv.doorAnimation != nil {
 			doorEmphasis = dv.doorAnimation.Emphasis(i)
@@ -450,11 +411,9 @@ func (dv *DoorsView) View() string {
 			doorEmphasis = 1.0
 		}
 
-		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
 			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected, hint, doorEmphasis))
 		} else if animating {
-			// Spring-interpolated border color based on emphasis
 			emphasis := dv.doorAnimation.Emphasis(i)
 			style := animatedDoorStyle(i, emphasis, doorWidth, doorHeight, usePerDoorColors)
 			renderedDoors = append(renderedDoors, style.Render(content))
@@ -473,7 +432,6 @@ func (dv *DoorsView) View() string {
 		}
 	}
 
-	// --- Door region: doors + threshold + status indicators ---
 	var doorSection strings.Builder
 	doorRow := lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...)
 	doorSection.WriteString(doorRow)
@@ -489,35 +447,56 @@ func (dv *DoorsView) View() string {
 		fmt.Fprintf(&doorSection, "\n%s", thresholdStyle.Render(thresholdLine))
 	}
 
+	return doorSection.String()
+}
+
+// RenderStatusSection returns the status indicators below the doors:
+// completion count, conflict notifications, proposal badges, sync bar,
+// and connection health alerts.
+func (dv *DoorsView) RenderStatusSection() string {
+	var s strings.Builder
+
 	if dv.completedCount > 0 {
-		fmt.Fprintf(&doorSection, "\n\nCompleted this session: %d", dv.completedCount)
+		fmt.Fprintf(&s, "Completed this session: %d", dv.completedCount)
 	}
 
-	// Conflict notification
 	if dv.pendingConflicts > 0 {
-		doorSection.WriteString("\n\n")
-		doorSection.WriteString(conflictHeaderStyle.Render(fmt.Sprintf("⚠ %d sync conflict(s) detected — press C to resolve", dv.pendingConflicts)))
+		if s.Len() > 0 {
+			s.WriteString("\n\n")
+		}
+		s.WriteString(conflictHeaderStyle.Render(fmt.Sprintf("⚠ %d sync conflict(s) detected — press C to resolve", dv.pendingConflicts)))
 	}
 
-	// Proposal suggestions badge
 	if dv.pendingProposals > 0 {
-		doorSection.WriteString("\n\n")
-		doorSection.WriteString(proposalBadgeStyle.Render(fmt.Sprintf("[%d suggestions] — press S to review", dv.pendingProposals)))
+		if s.Len() > 0 {
+			s.WriteString("\n\n")
+		}
+		s.WriteString(proposalBadgeStyle.Render(fmt.Sprintf("[%d suggestions] — press S to review", dv.pendingProposals)))
 	}
 
-	// Sync status bar (with spinner animation when syncing)
 	if syncBar := RenderSyncStatusBarWithSpinner(dv.syncTracker, dv.syncSpinner); syncBar != "" {
-		doorSection.WriteString("\n\n")
-		doorSection.WriteString(syncBar)
+		if s.Len() > 0 {
+			s.WriteString("\n\n")
+		}
+		s.WriteString(syncBar)
 	}
 
-	// Connection health alert
 	if alert := dv.connectionHealthAlert(); alert != "" {
-		doorSection.WriteString("\n\n")
-		doorSection.WriteString(alert)
+		if s.Len() > 0 {
+			s.WriteString("\n\n")
+		}
+		s.WriteString(alert)
 	}
 
-	// --- Footer region: action hints + help text ---
+	return s.String()
+}
+
+// RenderFooter returns the footer content: action hints and help text.
+// Used by MainModel to compose the footer zone independently.
+func (dv *DoorsView) RenderFooter() string {
+	hintsEnabled := dv.showKeyHints
+	hasSelection := dv.selectedDoorIndex >= 0
+
 	var footer strings.Builder
 	if hintsEnabled {
 		var actionParts []string
@@ -536,44 +515,158 @@ func (dv *DoorsView) View() string {
 		footer.WriteString("\n")
 		footer.WriteString(greetingStyle.Render(dv.footerMessage))
 	}
+	return footer.String()
+}
 
-	// Distribute vertical padding: 40% above doors, 60% below (perceptual centering).
-	headerStr := header.String()
-	doorStr := doorSection.String()
-	footerStr := footer.String()
+// RenderCompactFooter returns a single-line footer for compact breakpoints.
+func (dv *DoorsView) RenderCompactFooter() string {
+	return helpStyle.Render("a/w/d select | s re-roll | q quit")
+}
 
-	if dv.height <= 0 {
-		// No height info — render without padding (pre-AltScreen compat).
-		return headerStr + "\n\n" + doorStr + "\n\n" + footerStr
+// HasDoors reports whether there are doors to display.
+func (dv *DoorsView) HasDoors() bool {
+	return len(dv.currentDoors) > 0
+}
+
+// doorWidth computes the door width from the terminal width.
+func (dv *DoorsView) doorWidth() int {
+	doorWidth := 30
+	if dv.width > 20 {
+		doorWidth = (dv.width - 6) / 3
+		if doorWidth < 15 {
+			doorWidth = 15
+		}
+	}
+	return doorWidth
+}
+
+// doorHeight computes the door height from the terminal height.
+func (dv *DoorsView) doorHeight() int {
+	doorHeight := 0
+	if dv.height > 0 {
+		doorHeight = int(float64(dv.height) * 0.5)
+		if doorHeight < 10 {
+			doorHeight = 10
+		}
+		if doorHeight > 25 {
+			doorHeight = 25
+		}
+		doorHeight-- // reserve 1 row for threshold floor line (Story 48.2)
+	}
+	return doorHeight
+}
+
+// resolveActiveTheme resolves the theme for this render cycle, falling back
+// to base or classic theme when dimensions are too small.
+func (dv *DoorsView) resolveActiveTheme(doorWidth, doorHeight int) *themes.DoorTheme {
+	activeTheme := dv.theme
+	if activeTheme != nil && (doorWidth < activeTheme.MinWidth || (activeTheme.MinHeight > 0 && doorHeight < activeTheme.MinHeight)) {
+		if activeTheme.Season != "" && dv.baseThemeName != "" && dv.themeRegistry != nil {
+			if baseTheme, ok := dv.themeRegistry.Get(dv.baseThemeName); ok {
+				activeTheme = baseTheme
+			}
+		} else if dv.themeRegistry != nil {
+			if classic, ok := dv.themeRegistry.Get("classic"); ok {
+				activeTheme = classic
+			}
+		}
+	}
+	return activeTheme
+}
+
+// View renders the doors view. Uses the sub-renderers and composes them
+// with breakpoint-aware vertical padding.
+func (dv *DoorsView) View() string {
+	headerStr := dv.RenderHeader()
+
+	if !dv.HasDoors() {
+		var s strings.Builder
+		s.WriteString(headerStr)
+		s.WriteString("\n\n")
+		s.WriteString(flashStyle.Render("All tasks done! Great work!"))
+		s.WriteString("\n\nPress 'q' to quit.\n")
+		return s.String()
 	}
 
+	// Only apply breakpoint degradation when height is known (> 0).
+	// Height 0 means no WindowSizeMsg received yet — show full UI.
+	bp := BreakpointStandard
+	if dv.height > 0 {
+		bp = layoutBreakpoint(dv.height)
+	}
+
+	// Compose header based on breakpoint.
+	switch bp {
+	case BreakpointMinimal:
+		headerStr = "" // no header
+	case BreakpointCompact:
+		headerStr = dv.RenderCompactHeader()
+	default:
+		// full header already set
+	}
+
+	doorStr := dv.RenderDoors()
+	statusStr := dv.RenderStatusSection()
+
+	// Compose footer based on breakpoint.
+	var footerStr string
+	switch bp {
+	case BreakpointMinimal:
+		footerStr = "" // no footer
+	case BreakpointCompact:
+		footerStr = dv.RenderCompactFooter()
+	default:
+		footerStr = dv.RenderFooter()
+	}
+
+	// Merge doors + status into the content zone.
+	content := doorStr
+	if statusStr != "" {
+		content += "\n\n" + statusStr
+	}
+
+	if dv.height <= 0 {
+		return joinNonEmpty(headerStr, content, footerStr)
+	}
+
+	// Distribute vertical padding: 40% above doors, 60% below (perceptual centering).
 	headerLines := strings.Count(headerStr, "\n") + 1
-	doorLines := strings.Count(doorStr, "\n") + 1
+	if headerStr == "" {
+		headerLines = 0
+	}
+	contentLines := strings.Count(content, "\n") + 1
 	footerLines := strings.Count(footerStr, "\n") + 1
-	usedLines := headerLines + doorLines + footerLines
+	if footerStr == "" {
+		footerLines = 0
+	}
+	usedLines := headerLines + contentLines + footerLines
 	remaining := dv.height - usedLines
 
 	if remaining <= 0 {
-		return headerStr + "\n" + doorStr + "\n" + footerStr
+		return joinNonEmpty(headerStr, content, footerStr)
 	}
 
 	topPad := remaining * 2 / 5     // 40%
 	bottomPad := remaining - topPad // 60%
 
 	var out strings.Builder
-	out.WriteString(headerStr)
+	if headerStr != "" {
+		out.WriteString(headerStr)
+	}
 	if topPad > 0 {
 		out.WriteString(strings.Repeat("\n", topPad))
-	} else {
+	} else if headerStr != "" {
 		out.WriteString("\n")
 	}
-	out.WriteString(doorStr)
+	out.WriteString(content)
 	if bottomPad > 0 {
 		out.WriteString(strings.Repeat("\n", bottomPad))
-	} else {
+	} else if footerStr != "" {
 		out.WriteString("\n")
 	}
-	out.WriteString(footerStr)
+	if footerStr != "" {
+		out.WriteString(footerStr)
+	}
 	return out.String()
 }
 
