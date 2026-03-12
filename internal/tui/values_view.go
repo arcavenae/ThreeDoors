@@ -24,6 +24,7 @@ type ValuesView struct {
 	textInput     textinput.Model
 	selectedIndex int
 	width         int
+	height        int
 }
 
 // NewValuesSetupView creates a values view in setup mode.
@@ -61,6 +62,11 @@ func (vv *ValuesView) SetWidth(w int) {
 	if w > 4 {
 		vv.textInput.Width = w - 4
 	}
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (vv *ValuesView) SetHeight(h int) {
+	vv.height = h
 }
 
 // Update handles messages for the values view.
