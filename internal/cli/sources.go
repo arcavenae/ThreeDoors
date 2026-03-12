@@ -66,6 +66,7 @@ to view detailed status or test connection health.`,
 
 	cmd.AddCommand(newSourcesStatusCmd())
 	cmd.AddCommand(newSourcesTestCmd())
+	cmd.AddCommand(newSourcesLogCmd())
 
 	return cmd
 }
