@@ -44,6 +44,12 @@ Operationalize merge-queue emergency mode: proactively check push-to-main CI aft
 
 Shell script to measure CI efficiency (runs per merged PR, churn ratio, docs-skip rate). Validates Story 0.20 improvements and monitors ADR-0030 re-entry gate for GitHub merge queue.
 
+### Story 0.50: Remove Session Reflection Quit Intercept (P0)
+
+**Status:** Not Started.
+
+Remove the ImprovementView ("Session Reflection") that intercepts quit after productive sessions. Quit must be immediate — no confirmation, no prompt, no second keypress. Reverses Story 3.6. SOUL.md violation (D-165).
+
 ### Story 0.47: Alpha Version Chronological Sorting (P1)
 
 **Status:** Done (PR #523).
@@ -167,14 +173,14 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 0/5 stories done
+### Epic 45: Sources CLI (P1) — 1/5 stories done
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
-| 45.2 | `threedoors sources` List/Status/Test Commands | Not Started | P1 | Epic 43 |
+| 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
 | 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |

@@ -106,16 +106,7 @@ type DoorFeedbackMsg struct {
 }
 
 // RequestQuitMsg is sent when the user requests to quit.
-// MainModel intercepts this to show the improvement prompt if criteria are met.
 type RequestQuitMsg struct{}
-
-// ImprovementSubmittedMsg is sent when the user submits an improvement suggestion.
-type ImprovementSubmittedMsg struct {
-	Text string
-}
-
-// ImprovementSkippedMsg is sent when the user skips the improvement prompt.
-type ImprovementSkippedMsg struct{}
 
 // ShowNextStepsMsg is sent to open the contextual next-steps view.
 type ShowNextStepsMsg struct {

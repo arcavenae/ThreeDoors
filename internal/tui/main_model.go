@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 	"github.com/arcaven/ThreeDoors/internal/dispatch"
 	"github.com/arcaven/ThreeDoors/internal/enrichment"
 	"github.com/arcaven/ThreeDoors/internal/intelligence"
@@ -31,7 +32,6 @@ const (
 	ViewAddTask
 	ViewValuesGoals
 	ViewFeedback
-	ViewImprovement
 	ViewNextSteps
 	ViewAvoidancePrompt
 	ViewInsights
@@ -45,6 +45,7 @@ const (
 	ViewDeferred
 	ViewSnooze
 	ViewPlanning
+	ViewSources
 )
 
 // String returns the human-readable name of the view mode.
@@ -66,8 +67,6 @@ func (v ViewMode) String() string {
 		return "ValuesGoals"
 	case ViewFeedback:
 		return "Feedback"
-	case ViewImprovement:
-		return "Improvement"
 	case ViewNextSteps:
 		return "NextSteps"
 	case ViewAvoidancePrompt:
@@ -94,6 +93,8 @@ func (v ViewMode) String() string {
 		return "Snooze"
 	case ViewPlanning:
 		return "Planning"
+	case ViewSources:
+		return "Sources"
 	default:
 		return "Unknown"
 	}
@@ -111,7 +112,6 @@ type MainModel struct {
 	addTaskView         *AddTaskView
 	valuesView          *ValuesView
 	feedbackView        *FeedbackView
-	improvementView     *ImprovementView
 	nextStepsView       *NextStepsView
 	avoidancePromptView *AvoidancePromptView
 	insightsView        *InsightsView
@@ -125,6 +125,7 @@ type MainModel struct {
 	deferredListView    *DeferredListView
 	snoozeView          *SnoozeView
 	planningView        *PlanningView
+	sourcesView         *SourcesView
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -149,6 +150,7 @@ type MainModel struct {
 	dispatcher            dispatch.Dispatcher
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
+	connMgr               *connection.ConnectionManager
 	milestoneChecker      *core.MilestoneChecker
 	pollingActive         bool
 	syncSpinner           *SyncSpinner
@@ -355,6 +357,11 @@ func (m *MainModel) SetProposalStore(store *mcp.ProposalStore) {
 	}
 }
 
+// SetConnectionManager sets the connection manager for the sources dashboard.
+func (m *MainModel) SetConnectionManager(mgr *connection.ConnectionManager) {
+	m.connMgr = mgr
+}
+
 // SetDispatcher sets the Dispatcher used for worker status polling.
 func (m *MainModel) SetDispatcher(d dispatch.Dispatcher) {
 	m.dispatcher = d
@@ -415,9 +422,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.feedbackView != nil {
 			m.feedbackView.SetWidth(msg.Width)
-		}
-		if m.improvementView != nil {
-			m.improvementView.SetWidth(msg.Width)
 		}
 		if m.nextStepsView != nil {
 			m.nextStepsView.SetWidth(msg.Width)
@@ -482,6 +486,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.moodView = nil
 		m.healthView = nil
 		m.insightsView = nil
+		m.sourcesView = nil
 		m.addTaskView = nil
 		m.deferredListView = nil
 		m.doorsView.RefreshDoors()
@@ -523,6 +528,16 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		milestoneCmd := m.insightsView.CheckAndShowMilestone(totalTasks, currentStreak, sessionCount)
 		cmd := tea.Batch(animCmd, milestoneCmd)
 		return m, cmd
+
+	case ShowSourcesMsg:
+		if m.connMgr != nil {
+			m.sourcesView = NewSourcesView(m.connMgr)
+			m.sourcesView.SetWidth(m.width)
+			m.sourcesView.SetHeight(m.height)
+			m.previousView = m.viewMode
+			m.setViewMode(ViewSources)
+		}
+		return m, nil
 
 	case ReturnToSearchMsg:
 		m.searchView = m.newSearchView()
@@ -724,30 +739,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, ClearFlashCmd()
 
 	case RequestQuitMsg:
-		// Show improvement prompt if session qualifies (5+ min OR 1+ completions)
-		if m.tracker != nil {
-			metrics := m.tracker.GetMetricsSnapshot()
-			if metrics.TasksCompleted >= 1 || metrics.DurationSeconds() >= 300 {
-				m.improvementView = NewImprovementView()
-				m.improvementView.SetWidth(m.width)
-				m.setViewMode(ViewImprovement)
-				return m, nil
-			}
-		}
-		return m, tea.Quit
-
-	case ImprovementSubmittedMsg:
-		if m.tracker != nil && msg.Text != "" {
-			configDir, err := core.GetConfigDirPath()
-			if err == nil {
-				if writeErr := core.WriteImprovement(configDir, m.tracker.GetSessionID(), msg.Text); writeErr != nil {
-					fmt.Fprintf(os.Stderr, "warning: failed to save improvement: %v\n", writeErr)
-				}
-			}
-		}
-		return m, tea.Quit
-
-	case ImprovementSkippedMsg:
 		return m, tea.Quit
 
 	case ShowNextStepsMsg:
@@ -1340,8 +1331,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateValues(msg)
 	case ViewFeedback:
 		return m.updateFeedback(msg)
-	case ViewImprovement:
-		return m.updateImprovement(msg)
 	case ViewNextSteps:
 		return m.updateNextSteps(msg)
 	case ViewAvoidancePrompt:
@@ -1366,6 +1355,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSnooze(msg)
 	case ViewPlanning:
 		return m.updatePlanning(msg)
+	case ViewSources:
+		return m.updateSources(msg)
 	}
 
 	return m, nil
@@ -1429,14 +1420,6 @@ func (m *MainModel) updateSnooze(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.snoozeView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateImprovement(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.improvementView == nil {
-		return m, nil
-	}
-	cmd := m.improvementView.Update(msg)
 	return m, cmd
 }
 
@@ -1550,6 +1533,14 @@ func (m *MainModel) updateInsights(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.insightsView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSources(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.sourcesView == nil {
+		return m, nil
+	}
+	cmd := m.sourcesView.Update(msg)
 	return m, cmd
 }
 
@@ -1699,8 +1690,6 @@ func (m *MainModel) isTextInputActive() bool {
 	case ViewSearch:
 		return true
 	case ViewAddTask:
-		return true
-	case ViewImprovement:
 		return true
 	case ViewOnboarding:
 		// Onboarding has text input during the values step
@@ -2097,6 +2086,10 @@ func (m *MainModel) View() string {
 		if m.insightsView != nil {
 			view = m.insightsView.View()
 		}
+	case ViewSources:
+		if m.sourcesView != nil {
+			view = m.sourcesView.View()
+		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
 			view = m.addTaskView.View()
@@ -2108,10 +2101,6 @@ func (m *MainModel) View() string {
 	case ViewFeedback:
 		if m.feedbackView != nil {
 			view = m.feedbackView.View()
-		}
-	case ViewImprovement:
-		if m.improvementView != nil {
-			view = m.improvementView.View()
 		}
 	case ViewNextSteps:
 		if m.nextStepsView != nil {

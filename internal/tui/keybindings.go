@@ -54,8 +54,6 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return valuesBindings()
 	case ViewFeedback:
 		return feedbackBindings()
-	case ViewImprovement:
-		return improvementBindings()
 	case ViewNextSteps:
 		return nextStepsBindings()
 	case ViewAvoidancePrompt:
@@ -80,6 +78,8 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return deferredBindings()
 	case ViewSnooze:
 		return snoozeBindings()
+	case ViewSources:
+		return sourcesBindings()
 	default:
 		return nil
 	}
@@ -169,7 +169,6 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewAddTask, false},
 		{ViewValuesGoals, false},
 		{ViewFeedback, false},
-		{ViewImprovement, false},
 		{ViewNextSteps, false},
 		{ViewAvoidancePrompt, false},
 		{ViewInsights, false},
@@ -182,6 +181,7 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewHelp, false},
 		{ViewDeferred, false},
 		{ViewSnooze, false},
+		{ViewSources, false},
 	}
 
 	for _, m := range allModes {
@@ -354,18 +354,6 @@ func feedbackBindings() []KeyBindingGroup {
 	}
 }
 
-func improvementBindings() []KeyBindingGroup {
-	return []KeyBindingGroup{
-		{Name: "Actions", Bindings: []KeyBinding{
-			{Key: "enter", Description: "submit", Priority: PriorityAlways},
-			{Key: "esc", Description: "skip", Priority: PriorityAlways},
-		}},
-		{Name: "Display", Bindings: []KeyBinding{
-			{Key: "?", Description: "help", Priority: PriorityAlways},
-		}},
-	}
-}
-
 func nextStepsBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
@@ -524,6 +512,26 @@ func deferredBindings() []KeyBindingGroup {
 	}
 }
 
+func sourcesBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "j/k", Description: "navigate", Priority: PriorityAlways},
+			{Key: "enter", Description: "detail", Priority: PriorityAlways},
+			{Key: "q/esc", Description: "back", Priority: PriorityAlways},
+		}},
+		{Name: "Actions", Bindings: []KeyBinding{
+			{Key: "a", Description: "add connection", Priority: PriorityAlways},
+			{Key: "d", Description: "disconnect", Priority: PriorityIfSpace},
+			{Key: "p", Description: "pause/resume", Priority: PriorityIfSpace},
+			{Key: "r", Description: "re-sync", Priority: PriorityOverlay},
+			{Key: "t", Description: "test", Priority: PriorityOverlay},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
 func snoozeBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
@@ -595,6 +603,7 @@ func commandBindingGroup() KeyBindingGroup {
 			{Key: ":deferred", Description: "deferred tasks", Priority: PriorityOverlay},
 			{Key: ":devqueue", Description: "dev queue", Priority: PriorityOverlay},
 			{Key: ":suggestions", Description: "task proposals", Priority: PriorityOverlay},
+			{Key: ":sources", Description: "connected sources", Priority: PriorityOverlay},
 			{Key: ":help", Description: "help view", Priority: PriorityOverlay},
 			{Key: ":quit", Description: "exit app", Priority: PriorityOverlay},
 		},

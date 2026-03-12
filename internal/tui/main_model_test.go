@@ -1054,13 +1054,6 @@ func TestQKey_TableDriven(t *testing.T) {
 			},
 		},
 		{
-			name: "improvement view (text input) — q is text",
-			setup: func(m *MainModel) {
-				m.improvementView = NewImprovementView()
-				m.viewMode = ViewImprovement
-			},
-		},
-		{
 			name: "feedback (custom input) — q is text",
 			setup: func(m *MainModel) {
 				task := m.pool.GetAllTasks()[0]
@@ -1187,14 +1180,6 @@ func TestGlobalCommandMode_TableDriven(t *testing.T) {
 			setup: func(m *MainModel) {
 				m.addTaskView = NewAddTaskView()
 				m.viewMode = ViewAddTask
-			},
-			wantCommandMode: false,
-		},
-		{
-			name: "colon ignored in improvement view (text input active)",
-			setup: func(m *MainModel) {
-				m.improvementView = NewImprovementView()
-				m.viewMode = ViewImprovement
 			},
 			wantCommandMode: false,
 		},
