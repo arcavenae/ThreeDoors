@@ -17,12 +17,18 @@ func NewAutumnTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "autumn",
 		Description: "Autumn harvest — layered block elements, angular textures",
-		Render:      autumnRender(frameColor, selectedColor),
+		Render:      autumnRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#1a0f00", ANSI256: "52", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"},
 			Accent:   lipgloss.CompleteColor{TrueColor: "#dd9933", ANSI256: "178", ANSI: "3"},
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#140a05", ANSI256: "232", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#e09040", ANSI256: "172", ANSI: "3"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#8f5020", ANSI256: "130", ANSI: "1"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#6a3818", ANSI256: "94", ANSI: "1"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#3a1a08", ANSI256: "236", ANSI: "0"},
 
 			StatsAccent:        "#CC7722",
 			StatsGradientStart: "#8B4513",
@@ -37,7 +43,7 @@ func NewAutumnTheme() *DoorTheme {
 	}
 }
 
-func autumnRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func autumnRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -62,7 +68,7 @@ func autumnRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 			return autumnCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis)
+		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill)
 	}
 }
 
@@ -118,7 +124,7 @@ func autumnCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
+func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -156,7 +162,7 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -173,7 +179,7 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 
 	textureRow := func(block string) string {
 		pattern := strings.Repeat(block, inner)
-		return style.Render(hingeV) + pattern + style.Render(openV)
+		return style.Render(hingeV) + bgFillContent(pattern, inner, 0, fill) + style.Render(openV)
 	}
 
 	for row := 0; row < height; row++ {
@@ -194,7 +200,7 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, RoundKnobFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
 
 		case row == textureBotRow:
 			fmt.Fprintf(&b, "%s%s", textureRow("▓"), shade)
@@ -206,14 +212,9 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
-				lineWidth := ansi.StringWidth(line)
-				padding := inner - 3 - lineWidth
-				if padding < 0 {
-					padding = 0
-				}
 				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
-					"   "+line+strings.Repeat(" ", padding),
+					bgFillContent(line, inner, 3, fill),
 					style.Render(openV),
 					shade,
 				)
