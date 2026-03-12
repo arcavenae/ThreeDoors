@@ -12,6 +12,25 @@
 
 <p align="center"><em>Progress over perfection. Three doors. One choice. Move forward.</em></p>
 
+## 📑 Table of Contents
+
+- [📦 Installation](#-installation)
+- [🚀 Quick Start](#-quick-start)
+- [✨ Features](#-features)
+- [📖 User Guide](#-user-guide)
+- [⌨️ Key Bindings](#%EF%B8%8F-key-bindings)
+- [💻 CLI Reference](#-cli-reference)
+- [🤖 MCP Server](#-mcp-server)
+- [📁 Data Directory](#-data-directory)
+- [🔒 Data & Privacy](#-data--privacy)
+- [🧭 Philosophy](#-philosophy)
+- [🛠️ Development](#%EF%B8%8F-development)
+- [🤝 Contributing](#-contributing)
+- [📚 Documentation](#-documentation)
+- [License](#license)
+
+---
+
 ## What is ThreeDoors?
 
 ThreeDoors is a **radical rethinking of task management** that reduces decision friction by showing you only **three tasks at a time**. Instead of overwhelming you with an endless list, ThreeDoors presents three carefully selected "doors" — choose one, take action, and move forward.
@@ -33,6 +52,44 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 - **Values alignment** — Keep your goals front-and-center while working
 - **Multi-source aggregation** — Pull tasks from local files, Jira, GitHub Issues, Apple Notes, Apple Reminders, and Obsidian
 - **CLI + TUI + MCP** — Three interfaces for different workflows
+
+---
+
+## 📸 Screenshots
+
+<p align="center"><em>Three doors. Pick one. Move forward.</em></p>
+
+```
+  ╭────────────────────────╮ ╭────────────────────────╮ ╭────────────────────────╮
+  │                        │ │                        │ │                        │
+  │  [todo]                │ │  [todo]                │ │  [todo]                │
+  │                        │ │                        │ │                        │
+  │  Buy groceries         │ │  Read Go book          │ │  Exercise for 30 min   │
+  │                        │ │                        │ │                        │
+  ╰────────────────────────╯ ╰────────────────────────╯ ╰────────────────────────╯
+
+  a/left, w/up, d/right to select │ s/down to re-roll │ Enter/Space to open
+```
+
+<!-- To capture an actual terminal recording, use charmbracelet/vhs:
+     https://github.com/charmbracelet/vhs
+     Store recordings and screenshots in docs/assets/ -->
+
+<details>
+<summary>More screenshots</summary>
+
+| View | Screenshot |
+|------|-----------|
+| Three Doors | *Coming soon — door selection flow* |
+| Task Detail | *Coming soon — task detail with actions* |
+| Dashboard | *Coming soon — insights and analytics* |
+| Themes | *Coming soon — classic, modern, scifi, shoji* |
+| Search | *Coming soon — quick search with fuzzy filtering* |
+| Onboarding | *Coming soon — first-run wizard* |
+
+Screenshots and GIFs will be stored in [`docs/assets/`](docs/assets/).
+
+</details>
 
 ---
 
