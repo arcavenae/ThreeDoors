@@ -29,6 +29,7 @@ type DeferredListView struct {
 	pool   *core.TaskPool
 	cursor int
 	width  int
+	height int
 }
 
 // NewDeferredListView creates a new DeferredListView with deferred tasks from the pool.
@@ -44,6 +45,11 @@ func NewDeferredListView(pool *core.TaskPool) *DeferredListView {
 // SetWidth sets the terminal width for rendering.
 func (dv *DeferredListView) SetWidth(w int) {
 	dv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (dv *DeferredListView) SetHeight(h int) {
+	dv.height = h
 }
 
 // sortDeferredTasks sorts tasks by DeferUntil ascending, nil (Someday) last.
