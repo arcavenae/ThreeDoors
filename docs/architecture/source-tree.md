@@ -96,6 +96,7 @@ ThreeDoors/
 │   │   ├── connect_wizard.go        # Setup wizard using huh forms (Epic 44)
 │   │   ├── disconnect_dialog.go    # Disconnect confirmation with task preservation (Epic 44)
 │   │   ├── synclog_detail_view.go  # Sync event log viewer per connection (Epic 44)
+│   │   ├── import_view.go          # :import command — bulk task import from text
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
