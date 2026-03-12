@@ -1,0 +1,89 @@
+# Mock shift-state.yaml for testing supervisor shift handover (Story 58.4)
+# This file simulates a normal handover with both daemon snapshot and supervisor delta.
+
+version: 1
+timestamp: "2026-03-12T10:30:00Z"
+outgoing_supervisor: "gentle-hawk"
+
+# Section 1: Observable State (daemon-maintained)
+workers:
+  active:
+    - name: "bold-eagle"
+      task: "Implement story 42.3 — task pool analytics"
+      story_file: "docs/stories/42.3.story.md"
+      branch: "work/bold-eagle"
+      pr: null
+      dispatched_at: "2026-03-12T09:45:00Z"
+    - name: "swift-fox"
+      task: "Fix CI lint failures on PR #567"
+      branch: "work/swift-fox"
+      pr: "#567"
+      dispatched_at: "2026-03-12T10:10:00Z"
+  recently_completed:
+    - name: "calm-deer"
+      task: "Implement story 42.2 — session duration tracking"
+      pr: "#565"
+      completed_at: "2026-03-12T10:20:00Z"
+      result: "PR created, CI passing"
+
+persistent_agents:
+  - name: "merge-queue"
+    status: "active"
+    notes: "Processing #565, #566 in queue"
+  - name: "pr-shepherd"
+    status: "active"
+    notes: "Rebasing #564 onto latest main"
+  - name: "project-watchdog"
+    status: "active"
+  - name: "arch-watchdog"
+    status: "active"
+  - name: "envoy"
+    status: "active"
+
+open_prs:
+  - number: 564
+    title: "feat: keybinding auto-fade (Story 39.12)"
+    status: "needs-rebase"
+    ci: "pending"
+  - number: 565
+    title: "feat: session duration tracking (Story 42.2)"
+    status: "ready"
+    ci: "passing"
+  - number: 566
+    title: "fix: theme contrast in dark mode (#123)"
+    status: "ready"
+    ci: "passing"
+
+# Section 2: Supervisor Delta (written by outgoing supervisor)
+pending_decisions:
+  - context: "Worker bold-eagle asked whether AC #3 means per-session or global analytics"
+    recommendation: "Told worker to implement per-session for now, can extend later"
+    resolved: false
+  - context: "Envoy received feature request #91 — needs PM triage"
+    recommendation: "Looks like it belongs in Epic 43, but needs party mode to confirm"
+    resolved: false
+
+priorities:
+  - "Epic 42 completion is the sprint goal — stories 42.2 and 42.3 are critical path"
+  - "PR #564 (story 39.12) is stale — needs attention today"
+  - "Issue #89 triage is in PM examination phase — follow up with envoy"
+
+issue_triage:
+  - issue: "#89"
+    stage: "PM examination"
+    assigned_to: "envoy"
+    notes: "User reported crash on empty task file. Envoy acknowledged."
+  - issue: "#91"
+    stage: "acknowledged"
+    assigned_to: "envoy"
+    notes: "Feature request for bulk task import. Acknowledged, awaiting PM triage."
+
+blockers:
+  - "Story 42.4 depends on 42.3 — don't dispatch until bold-eagle's PR merges"
+  - "PR #564 needs rebase before merge — pr-shepherd is handling"
+
+# Section 3: Operational Notes
+warnings:
+  - "merge-queue can't merge workflow PRs (OAuth scope limitation)"
+  - "pr-shepherd definition was updated yesterday — verify it loaded correctly"
+  - "golangci-lint v1.62 has known false positive on errcheck — suppress if seen"
