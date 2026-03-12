@@ -39,6 +39,7 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.AddCommand(newPlanCmd())
 	cmd.AddCommand(newDocAuditCmd())
 	cmd.AddCommand(newSourcesCmd())
+	cmd.AddCommand(newConnectCmd())
 
 	registerFlagCompletions(cmd)
 
@@ -70,5 +71,5 @@ func KnownSubcommands() []string {
 		names = append(names, cmd.Name())
 	}
 	// Include subcommands that will be added in future stories
-	return append(names, "task", "doors", "completion", "mood", "stats", "config", "provider", "health", "doctor", "version", "help", "plan", "sources")
+	return append(names, "task", "doors", "completion", "mood", "stats", "config", "provider", "health", "doctor", "version", "help", "plan", "sources", "connect")
 }
