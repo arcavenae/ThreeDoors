@@ -178,7 +178,8 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			if knobPad < 1 {
 				knobPad = 1
 			}
-			knobLine := renderHandleWithHint(inner, knobPad, "○", hint)
+			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
+			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
 			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
