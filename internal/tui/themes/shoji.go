@@ -19,7 +19,7 @@ func NewShojiTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "shoji",
 		Description: "Japanese shoji — wooden lattice grid with paper panes",
-		Render:      shojiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"}),
+		Render:      shojiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#141005", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"},
@@ -52,14 +52,14 @@ type shojiChars struct {
 	tRght string // right T-junction
 }
 
-func shojiRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func shojiRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use existing fixed layout
 		if height < 14 {
 			return shojiCompactRender(content, width, selected, frameColor, selectedColor, hint)
 		}
 
-		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, hint, emphasis, fill)
+		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, hint, emphasis, fill, fillLower)
 	}
 }
 
@@ -121,7 +121,7 @@ func shojiCompactRender(content string, width int, selected bool, frameColor, se
 // shojiDoorRender renders the Shoji theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: left uses heavier junctions (double-vert unselected, heavy selected),
 // right uses standard-weight junctions.
-func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
+func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -181,10 +181,12 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	}
 
 	// Helper for empty row with hinge asymmetry
-	emptyRow := style.Render(hingeV) + bgFillLine(innerW, fill) + style.Render(openV) + shade
+	emptyRowFn := func(bg lipgloss.TerminalColor) string {
+		return style.Render(hingeV) + bgFillLine(innerW, bg) + style.Render(openV) + shade
+	}
 
 	// Helper for content row with hinge asymmetry
-	contentRow := func(text string) string {
+	contentRow := func(text string, bg lipgloss.TerminalColor) string {
 		cw := innerW - 2
 		if cw < 1 {
 			cw = 1
@@ -193,7 +195,7 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		if textWidth > cw {
 			text = ansi.Truncate(text, cw, "")
 		}
-		return style.Render(hingeV) + bgFillContent(text, innerW, 1, fill) + style.Render(openV) + shade
+		return style.Render(hingeV) + bgFillContent(text, innerW, 1, bg) + style.Render(openV) + shade
 	}
 
 	// Helper for horizontal bar with hinge asymmetry
@@ -226,6 +228,8 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	var b strings.Builder
 
 	for row := 0; row < height; row++ {
+		bg := panelBg(row, anatomy.PanelDivider, fill, fillLower)
+
 		switch {
 		case row == anatomy.LintelRow:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeTop+strings.Repeat(h, innerW)+openTop), shade)
@@ -243,7 +247,7 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
 			knobLine := renderHandleWithHint(innerW, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, innerW, 0, fill), style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, innerW, 0, bg), style.Render(openV), shade)
 
 		case row == latticeBar2Row:
 			fmt.Fprintf(&b, "%s%s", hBar(), shade)
@@ -254,13 +258,13 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
-				fmt.Fprintf(&b, "%s", contentRow(contentLines[lineIdx]))
+				fmt.Fprintf(&b, "%s", contentRow(contentLines[lineIdx], bg))
 			} else {
-				fmt.Fprintf(&b, "%s", emptyRow)
+				fmt.Fprintf(&b, "%s", emptyRowFn(bg))
 			}
 
 		default:
-			fmt.Fprintf(&b, "%s", emptyRow)
+			fmt.Fprintf(&b, "%s", emptyRowFn(bg))
 		}
 
 		if row < height-1 {
