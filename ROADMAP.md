@@ -159,7 +159,7 @@ Transform rectangular card/panel doors into visually convincing doors using side
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 44: Sources TUI (P1) — 4/7 stories done
+### Epic 44: Sources TUI (P1) — 5/7 stories done
 
 TUI interfaces for data source management: setup wizard (`:connect`), sources dashboard (`:sources`), source detail view, sync log view, status bar health alerts, disconnection flow, and re-authentication flow. Uses `charmbracelet/huh` for wizard forms.
 
@@ -170,7 +170,7 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.3 | Source Detail View | Done (PR #563) | P1 | 44.2 |
 | 44.4 | Sync Log View | Not Started | P1 | 43.5 |
 | 44.5 | Status Bar Integration for Connection Health Alerts | Done (PR #562) | P1 | Epic 43 |
-| 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
+| 44.6 | Disconnection Flow with Task Preservation Options | Done (PR #581) | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
 ### Epic 45: Sources CLI (P1) — 3/5 stories done
@@ -328,13 +328,13 @@ Persistent research-supervisor agent that wraps the official Gemini CLI (`@googl
 
 **Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
 
-### Epic 55: CI Optimization Phase 1 (P1) — 0/3 stories done
+### Epic 55: CI Optimization Phase 1 (P1) — 1/3 stories done
 
 Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only. Docker E2E push-only, benchmark path filtering, local dev acceleration. No test code modifications.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 55.1 | Docker E2E Push-Only + Lint Version Fix | Not Started | P1 | None |
+| 55.1 | Docker E2E Push-Only + Lint Version Fix | Done (PR #578) | P1 | None |
 | 55.2 | Benchmark Path Filtering | Not Started | P1 | None |
 | 55.3 | Local Dev Acceleration (make test-fast + CI Cache) | Not Started | P1 | None |
 
