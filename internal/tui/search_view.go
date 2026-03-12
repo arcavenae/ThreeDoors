@@ -32,6 +32,7 @@ var commandRegistry = []commandDef{
 	{"health", "Run health check"},
 	{"help", "Show help screen"},
 	{"import", "Import tasks from a file"},
+	{"llm-status", "Show LLM backend status"},
 	{"insights", "Show pattern insights"},
 	{"mood", "Record current mood"},
 	{"quit", "Quit application"},
@@ -330,6 +331,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 		}
 	case "enrich":
 		return func() tea.Msg { return EnrichCommandMsg{} }
+
+	case "llm-status":
+		return func() tea.Msg { return ShowLLMStatusMsg{} }
 
 	case "bug":
 		return func() tea.Msg { return ShowBugReportMsg{} }

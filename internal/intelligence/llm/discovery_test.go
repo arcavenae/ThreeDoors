@@ -94,7 +94,7 @@ func TestDiscoverBackend_UserConfigured(t *testing.T) {
 				env = map[string]string{}
 			}
 
-			backend, result, err := discoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(env))
+			backend, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(env))
 
 			if tt.wantErr {
 				if err == nil {
@@ -161,7 +161,7 @@ func TestDiscoverBackend_CLIPriority(t *testing.T) {
 			cfg := DefaultConfig()
 			cfg.Backend = "" // trigger auto-discovery
 
-			backend, result, err := discoverBackendWith(ctx, cfg, mockLookPath(tt.availableCmds...), mockGetenv(nil))
+			backend, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath(tt.availableCmds...), mockGetenv(nil))
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -200,7 +200,7 @@ func TestDiscoverBackend_HTTPFallback_OllamaReachable(t *testing.T) {
 	cfg.Backend = ""
 	cfg.Ollama.Endpoint = srv.URL
 
-	backend, result, err := discoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(nil))
+	backend, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(nil))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -223,7 +223,7 @@ func TestDiscoverBackend_HTTPFallback_ClaudeAPIKey(t *testing.T) {
 	cfg.Ollama.Endpoint = "http://127.0.0.1:1" // should fail to connect
 
 	env := map[string]string{"ANTHROPIC_API_KEY": "sk-test-key"}
-	backend, result, err := discoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(env))
+	backend, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(env))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -244,7 +244,7 @@ func TestDiscoverBackend_GracefulDegradation(t *testing.T) {
 	cfg.Backend = ""
 	cfg.Ollama.Endpoint = "http://127.0.0.1:1" // unreachable
 
-	backend, result, err := discoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(nil))
+	backend, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath(), mockGetenv(nil))
 	if !errors.Is(err, ErrBackendUnavailable) {
 		t.Fatalf("got err=%v, want ErrBackendUnavailable", err)
 	}
@@ -266,7 +266,7 @@ func TestDiscoverBackend_DiscoveryResultFields(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.Backend = ""
 
-	_, result, err := discoverBackendWith(ctx, cfg, mockLookPath("claude", "ollama"), mockGetenv(nil))
+	_, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath("claude", "ollama"), mockGetenv(nil))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -337,7 +337,7 @@ func TestDiscoverBackend_UserConfigOverridesDiscovery(t *testing.T) {
 	cfg.Backend = "ollama-cli"
 
 	// Even though claude is available, user config takes precedence.
-	backend, result, err := discoverBackendWith(ctx, cfg, mockLookPath("claude", "gemini", "ollama"), mockGetenv(nil))
+	backend, result, err := DiscoverBackendWith(ctx, cfg, mockLookPath("claude", "gemini", "ollama"), mockGetenv(nil))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
