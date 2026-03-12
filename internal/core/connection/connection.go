@@ -10,17 +10,21 @@ import (
 
 // Connection represents a configured instance of a data source.
 type Connection struct {
-	ID           string            `json:"id"`
-	ProviderName string            `json:"provider"`
-	Label        string            `json:"label"`
-	State        ConnectionState   `json:"state"`
-	LastSync     time.Time         `json:"last_sync"`
-	LastError    string            `json:"last_error,omitempty"`
-	SyncMode     string            `json:"sync_mode"`
-	PollInterval time.Duration     `json:"poll_interval"`
-	Settings     map[string]string `json:"settings,omitempty"`
-	TaskCount    int               `json:"task_count"`
-	CreatedAt    time.Time         `json:"created_at"`
+	ID                 string            `json:"id"`
+	ProviderName       string            `json:"provider"`
+	Label              string            `json:"label"`
+	State              ConnectionState   `json:"state"`
+	LastSync           time.Time         `json:"last_sync"`
+	LastError          string            `json:"last_error,omitempty"`
+	SyncMode           string            `json:"sync_mode"`
+	PollInterval       time.Duration     `json:"poll_interval"`
+	Settings           map[string]string `json:"settings,omitempty"`
+	TaskCount          int               `json:"task_count"`
+	CreatedAt          time.Time         `json:"created_at"`
+	TokenExpiry        time.Time         `json:"token_expiry,omitempty"`
+	RateLimitRemaining int               `json:"rate_limit_remaining,omitempty"`
+	RateLimitTotal     int               `json:"rate_limit_total,omitempty"`
+	ConsecutiveErrors  int               `json:"consecutive_errors,omitempty"`
 }
 
 // NewConnection creates a Connection with a ULID ID and state Disconnected.
