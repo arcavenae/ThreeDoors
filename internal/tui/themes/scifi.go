@@ -182,7 +182,8 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 				rail, style.Render(outerR))
 
 		case row == anatomy.HandleRow:
-			handleStr := "◈──┤"
+			handleChar := HandleCharForEmphasis(emphasis, selected, SciFiHandleFrames)
+			handleStr := handleChar + "──┤"
 			handleWidth := ansi.StringWidth(handleStr)
 			leftPad := contentW - handleWidth
 			if leftPad < 0 {
