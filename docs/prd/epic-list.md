@@ -760,7 +760,7 @@
 **Epic 60: README Overhaul** (P2)
 - **Goal:** Polish the README with centered badge clusters, table of contents, foldable reference sections, updated feature list reflecting 35+ completed epics, and visual demo section
 - **Prerequisites:** None (documentation-only epic)
-- **Status:** Not Started
+- **Status:** In Progress (1/5 done)
 - **Deliverables:**
   - Centered badge cluster with CI, release, Go Report Card, platform support badges
   - Table of contents with emoji-prefixed anchor links
@@ -859,7 +859,7 @@
 | Epic 57: LLM CLI Services | 8 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
 | Epic 59: Full-Terminal Vertical Layout | 2 | Not Started |
-| Epic 60: README Overhaul | 5 | Not Started |
+| Epic 60: README Overhaul | 5 | In Progress (1/5 done) |
 | Epic 61: GitHub Pages User Guide | 4 | Not Started |
 | **Total** | **321** | **152 complete, 9 epics in progress, 161 not started** |
 ---

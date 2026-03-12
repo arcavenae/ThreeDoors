@@ -5881,7 +5881,7 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 **Prerequisites:** None (documentation-only epic)
 
-**Status:** Not Started (0/5 stories)
+**Status:** In Progress (1/5 done)
 
 ### Story 60.1: README Badges & Header Polish
 
