@@ -191,6 +191,8 @@ func providerAliases(provider string) []string {
 	switch strings.ToLower(provider) {
 	case "github":
 		return []string{"GH_TOKEN", "GITHUB_TOKEN"}
+	case "linear":
+		return []string{"LINEAR_API_KEY"}
 	default:
 		return nil
 	}

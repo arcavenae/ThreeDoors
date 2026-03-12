@@ -65,11 +65,11 @@ func DefaultProviderSpecs() []ProviderFormSpec {
 			TokenHelp:   "Profile → Personal Access Tokens → Create token",
 		},
 		{
-			Name:        "linear",
-			DisplayName: "Linear",
-			Description: "Linear project issues",
-			AuthType:    AuthAPIToken,
-			TokenHelp:   "Settings → API → Personal API keys",
+			Name:         "linear",
+			DisplayName:  "Linear",
+			Description:  "Linear project issues",
+			AuthType:     AuthOAuth,
+			EnvTokenFunc: defaultLinearEnvTokenFunc,
 		},
 		{
 			Name:        "obsidian",
@@ -693,6 +693,14 @@ func (w *ConnectWizard) cancelOAuthFlow() {
 		w.oauthCancel = nil
 	}
 	w.oauthState = nil
+}
+
+// defaultLinearEnvTokenFunc checks for LINEAR_API_KEY.
+func defaultLinearEnvTokenFunc() (string, string) {
+	if v := os.Getenv("LINEAR_API_KEY"); v != "" {
+		return v, "LINEAR_API_KEY"
+	}
+	return "", ""
 }
 
 // defaultGitHubEnvTokenFunc checks for GH_TOKEN or GITHUB_TOKEN.
