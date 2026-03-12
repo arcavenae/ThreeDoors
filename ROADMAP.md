@@ -146,7 +146,7 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 3/4 stories done
+### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 4/4 stories done — COMPLETE
 
 Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations. Based on 5-round party mode research with 7 agents.
 
@@ -155,7 +155,7 @@ Transform rectangular card/panel doors into visually convincing doors using side
 | 48.1 | Side-Mounted Handle + Hinge Marks | Done (PR #451) | P2 | Epic 35 (done), Epic 17 (done) |
 | 48.2 | Continuous Threshold / Floor Line | Done (PR #483) | P2 | None |
 | 48.3 | Crack of Light Effect on Selection | Done (PR #572) | P2 | 48.1 |
-| 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
+| 48.4 | Handle Turn Micro-Animation | Done (PR #588) | P2 | 48.1 |
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
@@ -173,7 +173,7 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.6 | Disconnection Flow with Task Preservation Options | Done (PR #581) | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 3/5 stories done
+### Epic 45: Sources CLI (P1) — 5/5 stories done — COMPLETE
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
@@ -181,9 +181,9 @@ Non-interactive CLI commands for data source management: `threedoors connect`, `
 |-------|-------|--------|----------|------------|
 | 45.1 | `threedoors connect` Command (Non-Interactive) | Done (PR #573) | P1 | Epic 43 |
 | 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
-| 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
+| 45.3 | `threedoors sources` Management Commands | Done (PR #587) | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
-| 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
+| 45.5 | JSON Output Support for All Sources Commands | Done (PR #589) | P1 | 45.1-45.4 |
 
 ### Epic 46: OAuth Device Code Flow (P2) — 1/4 stories done
 
@@ -328,15 +328,15 @@ Persistent research-supervisor agent that wraps the official Gemini CLI (`@googl
 
 **Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
 
-### Epic 55: CI Optimization Phase 1 (P1) — 1/3 stories done
+### Epic 55: CI Optimization Phase 1 (P1) — 3/3 stories done — COMPLETE
 
 Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only. Docker E2E push-only, benchmark path filtering, local dev acceleration. No test code modifications.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 55.1 | Docker E2E Push-Only + Lint Version Fix | Done (PR #578) | P1 | None |
-| 55.2 | Benchmark Path Filtering | Not Started | P1 | None |
-| 55.3 | Local Dev Acceleration (make test-fast + CI Cache) | Not Started | P1 | None |
+| 55.2 | Benchmark Path Filtering | Done (PR #579) | P1 | None |
+| 55.3 | Local Dev Acceleration (make test-fast + CI Cache) | Done (PR #580) | P1 | None |
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
