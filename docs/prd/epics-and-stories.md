@@ -4427,7 +4427,7 @@ Terminal-aware color degradation via lipgloss color profiles. Replace hardcoded 
 ## Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement
 
 **Priority:** P2
-**Status:** In Progress (3/4 done)
+**Status:** Complete (4/4 done)
 **Dependencies:** Epic 35 (Door Visual Appearance — complete), Epic 17 (Door Theme System — complete), Story 41.5 (Harmonica spike — complete, D-136 GO decision)
 
 ### Epic Goal
@@ -4443,7 +4443,7 @@ The 5 adopted proposals collectively raise "doorness" from ~3.5/7 (Classic) to ~
 | 48.1 | Side-Mounted Handle + Hinge Marks | Done (PR #451) | P2 | Epic 35 (done), Epic 17 (done) |
 | 48.2 | Continuous Threshold / Floor Line | Done (PR #483) | P2 | None |
 | 48.3 | Crack of Light Effect on Selection | Done (PR #572) | P2 | 48.1 |
-| 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
+| 48.4 | Handle Turn Micro-Animation | Done (PR #588) | P2 | 48.1 |
 
 **Dependency graph:**
 ```
