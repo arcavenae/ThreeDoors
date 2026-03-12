@@ -17,6 +17,14 @@ type ThemeColors struct {
 	Accent   lipgloss.TerminalColor
 	Selected lipgloss.TerminalColor
 
+	// Depth system colors (Story 56.1). Zero values are safe —
+	// rendering falls back to unstyled output when these are nil.
+	FillLower  lipgloss.TerminalColor // lower panel background (darker than Fill)
+	Highlight  lipgloss.TerminalColor // top/left edge bevel color (lighter)
+	ShadowEdge lipgloss.TerminalColor // bottom/right edge bevel color (darker)
+	ShadowNear lipgloss.TerminalColor // near shadow gradient column
+	ShadowFar  lipgloss.TerminalColor // far shadow gradient column
+
 	// Stats dashboard colors (Story 40.9). Zero values are safe —
 	// InsightsView falls back to the independent palette when these are empty.
 	StatsAccent        string // panel borders, hero number (#RRGGBB)
@@ -87,6 +95,30 @@ func HandleCharForEmphasis(emphasis float64, selected bool, frames HandleFrames)
 		return frames.Turning
 	}
 	return frames.SpringBack
+}
+
+// bgFillLine renders a line of spaces with the given background color applied.
+// width is the number of space characters to fill.
+func bgFillLine(width int, bg lipgloss.TerminalColor) string {
+	if bg == nil {
+		return strings.Repeat(" ", width)
+	}
+	return lipgloss.NewStyle().Background(bg).Render(strings.Repeat(" ", width))
+}
+
+// bgFillContent renders content text over a background color, padded to the given width.
+// leftPad spaces are prepended, and remaining width is filled with bg-colored spaces.
+func bgFillContent(text string, innerWidth, leftPad int, bg lipgloss.TerminalColor) string {
+	textWidth := ansi.StringWidth(text)
+	rightPad := innerWidth - leftPad - textWidth
+	if rightPad < 0 {
+		rightPad = 0
+	}
+	if bg == nil {
+		return strings.Repeat(" ", leftPad) + text + strings.Repeat(" ", rightPad)
+	}
+	bgStyle := lipgloss.NewStyle().Background(bg)
+	return bgStyle.Render(strings.Repeat(" ", leftPad) + text + strings.Repeat(" ", rightPad))
 }
 
 // renderHandleWithHint builds a handle row line, placing hint text to the left

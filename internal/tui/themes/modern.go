@@ -20,12 +20,18 @@ func NewModernTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "modern",
 		Description: "Modern minimalist — clean lines, generous whitespace",
-		Render:      modernRender(frameColor, selectedColor),
+		Render:      modernRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#000000", ANSI256: "0", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"},
 			Accent:   frameColor,
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#080808", ANSI256: "232", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#666666", ANSI256: "241", ANSI: "7"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#2a2a2a", ANSI256: "235", ANSI: "8"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#222222", ANSI256: "235", ANSI: "8"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#111111", ANSI256: "233", ANSI: "0"},
 
 			StatsAccent:        "#0D9488", // cool teal
 			StatsGradientStart: "#2563EB", // blue
@@ -36,7 +42,7 @@ func NewModernTheme() *DoorTheme {
 	}
 }
 
-func modernRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func modernRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -60,7 +66,7 @@ func modernRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis)
+		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis, fill)
 	}
 }
 
@@ -122,7 +128,7 @@ func modernCompact(content string, inner int, hChar, vChar string, style lipglos
 	return b.String()
 }
 
-func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
+func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -161,7 +167,7 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -188,7 +194,7 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
@@ -197,14 +203,9 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
-				lineWidth := ansi.StringWidth(line)
-				padding := inner - 3 - lineWidth
-				if padding < 0 {
-					padding = 0
-				}
 				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
-					"   "+line+strings.Repeat(" ", padding),
+					bgFillContent(line, inner, 3, fill),
 					style.Render(openV),
 					shade,
 				)
