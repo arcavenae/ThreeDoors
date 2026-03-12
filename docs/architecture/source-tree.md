@@ -132,6 +132,7 @@ ThreeDoors/
 │   │   ├── scrollable_view.go      # Scrollable content wrapper
 │   │   ├── spinner.go              # Loading spinner component
 │   │   ├── animation.go            # Animation utilities
+│   │   ├── layout.go               # AltScreen layout engine, door height cap (Epic 59)
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
