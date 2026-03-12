@@ -47,6 +47,7 @@ const (
 	ViewPlanning
 	ViewSources
 	ViewSourceDetail
+	ViewConnectWizard
 )
 
 // String returns the human-readable name of the view mode.
@@ -98,6 +99,8 @@ func (v ViewMode) String() string {
 		return "Sources"
 	case ViewSourceDetail:
 		return "SourceDetail"
+	case ViewConnectWizard:
+		return "ConnectWizard"
 	default:
 		return "Unknown"
 	}
@@ -130,6 +133,7 @@ type MainModel struct {
 	planningView        *PlanningView
 	sourcesView         *SourcesView
 	sourceDetailView    *SourceDetailView
+	connectWizard       *ConnectWizard
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -557,6 +561,39 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.previousView = m.viewMode
 				m.setViewMode(ViewSourceDetail)
 			}
+		}
+		return m, nil
+
+	case ShowConnectWizardMsg:
+		if m.connMgr != nil {
+			m.connectWizard = NewConnectWizard(DefaultProviderSpecs(), m.connMgr)
+			m.connectWizard.SetWidth(m.width)
+			m.connectWizard.SetHeight(m.height)
+			m.previousView = m.viewMode
+			m.setViewMode(ViewConnectWizard)
+			return m, m.connectWizard.Init()
+		}
+		return m, nil
+
+	case ConnectWizardCompleteMsg:
+		if m.connMgr != nil {
+			conn, err := m.connMgr.Add(msg.ProviderName, msg.Label, msg.Settings)
+			if err == nil {
+				conn.SyncMode = msg.SyncMode
+				conn.PollInterval = msg.PollInterval
+				_ = m.connMgr.Transition(conn.ID, connection.StateConnected)
+			}
+		}
+		m.connectWizard = nil
+		m.setViewMode(ViewSources)
+		return m, nil
+
+	case ConnectWizardCancelMsg:
+		m.connectWizard = nil
+		if m.previousView == ViewSources {
+			m.setViewMode(ViewSources)
+		} else {
+			m.setViewMode(ViewDoors)
 		}
 		return m, nil
 
@@ -1380,6 +1417,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateSources(msg)
 	case ViewSourceDetail:
 		return m.updateSourceDetail(msg)
+	case ViewConnectWizard:
+		return m.updateConnectWizard(msg)
 	}
 
 	return m, nil
@@ -1572,6 +1611,14 @@ func (m *MainModel) updateSourceDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.sourceDetailView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateConnectWizard(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.connectWizard == nil {
+		return m, nil
+	}
+	cmd := m.connectWizard.Update(msg)
 	return m, cmd
 }
 
@@ -2124,6 +2171,10 @@ func (m *MainModel) View() string {
 	case ViewSourceDetail:
 		if m.sourceDetailView != nil {
 			view = m.sourceDetailView.View()
+		}
+	case ViewConnectWizard:
+		if m.connectWizard != nil {
+			view = m.connectWizard.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
