@@ -36,6 +36,7 @@ var commandRegistry = []commandDef{
 	{"llm-status", "Show LLM backend status"},
 	{"insights", "Show pattern insights"},
 	{"mood", "Record current mood"},
+	{"orphaned", "View orphaned tasks"},
 	{"quit", "Quit application"},
 	{"seasonal", "Pick seasonal theme (session only)"},
 	{"stats", "Show session statistics"},
@@ -274,6 +275,9 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 			return func() tea.Msg { return ShowValuesEditMsg{} }
 		}
 		return func() tea.Msg { return ShowValuesSetupMsg{} }
+
+	case "orphaned":
+		return func() tea.Msg { return ShowOrphanedMsg{} }
 
 	case "synclog":
 		return sv.showSyncLog()
