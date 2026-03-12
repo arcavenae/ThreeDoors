@@ -234,9 +234,9 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ## Epic List
 
 ### Epic 0: Infrastructure & Process (Backfill)
-Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements.
+Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements and test coverage hardening from TEA audit (R-001).
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 12 of 16 stories complete. Stories 0.29, 0.36, 0.37 not started.
+**Status:** 12 of 22 stories complete. Stories 0.29, 0.50, 0.51, 0.52, 0.53 not started.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -405,9 +405,9 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 ## Epic 0: Infrastructure & Process (Backfill)
 
-**Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements.
+**Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements and test coverage hardening from the TEA audit (R-001).
 
-**Status:** 12 of 16 stories complete. Stories 0.29, 0.36, 0.37 not started.
+**Status:** 12 of 22 stories complete. Stories 0.29, 0.50, 0.51, 0.52, 0.53 not started.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -872,6 +872,55 @@ So that 'q' means "close what I'm looking at" — quit at root, back in sub-view
 - **AC4:** Text input views unchanged ('q' = text input)
 - **AC5:** Keybindings updated to show 'q: back' in sub-views
 - **AC6:** Tests updated, race detector passes
+
+### Story 0.51: TUI View Rendering Benchmarks
+
+As a developer,
+I want benchmarks for TUI `View()` rendering in complex views,
+So that I can detect responsiveness regressions before they affect users.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Benchmark functions exist for `DoorsView.View()`, `DashboardView.View()`, `StatsView.View()`, and `SourcesView.View()`
+- **AC2:** Each benchmark uses realistic model state (populated task pool, active theme, multiple sources)
+- **AC3:** Benchmarks run with `go test -bench=. ./internal/tui/...` and produce stable results
+- **AC4:** Baseline results captured in `internal/tui/testdata/benchmarks-baseline.txt`
+- **AC5:** All benchmarks pass with `-race` flag
+- **AC6:** No new dependencies — stdlib `testing.B` only
+
+### Story 0.52: Multi-Adapter Integration Tests
+
+As a developer,
+I want integration tests that exercise sync conflict resolution across real (simulated) adapter pairs,
+So that I can be confident multi-source scenarios work correctly end-to-end.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Integration test exercising two adapters syncing the same task pool with conflicting edits
+- **AC2:** Test covers last-writer-wins conflict resolution
+- **AC3:** Test covers orphaned task detection when a task is deleted from one source
+- **AC4:** Test covers field-level conflict (title changed in A, status changed in B)
+- **AC5:** Tests use mock adapters built from `TaskProvider` interface
+- **AC6:** Tests are table-driven with named scenarios
+- **AC7:** All tests pass with `-race` flag
+
+### Story 0.53: Docker E2E Scenario Expansion
+
+As a developer,
+I want the Docker E2E test suite to cover all primary user workflows,
+So that I can be confident the full application works end-to-end in a clean environment.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Audit of existing Docker E2E scenarios documented
+- **AC2:** Missing scenarios added for: task completion, blocking, daily planning, source connection
+- **AC3:** Docker E2E tests pass locally via `docker compose -f docker-compose.test.yml up`
+- **AC4:** Each new scenario has descriptive name and clear pass/fail criteria
+- **AC5:** No flaky tests — deterministic timing with teatest `WaitFor`
+- **AC6:** CI integration unchanged (push-only per Story 55.1)
 
 ---
 

@@ -110,6 +110,24 @@ Update all agent definition files (envoy, merge-queue, pr-shepherd) to reference
 
 Document label authority matrix (who sets/removes each label) and end-to-end triage flow. Covers BOARD recommendations P-003 and P-005. Consolidates party mode consensus into operational reference.
 
+### Story 0.51: TUI View Rendering Benchmarks (P2)
+
+**Status:** Not Started.
+
+Add benchmarks for `View()` rendering in complex TUI views (doors, dashboard, stats, sources). Captures baseline for regression detection. Driven by TEA audit R-001 finding that benchmark coverage is limited to core/textfile packages.
+
+### Story 0.52: Multi-Adapter Integration Tests (P2)
+
+**Status:** Not Started.
+
+Integration tests for sync conflict resolution across simulated adapter pairs. Covers last-writer-wins, orphaned task detection, field-level conflicts. Currently only unit-tested. Driven by TEA audit R-001.
+
+### Story 0.53: Docker E2E Scenario Expansion (P2)
+
+**Status:** Not Started.
+
+Audit and expand Docker E2E test scenarios to cover all primary user workflows (task completion, blocking, daily planning, source connection). Three-tier TUI testing infrastructure (ADR-0019) is fully built but scenario coverage gaps exist. Driven by TEA audit R-001.
+
 ## Active Epics
 
 ### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 3/4 stories done

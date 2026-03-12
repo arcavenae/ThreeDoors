@@ -17,7 +17,7 @@
 
 | ID | Topic | Date | Owner | Link |
 |----|-------|------|-------|------|
-| R-001 | State of Testing Audit — comprehensive test health assessment with gap analysis and prioritized recommendations | 2026-03-09 | TEA Agent | [Report](../../_bmad-output/planning-artifacts/state-of-testing-report.md) |
+| R-001 | State of Testing Audit — comprehensive test health assessment with gap analysis and prioritized recommendations | 2026-03-09 | TEA Agent | [Report](../../_bmad-output/planning-artifacts/state-of-testing-report.md) — **Resolved:** Validation (2026-03-11) found P0/P1 items already addressed (CLI 69.8%, all contract tests exist, t.Helper() at 70 files). Three P2 stories created (0.51-0.53) for remaining gaps. |
 
 ## Pending Recommendations
 
