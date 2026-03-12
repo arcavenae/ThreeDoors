@@ -159,8 +159,7 @@ jobs:
 
   test-docker-e2e:
     name: Docker E2E Tests
-    needs: changes
-    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.docker == 'true' || github.event_name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
