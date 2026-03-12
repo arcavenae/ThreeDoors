@@ -691,6 +691,23 @@
 - **Research:** See `_bmad-output/planning-artifacts/ci-test-optimization/` (5 party mode sessions)
 - **Decisions:** D-166 (CI Optimization Phase 1 scope and rejected alternatives)
 
+**Epic 57: LLM CLI Services** (P1)
+- **Goal:** Enable ThreeDoors to invoke LLM CLI tools (Claude CLI, Gemini CLI, Ollama CLI) as subprocess-based service providers for intelligent task operations: extraction from natural language, enrichment, and breakdown. ThreeDoors as CLIENT calling LLMs (Direction 1), complementing Epic 24's MCP server (Direction 2).
+- **Prerequisites:** Epic 14 (LLM Decomposition — complete), Epic 23 (CLI Interface — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - CLIProvider + CLISpec declarative model implementing existing `LLMBackend` interface via `os/exec`
+  - Pre-built specs for Claude CLI, Gemini CLI, Ollama CLI, and generic custom CLI tools
+  - Auto-discovery of installed CLI tools with priority-ordered fallback chain
+  - TaskExtractor service: natural language → structured tasks from any text source (files, clipboard, paste)
+  - TUI `:extract` command with review screen (toggle, edit, import selected tasks)
+  - CLI `threedoors extract` with --file, --clipboard, stdin pipe, --json output
+  - TaskEnricher service with before/after diff TUI (`:enrich` / E key in detail view)
+  - TaskBreakdown CLI backend support (extend Epic 14 decomposer) with TUI (`:breakdown` / B key)
+  - `threedoors llm status` command showing backend availability, fallbacks, service readiness
+- **Stories:** 57.1-57.8 (8 stories)
+- **Research:** See `_bmad-output/planning-artifacts/llm-services-architecture/` (5 party mode sessions + synthesis)
+
 **Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation** (P2)
 - **Goal:** Detect supervisor context window degradation via daemon monitoring, serialize operational state, and transfer control to a fresh supervisor instance while workers continue uninterrupted
 - **Prerequisites:** None (multiclaude daemon infrastructure already exists)
@@ -705,7 +722,7 @@
   - Manual trigger: `multiclaude supervisor handover` command with anti-oscillation override
 - **Stories:** 58.1-58.7 (7 stories, 2 phases: MVP 58.1-58.4, Hardening 58.5-58.7)
 - **Research:** See `_bmad-output/planning-artifacts/supervisor-shift-handover/` (5 party mode sessions + synthesis)
-- **Decisions:** D-167 (external monitoring), D-168 (cold start), D-169 (rolling snapshot), D-170 (hybrid shift clock), D-171 (role-based addressing)
+- **Decisions:** D-168 (external monitoring), D-169 (cold start), D-170 (rolling snapshot), D-171 (hybrid shift clock), D-172 (role-based addressing)
 
 **Epic 56: Door Visual Redesign — Three-Layer Depth System** (P1)
 - **Goal:** Transform door rendering from imperceptible wireframe shadows into solid, 3D-feeling surfaces using a three-layer approach: background fill for visual mass, bevel lighting for raised-surface perception, and gradient shadow for spatial depth
@@ -790,6 +807,7 @@
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
 | Epic 56: Door Visual Redesign | 5 | Not Started |
+| Epic 57: LLM CLI Services | 8 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
-| **Total** | **304** | **152 complete, 9 epics in progress, 144 not started** |
+| **Total** | **312** | **152 complete, 9 epics in progress, 152 not started** |
 ---

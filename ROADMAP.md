@@ -341,6 +341,23 @@ Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration chang
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
+### Epic 57: LLM CLI Services (P1) — 0/8 stories done
+
+Enable ThreeDoors to invoke LLM CLI tools (Claude CLI, Gemini CLI, Ollama CLI) as subprocess-based service providers for intelligent task operations. ThreeDoors as CLIENT calling LLMs (Direction 1), complementing Epic 24's MCP server (Direction 2). Extends existing `LLMBackend` interface with CLI-based implementations via `os/exec`. Two-layer architecture: Services (what: extract, enrich, breakdown) + Backends (how: which CLI tool). Auto-discovery with fallback chain, privacy-tiered model (local default, cloud opt-in).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 57.1 | CLIProvider + CLISpec + CommandRunner Abstraction | Not Started | P0 | None |
+| 57.2 | Auto-Discovery and Fallback Chain | Not Started | P0 | 57.1 |
+| 57.3 | TaskExtractor Service + Extraction Prompt | Not Started | P0 | 57.1 |
+| 57.4 | Extraction TUI (`:extract` + review screen) | Not Started | P0 | 57.3 |
+| 57.5 | Extraction CLI (`threedoors extract`) | Not Started | P0 | 57.3 |
+| 57.6 | TaskEnricher Service + Enrichment TUI | Not Started | P1 | 57.1 |
+| 57.7 | TaskBreakdown Service (extend Epic 14) | Not Started | P1 | 57.1 |
+| 57.8 | `threedoors llm status` Command | Not Started | P1 | 57.1, 57.2 |
+
+**Dependency graph:** 57.1 is foundation. 57.2-57.7 parallelize after 57.1 (except 57.4/57.5 depend on 57.3). 57.8 depends on 57.1 + 57.2.
+
 ### Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation (P2) — 0/7 stories done
 
 Detect supervisor context window degradation via daemon monitoring, serialize operational state, and transfer control to a fresh supervisor instance while workers continue uninterrupted. Two phases: MVP (shift clock, snapshot, orchestrator, startup) and Hardening (emergency protocol, audit, manual trigger).

@@ -5425,12 +5425,145 @@ Stories 56.1 & 56.2 can parallelize. Stories 56.3 & 56.4 can parallelize after 5
 
 ### Decisions
 
-- D-172: Three-layer depth system (background fill + bevel lighting + shadow gradient)
+- D-173: Three-layer depth system (background fill + bevel lighting + shadow gradient)
 - Rejected: X-109 Full Corridor (width cost too high), X-110 Adaptive Depth/terminal detection (over-engineering), X-111 Interior Texture (hurts readability), X-112 Braille Patterns (accessibility concerns)
 
 ### Research
 
 - Full research: `_bmad-output/planning-artifacts/door-visual-redesign/party-mode-door-redesign.md` (5-round party mode, 6 agents)
+
+---
+
+## Epic 57: LLM CLI Services (P1)
+
+**Goal:** Enable ThreeDoors to invoke LLM CLI tools (Claude CLI, Gemini CLI, Ollama CLI) as subprocess-based service providers for intelligent task operations: extraction from natural language, enrichment, and breakdown. ThreeDoors as CLIENT calling LLMs (Direction 1), complementing Epic 24's MCP server (Direction 2, where ThreeDoors is SERVER).
+
+**Prerequisites:** Epic 14 (LLM Decomposition — complete), Epic 23 (CLI Interface — complete)
+
+**Status:** Not Started (0/8 stories done)
+
+**Two Directions of Integration:**
+- Direction 1 (THIS EPIC): ThreeDoors → LLM CLIs. ThreeDoors invokes claude/gemini/ollama CLIs via `os/exec` for task extraction, enrichment, breakdown. ThreeDoors is the CLIENT.
+- Direction 2 (Epic 24 — complete): LLM Agents → ThreeDoors MCP Server. Claude Desktop, Cursor, etc. connect via MCP. ThreeDoors is the SERVER.
+- These compose: MCP tools become thin wrappers around the LLM Service Layer.
+
+### Story 57.1: CLIProvider + CLISpec + CommandRunner Abstraction ⬜
+
+**As** a developer,
+**I want** a generic CLI-based LLM backend that implements the existing `LLMBackend` interface via subprocess execution,
+**So that** ThreeDoors can invoke any LLM CLI tool through a uniform abstraction.
+
+**Acceptance Criteria:**
+- `CLISpec` struct defined with: Name, Command, BaseArgs, SystemPrompt (ArgTemplate), OutputFormat (ArgTemplate), InputMethod (stdin/arg/file), Timeout, ResponseParser
+- `CLIProvider` implements `LLMBackend` interface (`Name()`, `Complete()`, `Available()`)
+- Pre-built `CLISpec` factories: `ClaudeCLISpec()`, `GeminiCLISpec()`, `OllamaCLISpec(model)`, `CustomCLISpec(cmd, args)`
+- `CommandRunner` with stdin support (`RunWithStdin`)
+- Timeout enforcement via context cancellation
+- Error handling: non-zero exit includes stderr, empty response returns `ErrEmptyResponse`
+
+**Priority:** P0 | **Depends On:** None
+
+### Story 57.2: Auto-Discovery and Fallback Chain ⬜
+
+**As** a user,
+**I want** ThreeDoors to automatically detect which LLM CLI tools are installed and use the best available one,
+**So that** LLM features work with zero configuration.
+
+**Acceptance Criteria:**
+- `DiscoverBackend(cfg)` checks CLI tools in priority order (claude → gemini → ollama → HTTP backends)
+- User-configured backend takes priority over auto-discovery
+- Graceful degradation when no backends available (`ErrBackendUnavailable`)
+- Discovery result logged at INFO level for debugging
+
+**Priority:** P0 | **Depends On:** 57.1
+
+### Story 57.3: TaskExtractor Service + Extraction Prompt ⬜
+
+**As** a user,
+**I want** to extract actionable tasks from unstructured text (meeting notes, Obsidian pages, transcripts, clipboard),
+**So that** tasks hiding in prose are surfaced into my ThreeDoors pool.
+
+**Acceptance Criteria:**
+- `TaskExtractor` service with `ExtractFromText(ctx, text) ([]ExtractedTask, error)`
+- `ExtractedTask` struct: Text, Effort (1-5), Tags, Source, Confidence
+- Source helpers: `ExtractFromFile`, `ExtractFromClipboard` (pbpaste)
+- 32KB input size limit with clear error message
+- JSON-only LLM output format with retry on malformed response
+- Deduplication check against existing task pool
+
+**Priority:** P0 | **Depends On:** 57.1
+
+### Story 57.4: Extraction TUI — `:extract` Command + Review Screen ⬜
+
+**As** a TUI user,
+**I want** to type `:extract` to extract tasks from text, files, or clipboard and review them before importing,
+**So that** I can convert unstructured text into actionable tasks without leaving the TUI.
+
+**Acceptance Criteria:**
+- `:extract` command registered in command palette
+- Source picker: [f]ile, [c]lipboard, [p]aste
+- Loading spinner with Esc cancel
+- Review screen: task list with Space toggle, A/N select all/none, E inline edit, Enter import
+- Flash message after import: "Imported N tasks from [source]"
+- Latency target: <5s for short text
+
+**Priority:** P0 | **Depends On:** 57.3
+
+### Story 57.5: Extraction CLI — `threedoors extract` ⬜
+
+**As** a CLI user,
+**I want** to run `threedoors extract --file notes.txt` or pipe text via stdin,
+**So that** I can batch-import tasks from scripts and non-interactive contexts.
+
+**Acceptance Criteria:**
+- `--file`, `--clipboard`, stdin pipe support
+- Human-readable output with confirmation prompt
+- `--json` flag for scripted output
+- `--yes` flag for auto-import without confirmation
+
+**Priority:** P0 | **Depends On:** 57.3
+
+### Story 57.6: TaskEnricher Service + Enrichment TUI ⬜
+
+**As** a user viewing a vague task,
+**I want** to press E (or type `:enrich`) to have an LLM add context, tags, and effort,
+**So that** sparse tasks become actionable.
+
+**Acceptance Criteria:**
+- `TaskEnricher` service with `Enrich(ctx, task) (*EnrichedTask, error)`
+- Before/after diff display in TUI detail view
+- Accept/edit/discard actions
+- Latency target: <3s
+
+**Priority:** P1 | **Depends On:** 57.1
+
+### Story 57.7: TaskBreakdown Service — Extend Epic 14 Decomposer ⬜
+
+**As** a user facing an overwhelming task,
+**I want** to press B (or type `:breakdown`) to decompose it into subtasks,
+**So that** large tasks become approachable.
+
+**Acceptance Criteria:**
+- Existing `LLMTaskDecomposer` works with CLI backends (interface compatibility)
+- `:breakdown` command in detail view with loading spinner
+- Subtask review screen with toggle/import
+- Latency target: <8s
+
+**Priority:** P1 | **Depends On:** 57.1
+
+### Story 57.8: `threedoors llm status` Command ⬜
+
+**As** a user,
+**I want** to run `threedoors llm status` to see which LLM backend is active,
+**So that** I can debug LLM feature issues.
+
+**Acceptance Criteria:**
+- CLI: shows active backend, command path, availability, fallbacks, service readiness
+- TUI: `:llm-status` command shows same info
+- `--json` flag for scripted output
+- Helpful message when no backends available
+
+**Priority:** P1 | **Depends On:** 57.1, 57.2
 
 ## Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation (P2)
 
@@ -5581,6 +5714,40 @@ Stories 56.1 & 56.2 can parallelize. Stories 56.3 & 56.4 can parallelize after 5
 ### Dependency Graph
 
 ```
+57.1 (CLIProvider + CLISpec)
+ ├──▶ 57.2 (Auto-Discovery)
+ │     └──▶ 57.8 (llm status)
+ ├──▶ 57.3 (TaskExtractor)
+ │     ├──▶ 57.4 (Extraction TUI)
+ │     └──▶ 57.5 (Extraction CLI)
+ ├──▶ 57.6 (TaskEnricher)
+ └──▶ 57.7 (TaskBreakdown)
+```
+
+57.1 is the foundation. After 57.1, stories 57.2-57.7 can parallelize (except 57.4/57.5 depend on 57.3). 57.8 depends on 57.1 and 57.2.
+
+### Decisions
+
+- S2-D1: Extend `LLMBackend` with CLI implementations (Option A). Rejected: new CLIService interface (Option B), capability negotiation (Option C)
+- S2-D2: Two-layer architecture — Services (what) + Backends (how)
+- S2-D4: Auto-discovery via `exec.LookPath` with fallback chain
+- S5-D1: Declarative CLISpec struct. Rejected: per-provider classes with duplicated exec logic
+- S1-D7: Privacy-tiered model (local default, cloud opt-in per SOUL.md)
+- S1-D8: All LLM services user-initiated (no automatic/ambient processing)
+- S3-D1: All sources reduce to `extractFromText(text)` — simpler architecture
+- S3-D2: User review required before import — LLMs hallucinate
+- S3-D5: 32KB input size limit for MVP — YAGNI on chunking
+- S4-D1: Explicit commands for MVP; contextual suggestions P1; ambient P2
+- S5-D6: Streaming, conversation, tool use deferred — P0 is request-response only
+
+### Research
+
+- Full research: `_bmad-output/planning-artifacts/llm-services-architecture/` (5 party mode sessions)
+- Synthesis: `_bmad-output/planning-artifacts/llm-services-architecture/synthesis.md`
+
+### Dependency Graph
+
+```
 58.1 (Shift Clock)        ──▶ Independent (daemon monitoring)
 58.2 (Rolling Snapshot)   ──▶ Independent (daemon state collection)
 58.3 (Orchestrator)       ──▶ Depends on 58.1, 58.2
@@ -5595,11 +5762,11 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 ### Decisions
 
-- D-167: External daemon monitoring (not supervisor self-reporting)
-- D-168: Cold start (no hot/warm standby)
-- D-169: Daemon-maintained rolling snapshot
-- D-170: Hybrid shift clock (time floor + usage ceiling)
-- D-171: Role-based agent addressing
+- D-168: External daemon monitoring (not supervisor self-reporting)
+- D-169: Cold start (no hot/warm standby)
+- D-170: Daemon-maintained rolling snapshot
+- D-171: Hybrid shift clock (time floor + usage ceiling)
+- D-172: Role-based agent addressing
 
 ### Research
 
