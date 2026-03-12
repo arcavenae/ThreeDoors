@@ -132,8 +132,19 @@ func BenchmarkProviderSaveTask(b *testing.B) {
 	}
 }
 
+// nfr13Threshold returns the NFR13 threshold, relaxed under the race detector
+// which adds 5-10x instrumentation overhead to every memory access.
+func nfr13Threshold() time.Duration {
+	if raceDetectorEnabled {
+		return 500 * time.Millisecond
+	}
+	return 100 * time.Millisecond
+}
+
 // TestAdapterReadWriteNFR13 validates the <100ms NFR for adapter operations.
 func TestAdapterReadWriteNFR13(t *testing.T) {
+	threshold := nfr13Threshold()
+
 	tests := []struct {
 		name   string
 		nTasks int
@@ -184,8 +195,8 @@ func TestAdapterReadWriteNFR13(t *testing.T) {
 				}
 			}
 			avgPerOp := time.Since(start) / 100
-			if avgPerOp > 100*time.Millisecond {
-				t.Errorf("LoadTasks with %d tasks took %v avg (NFR13: <100ms)", tt.nTasks, avgPerOp)
+			if avgPerOp > threshold {
+				t.Errorf("LoadTasks with %d tasks took %v avg (NFR13: <%v)", tt.nTasks, avgPerOp, threshold)
 			}
 		})
 
@@ -219,8 +230,8 @@ func TestAdapterReadWriteNFR13(t *testing.T) {
 				}
 			}
 			avgPerOp := time.Since(start) / 100
-			if avgPerOp > 100*time.Millisecond {
-				t.Errorf("SaveTasks with %d tasks took %v avg (NFR13: <100ms)", tt.nTasks, avgPerOp)
+			if avgPerOp > threshold {
+				t.Errorf("SaveTasks with %d tasks took %v avg (NFR13: <%v)", tt.nTasks, avgPerOp, threshold)
 			}
 		})
 	}
