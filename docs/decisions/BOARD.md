@@ -370,7 +370,8 @@
 | 56 | Door Visual Redesign — Three-Layer Depth System | 2026-03-11 | Not Started (0/5) |
 | 57 | LLM CLI Services | 2026-03-11 | Not Started (0/8) |
 | 58 | Supervisor Shift Handover — Context-Aware Supervisor Rotation | 2026-03-11 | Not Started (0/7) |
-| 59 | *(next available)* | — | — |
+| 59 | Full-Terminal Vertical Layout | 2026-03-11 | Not Started (0/2) |
+| 60 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
