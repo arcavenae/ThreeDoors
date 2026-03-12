@@ -46,6 +46,7 @@ const (
 	ViewSnooze
 	ViewPlanning
 	ViewSources
+	ViewSourceDetail
 )
 
 // String returns the human-readable name of the view mode.
@@ -95,6 +96,8 @@ func (v ViewMode) String() string {
 		return "Planning"
 	case ViewSources:
 		return "Sources"
+	case ViewSourceDetail:
+		return "SourceDetail"
 	default:
 		return "Unknown"
 	}
@@ -126,6 +129,7 @@ type MainModel struct {
 	snoozeView          *SnoozeView
 	planningView        *PlanningView
 	sourcesView         *SourcesView
+	sourceDetailView    *SourceDetailView
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -463,6 +467,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.planningView.SetWidth(msg.Width)
 			m.planningView.SetHeight(msg.Height)
 		}
+		if m.sourceDetailView != nil {
+			m.sourceDetailView.SetWidth(msg.Width)
+			m.sourceDetailView.SetHeight(msg.Height)
+		}
 		return m, nil
 
 	case ClearFlashMsg:
@@ -536,6 +544,19 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.sourcesView.SetHeight(m.height)
 			m.previousView = m.viewMode
 			m.setViewMode(ViewSources)
+		}
+		return m, nil
+
+	case ShowSourceDetailMsg:
+		if m.connMgr != nil {
+			conn, err := m.connMgr.Get(msg.ConnectionID)
+			if err == nil {
+				m.sourceDetailView = NewSourceDetailView(conn, m.connMgr)
+				m.sourceDetailView.SetWidth(m.width)
+				m.sourceDetailView.SetHeight(m.height)
+				m.previousView = m.viewMode
+				m.setViewMode(ViewSourceDetail)
+			}
 		}
 		return m, nil
 
@@ -1357,6 +1378,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updatePlanning(msg)
 	case ViewSources:
 		return m.updateSources(msg)
+	case ViewSourceDetail:
+		return m.updateSourceDetail(msg)
 	}
 
 	return m, nil
@@ -1541,6 +1564,14 @@ func (m *MainModel) updateSources(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.sourcesView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSourceDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.sourceDetailView == nil {
+		return m, nil
+	}
+	cmd := m.sourceDetailView.Update(msg)
 	return m, cmd
 }
 
@@ -2089,6 +2120,10 @@ func (m *MainModel) View() string {
 	case ViewSources:
 		if m.sourcesView != nil {
 			view = m.sourcesView.View()
+		}
+	case ViewSourceDetail:
+		if m.sourceDetailView != nil {
+			view = m.sourceDetailView.View()
 		}
 	case ViewAddTask:
 		if m.addTaskView != nil {
