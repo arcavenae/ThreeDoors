@@ -35,6 +35,7 @@ type DetailView struct {
 	blockerInput        string
 	expandInput         string
 	width               int
+	height              int
 	tracker             *core.SessionTracker
 	enrichDB            *enrichment.DB
 	pool                *core.TaskPool
@@ -115,6 +116,11 @@ func (dv *DetailView) SetInlineHints(enabled bool) {
 // SetWidth sets the terminal width.
 func (dv *DetailView) SetWidth(w int) {
 	dv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (dv *DetailView) SetHeight(h int) {
+	dv.height = h
 }
 
 // Update handles key input in the detail view.

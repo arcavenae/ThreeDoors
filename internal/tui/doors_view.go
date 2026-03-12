@@ -303,28 +303,28 @@ func (dv *DoorsView) SetHeight(h int) {
 
 // View renders the doors view.
 func (dv *DoorsView) View() string {
-	s := strings.Builder{}
-	s.WriteString(headerStyle.Render("ThreeDoors - Technical Demo"))
-	s.WriteString("\n")
-	s.WriteString(greetingStyle.Render(dv.greeting))
-	s.WriteString("\n")
+	// --- Header region: title + greeting ---
+	var header strings.Builder
+	header.WriteString(headerStyle.Render("ThreeDoors - Technical Demo"))
+	header.WriteString("\n")
+	header.WriteString(greetingStyle.Render(dv.greeting))
 	if dv.patternAnalyzer != nil && dv.completionCounter != nil {
 		multiGreeting := core.FormatMultiDimensionalGreeting(dv.patternAnalyzer, dv.completionCounter)
 		if multiGreeting != "" {
-			s.WriteString(greetingStyle.Render(multiGreeting))
-			s.WriteString("\n")
+			header.WriteString("\n")
+			header.WriteString(greetingStyle.Render(multiGreeting))
 		}
 	}
 	if timeStr := core.FormatTimeContext(dv.timeContext); timeStr != "" {
-		s.WriteString(badgeStyle.Render(timeStr))
-		s.WriteString("\n")
+		header.WriteString("\n")
+		header.WriteString(badgeStyle.Render(timeStr))
 	}
-	s.WriteString("\n")
 
 	if len(dv.currentDoors) == 0 {
-		s.WriteString(flashStyle.Render("All tasks done! Great work!"))
-		s.WriteString("\n\nPress 'q' to quit.\n")
-		return s.String()
+		header.WriteString("\n\n")
+		header.WriteString(flashStyle.Render("All tasks done! Great work!"))
+		header.WriteString("\n\nPress 'q' to quit.\n")
+		return header.String()
 	}
 
 	hintsEnabled := dv.showKeyHints
@@ -339,9 +339,12 @@ func (dv *DoorsView) View() string {
 
 	doorHeight := 0
 	if dv.height > 0 {
-		doorHeight = int(float64(dv.height) * 0.6)
+		doorHeight = int(float64(dv.height) * 0.5)
 		if doorHeight < 10 {
 			doorHeight = 10
+		}
+		if doorHeight > 25 {
+			doorHeight = 25
 		}
 		doorHeight-- // reserve 1 row for threshold floor line (Story 48.2)
 	}
@@ -470,12 +473,12 @@ func (dv *DoorsView) View() string {
 		}
 	}
 
+	// --- Door region: doors + threshold + status indicators ---
+	var doorSection strings.Builder
 	doorRow := lipgloss.JoinHorizontal(lipgloss.Top, renderedDoors...)
-	s.WriteString(doorRow)
+	doorSection.WriteString(doorRow)
 
 	// Continuous threshold/floor line beneath all doors (Story 48.2).
-	// Spans the full width of the door row, appearing below shadows,
-	// grounding the doors in a shared visual space.
 	if firstNewline := strings.IndexByte(doorRow, '\n'); firstNewline > 0 {
 		rowWidth := ansi.StringWidth(doorRow[:firstNewline])
 		thresholdLine := strings.Repeat("▔", rowWidth)
@@ -483,38 +486,39 @@ func (dv *DoorsView) View() string {
 		if activeTheme != nil {
 			thresholdStyle = lipgloss.NewStyle().Foreground(activeTheme.Colors.Frame)
 		}
-		fmt.Fprintf(&s, "\n%s", thresholdStyle.Render(thresholdLine))
+		fmt.Fprintf(&doorSection, "\n%s", thresholdStyle.Render(thresholdLine))
 	}
 
 	if dv.completedCount > 0 {
-		fmt.Fprintf(&s, "\n\nCompleted this session: %d", dv.completedCount)
+		fmt.Fprintf(&doorSection, "\n\nCompleted this session: %d", dv.completedCount)
 	}
 
 	// Conflict notification
 	if dv.pendingConflicts > 0 {
-		s.WriteString("\n\n")
-		s.WriteString(conflictHeaderStyle.Render(fmt.Sprintf("⚠ %d sync conflict(s) detected — press C to resolve", dv.pendingConflicts)))
+		doorSection.WriteString("\n\n")
+		doorSection.WriteString(conflictHeaderStyle.Render(fmt.Sprintf("⚠ %d sync conflict(s) detected — press C to resolve", dv.pendingConflicts)))
 	}
 
 	// Proposal suggestions badge
 	if dv.pendingProposals > 0 {
-		s.WriteString("\n\n")
-		s.WriteString(proposalBadgeStyle.Render(fmt.Sprintf("[%d suggestions] — press S to review", dv.pendingProposals)))
+		doorSection.WriteString("\n\n")
+		doorSection.WriteString(proposalBadgeStyle.Render(fmt.Sprintf("[%d suggestions] — press S to review", dv.pendingProposals)))
 	}
 
 	// Sync status bar (with spinner animation when syncing)
 	if syncBar := RenderSyncStatusBarWithSpinner(dv.syncTracker, dv.syncSpinner); syncBar != "" {
-		s.WriteString("\n\n")
-		s.WriteString(syncBar)
+		doorSection.WriteString("\n\n")
+		doorSection.WriteString(syncBar)
 	}
 
 	// Connection health alert
 	if alert := dv.connectionHealthAlert(); alert != "" {
-		s.WriteString("\n\n")
-		s.WriteString(alert)
+		doorSection.WriteString("\n\n")
+		doorSection.WriteString(alert)
 	}
 
-	// Action hints between doors and help text when inline hints are active.
+	// --- Footer region: action hints + help text ---
+	var footer strings.Builder
 	if hintsEnabled {
 		var actionParts []string
 		actionParts = append(actionParts, renderInlineHint("s", true)+" re-roll")
@@ -522,22 +526,55 @@ func (dv *DoorsView) View() string {
 		if hasSelection {
 			actionParts = append(actionParts, renderInlineHint("enter", true)+" confirm")
 		}
-		s.WriteString("\n\n")
-		s.WriteString(helpStyle.Render(strings.Join(actionParts, "  ")))
-	}
-
-	s.WriteString("\n\n")
-	if hintsEnabled {
-		s.WriteString(helpStyle.Render("/ search | m mood | : command | ? help | q quit"))
-		s.WriteString("\n")
-		s.WriteString(greetingStyle.Render("hints: on — h to hide"))
+		footer.WriteString(helpStyle.Render(strings.Join(actionParts, "  ")))
+		footer.WriteString("\n\n")
+		footer.WriteString(helpStyle.Render("/ search | m mood | : command | ? help | q quit"))
+		footer.WriteString("\n")
+		footer.WriteString(greetingStyle.Render("hints: on — h to hide"))
 	} else {
-		s.WriteString(helpStyle.Render("a/left, w/up, d/right to select (again to deselect) | s/down to re-roll | Enter/Space to open | N feedback | / search | M mood | q quit"))
-		s.WriteString("\n")
-		s.WriteString(greetingStyle.Render(dv.footerMessage))
+		footer.WriteString(helpStyle.Render("a/left, w/up, d/right to select (again to deselect) | s/down to re-roll | Enter/Space to open | N feedback | / search | M mood | q quit"))
+		footer.WriteString("\n")
+		footer.WriteString(greetingStyle.Render(dv.footerMessage))
 	}
 
-	return s.String()
+	// Distribute vertical padding: 40% above doors, 60% below (perceptual centering).
+	headerStr := header.String()
+	doorStr := doorSection.String()
+	footerStr := footer.String()
+
+	if dv.height <= 0 {
+		// No height info — render without padding (pre-AltScreen compat).
+		return headerStr + "\n\n" + doorStr + "\n\n" + footerStr
+	}
+
+	headerLines := strings.Count(headerStr, "\n") + 1
+	doorLines := strings.Count(doorStr, "\n") + 1
+	footerLines := strings.Count(footerStr, "\n") + 1
+	usedLines := headerLines + doorLines + footerLines
+	remaining := dv.height - usedLines
+
+	if remaining <= 0 {
+		return headerStr + "\n" + doorStr + "\n" + footerStr
+	}
+
+	topPad := remaining * 2 / 5     // 40%
+	bottomPad := remaining - topPad // 60%
+
+	var out strings.Builder
+	out.WriteString(headerStr)
+	if topPad > 0 {
+		out.WriteString(strings.Repeat("\n", topPad))
+	} else {
+		out.WriteString("\n")
+	}
+	out.WriteString(doorStr)
+	if bottomPad > 0 {
+		out.WriteString(strings.Repeat("\n", bottomPad))
+	} else {
+		out.WriteString("\n")
+	}
+	out.WriteString(footerStr)
+	return out.String()
 }
 
 // connectionHealthAlert renders a warning line when sources need attention.
