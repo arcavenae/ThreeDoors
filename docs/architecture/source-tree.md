@@ -99,6 +99,7 @@ ThreeDoors/
 │   │   ├── import_view.go          # :import command — bulk task import from text
 │   │   ├── bug_report.go           # Bug report environment collection (Epic 50)
 │   │   ├── bug_report_view.go      # Bug report TUI view (Epic 50)
+│   │   ├── breakdown_view.go       # Task breakdown TUI view (Epic 57)
 │   │   ├── styles.go                # Lipgloss style definitions
 │   │   └── messages.go              # Bubbletea message types
 │   │
@@ -213,6 +214,7 @@ ThreeDoors/
 │   │   │   └── git_output.go       # Git repo story writer
 │   │   ├── services/                # Intelligence services (Epic 57)
 │   │   │   ├── extractor.go        # TaskExtractor — LLM-based task extraction from text
+│   │   │   ├── breakdown.go        # TaskBreakdown — LLM-based task decomposition
 │   │   │   └── prompts.go          # Extraction prompt templates
 │   │   └── learning/                # Learning engine (Epic 4, enhanced Epic 12)
 │   │       ├── engine.go            # Pattern analysis

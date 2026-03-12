@@ -648,6 +648,240 @@ func TestProviderAuthTypeConstants(t *testing.T) {
 	}
 }
 
+// --- Detection Integration Tests ---
+
+func TestApplyDetection_NoResults(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	result := ApplyDetection(specs, nil)
+
+	if len(result) != len(specs) {
+		t.Fatalf("expected %d specs, got %d", len(specs), len(result))
+	}
+	// Order should be unchanged
+	for i, s := range result {
+		if s.Name != specs[i].Name {
+			t.Errorf("spec[%d].Name = %q, want %q", i, s.Name, specs[i].Name)
+		}
+		if s.Detected {
+			t.Errorf("spec[%d] should not be detected", i)
+		}
+	}
+}
+
+func TestApplyDetection_DetectedMovedToTop(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	results := []connection.DetectionResult{
+		{
+			ProviderName: "github",
+			Reason:       "gh CLI authenticated",
+			PreFill:      map[string]string{},
+		},
+	}
+
+	applied := ApplyDetection(specs, results)
+
+	if len(applied) != len(specs) {
+		t.Fatalf("expected %d specs, got %d", len(specs), len(applied))
+	}
+
+	// GitHub should be first (was second in testProviderSpecs)
+	if applied[0].Name != "github" {
+		t.Errorf("first spec should be github (detected), got %q", applied[0].Name)
+	}
+	if !applied[0].Detected {
+		t.Error("github spec should be marked as detected")
+	}
+	if applied[0].DetectInfo != "gh CLI authenticated" {
+		t.Errorf("DetectInfo = %q, want %q", applied[0].DetectInfo, "gh CLI authenticated")
+	}
+
+	// Rest should be in original order minus github
+	expected := []string{"todoist", "textfile", "reminders"}
+	for i, name := range expected {
+		if applied[i+1].Name != name {
+			t.Errorf("spec[%d].Name = %q, want %q", i+1, applied[i+1].Name, name)
+		}
+		if applied[i+1].Detected {
+			t.Errorf("spec[%d] should not be detected", i+1)
+		}
+	}
+}
+
+func TestApplyDetection_MultipleDetected(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	results := []connection.DetectionResult{
+		{ProviderName: "github", Reason: "gh CLI", PreFill: map[string]string{}},
+		{ProviderName: "todoist", Reason: "API token found", PreFill: map[string]string{"token_env": "TODOIST_API_TOKEN"}},
+	}
+
+	applied := ApplyDetection(specs, results)
+
+	// Both detected should be at the top, in original spec order
+	if applied[0].Name != "todoist" {
+		t.Errorf("first detected should be todoist (original order), got %q", applied[0].Name)
+	}
+	if applied[1].Name != "github" {
+		t.Errorf("second detected should be github, got %q", applied[1].Name)
+	}
+	if !applied[0].Detected || !applied[1].Detected {
+		t.Error("both should be marked detected")
+	}
+
+	// Undetected follow
+	if applied[2].Name != "textfile" {
+		t.Errorf("third should be textfile, got %q", applied[2].Name)
+	}
+	if applied[3].Name != "reminders" {
+		t.Errorf("fourth should be reminders, got %q", applied[3].Name)
+	}
+}
+
+func TestApplyDetection_PreFillCarriedThrough(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	results := []connection.DetectionResult{
+		{
+			ProviderName: "todoist",
+			Reason:       "API token found",
+			PreFill:      map[string]string{"token_env": "TODOIST_API_TOKEN"},
+		},
+	}
+
+	applied := ApplyDetection(specs, results)
+
+	if applied[0].PreFill == nil {
+		t.Fatal("PreFill should not be nil for detected provider")
+	}
+	if applied[0].PreFill["token_env"] != "TODOIST_API_TOKEN" {
+		t.Errorf("PreFill[token_env] = %q, want %q", applied[0].PreFill["token_env"], "TODOIST_API_TOKEN")
+	}
+}
+
+func TestApplyDetection_UnknownProviderIgnored(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	results := []connection.DetectionResult{
+		{ProviderName: "notion", Reason: "config found", PreFill: map[string]string{}},
+	}
+
+	applied := ApplyDetection(specs, results)
+
+	// All specs unchanged, none detected
+	for i, s := range applied {
+		if s.Name != specs[i].Name {
+			t.Errorf("spec[%d].Name = %q, want %q", i, s.Name, specs[i].Name)
+		}
+		if s.Detected {
+			t.Errorf("spec[%d] should not be detected", i)
+		}
+	}
+}
+
+func TestConnectWizard_ViewShowsDetectedBadge(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	detections := []connection.DetectionResult{
+		{ProviderName: "github", Reason: "gh CLI authenticated", PreFill: map[string]string{}},
+	}
+	annotated := ApplyDetection(specs, detections)
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(annotated, connMgr)
+	w.SetWidth(80)
+
+	view := w.View()
+
+	if !strings.Contains(view, "detected") {
+		t.Error("view should contain 'detected' badge for GitHub")
+	}
+	if !strings.Contains(view, "gh CLI authenticated") {
+		t.Error("view should contain detection reason")
+	}
+}
+
+func TestConnectWizard_DetectedProviderAppearsFirst(t *testing.T) {
+	t.Parallel()
+
+	specs := testProviderSpecs()
+	detections := []connection.DetectionResult{
+		{ProviderName: "reminders", Reason: "macOS detected", PreFill: map[string]string{}},
+	}
+	annotated := ApplyDetection(specs, detections)
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(annotated, connMgr)
+	w.SetWidth(80)
+
+	// Reminders should now be first in specs
+	if annotated[0].Name != "reminders" {
+		t.Errorf("first spec should be reminders, got %q", annotated[0].Name)
+	}
+}
+
+func TestConnectWizard_PreFillsPathFromDetection(t *testing.T) {
+	t.Parallel()
+
+	specs := []ProviderFormSpec{
+		{
+			Name:        "obsidian",
+			DisplayName: "Obsidian",
+			Description: "Obsidian vault tasks",
+			AuthType:    AuthNone,
+			NeedsPath:   true,
+			PathHelp:    "Path to your Obsidian vault directory",
+			Detected:    true,
+			DetectInfo:  "vault found at /tmp/testvault",
+			PreFill:     map[string]string{"path": "/tmp/testvault"},
+		},
+	}
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(specs, connMgr)
+
+	// Select obsidian and advance to step 2
+	w.selectedProvider = "obsidian"
+	w.buildStep2Form()
+
+	// The filePath should be pre-filled
+	if w.filePath != "/tmp/testvault" {
+		t.Errorf("filePath = %q, want %q", w.filePath, "/tmp/testvault")
+	}
+}
+
+func TestConnectWizard_NoPreFillWhenNotDetected(t *testing.T) {
+	t.Parallel()
+
+	specs := []ProviderFormSpec{
+		{
+			Name:        "obsidian",
+			DisplayName: "Obsidian",
+			Description: "Obsidian vault tasks",
+			AuthType:    AuthNone,
+			NeedsPath:   true,
+			PathHelp:    "Path to your Obsidian vault directory",
+		},
+	}
+
+	connMgr := connection.NewConnectionManager(nil)
+	w := NewConnectWizard(specs, connMgr)
+
+	w.selectedProvider = "obsidian"
+	w.buildStep2Form()
+
+	if w.filePath != "" {
+		t.Errorf("filePath should be empty when not detected, got %q", w.filePath)
+	}
+}
+
 func TestConnectWizard_GetSelectedSpec(t *testing.T) {
 	t.Parallel()
 
