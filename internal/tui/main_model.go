@@ -46,6 +46,7 @@ const (
 	ViewSnooze
 	ViewPlanning
 	ViewSources
+	ViewSyncLogDetail
 )
 
 // String returns the human-readable name of the view mode.
@@ -95,6 +96,8 @@ func (v ViewMode) String() string {
 		return "Planning"
 	case ViewSources:
 		return "Sources"
+	case ViewSyncLogDetail:
+		return "SyncLogDetail"
 	default:
 		return "Unknown"
 	}
@@ -126,6 +129,7 @@ type MainModel struct {
 	snoozeView          *SnoozeView
 	planningView        *PlanningView
 	sourcesView         *SourcesView
+	syncLogDetailView   *SyncLogDetailView
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
 	planningTimestamp   *time.Time
 	configPath          string
@@ -151,6 +155,7 @@ type MainModel struct {
 	devQueue              *dispatch.DevQueue
 	proposalStore         *mcp.ProposalStore
 	connMgr               *connection.ConnectionManager
+	syncEventLog          *connection.SyncEventLog
 	milestoneChecker      *core.MilestoneChecker
 	pollingActive         bool
 	syncSpinner           *SyncSpinner
@@ -362,6 +367,11 @@ func (m *MainModel) SetConnectionManager(mgr *connection.ConnectionManager) {
 	m.connMgr = mgr
 }
 
+// SetSyncEventLog sets the sync event log for connection-specific sync log views.
+func (m *MainModel) SetSyncEventLog(log *connection.SyncEventLog) {
+	m.syncEventLog = log
+}
+
 // SetDispatcher sets the Dispatcher used for worker status polling.
 func (m *MainModel) SetDispatcher(d dispatch.Dispatcher) {
 	m.dispatcher = d
@@ -438,6 +448,10 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.syncLogView != nil {
 			m.syncLogView.SetWidth(msg.Width)
 			m.syncLogView.SetHeight(msg.Height)
+		}
+		if m.syncLogDetailView != nil {
+			m.syncLogDetailView.SetWidth(msg.Width)
+			m.syncLogDetailView.SetHeight(msg.Height)
 		}
 		if m.themePickerView != nil {
 			m.themePickerView.SetWidth(msg.Width)
@@ -528,6 +542,17 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		milestoneCmd := m.insightsView.CheckAndShowMilestone(totalTasks, currentStreak, sessionCount)
 		cmd := tea.Batch(animCmd, milestoneCmd)
 		return m, cmd
+
+	case ShowSourceDetailMsg:
+		// Source detail view not yet implemented — fall back to sources dashboard.
+		if m.connMgr != nil {
+			m.sourcesView = NewSourcesView(m.connMgr)
+			m.sourcesView.SetWidth(m.width)
+			m.sourcesView.SetHeight(m.height)
+			m.syncLogDetailView = nil
+			m.setViewMode(ViewSources)
+		}
+		return m, nil
 
 	case ShowSourcesMsg:
 		if m.connMgr != nil {
@@ -987,6 +1012,30 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.previousView = m.viewMode
 		m.setViewMode(ViewSyncLog)
 		return m, nil
+
+	case ShowSyncLogDetailMsg:
+		if m.syncEventLog == nil {
+			return m, nil
+		}
+		events, err := m.syncEventLog.SyncLog(msg.ConnectionID, syncLogDetailLimit)
+		if err != nil {
+			m.flash = fmt.Sprintf("Failed to load sync log: %v", err)
+			return m, ClearFlashCmd()
+		}
+		connName := ""
+		if m.connMgr != nil {
+			if conn, getErr := m.connMgr.Get(msg.ConnectionID); getErr == nil && conn != nil {
+				connName = conn.Label
+			}
+		}
+		sv := NewSyncLogDetailView(msg.ConnectionID, connName, events)
+		sv.SetWidth(m.width)
+		sv.SetHeight(m.height)
+		m.syncLogDetailView = sv
+		m.previousView = m.viewMode
+		m.setViewMode(ViewSyncLogDetail)
+		return m, nil
+
 	case DuplicateDismissedMsg:
 		m.refreshDuplicates()
 		m.flash = "Duplicate flag dismissed"
@@ -1357,6 +1406,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updatePlanning(msg)
 	case ViewSources:
 		return m.updateSources(msg)
+	case ViewSyncLogDetail:
+		return m.updateSyncLogDetail(msg)
 	}
 
 	return m, nil
@@ -1613,6 +1664,14 @@ func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.syncLogView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateSyncLogDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.syncLogDetailView == nil {
+		return m, nil
+	}
+	cmd := m.syncLogDetailView.Update(msg)
 	return m, cmd
 }
 
@@ -2122,6 +2181,10 @@ func (m *MainModel) View() string {
 	case ViewSyncLog:
 		if m.syncLogView != nil {
 			view = m.syncLogView.View()
+		}
+	case ViewSyncLogDetail:
+		if m.syncLogDetailView != nil {
+			view = m.syncLogDetailView.View()
 		}
 	case ViewThemePicker:
 		if m.themePickerView != nil {

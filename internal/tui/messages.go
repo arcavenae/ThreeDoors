@@ -196,6 +196,11 @@ type ShowSyncLogMsg struct {
 	Entries []core.SyncLogEntry
 }
 
+// ShowSyncLogDetailMsg is sent to open the connection-specific sync log detail view.
+type ShowSyncLogDetailMsg struct {
+	ConnectionID string
+}
+
 // ShowThemePickerMsg is sent to open the theme picker view.
 type ShowThemePickerMsg struct{}
 
