@@ -208,6 +208,9 @@ ThreeDoors/
 │   │   │   ├── local.go            # Ollama/llama.cpp client
 │   │   │   ├── cloud.go            # Anthropic/OpenAI client
 │   │   │   └── git_output.go       # Git repo story writer
+│   │   ├── services/                # Intelligence services (Epic 57)
+│   │   │   ├── extractor.go        # TaskExtractor — LLM-based task extraction from text
+│   │   │   └── prompts.go          # Extraction prompt templates
 │   │   └── learning/                # Learning engine (Epic 4, enhanced Epic 12)
 │   │       ├── engine.go            # Pattern analysis
 │   │       └── patterns.go          # User pattern models

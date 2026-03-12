@@ -546,21 +546,29 @@ func (dv *DoorsView) connectionHealthAlert() string {
 	if dv.connMgr == nil {
 		return ""
 	}
-	needsAttention := dv.connMgr.NeedsAttention()
-	if len(needsAttention) == 0 {
-		return ""
-	}
 
+	var lines []string
+
+	// Existing: connections in Error or AuthExpired state.
+	needsAttention := dv.connMgr.NeedsAttention()
 	if len(needsAttention) == 1 {
 		conn := needsAttention[0]
 		issue := "error"
 		if conn.State == connection.StateAuthExpired {
 			issue = "auth expired"
 		}
-		return connectionAlertStyle.Render(fmt.Sprintf("⚠ %s %s — :sources to fix", conn.Label, issue))
+		lines = append(lines, connectionAlertStyle.Render(fmt.Sprintf("⚠ %s %s — :sources to fix", conn.Label, issue)))
+	} else if len(needsAttention) > 1 {
+		lines = append(lines, connectionAlertStyle.Render(fmt.Sprintf("⚠ %d sources need attention — :sources to fix", len(needsAttention))))
 	}
 
-	return connectionAlertStyle.Render(fmt.Sprintf("⚠ %d sources need attention — :sources to fix", len(needsAttention)))
+	// Proactive: predictive health warnings (token expiry, rate limit, error streak).
+	warnings := dv.connMgr.HealthWarnings()
+	for _, w := range warnings {
+		lines = append(lines, connectionAlertStyle.Render(w.String()))
+	}
+
+	return strings.Join(lines, "\n")
 }
 
 // animatedDoorStyle builds a lipgloss style with border color interpolated
