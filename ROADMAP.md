@@ -340,6 +340,22 @@ Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration chang
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
+### Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation (P2) — 0/7 stories done
+
+Detect supervisor context window degradation via daemon monitoring, serialize operational state, and transfer control to a fresh supervisor instance while workers continue uninterrupted. Two phases: MVP (shift clock, snapshot, orchestrator, startup) and Hardening (emergency protocol, audit, manual trigger).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 58.1 | Shift Clock — Transcript Monitoring in Daemon Refresh Loop | Not Started | P2 | None |
+| 58.2 | Rolling State Snapshot Generator | Not Started | P2 | None |
+| 58.3 | Handover Orchestrator — Daemon Coordination Logic | Not Started | P2 | 58.1, 58.2 |
+| 58.4 | Supervisor Startup with State File | Not Started | P2 | 58.2, 58.3 |
+| 58.5 | Emergency Handover Protocol | Not Started | P2 | 58.3, 58.4 |
+| 58.6 | Handover History & Audit Trail | Not Started | P2 | 58.3 |
+| 58.7 | Manual Handover Trigger & User Notification | Not Started | P2 | 58.1, 58.3 |
+
+**Dependency graph:** Stories 58.1 & 58.2 can parallelize. Story 58.3 depends on both. Story 58.4 depends on 58.2 & 58.3. Phase 2 stories (58.5-58.7) can parallelize after Phase 1 completes.
+
 ## Icebox (Deferred Indefinitely)
 
 | Epic | Title | Stories | Decision Date | Rationale |
