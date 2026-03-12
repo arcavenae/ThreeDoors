@@ -21,6 +21,7 @@ type FeedbackView struct {
 	customInput string
 	isCustom    bool
 	width       int
+	height      int
 }
 
 // NewFeedbackView creates a new feedback view for the given task.
@@ -31,6 +32,11 @@ func NewFeedbackView(task *core.Task) *FeedbackView {
 // SetWidth sets the terminal width.
 func (fv *FeedbackView) SetWidth(w int) {
 	fv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (fv *FeedbackView) SetHeight(h int) {
+	fv.height = h
 }
 
 // Update handles key input for feedback selection.

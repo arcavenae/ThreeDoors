@@ -22,6 +22,7 @@ type MoodView struct {
 	customInput string
 	isCustom    bool
 	width       int
+	height      int
 	hintEnabled bool
 }
 
@@ -38,6 +39,11 @@ func (mv *MoodView) SetInlineHints(enabled bool) {
 // SetWidth sets the terminal width.
 func (mv *MoodView) SetWidth(w int) {
 	mv.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (mv *MoodView) SetHeight(h int) {
+	mv.height = h
 }
 
 // Update handles key input for mood selection.

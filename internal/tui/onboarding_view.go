@@ -30,6 +30,7 @@ const onboardingTotalSteps = 6
 type OnboardingView struct {
 	step       onboardingStep
 	width      int
+	height     int
 	triedKeys  map[string]bool
 	lastAction string
 
@@ -78,6 +79,11 @@ func (ov *OnboardingView) SetWidth(w int) {
 	if ov.themePicker != nil {
 		ov.themePicker.SetWidth(w)
 	}
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (ov *OnboardingView) SetHeight(h int) {
+	ov.height = h
 }
 
 func (ov *OnboardingView) completeMsg() tea.Cmd {

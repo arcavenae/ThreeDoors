@@ -35,6 +35,7 @@ type SnoozeView struct {
 	dateInput string
 	errMsg    string
 	width     int
+	height    int
 }
 
 // NewSnoozeView creates a snooze view for the given task.
@@ -47,6 +48,11 @@ func NewSnoozeView(task *core.Task) *SnoozeView {
 // SetWidth sets the terminal width for rendering.
 func (v *SnoozeView) SetWidth(w int) {
 	v.width = w
+}
+
+// SetHeight sets the terminal height for layout decisions.
+func (v *SnoozeView) SetHeight(h int) {
+	v.height = h
 }
 
 // Update handles key input for the snooze view.
