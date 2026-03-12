@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 )
 
 func newTestDoorsView(texts ...string) *DoorsView {
@@ -308,6 +309,145 @@ func TestDoorsView_ThresholdLine_NarrowTerminal(t *testing.T) {
 	// Should still render threshold even at narrow width
 	if !strings.Contains(view, "▔") {
 		t.Error("narrow terminal should still render threshold floor line")
+	}
+}
+
+// --- Story 44.5: Connection Health Alerts ---
+
+func TestDoorsView_NoAlert_WhenNoConnectionManager(t *testing.T) {
+	t.Parallel()
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	view := dv.View()
+	if strings.Contains(view, ":sources to fix") {
+		t.Error("View should not contain connection alert when no connection manager set")
+	}
+}
+
+func TestDoorsView_NoAlert_WhenAllHealthy(t *testing.T) {
+	t.Parallel()
+	cm := connection.NewConnectionManager(nil)
+	conn, _ := cm.Add("jira", "Work Jira", nil)
+	if err := cm.Transition(conn.ID, connection.StateConnecting); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+	if err := cm.Transition(conn.ID, connection.StateConnected); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	dv.SetConnectionManager(cm)
+	view := dv.View()
+	if strings.Contains(view, ":sources to fix") {
+		t.Error("View should not contain connection alert when all connections are healthy")
+	}
+}
+
+func TestDoorsView_Alert_SingleAuthExpired(t *testing.T) {
+	t.Parallel()
+	cm := connection.NewConnectionManager(nil)
+	conn, _ := cm.Add("linear", "Linear", nil)
+	if err := cm.Transition(conn.ID, connection.StateConnecting); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+	if err := cm.Transition(conn.ID, connection.StateAuthExpired); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	dv.SetConnectionManager(cm)
+	view := dv.View()
+	if !strings.Contains(view, "Linear auth expired") {
+		t.Errorf("View should show auth expired alert for Linear, got: %s", view)
+	}
+	if !strings.Contains(view, ":sources to fix") {
+		t.Error("View should contain ':sources to fix' hint")
+	}
+}
+
+func TestDoorsView_Alert_SingleError(t *testing.T) {
+	t.Parallel()
+	cm := connection.NewConnectionManager(nil)
+	conn, _ := cm.Add("github", "GitHub OSS", nil)
+	if err := cm.Transition(conn.ID, connection.StateConnecting); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+	if err := cm.TransitionWithError(conn.ID, connection.StateError, "timeout"); err != nil {
+		t.Fatalf("TransitionWithError: %v", err)
+	}
+
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	dv.SetConnectionManager(cm)
+	view := dv.View()
+	if !strings.Contains(view, "GitHub OSS error") {
+		t.Errorf("View should show error alert for GitHub OSS, got: %s", view)
+	}
+	if !strings.Contains(view, ":sources to fix") {
+		t.Error("View should contain ':sources to fix' hint")
+	}
+}
+
+func TestDoorsView_Alert_MultipleSources(t *testing.T) {
+	t.Parallel()
+	cm := connection.NewConnectionManager(nil)
+
+	conn1, _ := cm.Add("jira", "Work Jira", nil)
+	if err := cm.Transition(conn1.ID, connection.StateConnecting); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+	if err := cm.TransitionWithError(conn1.ID, connection.StateError, "timeout"); err != nil {
+		t.Fatalf("TransitionWithError: %v", err)
+	}
+
+	conn2, _ := cm.Add("linear", "Linear", nil)
+	if err := cm.Transition(conn2.ID, connection.StateConnecting); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+	if err := cm.Transition(conn2.ID, connection.StateAuthExpired); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	dv.SetConnectionManager(cm)
+	view := dv.View()
+	if !strings.Contains(view, "2 sources need attention") {
+		t.Errorf("View should show '2 sources need attention', got: %s", view)
+	}
+	if !strings.Contains(view, ":sources to fix") {
+		t.Error("View should contain ':sources to fix' hint")
+	}
+}
+
+func TestDoorsView_Alert_PositionedBelowSyncBar(t *testing.T) {
+	t.Parallel()
+	cm := connection.NewConnectionManager(nil)
+	conn, _ := cm.Add("jira", "Work", nil)
+	if err := cm.Transition(conn.ID, connection.StateConnecting); err != nil {
+		t.Fatalf("Transition: %v", err)
+	}
+	if err := cm.TransitionWithError(conn.ID, connection.StateError, "fail"); err != nil {
+		t.Fatalf("TransitionWithError: %v", err)
+	}
+
+	dv := newTestDoorsView("t1", "t2", "t3")
+	dv.SetWidth(80)
+	dv.SetConnectionManager(cm)
+	view := dv.View()
+
+	alertIdx := strings.Index(view, ":sources to fix")
+	quitIdx := strings.Index(view, "quit")
+	if alertIdx == -1 {
+		t.Fatal("alert not found in view")
+	}
+	if quitIdx == -1 {
+		t.Fatal("quit not found in view")
+	}
+	if alertIdx >= quitIdx {
+		t.Error("connection alert should appear before the footer keybinding bar")
 	}
 }
 

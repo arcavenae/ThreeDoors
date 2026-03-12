@@ -19,6 +19,7 @@ jobs:
     outputs:
       code: ${{ steps.filter.outputs.code }}
       docker: ${{ steps.filter.outputs.docker }}
+      perf: ${{ steps.filter.outputs.perf }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
@@ -35,6 +36,10 @@ jobs:
             docker:
               - 'Dockerfile*'
               - 'docker-compose*'
+            perf:
+              - 'internal/core/**'
+              - 'internal/adapters/textfile/**'
+              - 'go.mod'
 
   # Lightweight pass for docs-only PRs so required checks aren't stuck pending.
   docs-pass:
@@ -139,7 +144,7 @@ jobs:
   benchmarks:
     name: Performance Benchmarks
     needs: changes
-    if: needs.changes.outputs.code == 'true' || github.event_name == 'push'
+    if: github.event_name == 'push' || (needs.changes.outputs.code == 'true' && needs.changes.outputs.perf == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -164,8 +169,7 @@ jobs:
 
   test-docker-e2e:
     name: Docker E2E Tests
-    needs: changes
-    if: needs.changes.outputs.code == 'true' || needs.changes.outputs.docker == 'true' || github.event_name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

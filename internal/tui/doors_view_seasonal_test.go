@@ -18,7 +18,7 @@ func TestDoorsView_ResolveSeasonalTheme_OverridesBase(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:   "summer-beach",
 		Season: "summer",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return "SUMMER\n" + content
 		},
 		MinWidth: 10,
@@ -47,7 +47,7 @@ func TestDoorsView_ResolveSeasonalTheme_NoMatch_KeepsBase(t *testing.T) {
 	registry := themes.NewRegistry()
 	registry.Register(&themes.DoorTheme{
 		Name: "classic",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return content
 		},
 		MinWidth: 10,
@@ -77,7 +77,7 @@ func TestDoorsView_SeasonalTheme_StoredOnce(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:   "spring-flowers",
 		Season: "spring",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return "SPRING\n" + content
 		},
 		MinWidth: 10,
@@ -110,7 +110,7 @@ func TestDoorsView_SeasonalDisabled_UsesBaseTheme(t *testing.T) {
 	registry := themes.NewRegistry()
 	registry.Register(&themes.DoorTheme{
 		Name: "modern",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return content
 		},
 		MinWidth: 10,
@@ -118,7 +118,7 @@ func TestDoorsView_SeasonalDisabled_UsesBaseTheme(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:   "summer-beach",
 		Season: "summer",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return "SUMMER\n" + content
 		},
 		MinWidth: 10,
@@ -148,7 +148,7 @@ func TestDoorsView_SeasonalTheme_WidthFallback_UsesBaseTheme(t *testing.T) {
 	baseMarker := "BASE_THEME"
 	registry.Register(&themes.DoorTheme{
 		Name: "my-base",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return baseMarker + "\n" + content
 		},
 		MinWidth: 10,
@@ -158,7 +158,7 @@ func TestDoorsView_SeasonalTheme_WidthFallback_UsesBaseTheme(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:   "wide-seasonal",
 		Season: "summer",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return seasonalMarker + "\n" + content
 		},
 		MinWidth: 100, // requires very wide terminal
@@ -193,7 +193,7 @@ func TestDoorsView_ResolveSeasonalTheme_PlanningRecheck(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:   "autumn-leaves",
 		Season: "autumn",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return "AUTUMN\n" + content
 		},
 		MinWidth: 10,
@@ -201,7 +201,7 @@ func TestDoorsView_ResolveSeasonalTheme_PlanningRecheck(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:   "winter-frost",
 		Season: "winter",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return "WINTER\n" + content
 		},
 		MinWidth: 10,
@@ -251,7 +251,7 @@ func TestDoorsView_SeasonalTheme_AllSeasons(t *testing.T) {
 				registry.Register(&themes.DoorTheme{
 					Name:   s + "-theme",
 					Season: s,
-					Render: func(content string, width, height int, selected bool, hint string) string {
+					Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 						return content
 					},
 					MinWidth: 10,
@@ -280,7 +280,7 @@ func TestDoorsView_SeasonalDisabled_ThemeSelectionUnchanged(t *testing.T) {
 	registry := themes.NewRegistry()
 	registry.Register(&themes.DoorTheme{
 		Name: "scifi",
-		Render: func(content string, width, height int, selected bool, hint string) string {
+		Render: func(content string, width, height int, selected bool, hint string, emphasis float64) string {
 			return content
 		},
 		MinWidth: 10,

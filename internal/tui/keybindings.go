@@ -80,6 +80,8 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return snoozeBindings()
 	case ViewSources:
 		return sourcesBindings()
+	case ViewSyncLogDetail:
+		return syncLogDetailBindings()
 	default:
 		return nil
 	}
@@ -182,6 +184,7 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewDeferred, false},
 		{ViewSnooze, false},
 		{ViewSources, false},
+		{ViewSyncLogDetail, false},
 	}
 
 	for _, m := range allModes {
@@ -434,6 +437,20 @@ func syncLogBindings() []KeyBindingGroup {
 	}
 }
 
+func syncLogDetailBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "esc", Description: "back", Priority: PriorityAlways},
+			{Key: "j/k", Description: "scroll", Priority: PriorityAlways},
+			{Key: "pgdn/pgup", Description: "page", Priority: PriorityIfSpace},
+			{Key: "space", Description: "page down", Priority: PriorityOverlay},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
 func themePickerBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
@@ -603,6 +620,7 @@ func commandBindingGroup() KeyBindingGroup {
 			{Key: ":deferred", Description: "deferred tasks", Priority: PriorityOverlay},
 			{Key: ":devqueue", Description: "dev queue", Priority: PriorityOverlay},
 			{Key: ":suggestions", Description: "task proposals", Priority: PriorityOverlay},
+			{Key: ":connect", Description: "connect data source", Priority: PriorityOverlay},
 			{Key: ":sources", Description: "connected sources", Priority: PriorityOverlay},
 			{Key: ":help", Description: "help view", Priority: PriorityOverlay},
 			{Key: ":quit", Description: "exit app", Priority: PriorityOverlay},

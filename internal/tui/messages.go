@@ -196,6 +196,11 @@ type ShowSyncLogMsg struct {
 	Entries []core.SyncLogEntry
 }
 
+// ShowSyncLogDetailMsg is sent to open the sync log detail view for a connection.
+type ShowSyncLogDetailMsg struct {
+	ConnectionID string
+}
+
 // ShowThemePickerMsg is sent to open the theme picker view.
 type ShowThemePickerMsg struct{}
 
@@ -316,6 +321,20 @@ type SnoozeCancelledMsg struct{}
 
 // MilestoneDismissMsg dismisses the milestone celebration banner.
 type MilestoneDismissMsg struct{}
+
+// ShowDisconnectDialogMsg is sent to open the disconnect confirmation dialog.
+type ShowDisconnectDialogMsg struct {
+	ConnectionID string
+}
+
+// DisconnectConfirmedMsg is sent when the user confirms disconnection.
+type DisconnectConfirmedMsg struct {
+	ConnectionID string
+	KeepTasks    bool
+}
+
+// DisconnectCancelledMsg is sent when the user cancels the disconnect dialog.
+type DisconnectCancelledMsg struct{}
 
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {

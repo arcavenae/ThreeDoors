@@ -146,7 +146,7 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
-### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 2/4 stories done
+### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 3/4 stories done
 
 Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations. Based on 5-round party mode research with 7 agents.
 
@@ -154,35 +154,35 @@ Transform rectangular card/panel doors into visually convincing doors using side
 |-------|-------|--------|----------|------------|
 | 48.1 | Side-Mounted Handle + Hinge Marks | Done (PR #451) | P2 | Epic 35 (done), Epic 17 (done) |
 | 48.2 | Continuous Threshold / Floor Line | Done (PR #483) | P2 | None |
-| 48.3 | Crack of Light Effect on Selection | Not Started | P2 | 48.1 |
+| 48.3 | Crack of Light Effect on Selection | Done (PR #572) | P2 | 48.1 |
 | 48.4 | Handle Turn Micro-Animation | Not Started | P2 | 48.1 |
 
 **Dependency graph:** Stories 48.1 & 48.2 can parallelize. Stories 48.3 & 48.4 can parallelize after 48.1 completes.
 
-### Epic 44: Sources TUI (P1) — 1/7 stories done
+### Epic 44: Sources TUI (P1) — 6/7 stories done
 
 TUI interfaces for data source management: setup wizard (`:connect`), sources dashboard (`:sources`), source detail view, sync log view, status bar health alerts, disconnection flow, and re-authentication flow. Uses `charmbracelet/huh` for wizard forms.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 44.1 | Setup Wizard with huh Forms | Not Started | P1 | Epic 43 |
+| 44.1 | Setup Wizard with huh Forms | Done (PR #574) | P1 | Epic 43 |
 | 44.2 | Sources Dashboard View | Done (PR #553) | P1 | Epic 43 |
-| 44.3 | Source Detail View | Not Started | P1 | 44.2 |
-| 44.4 | Sync Log View | Not Started | P1 | 43.5 |
-| 44.5 | Status Bar Integration for Connection Health Alerts | Not Started | P1 | Epic 43 |
-| 44.6 | Disconnection Flow with Task Preservation Options | Not Started | P1 | 44.2 |
+| 44.3 | Source Detail View | Done (PR #563) | P1 | 44.2 |
+| 44.4 | Sync Log View | Done (PR #582) | P1 | 43.5 |
+| 44.5 | Status Bar Integration for Connection Health Alerts | Done (PR #562) | P1 | Epic 43 |
+| 44.6 | Disconnection Flow with Task Preservation Options | Done (PR #581) | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Not Started | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 1/5 stories done
+### Epic 45: Sources CLI (P1) — 3/5 stories done
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 45.1 | `threedoors connect` Command (Non-Interactive) | Not Started | P1 | Epic 43 |
+| 45.1 | `threedoors connect` Command (Non-Interactive) | Done (PR #573) | P1 | Epic 43 |
 | 45.2 | `threedoors sources` List/Status/Test Commands | Done (PR #550) | P1 | Epic 43 |
 | 45.3 | `threedoors sources` Management Commands | Not Started | P1 | Epic 43 |
-| 45.4 | `threedoors sources log` Command | Not Started | P1 | 43.5 |
+| 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Not Started | P1 | 45.1-45.4 |
 
 ### Epic 46: OAuth Device Code Flow (P2) — 1/4 stories done
@@ -328,13 +328,13 @@ Persistent research-supervisor agent that wraps the official Gemini CLI (`@googl
 
 **Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
 
-### Epic 55: CI Optimization Phase 1 (P1) — 0/3 stories done
+### Epic 55: CI Optimization Phase 1 (P1) — 1/3 stories done
 
 Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only. Docker E2E push-only, benchmark path filtering, local dev acceleration. No test code modifications.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 55.1 | Docker E2E Push-Only + Lint Version Fix | Not Started | P1 | None |
+| 55.1 | Docker E2E Push-Only + Lint Version Fix | Done (PR #578) | P1 | None |
 | 55.2 | Benchmark Path Filtering | Not Started | P1 | None |
 | 55.3 | Local Dev Acceleration (make test-fast + CI Cache) | Not Started | P1 | None |
 

@@ -52,6 +52,21 @@ func (m *ConnectionManager) Remove(id string) error {
 	return nil
 }
 
+// Disconnect removes a connection and optionally preserves its tasks.
+// When keepTasks is true, tasks remain but lose their source attribution.
+// When keepTasks is false, the connection and its synced tasks are removed.
+// Credential cleanup (keychain) is always performed regardless of keepTasks.
+func (m *ConnectionManager) Disconnect(id string, keepTasks bool) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if _, ok := m.connections[id]; !ok {
+		return fmt.Errorf("disconnect connection %s: %w", id, ErrConnectionNotFound)
+	}
+	delete(m.connections, id)
+	return nil
+}
+
 // Get returns a connection by ID.
 func (m *ConnectionManager) Get(id string) (*Connection, error) {
 	m.mu.RLock()
@@ -140,6 +155,28 @@ func (m *ConnectionManager) GetByLabel(label string) (*Connection, error) {
 		}
 	}
 	return nil, fmt.Errorf("get connection by label %q: %w", label, ErrConnectionNotFound)
+}
+
+// NeedsAttention returns connections in Error or AuthExpired state,
+// sorted by priority: AuthExpired first, then Error, then by label.
+func (m *ConnectionManager) NeedsAttention() []*Connection {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var result []*Connection
+	for _, conn := range m.connections {
+		if conn.State == StateError || conn.State == StateAuthExpired {
+			result = append(result, conn)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		// AuthExpired is higher priority than Error
+		if result[i].State != result[j].State {
+			return result[i].State == StateAuthExpired
+		}
+		return result[i].Label < result[j].Label
+	})
+	return result
 }
 
 // Count returns the number of connections.

@@ -247,6 +247,11 @@ var (
 			Foreground(lipgloss.Color("82")).
 			Bold(true)
 
+	// Connection health alert style (yellow warning)
+	connectionAlertStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.CompleteColor{TrueColor: "#ffaf00", ANSI256: "214", ANSI: "3"}).
+				Bold(true)
+
 	proposalTypeStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.CompleteColor{TrueColor: "#00afff", ANSI256: "39", ANSI: "4"})
 

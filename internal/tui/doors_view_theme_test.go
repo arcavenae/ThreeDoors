@@ -76,7 +76,7 @@ func TestDoorsView_View_UsesThemeRender(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:        "test-marker",
 		Description: "test theme",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			return marker + "\n" + content
 		},
 		MinWidth: 10,
@@ -111,7 +111,7 @@ func TestDoorsView_View_NarrowFallsBackToClassic(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:        "wide-theme",
 		Description: "needs wide terminal",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			return wideMarker + "\n" + content
 		},
 		MinWidth: 100, // requires very wide terminal
@@ -137,7 +137,7 @@ func TestDoorsView_View_WideEnough_UsesTheme(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:        "custom",
 		Description: "custom theme",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			return marker + "\n" + content
 		},
 		MinWidth: 15,
@@ -224,7 +224,7 @@ func TestDoorsView_View_SelectedDoor_WithTheme(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:        "sel-test",
 		Description: "selection test theme",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			if selected {
 				return selectedMarker + "\n" + content
 			}

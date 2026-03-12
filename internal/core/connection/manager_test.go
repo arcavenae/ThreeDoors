@@ -363,6 +363,158 @@ func TestConnectionManager_EventCallback(t *testing.T) {
 	})
 }
 
+func TestConnectionManager_NeedsAttention(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty when no connections", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+		result := m.NeedsAttention()
+		if len(result) != 0 {
+			t.Errorf("NeedsAttention() len = %d, want 0", len(result))
+		}
+	})
+
+	t.Run("empty when all healthy", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+		conn, _ := m.Add("jira", "Work", nil)
+		if err := m.Transition(conn.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.Transition(conn.ID, StateConnected); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		result := m.NeedsAttention()
+		if len(result) != 0 {
+			t.Errorf("NeedsAttention() len = %d, want 0", len(result))
+		}
+	})
+
+	t.Run("includes error state", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+		conn, _ := m.Add("jira", "Work", nil)
+		if err := m.Transition(conn.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.TransitionWithError(conn.ID, StateError, "timeout"); err != nil {
+			t.Fatalf("TransitionWithError: %v", err)
+		}
+		result := m.NeedsAttention()
+		if len(result) != 1 {
+			t.Fatalf("NeedsAttention() len = %d, want 1", len(result))
+		}
+		if result[0].State != StateError {
+			t.Errorf("State = %s, want %s", result[0].State, StateError)
+		}
+	})
+
+	t.Run("includes auth expired state", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+		conn, _ := m.Add("jira", "Work", nil)
+		if err := m.Transition(conn.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.Transition(conn.ID, StateAuthExpired); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		result := m.NeedsAttention()
+		if len(result) != 1 {
+			t.Fatalf("NeedsAttention() len = %d, want 1", len(result))
+		}
+		if result[0].State != StateAuthExpired {
+			t.Errorf("State = %s, want %s", result[0].State, StateAuthExpired)
+		}
+	})
+
+	t.Run("excludes paused state", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+		conn, _ := m.Add("jira", "Work", nil)
+		if err := m.Transition(conn.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.Transition(conn.ID, StateConnected); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.Transition(conn.ID, StatePaused); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		result := m.NeedsAttention()
+		if len(result) != 0 {
+			t.Errorf("NeedsAttention() len = %d, want 0 (paused should be excluded)", len(result))
+		}
+	})
+
+	t.Run("auth expired sorted before error", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+
+		// Add error connection first
+		errConn, _ := m.Add("github", "OSS", nil)
+		if err := m.Transition(errConn.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.TransitionWithError(errConn.ID, StateError, "timeout"); err != nil {
+			t.Fatalf("TransitionWithError: %v", err)
+		}
+
+		// Add auth expired connection second
+		authConn, _ := m.Add("jira", "Work", nil)
+		if err := m.Transition(authConn.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.Transition(authConn.ID, StateAuthExpired); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+
+		result := m.NeedsAttention()
+		if len(result) != 2 {
+			t.Fatalf("NeedsAttention() len = %d, want 2", len(result))
+		}
+		if result[0].State != StateAuthExpired {
+			t.Errorf("result[0].State = %s, want AuthExpired (higher priority)", result[0].State)
+		}
+		if result[1].State != StateError {
+			t.Errorf("result[1].State = %s, want Error", result[1].State)
+		}
+	})
+
+	t.Run("same state sorted by label", func(t *testing.T) {
+		t.Parallel()
+		m := NewConnectionManager(nil)
+
+		connZ, _ := m.Add("github", "Zulu", nil)
+		if err := m.Transition(connZ.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.TransitionWithError(connZ.ID, StateError, "fail"); err != nil {
+			t.Fatalf("TransitionWithError: %v", err)
+		}
+
+		connA, _ := m.Add("jira", "Alpha", nil)
+		if err := m.Transition(connA.ID, StateConnecting); err != nil {
+			t.Fatalf("Transition: %v", err)
+		}
+		if err := m.TransitionWithError(connA.ID, StateError, "fail"); err != nil {
+			t.Fatalf("TransitionWithError: %v", err)
+		}
+
+		result := m.NeedsAttention()
+		if len(result) != 2 {
+			t.Fatalf("NeedsAttention() len = %d, want 2", len(result))
+		}
+		if result[0].Label != "Alpha" {
+			t.Errorf("result[0].Label = %q, want %q", result[0].Label, "Alpha")
+		}
+		if result[1].Label != "Zulu" {
+			t.Errorf("result[1].Label = %q, want %q", result[1].Label, "Zulu")
+		}
+	})
+}
+
 func TestConnectionManager_ConcurrentAccess(t *testing.T) {
 	t.Parallel()
 

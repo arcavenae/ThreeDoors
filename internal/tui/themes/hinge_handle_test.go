@@ -65,7 +65,7 @@ func TestHingeAsymmetry_AllThemes(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.theme.Name+"_unselected", func(t *testing.T) {
-			output := tt.theme.Render("Test task", 40, 16, false, "")
+			output := tt.theme.Render("Test task", 40, 16, false, "", 0.0)
 
 			for _, ch := range tt.hingeChars {
 				if !strings.Contains(output, ch) {
@@ -117,7 +117,7 @@ func TestHingeAsymmetry_Selected(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.theme.Name+"_selected", func(t *testing.T) {
-			output := tt.theme.Render("Test task", 40, 16, true, "")
+			output := tt.theme.Render("Test task", 40, 16, true, "", 0.0)
 
 			for _, ch := range tt.hingeChars {
 				if !strings.Contains(output, ch) {
@@ -155,7 +155,7 @@ func TestHandleAtRightEdge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.theme.Name, func(t *testing.T) {
-			output := tt.theme.Render("Test task", 40, 16, false, "")
+			output := tt.theme.Render("Test task", 40, 16, false, "", 0.0)
 			lines := strings.Split(output, "\n")
 			anatomy := NewDoorAnatomy(16)
 
@@ -191,7 +191,7 @@ func TestSciFiHandleAtRightEdge(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(termenv.TrueColor) })
 
 	theme := NewSciFiTheme()
-	output := theme.Render("Test task", 40, 16, false, "")
+	output := theme.Render("Test task", 40, 16, false, "", 0.0)
 	lines := strings.Split(output, "\n")
 	anatomy := NewDoorAnatomy(16)
 
@@ -236,7 +236,7 @@ func TestMinWidthWithHingeHandle(t *testing.T) {
 
 	for _, theme := range allThemes() {
 		t.Run(theme.Name, func(t *testing.T) {
-			output := theme.Render("Task", theme.MinWidth, theme.MinHeight, false, "")
+			output := theme.Render("Task", theme.MinWidth, theme.MinHeight, false, "", 0.0)
 			lines := strings.Split(output, "\n")
 
 			if len(lines) < 2 {

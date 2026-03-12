@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/core/connection"
 	"github.com/arcaven/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
@@ -79,6 +80,7 @@ type DoorsView struct {
 	showKeyHints      bool
 	baseThemeName     string // user's configured theme for fallback
 	seasonalEnabled   bool   // whether seasonal auto-switch is active
+	connMgr           *connection.ConnectionManager
 }
 
 // NewDoorsView creates a new DoorsView.
@@ -194,6 +196,11 @@ func (dv *DoorsView) SetThemeRegistry(r *themes.Registry) {
 func (dv *DoorsView) SetBaseThemeName(name string) {
 	dv.baseThemeName = name
 	dv.SetThemeByName(name)
+}
+
+// SetConnectionManager sets the connection manager for health alert rendering.
+func (dv *DoorsView) SetConnectionManager(cm *connection.ConnectionManager) {
+	dv.connMgr = cm
 }
 
 // SetSeasonalEnabled enables or disables automatic seasonal theme switching.
@@ -432,9 +439,17 @@ func (dv *DoorsView) View() string {
 			hint = renderDoorHint(doorHintKeys[i], true, isSelected, hasSelection)
 		}
 
+		// Compute emphasis for this door (for crack-of-light and spring sync)
+		doorEmphasis := 0.0
+		if dv.doorAnimation != nil {
+			doorEmphasis = dv.doorAnimation.Emphasis(i)
+		} else if isSelected {
+			doorEmphasis = 1.0
+		}
+
 		// Use theme Render when a theme is active, otherwise fall back to lipgloss styles
 		if activeTheme != nil {
-			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected, hint))
+			renderedDoors = append(renderedDoors, activeTheme.Render(content, doorWidth, doorHeight, isSelected, hint, doorEmphasis))
 		} else if animating {
 			// Spring-interpolated border color based on emphasis
 			emphasis := dv.doorAnimation.Emphasis(i)
@@ -493,6 +508,12 @@ func (dv *DoorsView) View() string {
 		s.WriteString(syncBar)
 	}
 
+	// Connection health alert
+	if alert := dv.connectionHealthAlert(); alert != "" {
+		s.WriteString("\n\n")
+		s.WriteString(alert)
+	}
+
 	// Action hints between doors and help text when inline hints are active.
 	if hintsEnabled {
 		var actionParts []string
@@ -517,6 +538,29 @@ func (dv *DoorsView) View() string {
 	}
 
 	return s.String()
+}
+
+// connectionHealthAlert renders a warning line when sources need attention.
+// Returns empty string when all connections are healthy.
+func (dv *DoorsView) connectionHealthAlert() string {
+	if dv.connMgr == nil {
+		return ""
+	}
+	needsAttention := dv.connMgr.NeedsAttention()
+	if len(needsAttention) == 0 {
+		return ""
+	}
+
+	if len(needsAttention) == 1 {
+		conn := needsAttention[0]
+		issue := "error"
+		if conn.State == connection.StateAuthExpired {
+			issue = "auth expired"
+		}
+		return connectionAlertStyle.Render(fmt.Sprintf("⚠ %s %s — :sources to fix", conn.Label, issue))
+	}
+
+	return connectionAlertStyle.Render(fmt.Sprintf("⚠ %d sources need attention — :sources to fix", len(needsAttention)))
 }
 
 // animatedDoorStyle builds a lipgloss style with border color interpolated

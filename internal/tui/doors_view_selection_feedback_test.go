@@ -21,7 +21,7 @@ func TestDoorsView_ThemePath_SelectedContentDiffersFromUnselected(t *testing.T) 
 	registry.Register(&themes.DoorTheme{
 		Name:        "capture-theme",
 		Description: "captures content for testing",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			if selected {
 				selectedContent = content
 			} else {
@@ -62,7 +62,7 @@ func TestDoorsView_ThemePath_NoSelection_AllContentUniform(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:        "capture-theme",
 		Description: "captures content for testing",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			capturedContents = append(capturedContents, content)
 			return content
 		},
@@ -95,7 +95,7 @@ func TestDoorsView_ThemePath_NoSelection_NoneMarkedSelected(t *testing.T) {
 	registry.Register(&themes.DoorTheme{
 		Name:        "capture-theme",
 		Description: "captures content for testing",
-		Render: func(content string, width int, height int, selected bool, hint string) string {
+		Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 			if selected {
 				selectedCount++
 			}
@@ -138,7 +138,7 @@ func TestDoorsView_ThemePath_ExactlyOneSelected(t *testing.T) {
 			registry.Register(&themes.DoorTheme{
 				Name:        "count-theme",
 				Description: "counts selection states",
-				Render: func(content string, width int, height int, selected bool, hint string) string {
+				Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 					if selected {
 						selectedCount++
 					} else {
@@ -264,7 +264,7 @@ func TestDoorsView_SelectionStates_ThemePath(t *testing.T) {
 			registry.Register(&themes.DoorTheme{
 				Name:        "state-theme",
 				Description: "tracks selection state",
-				Render: func(content string, width int, height int, selected bool, hint string) string {
+				Render: func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 					if selected {
 						selectedCount++
 						selectedContent = content

@@ -45,7 +45,7 @@ func TestModernRenderContainsContent(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Write unit tests", 30, 0, false, "")
+	output := theme.Render("Write unit tests", 30, 0, false, "", 0.0)
 
 	if !strings.Contains(output, "Write unit tests") {
 		t.Errorf("output should contain content text, got:\n%s", output)
@@ -56,7 +56,7 @@ func TestModernRenderHasDoorknob(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Task text", 30, 0, false, "")
+	output := theme.Render("Task text", 30, 0, false, "", 0.0)
 
 	if !strings.Contains(output, "●") {
 		t.Errorf("modern theme should have filled circle doorknob (●), got:\n%s", output)
@@ -67,7 +67,7 @@ func TestModernRenderHasBoxDrawingFrame(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 
 	// Should have horizontal lines at top and bottom
 	if !strings.Contains(output, "─") {
@@ -83,7 +83,7 @@ func TestModernRenderNoRoundedCorners(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 
 	// Modern theme uses straight lines, no rounded corners
 	for _, ch := range []string{"╭", "╮", "╰", "╯"} {
@@ -97,8 +97,8 @@ func TestModernRenderSelectedDiffers(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	unselected := theme.Render("Task", 30, 0, false, "")
-	selected := theme.Render("Task", 30, 0, true, "")
+	unselected := theme.Render("Task", 30, 0, false, "", 0.0)
+	selected := theme.Render("Task", 30, 0, true, "", 0.0)
 
 	if selected == unselected {
 		t.Error("selected and unselected output should differ")
@@ -126,7 +126,7 @@ func TestModernRenderVaryingWidths(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			output := theme.Render("Task text", tt.width, 0, false, "")
+			output := theme.Render("Task text", tt.width, 0, false, "", 0.0)
 			if output == "" {
 				t.Error("output should not be empty")
 			}
@@ -143,7 +143,7 @@ func TestModernRenderWordWraps(t *testing.T) {
 
 	theme := NewModernTheme()
 	longText := "This is a very long task description that should definitely be wrapped across multiple lines"
-	output := theme.Render(longText, 30, 0, false, "")
+	output := theme.Render(longText, 30, 0, false, "", 0.0)
 
 	lines := strings.Split(output, "\n")
 	if len(lines) < 5 {
@@ -155,7 +155,7 @@ func TestModernRenderUnicodeInAllowedRanges(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Test", 30, 0, false, "")
+	output := theme.Render("Test", 30, 0, false, "", 0.0)
 
 	for _, r := range output {
 		if r <= 0x7F || r == '\n' {
@@ -190,7 +190,7 @@ func TestModernRenderConsistentLineWidths(t *testing.T) {
 	t.Parallel()
 
 	theme := NewModernTheme()
-	output := theme.Render("Task", 30, 0, false, "")
+	output := theme.Render("Task", 30, 0, false, "", 0.0)
 	lines := strings.Split(output, "\n")
 
 	if len(lines) < 3 {
