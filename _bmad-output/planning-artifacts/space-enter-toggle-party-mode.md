@@ -1,5 +1,8 @@
 # Party Mode: Space/Enter Toggle for Door Open/Close
 
+> **Status: Planned and Done — see Story 36.4 (Done, PR #405)**
+> Implemented as Story 36.4: Space/Enter Toggle — Close Door by Pressing Same Key. Decision D-137.
+
 **Date:** 2026-03-09
 **Participants:** Sally (UX Designer), Winston (Architect), Amelia (Dev), Quinn (QA)
 **Topic:** Should space/enter act as a toggle to open AND close doors?

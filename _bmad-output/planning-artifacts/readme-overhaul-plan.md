@@ -1,5 +1,8 @@
 # README.md Overhaul Plan
 
+> **Status: Planned — see Epic XX (README Overhaul), Stories XX.1–XX.5 (PR #502)**
+> Stories created but epic number not yet assigned. Stories XX.1–XX.5 exist in `docs/stories/`.
+
 > Research artifact — no code changes.
 > Worker: nice-penguin | Date: 2026-03-10
 

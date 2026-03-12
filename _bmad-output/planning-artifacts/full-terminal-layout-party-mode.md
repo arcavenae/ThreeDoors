@@ -1,5 +1,8 @@
 # Full-Terminal Vertical Layout — Party Mode Consensus
 
+> **Status: Not Yet Planned**
+> Research and party mode merged (PR #329) but no epic or stories created yet. See also `full-terminal-layout-research.md`.
+
 > Party Mode: 2026-03-09
 > Participants: Sally (UX Designer), Winston (Architect), Amelia (Dev), John (PM)
 > Topic: Full-terminal vertical layout for ThreeDoors TUI

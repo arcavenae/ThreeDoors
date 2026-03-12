@@ -1,5 +1,8 @@
 # State of Testing Report — ThreeDoors
 
+> **Status: Not Yet Planned**
+> Report merged (PR #349) but no epic or stories created from its recommendations yet.
+
 **Date:** 2026-03-09
 **Auditor:** TEA Agent (Test Engineering & Architecture)
 **Method:** Automated analysis of all test files, coverage reports, race detector, and manual review of test patterns
