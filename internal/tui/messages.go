@@ -395,6 +395,14 @@ type EnrichAcceptMsg struct {
 	Context      string
 }
 
+// ShowLLMStatusMsg is sent to display the LLM backend status overlay.
+type ShowLLMStatusMsg struct{}
+
+// LLMStatusResultMsg carries the formatted LLM status text for display.
+type LLMStatusResultMsg struct {
+	Text string
+}
+
 // ClearFlashCmd returns a command that clears the flash after a delay.
 func ClearFlashCmd() tea.Cmd {
 	return tea.Tick(flashDuration, func(_ time.Time) tea.Msg {

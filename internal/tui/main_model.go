@@ -1095,6 +1095,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, cmd
 
+	case ShowLLMStatusMsg:
+		return m, runLLMStatusCmd()
+
+	case LLMStatusResultMsg:
+		m.flash = msg.Text
+		return m, ClearFlashCmd()
+
 	case FlashMsg:
 		m.flash = msg.Text
 		return m, ClearFlashCmd()

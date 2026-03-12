@@ -43,11 +43,12 @@ var cliPriority = []cliCandidate{
 //  6. Claude HTTP API (if ANTHROPIC_API_KEY is set)
 //  7. ErrBackendUnavailable (graceful degradation)
 func DiscoverBackend(ctx context.Context, cfg Config) (LLMBackend, *DiscoveryResult, error) {
-	return discoverBackendWith(ctx, cfg, exec.LookPath, os.Getenv)
+	return DiscoverBackendWith(ctx, cfg, exec.LookPath, os.Getenv)
 }
 
-// discoverBackendWith is the testable core of DiscoverBackend.
-func discoverBackendWith(ctx context.Context, cfg Config, lookPath LookPathFunc, getenv func(string) string) (LLMBackend, *DiscoveryResult, error) {
+// DiscoverBackendWith is the testable core of DiscoverBackend.
+// It accepts custom lookPath and getenv functions for dependency injection.
+func DiscoverBackendWith(ctx context.Context, cfg Config, lookPath LookPathFunc, getenv func(string) string) (LLMBackend, *DiscoveryResult, error) {
 	result := &DiscoveryResult{}
 
 	// Priority 1: User-configured backend takes precedence.
