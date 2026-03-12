@@ -17,12 +17,18 @@ func NewSummerTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "summer",
 		Description: "Summer radiance — bold geometric shapes, radiating lines",
-		Render:      summerRender(frameColor, selectedColor),
+		Render:      summerRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#1a1000", ANSI256: "58", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"},
 			Accent:   lipgloss.CompleteColor{TrueColor: "#ffcc33", ANSI256: "220", ANSI: "11"},
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#141005", ANSI256: "233", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#ffd060", ANSI256: "221", ANSI: "11"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#8f7020", ANSI256: "136", ANSI: "3"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#6a5518", ANSI256: "94", ANSI: "3"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#3a2a08", ANSI256: "236", ANSI: "0"},
 
 			StatsAccent:        "#FFAA00",
 			StatsGradientStart: "#CC5500",
@@ -37,7 +43,7 @@ func NewSummerTheme() *DoorTheme {
 	}
 }
 
-func summerRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func summerRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "═"
@@ -62,7 +68,7 @@ func summerRender(frameColor, selectedColor lipgloss.TerminalColor) func(string,
 			return summerCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return summerDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis)
+		return summerDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill)
 	}
 }
 
@@ -118,7 +124,7 @@ func summerCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64) string {
+func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -160,7 +166,7 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	var b strings.Builder
 
 	hBar := strings.Repeat(hChar, inner)
-	blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+	blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 
 	shade := ""
 	if cracked {
@@ -179,7 +185,7 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 
 		case row == accentRow:
 			pattern := buildRadiatingPattern(accentChar, inner)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), pattern, style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(pattern, inner, 0, fill), style.Render(openV), shade)
 
 		case row == anatomy.PanelDivider:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+strings.Repeat(divH, inner)+openTee), shade)
@@ -191,7 +197,7 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, SquareHandleFrames)
 			knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), knobLine, style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, inner, 0, fill), style.Render(openV), shade)
 
 		case row == anatomy.ThresholdRow:
 			fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
@@ -200,14 +206,9 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
-				lineWidth := ansi.StringWidth(line)
-				padding := inner - 3 - lineWidth
-				if padding < 0 {
-					padding = 0
-				}
 				fmt.Fprintf(&b, "%s%s%s%s",
 					style.Render(hingeV),
-					"   "+line+strings.Repeat(" ", padding),
+					bgFillContent(line, inner, 3, fill),
 					style.Render(openV),
 					shade,
 				)

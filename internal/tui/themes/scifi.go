@@ -20,12 +20,18 @@ func NewSciFiTheme() *DoorTheme {
 	return &DoorTheme{
 		Name:        "scifi",
 		Description: "Sci-fi spaceship — double-line frame, shade panels, ACCESS label",
-		Render:      scifiRender(frameColor, selectedColor),
+		Render:      scifiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"}),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#303030", ANSI256: "236", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"},
 			Accent:   lipgloss.CompleteColor{TrueColor: "#00d7ff", ANSI256: "45", ANSI: "14"},
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#061425", ANSI256: "17", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#00d7ff", ANSI256: "45", ANSI: "14"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#005f7f", ANSI256: "24", ANSI: "4"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#003f5f", ANSI256: "23", ANSI: "4"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#001a2f", ANSI256: "17", ANSI: "0"},
 
 			StatsAccent:        "#22C55E", // neon green
 			StatsGradientStart: "#22C55E", // green
@@ -36,7 +42,7 @@ func NewSciFiTheme() *DoorTheme {
 	}
 }
 
-func scifiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func scifiRender(frameColor, selectedColor, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		shadeChar := "░"
@@ -72,7 +78,7 @@ func scifiRender(frameColor, selectedColor lipgloss.TerminalColor) func(string, 
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis)
+		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill)
 	}
 }
 
@@ -143,10 +149,10 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 // scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: outer left border stays double-line (╔║╚), outer right uses
 // single-vertical with double-horizontal connections (╕│╛) for lighter weight.
-func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64) string {
+func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
-	blankContent := strings.Repeat(" ", contentW)
+	blankContent := bgFillLine(contentW, fill)
 
 	// Find the row for the ACCESS label: midpoint between HandleRow and ThresholdRow
 	accessRow := anatomy.HandleRow + (anatomy.ThresholdRow-anatomy.HandleRow)/2
@@ -189,9 +195,10 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			if leftPad < 0 {
 				leftPad = 0
 			}
+			handleLine := strings.Repeat(" ", leftPad) + handleStr
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 				style.Render("║"), rail, style.Render("│"),
-				strings.Repeat(" ", leftPad)+handleStr,
+				bgFillContent(handleLine, contentW, 0, fill),
 				style.Render("│"), rail, style.Render(outerR))
 
 		case row == accessRow:
@@ -204,13 +211,9 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			if leftPad < 0 {
 				leftPad = 0
 			}
-			rightPad := contentW - leftPad - labelWidth
-			if rightPad < 0 {
-				rightPad = 0
-			}
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 				style.Render("║"), rail, style.Render("│"),
-				strings.Repeat(" ", leftPad)+label+strings.Repeat(" ", rightPad),
+				bgFillContent(label, contentW, leftPad, fill),
 				style.Render("│"), rail, style.Render(outerR))
 
 		case row == anatomy.ThresholdRow:
@@ -221,14 +224,9 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			lineIdx := row - anatomy.ContentStart
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
-				lineWidth := ansi.StringWidth(line)
-				pad := contentW - 2 - lineWidth
-				if pad < 0 {
-					pad = 0
-				}
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
 					style.Render("║"), rail, style.Render("│"),
-					"  "+line+strings.Repeat(" ", pad),
+					bgFillContent(line, contentW, 2, fill),
 					style.Render("│"), rail, style.Render(outerR))
 			} else {
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",

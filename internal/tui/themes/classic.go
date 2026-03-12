@@ -25,15 +25,23 @@ func NewClassicTheme() *DoorTheme {
 		BorderForeground(selectedColor).
 		Padding(1, 2)
 
+	fillColor := lipgloss.CompleteColor{TrueColor: "#0d0d2a", ANSI256: "17", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "classic",
 		Description: "Classic rounded border — the original ThreeDoors look",
-		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle),
+		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle, fillColor),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#000000", ANSI256: "0", ANSI: "0"},
+			Fill:     lipgloss.CompleteColor{TrueColor: "#0d0d2a", ANSI256: "17", ANSI: "0"},
 			Accent:   frameColor,
 			Selected: selectedColor,
+
+			FillLower:  lipgloss.CompleteColor{TrueColor: "#080820", ANSI256: "17", ANSI: "0"},
+			Highlight:  lipgloss.CompleteColor{TrueColor: "#7070ff", ANSI256: "63", ANSI: "5"},
+			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#3a3a8f", ANSI256: "61", ANSI: "4"},
+			ShadowNear: lipgloss.CompleteColor{TrueColor: "#2a2a50", ANSI256: "237", ANSI: "8"},
+			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#15152a", ANSI256: "235", ANSI: "0"},
 
 			StatsAccent:        "#D97706", // warm amber
 			StatsGradientStart: "#D97706", // amber
@@ -44,7 +52,7 @@ func NewClassicTheme() *DoorTheme {
 	}
 }
 
-func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style) func(string, int, int, bool, string, float64) string {
+func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style, fill lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use original Lipgloss card style
 		if height < 10 {
@@ -107,7 +115,7 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 		}
 
 		hBar := strings.Repeat(hChar, inner)
-		blankLine := style.Render(hingeV) + strings.Repeat(" ", inner) + style.Render(openV)
+		blankLine := style.Render(hingeV) + bgFillLine(inner, fill) + style.Render(openV)
 		if cracked {
 			blankLine += crackShade
 		}
@@ -132,7 +140,8 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 				}
 				handleChar := HandleCharForEmphasis(emphasis, selected, RoundKnobFrames)
 				knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
-				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeTee), knobLine, style.Render(openV), shade)
+				bgKnob := bgFillContent(knobLine, inner, 0, fill)
+				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeTee), bgKnob, style.Render(openV), shade)
 
 			case row == anatomy.ThresholdRow:
 				fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
@@ -141,14 +150,9 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 				lineIdx := row - anatomy.ContentStart
 				if lineIdx < len(contentLines) {
 					line := contentLines[lineIdx]
-					lineWidth := ansi.StringWidth(line)
-					padding := inner - 2 - lineWidth
-					if padding < 0 {
-						padding = 0
-					}
 					fmt.Fprintf(&b, "%s%s%s%s",
 						style.Render(hingeV),
-						"  "+line+strings.Repeat(" ", padding),
+						bgFillContent(line, inner, 2, fill),
 						style.Render(openV),
 						shade,
 					)
