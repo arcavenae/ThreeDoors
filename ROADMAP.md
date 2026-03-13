@@ -136,15 +136,15 @@ Add `t.Helper()` to all test helper functions across the codebase. Currently onl
 
 ## Active Epics
 
-### Epic 66: CLI/TUI Adapter Wiring Parity (P0) — 0/3 stories done (PROVISIONAL)
+### Epic 66: CLI/TUI Adapter Wiring Parity (P0) — 2/3 stories done
 
 Fix three gaps where implemented adapter code is not properly connected to CLI and TUI entry points: CLI adapter registration bug (critical), ClickUp connect wiring, and provider spec parity.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 66.1 | CLI Adapter Registration Fix | Not Started | P0 | None |
+| 66.1 | CLI Adapter Registration Fix | Done (PR #749) | P0 | None |
 | 66.2 | ClickUp Connect Wiring | Not Started | P1 | 66.1 |
-| 66.3 | Provider Spec Parity & Validation | Not Started | P1 | 66.2 |
+| 66.3 | Provider Spec Parity & Validation | Done (PR #750) | P1 | 66.2 |
 
 **Dependency graph:** Linear chain: 66.1 → 66.2 → 66.3. Story 66.1 is the critical bug fix.
 

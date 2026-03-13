@@ -916,6 +916,6 @@
 | Epic 63: ClickUp Integration | 4 | Complete (4/4 done) |
 | Epic 64: Cross-Computer Sync | 6 | Complete (6/6 done) |
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
-| Epic 66: CLI/TUI Adapter Wiring Parity (PROVISIONAL) | 3 | Not Started (0/3 done) |
+| Epic 66: CLI/TUI Adapter Wiring Parity | 3 | In Progress (2/3 done) |
 | **Total** | **342** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---

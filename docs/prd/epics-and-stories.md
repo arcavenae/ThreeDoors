@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-65 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 66 (0/3) NOT STARTED. 748+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-65 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 66 (2/3) IN PROGRESS. 752+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -6371,7 +6371,7 @@ So that the overall `internal/cli` package reaches ≥70% coverage.
 - **AC7:** Overall `internal/cli` coverage ≥70%
 - **AC8:** All tests pass with `-race`
 
-## Epic 66: CLI/TUI Adapter Wiring Parity (PROVISIONAL)
+## Epic 66: CLI/TUI Adapter Wiring Parity
 
 **Goal:** Fix three gaps where implemented adapter code is not properly connected to CLI and TUI entry points.
 **Priority:** P0 (Story 66.1 is critical bug fix), P1 (Stories 66.2-66.3)
@@ -6384,7 +6384,7 @@ As a user with a non-textfile provider configured,
 I want CLI commands to work correctly,
 So that I can manage my tasks from the command line regardless of which provider I use.
 
-**Status:** Not Started | **Priority:** P0
+**Status:** Done (PR #749) | **Priority:** P0
 
 **Acceptance Criteria:**
 - **AC1:** `registerBuiltinAdapters()` called before CLI/TUI routing branch in `main()`
@@ -6413,7 +6413,7 @@ As a user connecting any supported provider via CLI,
 I want required flags to be validated,
 So that I get clear error messages instead of silently incomplete configurations.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #750) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** `knownProviderSpecs` has entries for all 9 registered providers
