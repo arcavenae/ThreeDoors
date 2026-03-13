@@ -55,6 +55,7 @@ type DetailView struct {
 	hintEnabled         bool
 	enricher            *services.TaskEnricher
 	enrichResult        *services.EnrichedTask
+	expandSubtaskCount  int
 }
 
 // NewDetailView creates a detail view for the given task.
@@ -191,6 +192,7 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 	case "e", "E":
 		dv.mode = DetailModeExpandInput
 		dv.expandInput = ""
+		dv.expandSubtaskCount = 0
 	case "f", "F":
 		original := dv.task
 		variant := core.ForkTask(original)
@@ -336,17 +338,18 @@ func (dv *DetailView) handleExpandInput(msg tea.KeyMsg) tea.Cmd {
 	case "enter":
 		text := strings.TrimSpace(dv.expandInput)
 		if text == "" {
-			return func() tea.Msg { return FlashMsg{Text: "Subtask text cannot be empty"} }
+			return nil
 		}
 		parentTask := dv.task
-		dv.mode = DetailModeView
 		dv.expandInput = ""
+		dv.expandSubtaskCount++
 		return func() tea.Msg {
 			return ExpandTaskMsg{ParentTask: parentTask, NewTaskText: text}
 		}
 	case "esc":
 		dv.mode = DetailModeView
 		dv.expandInput = ""
+		dv.expandSubtaskCount = 0
 	case "backspace":
 		if len(dv.expandInput) > 0 {
 			dv.expandInput = dv.expandInput[:len(dv.expandInput)-1]
@@ -737,7 +740,11 @@ func (dv *DetailView) View() string {
 		s.WriteString("Blocker reason (Enter to submit, Esc to cancel):\n")
 		s.WriteString("> " + dv.blockerInput + "_\n")
 	case DetailModeExpandInput:
-		s.WriteString("New subtask text (Enter to submit, Esc to cancel):\n")
+		if dv.expandSubtaskCount > 0 {
+			fmt.Fprintf(&s, "Subtask %d added. Next subtask (Esc to finish):\n", dv.expandSubtaskCount)
+		} else {
+			s.WriteString("New subtask (Enter to add, Esc to finish):\n")
+		}
 		s.WriteString("> " + dv.expandInput + "_\n")
 	case DetailModeLinkSelect:
 		s.WriteString("Select task to link (Enter to link, Esc to cancel):\n\n")

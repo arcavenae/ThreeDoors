@@ -141,7 +141,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
-### Epic 30: Linear Integration (P2) — 2/4 stories done
+### Epic 30: Linear Integration (P2) — 3/4 stories done
 
 Linear as task source via GraphQL API. Best task model alignment of all evaluated services.
 
@@ -150,7 +150,7 @@ Linear as task source via GraphQL API. Best task model alignment of all evaluate
 | 30.1 | Linear GraphQL Client & Auth Configuration | Done (PR #446) | P2 | Epic 7 (done) |
 | 30.2 | Read-Only Linear Provider with Field Mapping | Done (PR #699) | P2 | 30.1 |
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
-| 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
+| 30.4 | Contract Tests & Integration Testing | Done (PR #705) | P2 | 30.2 |
 
 ### Epic 31: Expand/Fork Key Implementations (P2) — 2/5 stories done
 
@@ -477,13 +477,13 @@ Transform door rendering from imperceptible wireframe shadows into solid, 3D-fee
 
 **Re-entry gate for Epic 16:** Revisit if 5+ distinct user requests for mobile access, OR if MCP proves insufficient for on-the-go task management.
 
-### Epic 63: ClickUp Integration (P2) — 0/4 stories done
+### Epic 63: ClickUp Integration (P2) — 1/4 stories done
 
 ClickUp as task source via REST API v2. Follows the established 4-story integration adapter pattern (Jira, Todoist, GitHub Issues, Linear).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 63.1 | ClickUp REST API Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 63.1 | ClickUp REST API Client & Auth Configuration | Done (PR #706) | P2 | Epic 7 (done) |
 | 63.2 | Read-Only ClickUp Provider with Field Mapping | Not Started | P2 | 63.1 |
 | 63.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 63.2 |
 | 63.4 | Contract Tests & Integration Testing | Not Started | P2 | 63.2 |
