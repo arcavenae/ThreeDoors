@@ -1,0 +1,66 @@
+{
+  "tasks": [
+    {
+      "id": "cu-task-001",
+      "name": "Implement user authentication",
+      "description": "Add OAuth2 flow for user login",
+      "status": {
+        "status": "in progress",
+        "type": "custom"
+      },
+      "priority": {
+        "id": "2"
+      },
+      "due_date": "1735689600000",
+      "tags": [
+        {"name": "backend"},
+        {"name": "security"}
+      ],
+      "url": "https://app.clickup.com/t/cu-task-001",
+      "list": {
+        "id": "list-100",
+        "name": "Sprint 3"
+      }
+    },
+    {
+      "id": "cu-task-002",
+      "name": "Write unit tests",
+      "description": "",
+      "status": {
+        "status": "to do",
+        "type": "custom"
+      },
+      "priority": {
+        "id": "3"
+      },
+      "due_date": "",
+      "tags": [
+        {"name": "testing"}
+      ],
+      "url": "https://app.clickup.com/t/cu-task-002",
+      "list": {
+        "id": "list-100",
+        "name": "Sprint 3"
+      }
+    },
+    {
+      "id": "cu-task-003",
+      "name": "Deploy to staging",
+      "description": "Push latest build to staging environment",
+      "status": {
+        "status": "complete",
+        "type": "custom"
+      },
+      "priority": {
+        "id": "4"
+      },
+      "due_date": "1735776000000",
+      "tags": [],
+      "url": "https://app.clickup.com/t/cu-task-003",
+      "list": {
+        "id": "list-100",
+        "name": "Sprint 3"
+      }
+    }
+  ]
+}
