@@ -286,6 +286,8 @@ ThreeDoors/
 │   │   │   ├── github_client.go    # GitHub API client (issues, bug reports)
 │   │   │   ├── github_provider.go  # GitHub TaskProvider implementation
 │   │   │   └── oauth.go            # GitHub OAuth device code flow integration
+│   │   ├── linear/                  # Linear adapter (Epic 46)
+│   │   │   └── oauth.go            # Linear OAuth integration
 │   │   └── obsidian/                # Obsidian vault adapter (Epic 8)
 │   │       ├── adapter.go          # ObsidianAdapter
 │   │       ├── markdown.go         # Markdown task parser
