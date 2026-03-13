@@ -666,7 +666,7 @@
 **Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (Rearchitected)** (P2)
 - **Goal:** Deploy a persistent research-supervisor agent that wraps the official Gemini CLI (`@google/gemini-cli`) with OAuth authentication, providing web-grounded research with context packaging, result shielding, and dual-tier budget management (Pro + Flash).
 - **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete), Node.js/npm, Google Account
-- **Status:** In Progress (2/5 stories done — PRs #537, #538; rearchitected from original D-154 approach)
+- **Status:** COMPLETE — All 5 stories done (PRs #537, #538, #664, #689, #690)
 - **Deliverables:**
   - Research-supervisor persistent agent definition (Responsibility+WHY format, Gemini CLI backend)
   - Gemini CLI installation, OAuth setup, and `scripts/gemini-research.sh` wrapper script
@@ -904,7 +904,7 @@
 | Epic 51: SLAES | 11 | Complete (11/11 done) |
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
 | Epic 53: Remote Collaboration | 5 | Complete (5/5 done) |
-| Epic 54: Gemini Research Supervisor | 5 | In Progress (3/5 done) |
+| Epic 54: Gemini Research Supervisor | 5 | Complete (5/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
 | Epic 56: Door Visual Redesign | 5 | Complete (5/5 done) |
 | Epic 57: LLM CLI Services | 8 | Complete (8/8 done) |
@@ -916,6 +916,6 @@
 | Epic 63: ClickUp Integration | 4 | Complete (4/4 done) |
 | Epic 64: Cross-Computer Sync | 6 | Complete (6/6 done) |
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
-| Epic 66: CLI/TUI Adapter Wiring Parity | 3 | In Progress (2/3 done) |
+| Epic 66: CLI/TUI Adapter Wiring Parity | 3 | Complete (3/3 done) |
 | **Total** | **342** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---

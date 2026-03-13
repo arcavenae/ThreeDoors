@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-65 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 66 (2/3) IN PROGRESS. 752+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-66 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. 753+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -5238,7 +5238,7 @@ Rewrite `agents/retrospector.md` to eliminate language that causes Claude to see
 
 **Dependencies:** None (agent infrastructure, not application code)
 
-**Status:** In Progress (3/5 stories done — PRs #537, #538, #664)
+**Status:** COMPLETE (5/5 stories done — PRs #537, #538, #664, #689, #690)
 
 **Rearchitecture Note:** This epic was originally designed around `24601/agent-deep-research` (Python, paid API key). Rearchitected per user request to use the official Gemini CLI with OAuth (free tier). See D-164 (supersedes D-154).
 
@@ -6399,7 +6399,7 @@ As a ClickUp user,
 I want to connect my ClickUp workspace via CLI or TUI,
 So that I can use ThreeDoors with my ClickUp tasks.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #751) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** `clickup` added to CLI `knownProviderSpecs` with correct flag spec
