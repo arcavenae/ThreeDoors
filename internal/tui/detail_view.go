@@ -625,6 +625,28 @@ func (dv *DetailView) buildDepAddCandidates() []*core.Task {
 	return candidates
 }
 
+// subtaskStatusIcon returns a bracketed status label for subtask tree rendering.
+func subtaskStatusIcon(status core.TaskStatus) string {
+	switch status {
+	case core.StatusTodo:
+		return "[TODO]"
+	case core.StatusInProgress:
+		return "[PROG]"
+	case core.StatusBlocked:
+		return "[BLKD]"
+	case core.StatusInReview:
+		return "[REVW]"
+	case core.StatusComplete:
+		return "[DONE]"
+	case core.StatusDeferred:
+		return "[DEFR]"
+	case core.StatusArchived:
+		return "[ARCH]"
+	default:
+		return "[????]"
+	}
+}
+
 // resolveTaskText looks up task text by ID from the pool.
 func (dv *DetailView) resolveTaskText(taskID string) string {
 	if dv.pool == nil {
@@ -728,6 +750,37 @@ func (dv *DetailView) View() string {
 			blockedStyle := lipgloss.NewStyle().Foreground(colorBlocked)
 			s.WriteString(blockedStyle.Render(FormatBlockedBy(blockers, 40)))
 			s.WriteString("\n")
+		}
+	}
+
+	// Show subtasks
+	if dv.pool != nil {
+		subtasks := dv.pool.GetSubtasks(dv.task.ID)
+		if len(subtasks) > 0 {
+			connectorStyle := lipgloss.NewStyle().
+				Foreground(lipgloss.CompleteColor{TrueColor: "#585858", ANSI256: "240", ANSI: "8"})
+			subtaskLabelStyle := lipgloss.NewStyle().Foreground(colorAccent).Bold(true)
+
+			s.WriteString("\n")
+			completed := 0
+			for i, sub := range subtasks {
+				connector := "├─"
+				if i == len(subtasks)-1 {
+					connector = "└─"
+				}
+				icon := subtaskStatusIcon(sub.Status)
+				iconStyle := lipgloss.NewStyle().Foreground(StatusColor(string(sub.Status)))
+				fmt.Fprintf(&s, "  %s %s %s\n",
+					connectorStyle.Render(connector),
+					iconStyle.Render(icon),
+					sub.Text)
+				if sub.Status == core.StatusComplete {
+					completed++
+				}
+			}
+			fmt.Fprintf(&s, "\n%s %d/%d complete\n",
+				subtaskLabelStyle.Render("Subtasks:"),
+				completed, len(subtasks))
 		}
 	}
 
