@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/clickup"
 	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
 	"github.com/arcaven/ThreeDoors/internal/adapters/linear"
 	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
@@ -137,4 +138,6 @@ func registerBuiltinAdapters(reg *core.Registry) {
 	_ = reg.Register("todoist", todoist.Factory)
 
 	_ = reg.Register("linear", linear.Factory)
+
+	_ = reg.Register("clickup", clickup.Factory)
 }

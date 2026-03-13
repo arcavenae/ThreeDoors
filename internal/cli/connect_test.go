@@ -488,17 +488,19 @@ func TestFormatConnectTest(t *testing.T) {
 func TestConnectCommand(t *testing.T) {
 	t.Parallel()
 
-	t.Run("no label shows wizard message", func(t *testing.T) {
+	t.Run("no label non-tty shows terminal requirement", func(t *testing.T) {
 		t.Parallel()
 		cmd := newConnectCmd()
 		cmd.SetArgs([]string{"todoist"})
 
+		// In test context, stdin is not a TTY, so the wizard should fail
+		// with a terminal requirement message.
 		err := cmd.Execute()
 		if err == nil {
-			t.Fatal("expected error when no --label provided")
+			t.Fatal("expected error when no --label provided in non-TTY")
 		}
-		if !strings.Contains(err.Error(), "interactive wizard not yet available") { //nolint:staticcheck // testing error message content
-			t.Errorf("error = %v, want wizard message", err)
+		if !strings.Contains(err.Error(), "interactive wizard requires a terminal") {
+			t.Errorf("error = %v, want terminal requirement message", err)
 		}
 	})
 
