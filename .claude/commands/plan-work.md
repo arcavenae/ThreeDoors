@@ -35,9 +35,9 @@ This is the complete planning workflow that takes research findings and formaliz
 
 ---
 
-## Phase 2: PM Course Correction
+## Phase 2: PM Course Correction & PRD Analysis
 
-**Goal:** Have the PM agent evaluate the research and decide on approach.
+**Goal:** Have the PM agent evaluate the research, decide on approach, AND assess impact on PRD content docs.
 
 1. Launch `/bmad-bmm-agent-pm` (this properly loads all PM instructions).
 2. Ask the PM to run a course correction (`/bmad-bmm-correct-course`) with the research findings as input.
@@ -46,12 +46,21 @@ This is the complete planning workflow that takes research findings and formaliz
    - Proposed approach with rationale
    - Rejected alternatives with reasons
    - Sprint change proposal saved to `_bmad-output/planning-artifacts/sprint-change-proposal-{date}-{slug}.md`
+4. **PRD Impact Assessment (MANDATORY):** As part of the course correction, the PM MUST:
+   - Read `docs/prd/requirements.md` and identify what new functional/non-functional requirements this work introduces
+   - Read `docs/prd/product-scope.md` and identify which phase/section the new scope belongs to
+   - Read `docs/prd/epic-details.md` and confirm no detail entry exists yet for the new epic
+   - Include a "PRD Changes Required" section in the sprint change proposal listing specific additions needed for each content doc
+
+<critical>
+The PM's course correction MUST include PRD content doc analysis. If the sprint change proposal does not have a "PRD Changes Required" section, HALT and ask the PM to complete it. This is the root cause of PRD drift — see `_bmad-output/planning-artifacts/prd-process-bypass-investigation.md`.
+</critical>
 
 ---
 
 ## Phase 3: Party Mode Validation
 
-**Goal:** Multi-agent deliberation on the proposed approach.
+**Goal:** Multi-agent deliberation on the proposed approach AND the PRD changes.
 
 1. Run `/bmad-party-mode` with the sprint change proposal as context.
 2. Include at minimum: PM, Architect, UX Designer.
@@ -62,6 +71,8 @@ This is the complete planning workflow that takes research findings and formaliz
    - Are there architectural concerns?
    - What UX considerations exist?
    - What is the right scope and priority?
+   - **Are the proposed PRD content doc changes complete and correct?** (Review the "PRD Changes Required" section from the sprint change proposal)
+   - **Are the new functional requirements properly scoped?** (Not too broad, not missing edge cases)
 6. Save the party mode artifact to `_bmad-output/planning-artifacts/{topic}-party-mode.md`.
 7. Apply accepted recommendations to the sprint change proposal.
 
@@ -79,21 +90,39 @@ This is the complete planning workflow that takes research findings and formaliz
 
 ---
 
-## Phase 5: PRD Update
+## Phase 5: PRD Content Doc Update
 
-**Goal:** Update the Product Requirements Document with new epics/features.
+**Goal:** Update the PRD content docs with new requirements, scope, and epic details BEFORE creating index entries.
+
+<critical>
+This phase addresses the "Built But Not Wired" pattern where `/plan-work` historically updated index docs (epic-list, epics-and-stories, ROADMAP) but SKIPPED content docs (requirements, product-scope, epic-details). This resulted in 47+ epics with no PRD coverage. See `_bmad-output/planning-artifacts/prd-process-bypass-investigation.md`.
+
+ALL THREE content docs MUST be updated. Do NOT skip to Phase 6.
+</critical>
 
 1. Launch `/bmad-bmm-agent-pm` (properly loads PM instructions).
-2. Ask the PM to:
+2. Using the "PRD Changes Required" section from the sprint change proposal (Phase 2) and party mode feedback (Phase 3), the PM MUST update:
+   - **`docs/prd/requirements.md`**: Add new functional requirements (FR) and non-functional requirements (NFR) for every new capability. Each requirement needs an ID, description, and acceptance criteria.
+   - **`docs/prd/product-scope.md`**: Add the new feature/epic to the appropriate phase section. If the feature doesn't fit an existing phase, create a new phase section or extend the most relevant one.
+   - **`docs/prd/epic-details.md`**: Add a detailed breakdown for the new epic including: epic title, description, goals, key features, technical considerations, and story list.
+3. Verify each content doc was actually modified (not just opened and closed). Check `git diff` to confirm changes.
+
+---
+
+## Phase 6: PRD Index Update
+
+**Goal:** Update the PRD index docs and roadmap with new epic/story entries.
+
+1. The PM should:
    - Allocate an epic number (PM is the authority for epic numbers)
    - Update `docs/prd/epics-and-stories.md` with the new epic and story outlines
    - Update `docs/prd/epic-list.md` with the new epic entry
    - Update `ROADMAP.md` with the new epic and stories
-3. Ensure all three planning docs are consistent.
+2. Ensure all index docs are consistent with each other AND with the content docs updated in Phase 5.
 
 ---
 
-## Phase 6: Story Creation
+## Phase 7: Story Creation
 
 **Goal:** Create detailed, implementation-ready story files.
 
@@ -111,7 +140,7 @@ Planning workers NEVER set story status to `Done` — that is reserved for `/imp
 
 ---
 
-## Phase 7: Decision Recording
+## Phase 8: Decision Recording
 
 **Goal:** Record all decisions made during this planning process.
 
@@ -123,17 +152,35 @@ Planning workers NEVER set story status to `Done` — that is reserved for `/imp
 
 ---
 
-## Phase 8: Create Pull Request
+## Phase 9: Create Pull Request
 
 **Goal:** Package all planning artifacts into a single PR.
 
 **IMPORTANT:** Do NOT set any story status to `Done`. Stories created by `/plan-work` must have status `Not Started` or `Draft`. Only `/implement-story` sets `Done` after all acceptance criteria are met in code.
 
+### PRD Completeness Validation Gate (MANDATORY)
+
+Before creating the PR, verify ALL of the following. If any check fails, go back to Phase 5 and complete the missing updates:
+
+- [ ] `docs/prd/requirements.md` has new FR/NFR entries for every new capability introduced by this epic
+- [ ] `docs/prd/product-scope.md` has the feature in the correct phase section
+- [ ] `docs/prd/epic-details.md` has a detailed breakdown for the new epic
+- [ ] `docs/prd/epics-and-stories.md` has the epic and story outlines
+- [ ] `docs/prd/epic-list.md` has the epic entry
+- [ ] `ROADMAP.md` has the epic and stories
+
+<critical>
+This validation gate exists because historically `/plan-work` updated only the index docs (epic-list, epics-and-stories, ROADMAP) and skipped the content docs (requirements, product-scope, epic-details), resulting in 47+ epics with no PRD coverage. Do NOT create the PR if content docs are missing updates.
+</critical>
+
+### PR Creation
+
 1. Stage all changed/created files:
    - Sprint change proposal artifact
    - Party mode artifact
    - Architecture docs (if updated)
-   - PRD updates (epics-and-stories.md, epic-list.md)
+   - PRD content doc updates (requirements.md, product-scope.md, epic-details.md)
+   - PRD index doc updates (epics-and-stories.md, epic-list.md)
    - ROADMAP.md updates
    - Story files
    - BOARD.md updates
@@ -141,7 +188,7 @@ Planning workers NEVER set story status to `Done` — that is reserved for `/imp
 2. Create a descriptive commit: `docs: plan {topic} — epic {N}, stories {N.1}-{N.X}`
 3. Push the branch and create a PR with:
    - Title: `docs: {topic} planning — Epic {N} with {X} stories`
-   - Body summarizing: research findings, approach adopted, rejected alternatives, stories created, architectural changes
+   - Body summarizing: research findings, approach adopted, rejected alternatives, stories created, architectural changes, **PRD docs updated**
 4. Report the PR URL.
 
 ---
@@ -150,11 +197,16 @@ Planning workers NEVER set story status to `Done` — that is reserved for `/imp
 
 Before completing, verify ALL of these exist:
 
-- [ ] Sprint change proposal in `_bmad-output/planning-artifacts/`
+- [ ] Sprint change proposal in `_bmad-output/planning-artifacts/` (with "PRD Changes Required" section)
 - [ ] Party mode artifact in `_bmad-output/planning-artifacts/`
-- [ ] Epic added to `docs/prd/epics-and-stories.md`
-- [ ] Epic added to `docs/prd/epic-list.md`
-- [ ] Epic added to `ROADMAP.md`
+- [ ] **PRD Content Docs Updated:**
+  - [ ] `docs/prd/requirements.md` — new FR/NFR entries for every new capability
+  - [ ] `docs/prd/product-scope.md` — feature added to correct phase section
+  - [ ] `docs/prd/epic-details.md` — detailed breakdown for new epic
+- [ ] **PRD Index Docs Updated:**
+  - [ ] `docs/prd/epics-and-stories.md` — epic and story outlines
+  - [ ] `docs/prd/epic-list.md` — epic entry
+  - [ ] `ROADMAP.md` — epic and stories
 - [ ] Story files created in `docs/stories/`
 - [ ] BOARD.md updated with decisions
 - [ ] Architecture docs updated (if applicable)
