@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (1/4), Epic 51 (5/11), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 58-59, 61 NOT STARTED or IN PROGRESS. 590+ merged PRs total. Last audit: 2026-03-12.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55-56, 62 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (2/4), Epic 51 (5/11), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 57-59, 61 NOT STARTED or IN PROGRESS. 670+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -4773,9 +4773,9 @@ Generic, reusable OAuth device code flow client (RFC 8628) for browser-based aut
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 46.1 | Generic Device Code Flow Client | Not Started | P2 | None |
+| 46.1 | Generic Device Code Flow Client | Done (PR #443) | P2 | None |
 | 46.2 | GitHub OAuth Integration | Not Started | P2 | 46.1 |
-| 46.3 | Linear OAuth Integration | Not Started | P2 | 46.1 |
+| 46.3 | Linear OAuth Integration | Done (PR #671) | P2 | 46.1 |
 | 46.4 | Token Refresh Lifecycle | Not Started | P2 | 46.1 |
 
 ### Story Details
@@ -5426,7 +5426,7 @@ All three stories are fully independent and can be implemented in parallel.
 
 **Prerequisites:** Epic 48 (Door-Like Doors — complete), Epic 17 (Door Theme System — complete)
 
-**Status:** Not Started (0/5 stories)
+**Status:** COMPLETE (5/5 stories)
 
 ### Story 56.1: ThemeColors Extension + Background Fill
 - **As a** user, **I want** door interiors to have a solid background color instead of being transparent wireframes, **so that** doors look like physical surfaces with visual mass rather than flat line drawings.
@@ -6099,7 +6099,7 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 **Prerequisites:** Epic 51 (SLAES) — retrospector agent definition exists
 
-**Status:** Not Started (0/3 stories)
+**Status:** COMPLETE (3/3 stories)
 
 **Phasing:** All three stories are independent and can be parallelized.
 
