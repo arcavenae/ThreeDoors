@@ -102,3 +102,20 @@ type WorkflowStatesResponse struct {
 		States WorkflowStatesConnection `json:"states"`
 	} `json:"team"`
 }
+
+// MutationResult represents the result of an issueUpdate mutation.
+type MutationResult struct {
+	Success bool        `json:"success"`
+	Issue   *MutedIssue `json:"issue"`
+}
+
+// MutedIssue is the issue fragment returned after a mutation.
+type MutedIssue struct {
+	ID    string     `json:"id"`
+	State IssueState `json:"state"`
+}
+
+// IssueUpdateResponse wraps the issueUpdate mutation result.
+type IssueUpdateResponse struct {
+	IssueUpdate MutationResult `json:"issueUpdate"`
+}

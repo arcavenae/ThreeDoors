@@ -34,6 +34,14 @@ func (m *linearMockClient) QueryWorkflowStates(_ context.Context, _ string) ([]l
 	}, nil
 }
 
+func (m *linearMockClient) MutateIssueState(_ context.Context, _, _ string) (*linear.MutationResult, error) {
+	return &linear.MutationResult{Success: true}, nil
+}
+
+func (m *linearMockClient) MutateIssueUpdate(_ context.Context, _, _, _ string) (*linear.MutationResult, error) {
+	return &linear.MutationResult{Success: true}, nil
+}
+
 // TestLinearProviderContract runs the full adapters.RunContractTests suite
 // against LinearProvider using a mocked GraphQLClient (AC1, AC2 — Story 30.4).
 func TestLinearProviderContract(t *testing.T) {

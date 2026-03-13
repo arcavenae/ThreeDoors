@@ -403,6 +403,126 @@ func TestIsRateLimitError(t *testing.T) {
 	}
 }
 
+func TestLinearClientMutateIssueState(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req graphQLRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Errorf("failed to decode request: %v", err)
+			return
+		}
+
+		issueID, _ := req.Variables["id"].(string)
+		stateID, _ := req.Variables["stateId"].(string)
+
+		if issueID != "issue-uuid-1" {
+			t.Errorf("issueID = %q, want %q", issueID, "issue-uuid-1")
+		}
+		if stateID != "state-completed" {
+			t.Errorf("stateID = %q, want %q", stateID, "state-completed")
+		}
+
+		resp := graphQLResponse{
+			Data: json.RawMessage(`{
+				"issueUpdate": {
+					"success": true,
+					"issue": {
+						"id": "issue-uuid-1",
+						"state": {"id": "state-completed", "name": "Done", "type": "completed"}
+					}
+				}
+			}`),
+		}
+		writeJSON(t, w, resp)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewLinearClient("lin_api_test")
+	client.baseURL = server.URL
+
+	result, err := client.MutateIssueState(context.Background(), "issue-uuid-1", "state-completed")
+	if err != nil {
+		t.Fatalf("MutateIssueState() error = %v", err)
+	}
+	if !result.Success {
+		t.Error("expected Success=true")
+	}
+	if result.Issue == nil {
+		t.Fatal("expected issue in result")
+	}
+	if result.Issue.State.Type != "completed" {
+		t.Errorf("State.Type = %q, want %q", result.Issue.State.Type, "completed")
+	}
+}
+
+func TestLinearClientMutateIssueUpdate(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req graphQLRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Errorf("failed to decode request: %v", err)
+			return
+		}
+
+		title, _ := req.Variables["title"].(string)
+		desc, _ := req.Variables["description"].(string)
+
+		if title != "Updated Title" {
+			t.Errorf("title = %q, want %q", title, "Updated Title")
+		}
+		if desc != "New description" {
+			t.Errorf("description = %q, want %q", desc, "New description")
+		}
+
+		resp := graphQLResponse{
+			Data: json.RawMessage(`{
+				"issueUpdate": {
+					"success": true,
+					"issue": {
+						"id": "issue-uuid-1",
+						"state": {"id": "s4", "name": "In Progress", "type": "started"}
+					}
+				}
+			}`),
+		}
+		writeJSON(t, w, resp)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewLinearClient("lin_api_test")
+	client.baseURL = server.URL
+
+	result, err := client.MutateIssueUpdate(context.Background(), "issue-uuid-1", "Updated Title", "New description")
+	if err != nil {
+		t.Fatalf("MutateIssueUpdate() error = %v", err)
+	}
+	if !result.Success {
+		t.Error("expected Success=true")
+	}
+}
+
+func TestLinearClientMutateIssueState_GraphQLError(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		resp := graphQLResponse{
+			Errors: []graphQLError{{Message: "Issue not found"}},
+		}
+		writeJSON(t, w, resp)
+	}))
+	t.Cleanup(server.Close)
+
+	client := NewLinearClient("lin_api_test")
+	client.baseURL = server.URL
+
+	_, err := client.MutateIssueState(context.Background(), "bad-id", "state-1")
+	if err == nil {
+		t.Fatal("expected error for GraphQL error response")
+	}
+}
+
 func TestLinearClientMalformedResponse(t *testing.T) {
 	t.Parallel()
 

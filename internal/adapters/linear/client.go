@@ -64,6 +64,10 @@ type GraphQLClient interface {
 	QueryTeamIssues(ctx context.Context, teamID, cursor string) (*IssueConnection, error)
 	// QueryWorkflowStates returns all workflow states for a team.
 	QueryWorkflowStates(ctx context.Context, teamID string) ([]WorkflowState, error)
+	// MutateIssueState transitions an issue to a new workflow state.
+	MutateIssueState(ctx context.Context, issueID, stateID string) (*MutationResult, error)
+	// MutateIssueUpdate updates an issue's title and/or description.
+	MutateIssueUpdate(ctx context.Context, issueID, title, description string) (*MutationResult, error)
 }
 
 // LinearClient implements GraphQLClient using HTTP requests to the Linear GraphQL API.
@@ -165,6 +169,59 @@ func (c *LinearClient) QueryWorkflowStates(ctx context.Context, teamID string) (
 		return nil, fmt.Errorf("query workflow states decode: %w", err)
 	}
 	return resp.Team.States.Nodes, nil
+}
+
+// MutateIssueState sends a GraphQL mutation to transition an issue to a new workflow state.
+func (c *LinearClient) MutateIssueState(ctx context.Context, issueID, stateID string) (*MutationResult, error) {
+	const mutation = `mutation IssueUpdate($id: String!, $stateId: String!) {
+  issueUpdate(id: $id, input: { stateId: $stateId }) {
+    success
+    issue { id state { id name type } }
+  }
+}`
+
+	vars := map[string]any{
+		"id":      issueID,
+		"stateId": stateID,
+	}
+
+	data, err := c.executeWithRetry(ctx, mutation, vars)
+	if err != nil {
+		return nil, fmt.Errorf("mutate issue state %s: %w", issueID, err)
+	}
+
+	var resp IssueUpdateResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("mutate issue state decode: %w", err)
+	}
+	return &resp.IssueUpdate, nil
+}
+
+// MutateIssueUpdate sends a GraphQL mutation to update an issue's title and description.
+func (c *LinearClient) MutateIssueUpdate(ctx context.Context, issueID, title, description string) (*MutationResult, error) {
+	const mutation = `mutation IssueUpdate($id: String!, $title: String!, $description: String!) {
+  issueUpdate(id: $id, input: { title: $title, description: $description }) {
+    success
+    issue { id state { id name type } }
+  }
+}`
+
+	vars := map[string]any{
+		"id":          issueID,
+		"title":       title,
+		"description": description,
+	}
+
+	data, err := c.executeWithRetry(ctx, mutation, vars)
+	if err != nil {
+		return nil, fmt.Errorf("mutate issue update %s: %w", issueID, err)
+	}
+
+	var resp IssueUpdateResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("mutate issue update decode: %w", err)
+	}
+	return &resp.IssueUpdate, nil
 }
 
 // FetchAllIssues fetches all issues for a team using cursor-based pagination (AC2).
