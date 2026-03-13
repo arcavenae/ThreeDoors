@@ -428,19 +428,59 @@ func runSyncStatus(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("sync status: %w", err)
 	}
 
+	// Probe connectivity to determine state
+	configDir, cfgErr := core.GetConfigDirPath()
+	if cfgErr == nil {
+		executor := gosync.NewExecGitExecutor(10 * time.Second)
+		repoDir, _ := syncRepoDir()
+		cfg, cfgLoadErr := loadSyncConfig(configDir)
+		if cfgLoadErr == nil {
+			remote := cfg.RemoteURL
+			if remote == "" {
+				remote = "origin"
+			}
+			_, probeErr := executor.Run(cmd.Context(), repoDir, "ls-remote", "--exit-code", remote)
+			if probeErr != nil {
+				status.ConnectivityState = "offline"
+			} else {
+				status.ConnectivityState = "online"
+			}
+		}
+	}
+	if status.ConnectivityState == "" {
+		status.ConnectivityState = "unknown"
+	}
+
 	out := cmd.OutOrStdout()
 	if isJSONOutput(cmd) {
 		return json.NewEncoder(out).Encode(status)
 	}
 
 	_, _ = fmt.Fprintf(out, "Sync Status: %s\n", status.State)
-	_, _ = fmt.Fprintf(out, "  Remote:   %s\n", status.RemoteURL)
+	_, _ = fmt.Fprintf(out, "  Connectivity: %s\n", status.ConnectivityState)
+	_, _ = fmt.Fprintf(out, "  Remote:       %s\n", status.RemoteURL)
 	if !status.LastSyncTime.IsZero() {
-		_, _ = fmt.Fprintf(out, "  Last sync: %s\n", status.LastSyncTime.Format("2006-01-02 15:04:05 UTC"))
+		_, _ = fmt.Fprintf(out, "  Last sync:    %s\n", status.LastSyncTime.Format("2006-01-02 15:04:05 UTC"))
 	} else {
-		_, _ = fmt.Fprintf(out, "  Last sync: never\n")
+		_, _ = fmt.Fprintf(out, "  Last sync:    never\n")
 	}
-	_, _ = fmt.Fprintf(out, "  Unpushed: %d commits\n", status.UnpushedCount)
+	_, _ = fmt.Fprintf(out, "  Unpushed:     %d commits\n", status.UnpushedCount)
+	if !status.OldestUnpushed.IsZero() {
+		_, _ = fmt.Fprintf(out, "  Oldest queued: %s\n", status.OldestUnpushed.Format("2006-01-02 15:04:05 UTC"))
+	}
+	if status.LocalHEAD != "" {
+		_, _ = fmt.Fprintf(out, "  Local HEAD:   %s\n", status.LocalHEAD)
+	}
+	if status.RemoteHEAD != "" {
+		_, _ = fmt.Fprintf(out, "  Remote HEAD:  %s\n", status.RemoteHEAD)
+	}
+	if status.LocalHEAD != "" && status.RemoteHEAD != "" {
+		if status.LocalHEAD == status.RemoteHEAD {
+			_, _ = fmt.Fprintf(out, "  Divergence:   in sync\n")
+		} else {
+			_, _ = fmt.Fprintf(out, "  Divergence:   diverged\n")
+		}
+	}
 	return nil
 }
 
