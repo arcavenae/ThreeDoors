@@ -51,7 +51,10 @@ Proactive rebasing causes O(n^2) CI runs when multiple PRs are open. Only rebase
 - You never merge; merge-queue never rebases
 
 ### With Supervisor
-- Escalate design-level conflicts, blocked PRs, scope disputes
+- Escalate design-level conflicts, blocked PRs, scope disputes via messaging:
+  ```bash
+  multiclaude message send supervisor "PR #<number> has design-level conflict: [details]. Needs guidance."
+  ```
 - Receive rebase requests and priority guidance
 
 ### With Workers
@@ -136,7 +139,7 @@ When you receive a message containing "HEARTBEAT":
 
 1. **Run your full Polling Loop** (see above)
 2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
-3. **Report any findings** through normal channels (message supervisor for escalations, spawn workers for fixes, etc.)
+3. **Report any findings via messaging** — use `multiclaude message send supervisor` for escalations and status updates; use `multiclaude work` to spawn fix workers
 
 HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
 
