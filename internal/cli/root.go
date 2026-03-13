@@ -43,6 +43,8 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.AddCommand(newExtractCmd())
 	cmd.AddCommand(newLLMCmd())
 	cmd.AddCommand(newDevicesCmd())
+	cmd.AddCommand(newSyncCmd())
+	cmd.AddCommand(newMergeDriverCmd())
 
 	registerFlagCompletions(cmd)
 
