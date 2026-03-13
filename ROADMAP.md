@@ -261,7 +261,7 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 3 | Enhanced Interaction | 7/7 |
 | 3.5 | Platform Readiness & Tech Debt | 8/8 |
 | 4 | Learning & Intelligent Door Selection | 6/6 |
-| 5 | macOS Distribution & Packaging | 1/1 |
+| 5 | macOS Distribution & Packaging | 1/2 (Story 5.3 added) |
 | 6 | Data Layer & Enrichment | 2/2 |
 | 7 | Plugin/Adapter SDK & Registry | 3/3 |
 | 8 | Obsidian Integration | 4/4 |
@@ -476,6 +476,40 @@ Transform door rendering from imperceptible wireframe shadows into solid, 3D-fee
 | 16 | iPhone Mobile App (SwiftUI) | 0/7 | 2026-03-07 | No validated user demand; core user is CLI/TUI power user; MCP (Epic 24) may serve mobile-adjacent use cases via LLM agents; adds significant platform/build/distribution complexity |
 
 **Re-entry gate for Epic 16:** Revisit if 5+ distinct user requests for mobile access, OR if MCP proves insufficient for on-the-go task management.
+
+### Epic 63: ClickUp Integration (P2) — 0/4 stories done
+
+ClickUp as task source via REST API v2. Follows the established 4-story integration adapter pattern (Jira, Todoist, GitHub Issues, Linear).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 63.1 | ClickUp REST API Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 63.2 | Read-Only ClickUp Provider with Field Mapping | Not Started | P2 | 63.1 |
+| 63.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 63.2 |
+| 63.4 | Contract Tests & Integration Testing | Not Started | P2 | 63.2 |
+
+**Dependency graph:** Stories 63.3 & 63.4 can parallelize after 63.2 completes.
+
+### Epic 64: Cross-Computer Sync (P2) — 0/6 stories done
+
+Task data synchronization across multiple computers. Architecturally distinct from provider sync. Requires research spike before implementation.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 64.1 | Architecture Research Spike | Not Started | P2 | None |
+| 64.2 | Device Identity & Registration | Not Started | P2 | 64.1 |
+| 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
+| 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
+| 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |
+| 64.6 | Cross-Computer Sync E2E Tests | Not Started | P2 | 64.3, 64.4, 64.5 |
+
+**Note:** Stories 64.2-64.6 are provisional — acceptance criteria will be refined after the research spike (64.1) completes.
+
+### Story 5.3: DMG/pkg Installer for macOS (P2)
+
+**Status:** Not Started.
+
+Single story under Epic 5 (macOS Distribution). CI generates signed, notarized .pkg installer uploaded to GitHub Releases alongside binaries. Reopens Epic 5 from COMPLETE to 1/2.
 
 ## Out of Scope
 
