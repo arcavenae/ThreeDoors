@@ -130,13 +130,13 @@ Audit and expand Docker E2E test scenarios to cover all primary user workflows (
 
 ### Story 0.57: t.Helper() Audit (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #737).
 
 Add `t.Helper()` to all test helper functions across the codebase. Currently only 23% of test files use it. Low effort, high payoff for debugging test failures. Driven by TEA audit R-001.
 
 ## Active Epics
 
-### Epic 65: CLI Test Coverage Hardening (P0) — 0/3 stories done
+### Epic 65: CLI Test Coverage Hardening (P0) — 1/3 stories done
 
 Increase `internal/cli` from 34.8% to ≥70% coverage. Only critical gap from TEA audit. All three stories are independent and can parallelize.
 
@@ -144,7 +144,7 @@ Increase `internal/cli` from 34.8% to ≥70% coverage. Only critical gap from TE
 |-------|-------|--------|----------|------------|
 | 65.1 | Core CLI Path Tests — Bootstrap, Root, Doors, TaskPool Loading | Not Started | P0 | None |
 | 65.2 | Subcommand Test Coverage — Config, Mood, Health, Stats, Plan | Not Started | P0 | None |
-| 65.3 | Remaining Command Coverage — Task, Sources, Connect, Extract | Not Started | P1 | None |
+| 65.3 | Remaining Command Coverage — Task, Sources, Connect, Extract | Done (PR #736) | P1 | None |
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
@@ -509,7 +509,7 @@ ClickUp as task source via REST API v2. Follows the established 4-story integrat
 
 **Dependency graph:** Stories 63.3 & 63.4 can parallelize after 63.2 completes.
 
-### Epic 64: Cross-Computer Sync (P2) — 2/6 stories done
+### Epic 64: Cross-Computer Sync (P2) — 3/6 stories done
 
 Task data synchronization across multiple computers. Architecturally distinct from provider sync. Requires research spike before implementation.
 
@@ -518,7 +518,7 @@ Task data synchronization across multiple computers. Architecturally distinct fr
 | 64.1 | Architecture Research Spike | Done (PR #715) | P2 | None |
 | 64.2 | Device Identity & Registration | Done (PR #721) | P2 | 64.1 |
 | 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
-| 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
+| 64.4 | Cross-Machine Conflict Resolution | Done (PR #731) | P2 | 64.1, 64.2 |
 | 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |
 | 64.6 | Cross-Computer Sync E2E Tests | Not Started | P2 | 64.3, 64.4, 64.5 |
 
