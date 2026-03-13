@@ -170,7 +170,7 @@ Linear as task source via GraphQL API. Best task model alignment of all evaluate
 | 30.3 | Bidirectional Sync & WAL Integration | Done (PR #709) | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Done (PR #705) | P2 | 30.2 |
 
-### Epic 31: Expand/Fork Key Implementations (P2) — 4/5 stories done
+### Epic 31: Expand/Fork Key Implementations (P2) — 5/5 stories done — COMPLETE
 
 Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9.
 
@@ -180,7 +180,7 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 | 31.2 | Enhanced Expand — Sequential Subtask Creation | Done (PR #708) | P2 | 31.1 |
 | 31.3 | Subtask List Rendering in Detail View | Done (PR #714) | P2 | 31.1, 31.2 |
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Done (PR #701) | P2 | None |
-| 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
+| 31.5 | Design Decision H9 Status Update | Done (PR #718) | P2 | 31.1-31.4 |
 
 ### Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement (P2) — 4/4 stories done — COMPLETE
 
@@ -495,14 +495,14 @@ Transform door rendering from imperceptible wireframe shadows into solid, 3D-fee
 
 **Re-entry gate for Epic 16:** Revisit if 5+ distinct user requests for mobile access, OR if MCP proves insufficient for on-the-go task management.
 
-### Epic 63: ClickUp Integration (P2) — 1/4 stories done
+### Epic 63: ClickUp Integration (P2) — 2/4 stories done
 
 ClickUp as task source via REST API v2. Follows the established 4-story integration adapter pattern (Jira, Todoist, GitHub Issues, Linear).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 63.1 | ClickUp REST API Client & Auth Configuration | Done (PR #706) | P2 | Epic 7 (done) |
-| 63.2 | Read-Only ClickUp Provider with Field Mapping | Not Started | P2 | 63.1 |
+| 63.2 | Read-Only ClickUp Provider with Field Mapping | Done (PR #719) | P2 | 63.1 |
 | 63.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 63.2 |
 | 63.4 | Contract Tests & Integration Testing | Not Started | P2 | 63.2 |
 
