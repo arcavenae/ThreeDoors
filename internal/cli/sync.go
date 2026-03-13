@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"text/tabwriter"
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcaven/ThreeDoors/internal/device"
+	gosync "github.com/arcaven/ThreeDoors/internal/sync"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +24,9 @@ func newSyncCmd() *cobra.Command {
 
 	cmd.AddCommand(newSyncConflictsCmd())
 	cmd.AddCommand(newSyncResolveCmd())
+	cmd.AddCommand(newSyncInitCmd())
+	cmd.AddCommand(newSyncPushCmd())
+	cmd.AddCommand(newSyncStatusCmd())
 
 	return cmd
 }
@@ -164,4 +171,310 @@ func runSyncResolve(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func newSyncInitCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "init <remote-url>",
+		Short: "Initialize sync with a Git remote",
+		Long: `Sets up cross-computer sync by connecting to a Git remote.
+
+The remote-url should be a Git repository URL (SSH or HTTPS).
+Examples:
+  git@github.com:user/threedoors-sync.git
+  https://github.com/user/threedoors-sync.git`,
+		Args: cobra.ExactArgs(1),
+		RunE: runSyncInit,
+	}
+}
+
+func newSyncPushCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "push",
+		Short: "Manually trigger a sync push",
+		Long:  "Stages local changes, commits, and pushes to the sync remote.",
+		Args:  cobra.NoArgs,
+		RunE:  runSyncPush,
+	}
+}
+
+func newSyncStatusCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "status",
+		Short: "Show sync status",
+		Long:  "Displays the current sync state, last sync time, unpushed commits, and remote URL.",
+		Args:  cobra.NoArgs,
+		RunE:  runSyncStatus,
+	}
+}
+
+// syncRepoDir returns the path to the sync Git repository.
+func syncRepoDir() (string, error) {
+	configDir, err := core.GetConfigDirPath()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, "sync"), nil
+}
+
+// loadSyncTransport creates a GitSyncTransport from persisted config.
+func loadSyncTransport() (*gosync.GitSyncTransport, error) {
+	repoDir, err := syncRepoDir()
+	if err != nil {
+		return nil, err
+	}
+
+	configDir, err := core.GetConfigDirPath()
+	if err != nil {
+		return nil, err
+	}
+
+	// Load device identity
+	devPath := filepath.Join(configDir, "device.yaml")
+	dev, err := device.LoadDevice(devPath)
+	if err != nil {
+		return nil, fmt.Errorf("load device identity: %w (run 'threedoors' first to create device identity)", err)
+	}
+
+	// Load sync remote URL from config
+	syncCfg, err := loadSyncConfig(configDir)
+	if err != nil {
+		return nil, err
+	}
+
+	executor := gosync.NewExecGitExecutor(30 * time.Second)
+	return gosync.NewGitSyncTransport(gosync.GitSyncTransportConfig{
+		RepoDir:    repoDir,
+		RemoteURL:  syncCfg.RemoteURL,
+		DeviceID:   dev.ID,
+		DeviceName: dev.Name,
+		Executor:   executor,
+	}), nil
+}
+
+// syncConfig holds persisted sync configuration.
+type syncConfig struct {
+	RemoteURL string `json:"remote_url"`
+	Enabled   bool   `json:"enabled"`
+}
+
+func syncConfigPath(configDir string) string {
+	return filepath.Join(configDir, "sync.json")
+}
+
+func loadSyncConfig(configDir string) (syncConfig, error) {
+	path := syncConfigPath(configDir)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return syncConfig{}, gosync.ErrNotInitialized
+		}
+		return syncConfig{}, fmt.Errorf("read sync config: %w", err)
+	}
+	var cfg syncConfig
+	if err := json.Unmarshal(data, &cfg); err != nil {
+		return syncConfig{}, fmt.Errorf("parse sync config: %w", err)
+	}
+	return cfg, nil
+}
+
+func saveSyncConfig(configDir string, cfg syncConfig) error {
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal sync config: %w", err)
+	}
+	path := syncConfigPath(configDir)
+	tmpPath := path + ".tmp"
+	if err := os.WriteFile(tmpPath, data, 0o600); err != nil {
+		return fmt.Errorf("write sync config: %w", err)
+	}
+	if err := os.Rename(tmpPath, path); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("rename sync config: %w", err)
+	}
+	return nil
+}
+
+func runSyncInit(cmd *cobra.Command, args []string) error {
+	remoteURL := args[0]
+
+	// Validate URL scheme
+	if err := validateRemoteURL(remoteURL); err != nil {
+		return err
+	}
+
+	configDir, err := core.GetConfigDirPath()
+	if err != nil {
+		return err
+	}
+
+	repoDir, err := syncRepoDir()
+	if err != nil {
+		return err
+	}
+
+	// Load device identity
+	devPath := filepath.Join(configDir, "device.yaml")
+	dev, err := device.LoadDevice(devPath)
+	if err != nil {
+		return fmt.Errorf("load device identity: %w (run 'threedoors' first)", err)
+	}
+
+	executor := gosync.NewExecGitExecutor(30 * time.Second)
+
+	// Validate remote is reachable
+	if _, err := executor.Run(cmd.Context(), ".", "ls-remote", remoteURL); err != nil {
+		return fmt.Errorf("remote unreachable: %w — check the URL and your credentials", err)
+	}
+
+	transport := gosync.NewGitSyncTransport(gosync.GitSyncTransportConfig{
+		RepoDir:    repoDir,
+		RemoteURL:  remoteURL,
+		DeviceID:   dev.ID,
+		DeviceName: dev.Name,
+		Executor:   executor,
+	})
+
+	if err := transport.Init(cmd.Context()); err != nil {
+		return fmt.Errorf("sync init: %w", err)
+	}
+
+	// Persist config
+	if err := saveSyncConfig(configDir, syncConfig{
+		RemoteURL: remoteURL,
+		Enabled:   true,
+	}); err != nil {
+		return err
+	}
+
+	out := cmd.OutOrStdout()
+	if isJSONOutput(cmd) {
+		return json.NewEncoder(out).Encode(map[string]string{
+			"status":     "initialized",
+			"remote_url": remoteURL,
+			"repo_dir":   repoDir,
+		})
+	}
+
+	_, _ = fmt.Fprintf(out, "Sync initialized.\n")
+	_, _ = fmt.Fprintf(out, "  Remote: %s\n", remoteURL)
+	_, _ = fmt.Fprintf(out, "  Local:  %s\n", repoDir)
+	return nil
+}
+
+func runSyncPush(cmd *cobra.Command, _ []string) error {
+	transport, err := loadSyncTransport()
+	if err != nil {
+		return err
+	}
+
+	configDir, err := core.GetConfigDirPath()
+	if err != nil {
+		return err
+	}
+
+	// Collect files to sync
+	files, err := collectSyncFiles(configDir)
+	if err != nil {
+		return fmt.Errorf("collect sync files: %w", err)
+	}
+
+	devPath := filepath.Join(configDir, "device.yaml")
+	dev, err := device.LoadDevice(devPath)
+	if err != nil {
+		return fmt.Errorf("load device: %w", err)
+	}
+
+	changeset := gosync.Changeset{
+		DeviceID:  dev.ID,
+		Timestamp: time.Now().UTC(),
+		Files:     files,
+	}
+
+	// Initialize the transport (needed to set initialized flag)
+	if err := transport.Init(cmd.Context()); err != nil {
+		return fmt.Errorf("sync init: %w", err)
+	}
+
+	if err := transport.Push(cmd.Context(), changeset); err != nil {
+		return fmt.Errorf("sync push: %w", err)
+	}
+
+	out := cmd.OutOrStdout()
+	if isJSONOutput(cmd) {
+		return json.NewEncoder(out).Encode(map[string]interface{}{
+			"status":     "pushed",
+			"file_count": len(files),
+		})
+	}
+
+	_, _ = fmt.Fprintf(out, "Sync push complete (%d files).\n", len(files))
+	return nil
+}
+
+func runSyncStatus(cmd *cobra.Command, _ []string) error {
+	transport, err := loadSyncTransport()
+	if err != nil {
+		return err
+	}
+
+	// Initialize to set the initialized flag
+	if err := transport.Init(cmd.Context()); err != nil {
+		return fmt.Errorf("sync init: %w", err)
+	}
+
+	status, err := transport.Status(cmd.Context())
+	if err != nil {
+		return fmt.Errorf("sync status: %w", err)
+	}
+
+	out := cmd.OutOrStdout()
+	if isJSONOutput(cmd) {
+		return json.NewEncoder(out).Encode(status)
+	}
+
+	_, _ = fmt.Fprintf(out, "Sync Status: %s\n", status.State)
+	_, _ = fmt.Fprintf(out, "  Remote:   %s\n", status.RemoteURL)
+	if !status.LastSyncTime.IsZero() {
+		_, _ = fmt.Fprintf(out, "  Last sync: %s\n", status.LastSyncTime.Format("2006-01-02 15:04:05 UTC"))
+	} else {
+		_, _ = fmt.Fprintf(out, "  Last sync: never\n")
+	}
+	_, _ = fmt.Fprintf(out, "  Unpushed: %d commits\n", status.UnpushedCount)
+	return nil
+}
+
+// collectSyncFiles reads the syncable files from the config directory.
+func collectSyncFiles(configDir string) ([]gosync.SyncFile, error) {
+	syncableFiles := []string{"tasks.yaml", "sessions.jsonl"}
+	var files []gosync.SyncFile
+
+	for _, name := range syncableFiles {
+		path := filepath.Join(configDir, name)
+		content, err := os.ReadFile(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return nil, fmt.Errorf("read %s: %w", name, err)
+		}
+		files = append(files, gosync.SyncFile{
+			Path:    name,
+			Content: content,
+			Op:      gosync.OpModify,
+		})
+	}
+
+	return files, nil
+}
+
+// validateRemoteURL checks that the URL scheme is acceptable.
+func validateRemoteURL(url string) error {
+	validPrefixes := []string{"ssh://", "git@", "https://", "http://", "/"}
+	for _, prefix := range validPrefixes {
+		if len(url) >= len(prefix) && url[:len(prefix)] == prefix {
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid remote URL %q: must start with ssh://, git@, https://, or be a local path", url)
 }
