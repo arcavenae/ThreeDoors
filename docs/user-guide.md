@@ -52,6 +52,12 @@ brew install arcaven/tap/threedoors-a
 
 Both can be installed side-by-side. Stable runs as `threedoors`, alpha runs as `threedoors-a`.
 
+**macOS installer (.pkg):**
+
+Download the `.pkg` installer from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Double-click to install `threedoors` to `/usr/local/bin/`. The installer is code-signed and Apple-notarized. Available for both Apple Silicon (`arm64`) and Intel (`amd64`).
+
+To uninstall: `sudo rm /usr/local/bin/threedoors`
+
 **Pre-built binaries:**
 
 Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries available for macOS (Apple Silicon, Intel) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
