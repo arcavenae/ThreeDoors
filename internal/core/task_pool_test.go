@@ -327,3 +327,199 @@ func TestTaskPool_FindBySourceRef_NoRefsTask(t *testing.T) {
 		t.Error("expected nil for task with no source refs")
 	}
 }
+
+func TestTaskPool_GetSubtasks(t *testing.T) {
+	t.Parallel()
+
+	t.Run("returns children of parent", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		parent := NewTask("Parent task")
+		pool.AddTask(parent)
+
+		child1 := NewTask("Child 1")
+		child1.ParentID = &parent.ID
+		pool.AddTask(child1)
+
+		child2 := NewTask("Child 2")
+		child2.ParentID = &parent.ID
+		pool.AddTask(child2)
+
+		subtasks := pool.GetSubtasks(parent.ID)
+		if len(subtasks) != 2 {
+			t.Fatalf("expected 2 subtasks, got %d", len(subtasks))
+		}
+	})
+
+	t.Run("returns empty slice for task with no children", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		task := NewTask("Lonely task")
+		pool.AddTask(task)
+
+		subtasks := pool.GetSubtasks(task.ID)
+		if len(subtasks) != 0 {
+			t.Errorf("expected 0 subtasks, got %d", len(subtasks))
+		}
+	})
+
+	t.Run("returns empty slice for nonexistent parent ID", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		subtasks := pool.GetSubtasks("nonexistent-id")
+		if len(subtasks) != 0 {
+			t.Errorf("expected 0 subtasks, got %d", len(subtasks))
+		}
+	})
+
+	t.Run("does not return grandchildren", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		grandparent := NewTask("Grandparent")
+		pool.AddTask(grandparent)
+
+		parent := NewTask("Parent")
+		parent.ParentID = &grandparent.ID
+		pool.AddTask(parent)
+
+		child := NewTask("Child")
+		child.ParentID = &parent.ID
+		pool.AddTask(child)
+
+		subtasks := pool.GetSubtasks(grandparent.ID)
+		if len(subtasks) != 1 {
+			t.Fatalf("expected 1 direct subtask, got %d", len(subtasks))
+		}
+		if subtasks[0].ID != parent.ID {
+			t.Errorf("expected parent task, got %s", subtasks[0].ID)
+		}
+	})
+}
+
+func TestTaskPool_HasSubtasks(t *testing.T) {
+	t.Parallel()
+
+	t.Run("true when children exist", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		parent := NewTask("Parent")
+		pool.AddTask(parent)
+
+		child := NewTask("Child")
+		child.ParentID = &parent.ID
+		pool.AddTask(child)
+
+		if !pool.HasSubtasks(parent.ID) {
+			t.Error("expected HasSubtasks to return true")
+		}
+	})
+
+	t.Run("false when no children", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		task := NewTask("No children")
+		pool.AddTask(task)
+
+		if pool.HasSubtasks(task.ID) {
+			t.Error("expected HasSubtasks to return false")
+		}
+	})
+
+	t.Run("false for nonexistent task", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		if pool.HasSubtasks("nonexistent") {
+			t.Error("expected HasSubtasks to return false for nonexistent task")
+		}
+	})
+}
+
+func TestTaskPool_GetAvailableForDoors_ExcludesParents(t *testing.T) {
+	t.Parallel()
+
+	t.Run("parent with subtasks excluded from doors", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		parent := NewTask("Parent task")
+		pool.AddTask(parent)
+
+		child1 := NewTask("Child 1")
+		child1.ParentID = &parent.ID
+		pool.AddTask(child1)
+
+		child2 := NewTask("Child 2")
+		child2.ParentID = &parent.ID
+		pool.AddTask(child2)
+
+		available := pool.GetAvailableForDoors()
+		for _, t2 := range available {
+			if t2.ID == parent.ID {
+				t.Error("parent task should be excluded from available doors")
+			}
+		}
+		if len(available) != 2 {
+			t.Errorf("expected 2 available tasks (children only), got %d", len(available))
+		}
+	})
+
+	t.Run("task without subtasks still available", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		task := NewTask("Standalone task")
+		pool.AddTask(task)
+
+		available := pool.GetAvailableForDoors()
+		if len(available) != 1 {
+			t.Errorf("expected 1 available task, got %d", len(available))
+		}
+	})
+
+	t.Run("fallback also excludes parents", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		parent := NewTask("Parent")
+		pool.AddTask(parent)
+
+		child := NewTask("Child")
+		child.ParentID = &parent.ID
+		pool.AddTask(child)
+
+		// Mark child as recently shown to trigger fallback (< 3 non-recent)
+		pool.MarkRecentlyShown(child.ID)
+
+		available := pool.GetAvailableForDoors()
+		for _, t2 := range available {
+			if t2.ID == parent.ID {
+				t.Error("parent should be excluded even in fallback path")
+			}
+		}
+		// Child should be included in fallback since < 3 tasks
+		if len(available) != 1 {
+			t.Errorf("expected 1 available task in fallback, got %d", len(available))
+		}
+	})
+
+	t.Run("completed subtask parent still shown if no active subtasks exist", func(t *testing.T) {
+		t.Parallel()
+		pool := NewTaskPool()
+		parent := NewTask("Parent")
+		pool.AddTask(parent)
+
+		child := NewTask("Child")
+		child.ParentID = &parent.ID
+		child.Status = StatusComplete
+		pool.AddTask(child)
+
+		// Parent has subtasks (even completed ones), so it should be excluded
+		if !pool.HasSubtasks(parent.ID) {
+			t.Error("parent should have subtasks")
+		}
+
+		available := pool.GetAvailableForDoors()
+		for _, t2 := range available {
+			if t2.ID == parent.ID {
+				t.Error("parent with subtasks (even completed) should be excluded")
+			}
+		}
+	})
+}

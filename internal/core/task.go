@@ -39,6 +39,7 @@ type Task struct {
 	DeferUntil     *time.Time            `yaml:"defer_until,omitempty" json:"defer_until,omitempty"`
 	SourceProvider string                `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
 	SourceRefs     []SourceRef           `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
+	ParentID       *string               `yaml:"parent_id,omitempty" json:"parent_id,omitempty"`
 	DependsOn      []string              `yaml:"depends_on,omitempty" json:"depends_on,omitempty"`
 	DevDispatch    *dispatch.DevDispatch `yaml:"dev_dispatch,omitempty" json:"dev_dispatch,omitempty"`
 	Orphaned       bool                  `yaml:"orphaned,omitempty" json:"orphaned,omitempty"`

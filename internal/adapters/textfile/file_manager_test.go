@@ -175,6 +175,91 @@ func TestAppendCompleted(t *testing.T) {
 	}
 }
 
+func TestSaveTasks_ParentID_Roundtrip(t *testing.T) {
+	tempDir := t.TempDir()
+	core.SetHomeDir(tempDir)
+	defer core.SetHomeDir("")
+
+	parentID := "parent-uuid-123"
+	original := []*core.Task{
+		core.NewTask("Parent task"),
+		core.NewTask("Child task"),
+		core.NewTask("Standalone task"),
+	}
+	original[1].ParentID = &parentID
+
+	if err := SaveTasks(original); err != nil {
+		t.Fatalf("SaveTasks() failed: %v", err)
+	}
+
+	loaded, err := LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() failed: %v", err)
+	}
+
+	if len(loaded) != 3 {
+		t.Fatalf("expected 3 tasks, got %d", len(loaded))
+	}
+
+	// Find the child task in loaded results
+	var child *core.Task
+	var standalone *core.Task
+	for _, lt := range loaded {
+		if lt.Text == "Child task" {
+			child = lt
+		}
+		if lt.Text == "Standalone task" {
+			standalone = lt
+		}
+	}
+
+	if child == nil {
+		t.Fatal("child task not found after load")
+	}
+	if child.ParentID == nil {
+		t.Fatal("child ParentID should not be nil after round-trip")
+	}
+	if *child.ParentID != parentID {
+		t.Errorf("child ParentID = %q, want %q", *child.ParentID, parentID)
+	}
+
+	if standalone == nil {
+		t.Fatal("standalone task not found after load")
+	}
+	if standalone.ParentID != nil {
+		t.Errorf("standalone ParentID should be nil, got %q", *standalone.ParentID)
+	}
+}
+
+func TestLoadTasks_BackwardCompatibility_NoParentID(t *testing.T) {
+	tempDir := t.TempDir()
+	core.SetHomeDir(tempDir)
+	defer core.SetHomeDir("")
+
+	// Write a YAML file without parent_id field (simulates old format)
+	configPath := filepath.Join(tempDir, ".threedoors")
+	_ = os.MkdirAll(configPath, 0o755)
+	yamlContent := []byte(`tasks:
+- id: "task-1"
+  text: "Old format task"
+  status: "todo"
+  created_at: 2026-01-01T00:00:00Z
+  updated_at: 2026-01-01T00:00:00Z
+`)
+	_ = os.WriteFile(filepath.Join(configPath, tasksYAMLFile), yamlContent, 0o644)
+
+	tasks, err := LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() failed: %v", err)
+	}
+	if len(tasks) != 1 {
+		t.Fatalf("expected 1 task, got %d", len(tasks))
+	}
+	if tasks[0].ParentID != nil {
+		t.Error("ParentID should be nil for old format tasks without parent_id field")
+	}
+}
+
 func TestLoadTasks_EmptyYAML(t *testing.T) {
 	tempDir := t.TempDir()
 	core.SetHomeDir(tempDir)
