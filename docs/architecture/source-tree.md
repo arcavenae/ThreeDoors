@@ -308,11 +308,14 @@ ThreeDoors/
 │   │       ├── markdown.go         # Markdown task parser
 │   │       └── daily_notes.go      # Daily note integration
 │   │
-│   ├── sync/                         # Sync Engine (Phase 3, Epic 11)
-│   │   ├── engine.go                # SyncEngine orchestrator
-│   │   ├── queue.go                 # OfflineQueue (JSONL)
-│   │   ├── conflict.go             # ConflictResolver
-│   │   └── log.go                   # SyncLog (rotating)
+│   ├── sync/                         # Sync Engine (Phase 3, Epic 11/64)
+│   │   ├── transport.go             # SyncTransport interface, SyncOp, Changeset
+│   │   ├── git_transport.go         # GitSyncTransport — Git-based SyncTransport impl
+│   │   ├── git_executor.go          # GitExecutor interface, ExecGitExecutor
+│   │   ├── connection.go            # GitSyncConnection — Connection Manager adapter
+│   │   ├── offline.go               # OfflineManager — offline queue & reconciliation (Epic 64)
+│   │   ├── debounce.go              # Debouncer — coalesces rapid sync events
+│   │   └── errors.go                # Sentinel errors (ErrGitNotFound, ErrRebaseConflict, etc.)
 │   │
 │   ├── intelligence/                 # Intelligence Layer (Phase 3-4)
 │   │   ├── agent_service.go         # AgentService — auto-discovery + fallback chain (Epic 57)
