@@ -96,6 +96,92 @@ func TestBuildConnectSettings(t *testing.T) {
 			wantErr:  "missing required flags for textfile: --path",
 		},
 		{
+			name:     "applenotes with note-title",
+			provider: "applenotes",
+			token:    "",
+			flags:    map[string]string{"note-title": "My Tasks"},
+			wantKeys: map[string]string{"note_title": "My Tasks"},
+		},
+		{
+			name:     "applenotes missing note-title",
+			provider: "applenotes",
+			token:    "",
+			flags:    map[string]string{},
+			wantErr:  "missing required flags for applenotes: --note-title",
+		},
+		{
+			name:     "obsidian with path",
+			provider: "obsidian",
+			token:    "",
+			flags:    map[string]string{"path": "~/Documents/vault"},
+			wantKeys: map[string]string{"vault_path": "~/Documents/vault"},
+		},
+		{
+			name:     "obsidian with all options",
+			provider: "obsidian",
+			token:    "",
+			flags:    map[string]string{"path": "~/vault", "tasks-folder": "tasks", "file-pattern": "*.md"},
+			wantKeys: map[string]string{"vault_path": "~/vault", "tasks_folder": "tasks", "file_pattern": "*.md"},
+		},
+		{
+			name:     "obsidian missing path",
+			provider: "obsidian",
+			token:    "",
+			flags:    map[string]string{},
+			wantErr:  "missing required flags for obsidian: --path",
+		},
+		{
+			name:     "reminders with list",
+			provider: "reminders",
+			token:    "",
+			flags:    map[string]string{"list": "Shopping"},
+			wantKeys: map[string]string{"lists": "Shopping"},
+		},
+		{
+			name:       "reminders no flags is valid",
+			provider:   "reminders",
+			token:      "",
+			flags:      map[string]string{},
+			wantKeys:   map[string]string{},
+			wantAbsent: []string{"lists"},
+		},
+		{
+			name:     "linear with token and team-ids",
+			provider: "linear",
+			token:    "lin_api_123",
+			flags:    map[string]string{"team-ids": "TEAM-1,TEAM-2"},
+			wantKeys: map[string]string{"api_key": "lin_api_123", "team_ids": "TEAM-1,TEAM-2"},
+		},
+		{
+			name:       "linear no flags is valid",
+			provider:   "linear",
+			token:      "",
+			flags:      map[string]string{},
+			wantKeys:   map[string]string{},
+			wantAbsent: []string{"api_key"},
+		},
+		{
+			name:     "clickup with required flags",
+			provider: "clickup",
+			token:    "pk_tok",
+			flags:    map[string]string{"team-id": "team123", "space-ids": "space1"},
+			wantKeys: map[string]string{"api_token": "pk_tok", "team_id": "team123", "space_ids": "space1"},
+		},
+		{
+			name:     "clickup with list-ids",
+			provider: "clickup",
+			token:    "pk_tok",
+			flags:    map[string]string{"team-id": "team123", "list-ids": "list1,list2"},
+			wantKeys: map[string]string{"api_token": "pk_tok", "team_id": "team123", "list_ids": "list1,list2"},
+		},
+		{
+			name:     "clickup missing team-id",
+			provider: "clickup",
+			token:    "pk_tok",
+			flags:    map[string]string{"space-ids": "space1"},
+			wantErr:  "missing required flags for clickup: --team-id",
+		},
+		{
 			name:     "unknown provider passes flags through",
 			provider: "unknown",
 			token:    "tok",
@@ -483,6 +569,66 @@ func TestFormatConnectTest(t *testing.T) {
 			t.Error("expected healthy=false")
 		}
 	})
+}
+
+func TestKnownProviderSpecsParity(t *testing.T) {
+	t.Parallel()
+
+	// All 9 registered providers must have entries in knownProviderSpecs.
+	registeredProviders := []string{
+		"applenotes", "clickup", "github", "jira", "linear",
+		"obsidian", "reminders", "textfile", "todoist",
+	}
+
+	for _, name := range registeredProviders {
+		if _, ok := knownProviderSpecs[name]; !ok {
+			t.Errorf("registered provider %q has no entry in knownProviderSpecs", name)
+		}
+	}
+
+	// knownProviderSpecs should not have entries for unregistered providers.
+	for name := range knownProviderSpecs {
+		found := false
+		for _, rp := range registeredProviders {
+			if name == rp {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("knownProviderSpecs has entry for unregistered provider %q", name)
+		}
+	}
+}
+
+func TestValidArgsMatchKnownProviderSpecs(t *testing.T) {
+	t.Parallel()
+
+	cmd := newConnectCmd()
+
+	validArgsSet := make(map[string]bool, len(cmd.ValidArgs))
+	for _, arg := range cmd.ValidArgs {
+		validArgsSet[arg] = true
+	}
+
+	specsSet := make(map[string]bool, len(knownProviderSpecs))
+	for name := range knownProviderSpecs {
+		specsSet[name] = true
+	}
+
+	// Every ValidArg must be in knownProviderSpecs.
+	for _, arg := range cmd.ValidArgs {
+		if !specsSet[arg] {
+			t.Errorf("ValidArgs contains %q which is not in knownProviderSpecs", arg)
+		}
+	}
+
+	// Every knownProviderSpec must be in ValidArgs.
+	for name := range knownProviderSpecs {
+		if !validArgsSet[name] {
+			t.Errorf("knownProviderSpecs contains %q which is not in ValidArgs", name)
+		}
+	}
 }
 
 func TestConnectCommand(t *testing.T) {
