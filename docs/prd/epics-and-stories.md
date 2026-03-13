@@ -6370,3 +6370,54 @@ So that the overall `internal/cli` package reaches ≥70% coverage.
 - **AC6:** Completion and flag completion helpers tested
 - **AC7:** Overall `internal/cli` coverage ≥70%
 - **AC8:** All tests pass with `-race`
+
+## Epic 66: CLI/TUI Adapter Wiring Parity (PROVISIONAL)
+
+**Goal:** Fix three gaps where implemented adapter code is not properly connected to CLI and TUI entry points.
+**Priority:** P0 (Story 66.1 is critical bug fix), P1 (Stories 66.2-66.3)
+**FRs:** FR152-FR156, NFR24
+**Triggered by:** Unwired features audit (2026-03-13)
+
+### Story 66.1: CLI Adapter Registration Fix
+
+As a user with a non-textfile provider configured,
+I want CLI commands to work correctly,
+So that I can manage my tasks from the command line regardless of which provider I use.
+
+**Status:** Not Started | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** `registerBuiltinAdapters()` called before CLI/TUI routing branch in `main()`
+- **AC2:** CLI commands work correctly with non-textfile providers configured
+- **AC3:** Regression test verifies adapter registry is populated before CLI execution
+- **AC4:** TUI path continues to work correctly (no double-registration)
+- **AC5:** `go test -race ./cmd/threedoors/... ./internal/cli/...` passes
+
+### Story 66.2: ClickUp Connect Wiring
+
+As a ClickUp user,
+I want to connect my ClickUp workspace via CLI or TUI,
+So that I can use ThreeDoors with my ClickUp tasks.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `clickup` added to CLI `knownProviderSpecs` with correct flag spec
+- **AC2:** `clickup` added to TUI `DefaultProviderSpecs()`
+- **AC3:** `threedoors connect clickup --label <name> --token <token> --list-id <id>` works
+- **AC4:** TUI `:connect` wizard shows ClickUp as selectable provider
+
+### Story 66.3: Provider Spec Parity & Validation
+
+As a user connecting any supported provider via CLI,
+I want required flags to be validated,
+So that I get clear error messages instead of silently incomplete configurations.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `knownProviderSpecs` has entries for all 9 registered providers
+- **AC2:** Required flags enforced per provider with clear error messages
+- **AC3:** Parity test verifies adapter registry, CLI specs, CLI args, and TUI specs are in sync
+- **AC4:** Connect command help text lists all supported providers
+- **AC5:** `ValidArgs` matches `knownProviderSpecs` keys exactly
