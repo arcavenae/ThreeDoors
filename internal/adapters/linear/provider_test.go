@@ -21,6 +21,9 @@ type mockGraphQLClient struct {
 	states    map[string][]WorkflowState
 	statesErr error
 	callCount int
+	// pages supports multi-page pagination: teamID → []IssueConnection (one per page).
+	// When set, QueryTeamIssues returns pages sequentially using the cursor.
+	pages map[string][]IssueConnection
 }
 
 func (m *mockGraphQLClient) QueryViewer(_ context.Context) (*Viewer, error) {
@@ -28,11 +31,34 @@ func (m *mockGraphQLClient) QueryViewer(_ context.Context) (*Viewer, error) {
 	return m.viewer, m.viewerErr
 }
 
-func (m *mockGraphQLClient) QueryTeamIssues(_ context.Context, teamID, _ string) (*IssueConnection, error) {
+func (m *mockGraphQLClient) QueryTeamIssues(_ context.Context, teamID, cursor string) (*IssueConnection, error) {
 	m.callCount++
 	if m.issuesErr != nil {
 		return nil, m.issuesErr
 	}
+
+	// Multi-page mode
+	if m.pages != nil {
+		teamPages, ok := m.pages[teamID]
+		if !ok {
+			return &IssueConnection{}, nil
+		}
+		// Determine page index from cursor
+		pageIdx := 0
+		if cursor != "" {
+			for i, p := range teamPages {
+				if p.PageInfo.EndCursor == cursor && i+1 < len(teamPages) {
+					pageIdx = i + 1
+					break
+				}
+			}
+		}
+		if pageIdx < len(teamPages) {
+			return &teamPages[pageIdx], nil
+		}
+		return &IssueConnection{}, nil
+	}
+
 	conn, ok := m.issues[teamID]
 	if !ok {
 		return &IssueConnection{}, nil
@@ -517,6 +543,46 @@ func TestFactory_NoSettings(t *testing.T) {
 	_, err := Factory(config)
 	if err == nil {
 		t.Fatal("Factory() should fail with no settings")
+	}
+}
+
+// TestLinearProvider_Pagination verifies that LoadTasks fetches all pages
+// via cursor-based pagination through the provider (AC6 — Story 30.4).
+func TestLinearProvider_Pagination(t *testing.T) {
+	t.Parallel()
+
+	client := &mockGraphQLClient{
+		pages: map[string][]IssueConnection{
+			"team-1": {
+				{
+					Nodes:    []IssueNode{newTestIssue("1", "TEAM-1", "Page 1 Task", "started", 2)},
+					PageInfo: PageInfo{HasNextPage: true, EndCursor: "cursor-page1"},
+				},
+				{
+					Nodes:    []IssueNode{newTestIssue("2", "TEAM-2", "Page 2 Task", "unstarted", 3)},
+					PageInfo: PageInfo{HasNextPage: true, EndCursor: "cursor-page2"},
+				},
+				{
+					Nodes:    []IssueNode{newTestIssue("3", "TEAM-3", "Page 3 Task", "backlog", 4)},
+					PageInfo: PageInfo{HasNextPage: false},
+				},
+			},
+		},
+	}
+
+	provider := NewLinearProvider(client, newTestConfig())
+	tasks, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	if len(tasks) != 3 {
+		t.Fatalf("got %d tasks, want 3 (one from each page)", len(tasks))
+	}
+
+	// Verify all pages were fetched (3 API calls for 3 pages)
+	if client.callCount != 3 {
+		t.Errorf("made %d API calls, want 3 (one per page)", client.callCount)
 	}
 }
 
