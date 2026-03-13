@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -848,6 +849,255 @@ func TestDetailView_EscapeStillWorks(t *testing.T) {
 	msg := cmd()
 	if _, ok := msg.(ReturnToDoorsMsg); !ok {
 		t.Errorf("expected ReturnToDoorsMsg, got %T", msg)
+	}
+}
+
+// --- Invalid Transition ---
+
+// --- Subtask List Rendering (Story 31.3) ---
+
+func TestDetailView_SubtaskList_RendersWhenChildrenExist(t *testing.T) {
+	dv, pool := newTestDetailViewWithPool("Write architecture document")
+	parentID := dv.task.ID
+
+	sub1 := core.NewTask("Draft high-level overview")
+	sub1.ParentID = &parentID
+	pool.AddTask(sub1)
+
+	sub2 := core.NewTask("Data models section")
+	sub2.ParentID = &parentID
+	_ = sub2.UpdateStatus(core.StatusComplete)
+	pool.AddTask(sub2)
+
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if !strings.Contains(view, "Draft high-level overview") {
+		t.Error("should render first subtask text")
+	}
+	if !strings.Contains(view, "Data models section") {
+		t.Error("should render second subtask text")
+	}
+	if !strings.Contains(view, "Subtasks:") {
+		t.Error("should render subtasks label")
+	}
+}
+
+func TestDetailView_SubtaskList_StatusIcons(t *testing.T) {
+	dv, pool := newTestDetailViewWithPool("parent task")
+	parentID := dv.task.ID
+
+	sub1 := core.NewTask("todo subtask")
+	sub1.ParentID = &parentID
+	pool.AddTask(sub1)
+
+	sub2 := core.NewTask("done subtask")
+	sub2.ParentID = &parentID
+	_ = sub2.UpdateStatus(core.StatusComplete)
+	pool.AddTask(sub2)
+
+	sub3 := core.NewTask("blocked subtask")
+	sub3.ParentID = &parentID
+	_ = sub3.UpdateStatus(core.StatusBlocked)
+	pool.AddTask(sub3)
+
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if !strings.Contains(view, "[TODO]") {
+		t.Error("should show [TODO] icon for todo subtask")
+	}
+	if !strings.Contains(view, "[DONE]") {
+		t.Error("should show [DONE] icon for complete subtask")
+	}
+	if !strings.Contains(view, "[BLKD]") {
+		t.Error("should show [BLKD] icon for blocked subtask")
+	}
+}
+
+func TestDetailView_SubtaskList_TreeConnectors(t *testing.T) {
+	dv, pool := newTestDetailViewWithPool("parent task")
+	parentID := dv.task.ID
+
+	sub1 := core.NewTask("first subtask")
+	sub1.ParentID = &parentID
+	pool.AddTask(sub1)
+
+	sub2 := core.NewTask("second subtask")
+	sub2.ParentID = &parentID
+	pool.AddTask(sub2)
+
+	sub3 := core.NewTask("last subtask")
+	sub3.ParentID = &parentID
+	pool.AddTask(sub3)
+
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if !strings.Contains(view, "├─") {
+		t.Error("should use ├─ connector for non-last items")
+	}
+	if !strings.Contains(view, "└─") {
+		t.Error("should use └─ connector for last item")
+	}
+}
+
+func TestDetailView_SubtaskList_CompletionRatio(t *testing.T) {
+	dv, pool := newTestDetailViewWithPool("parent task")
+	parentID := dv.task.ID
+
+	sub1 := core.NewTask("todo subtask")
+	sub1.ParentID = &parentID
+	pool.AddTask(sub1)
+
+	sub2 := core.NewTask("done subtask")
+	sub2.ParentID = &parentID
+	_ = sub2.UpdateStatus(core.StatusComplete)
+	pool.AddTask(sub2)
+
+	sub3 := core.NewTask("another done")
+	sub3.ParentID = &parentID
+	_ = sub3.UpdateStatus(core.StatusComplete)
+	pool.AddTask(sub3)
+
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if !strings.Contains(view, "2/3 complete") {
+		t.Error("should show completion ratio '2/3 complete'")
+	}
+}
+
+func TestDetailView_SubtaskList_NoChildrenNoSection(t *testing.T) {
+	dv, _ := newTestDetailViewWithPool("task with no children")
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if strings.Contains(view, "Subtasks:") {
+		t.Error("should NOT show subtask section when task has no children")
+	}
+	if strings.Contains(view, "├─") || strings.Contains(view, "└─") {
+		t.Error("should NOT show tree connectors when task has no children")
+	}
+}
+
+func TestDetailView_SubtaskList_SingleChild(t *testing.T) {
+	dv, pool := newTestDetailViewWithPool("parent task")
+	parentID := dv.task.ID
+
+	sub := core.NewTask("only subtask")
+	sub.ParentID = &parentID
+	pool.AddTask(sub)
+
+	dv.SetWidth(80)
+	view := dv.View()
+
+	// Single child should use └─ (last item connector)
+	if !strings.Contains(view, "└─") {
+		t.Error("single subtask should use └─ connector")
+	}
+	if strings.Contains(view, "├─") {
+		t.Error("single subtask should NOT use ├─ connector")
+	}
+	if !strings.Contains(view, "0/1 complete") {
+		t.Error("should show '0/1 complete' for single incomplete subtask")
+	}
+}
+
+func TestDetailView_SubtaskList_NilPool(t *testing.T) {
+	task := core.NewTask("task with nil pool")
+	dv := NewDetailView(task, nil, nil, nil)
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if strings.Contains(view, "Subtasks:") {
+		t.Error("should NOT show subtask section when pool is nil")
+	}
+}
+
+func TestDetailView_SubtaskList_AllStatuses(t *testing.T) {
+	tests := []struct {
+		name   string
+		status core.TaskStatus
+		icon   string
+	}{
+		{"todo", core.StatusTodo, "[TODO]"},
+		{"in-progress", core.StatusInProgress, "[PROG]"},
+		{"blocked", core.StatusBlocked, "[BLKD]"},
+		{"in-review", core.StatusInReview, "[REVW]"},
+		{"complete", core.StatusComplete, "[DONE]"},
+		{"deferred", core.StatusDeferred, "[DEFR]"},
+		{"archived", core.StatusArchived, "[ARCH]"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			icon := subtaskStatusIcon(tt.status)
+			if icon != tt.icon {
+				t.Errorf("subtaskStatusIcon(%q) = %q, want %q", tt.status, icon, tt.icon)
+			}
+		})
+	}
+}
+
+func TestDetailView_SubtaskList_MixedStatuses(t *testing.T) {
+	dv, pool := newTestDetailViewWithPool("parent task")
+	parentID := dv.task.ID
+
+	statuses := []core.TaskStatus{
+		core.StatusTodo,
+		core.StatusInProgress,
+		core.StatusComplete,
+	}
+	for i, status := range statuses {
+		sub := core.NewTask(fmt.Sprintf("subtask %d", i))
+		sub.ParentID = &parentID
+		if status != core.StatusTodo {
+			_ = sub.UpdateStatus(status)
+		}
+		pool.AddTask(sub)
+	}
+
+	dv.SetWidth(80)
+	view := dv.View()
+
+	if !strings.Contains(view, "[TODO]") {
+		t.Error("should show [TODO]")
+	}
+	if !strings.Contains(view, "[PROG]") {
+		t.Error("should show [PROG]")
+	}
+	if !strings.Contains(view, "[DONE]") {
+		t.Error("should show [DONE]")
+	}
+	if !strings.Contains(view, "1/3 complete") {
+		t.Error("should show '1/3 complete'")
+	}
+}
+
+// --- Subtask Status Icon Benchmark (Story 31.3, per 0.51 pattern) ---
+
+func BenchmarkDetailView_SubtaskRendering(b *testing.B) {
+	pool := core.NewTaskPool()
+	parent := core.NewTask("parent task")
+	pool.AddTask(parent)
+	parentID := parent.ID
+
+	for i := 0; i < 10; i++ {
+		sub := core.NewTask(fmt.Sprintf("subtask %d", i))
+		sub.ParentID = &parentID
+		if i%3 == 0 {
+			_ = sub.UpdateStatus(core.StatusComplete)
+		}
+		pool.AddTask(sub)
+	}
+
+	dv := NewDetailView(parent, nil, nil, pool)
+	dv.SetWidth(80)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		dv.View()
 	}
 }
 

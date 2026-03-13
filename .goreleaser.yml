@@ -86,6 +86,8 @@ release:
     brew install arcaven/tap/threedoors
     ```
 
+    Or download the `.pkg` installer for macOS from the assets below.
+
 # Homebrew tap formula generation — targets shared arcaven/homebrew-tap
 brews:
   - repository:
