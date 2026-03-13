@@ -63,6 +63,47 @@ multiclaude message send merge-queue "Restarted after lockup. Priority PRs: #301
 
 ---
 
+## Heartbeat Mechanism
+
+### Overview
+
+All persistent agents go idle after completing startup work because Claude has no internal timers. The heartbeat mechanism uses CronCreate to periodically send HEARTBEAT messages that trigger each agent's polling loop.
+
+### How It Works
+
+1. **Supervisor creates CronCreate jobs** during startup (session-scoped, re-created on every restart)
+2. Each cron fires a prompt that sends `multiclaude message send <agent> HEARTBEAT`
+3. The agent receives the HEARTBEAT, runs its full polling loop, and acks the message
+4. Agents report findings through normal channels (messages to supervisor, spawning workers, etc.)
+
+### Heartbeat Schedule
+
+| Agent | Interval | Cron Expression | Rationale |
+|-------|----------|----------------|-----------|
+| merge-queue | 7 min | `*/7 * * * *` | High-frequency — PR merges are time-sensitive |
+| pr-shepherd | 7 min (offset +3) | `3-59/7 * * * *` | Same frequency as merge-queue, staggered |
+| envoy | 11 min | `*/11 * * * *` | Medium — issue triage is important but not urgent |
+| retrospector | 13 min | `*/13 * * * *` | Medium — analysis can tolerate slight delay |
+| project-watchdog | 23 min | `*/23 * * * *` | Lower frequency — doc sync is batched |
+| arch-watchdog | 23 min (offset +5) | `5-59/23 * * * *` | Same frequency as project-watchdog, staggered |
+
+Prime-number intervals prevent all agents from being poked simultaneously and avoid the :00/:30 minute marks.
+
+### Limitations
+
+- **Session-scoped:** CronCreate jobs are lost when the supervisor exits and auto-expire after 3 days
+- **Idle-only firing:** Crons only fire while the supervisor's REPL is idle (not mid-query)
+- **No guaranteed delivery:** If the supervisor is busy processing a query when a cron fires, that heartbeat is skipped — the next interval will catch it
+- **Context impact:** Each heartbeat adds a small amount of context to the target agent. At the configured intervals, this is manageable within the 4-6 hour restart cadence
+
+### Monitoring
+
+When checking agent health, verify heartbeats are working:
+- Agent should show activity every 1-2 heartbeat intervals
+- If an agent is idle for 3+ intervals, check: (1) supervisor crons exist, (2) messaging is working, (3) agent isn't context-exhausted
+
+---
+
 ## General Persistent Agent Best Practices
 
 ### Hot-Reload Limitation
@@ -85,3 +126,5 @@ merge-queue cannot merge PRs that modify `.github/workflows/` files — the OAut
 | PR queue depth growing | Every 15 min | Nudge or restart merge-queue |
 | Main branch CI status | Every merge | Enter emergency mode if red |
 | Agent message backlog | Every 30 min | Restart if messages unacknowledged >30 min |
+| Heartbeat crons active | On supervisor restart | Re-create CronCreate jobs (see Heartbeat Mechanism) |
+| Agent activity after heartbeat | Every 2-3 intervals | If idle for 3+ intervals, check crons/messaging/context |

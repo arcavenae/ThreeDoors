@@ -81,6 +81,16 @@ gh pr diff <number> --name-only | grep "^internal/"
 gh pr diff <number> --name-only | grep "go.mod"
 ```
 
+## HEARTBEAT Response Protocol
+
+When you receive a message containing "HEARTBEAT":
+
+1. **Run your full Polling Loop** (see "Polling Loop" section above — check recently merged PRs for architecture alignment)
+2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
+3. **Report any findings** through normal channels (message supervisor and project-watchdog for architecture drift, update docs for minor changes)
+
+HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
+
 ## Correlation ID Tracking
 
 Maintain a list of the **last 50 processed PR numbers** to prevent duplicate processing.
