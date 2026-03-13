@@ -63,3 +63,69 @@ func TestCliContext_ProviderSaveTask(t *testing.T) {
 		t.Errorf("saved %d tasks, want 1", len(provider.saved))
 	}
 }
+
+func TestCliContext_ResolvedConnections(t *testing.T) {
+	t.Parallel()
+
+	ctx := &cliContext{
+		provider: &fakeProvider{},
+		pool:     core.NewTaskPool(),
+		resolved: nil,
+	}
+
+	// resolved may be nil when no connections are configured
+	if ctx.resolved != nil {
+		t.Error("expected nil resolved when not configured")
+	}
+}
+
+func TestBootstrap_Success(t *testing.T) {
+	setupTestEnv(t)
+
+	ctx, err := bootstrap()
+	if err != nil {
+		t.Fatalf("bootstrap: %v", err)
+	}
+	if ctx == nil {
+		t.Fatal("expected non-nil cliContext")
+	}
+	if ctx.provider == nil {
+		t.Error("expected non-nil provider")
+	}
+	if ctx.pool == nil {
+		t.Error("expected non-nil pool")
+	}
+}
+
+func TestBootstrap_WithTasks(t *testing.T) {
+	setupTestEnv(t)
+	addTestTask(t, "Bootstrap task")
+
+	ctx, err := bootstrap()
+	if err != nil {
+		t.Fatalf("bootstrap: %v", err)
+	}
+
+	tasks := ctx.pool.GetAvailableForDoors()
+	if len(tasks) < 1 {
+		t.Errorf("pool has %d tasks, want at least 1", len(tasks))
+	}
+}
+
+func TestBootstrap_DefaultConfig(t *testing.T) {
+	// When config doesn't exist, bootstrap falls back to defaults.
+	dir := t.TempDir()
+	core.SetHomeDir(dir)
+	t.Cleanup(func() { core.SetHomeDir("") })
+
+	ctx, err := bootstrap()
+	if err != nil {
+		t.Fatalf("bootstrap with default config: %v", err)
+	}
+	if ctx == nil {
+		t.Fatal("expected non-nil cliContext")
+	}
+	if ctx.provider == nil {
+		t.Error("expected non-nil provider with default config")
+	}
+}

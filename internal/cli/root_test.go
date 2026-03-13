@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -125,5 +126,87 @@ func TestExecute_UnknownCommand(t *testing.T) {
 	err := root.Execute()
 	if err == nil {
 		t.Error("expected error for unknown command")
+	}
+}
+
+func TestExecute_VersionReturnsSuccess(t *testing.T) {
+	// Not parallel — modifies os.Args
+	origArgs := os.Args
+	t.Cleanup(func() { os.Args = origArgs })
+	os.Args = []string{"threedoors", "version"}
+
+	code := Execute()
+	if code != ExitSuccess {
+		t.Errorf("Execute() = %d, want %d", code, ExitSuccess)
+	}
+}
+
+func TestExecute_UnknownReturnsError(t *testing.T) {
+	// Not parallel — modifies os.Args
+	origArgs := os.Args
+	t.Cleanup(func() { os.Args = origArgs })
+	os.Args = []string{"threedoors", "nonexistent-command-xyz"}
+
+	code := Execute()
+	if code != ExitGeneralError {
+		t.Errorf("Execute() = %d, want %d", code, ExitGeneralError)
+	}
+}
+
+func TestExecute_JSONErrorOutput(t *testing.T) {
+	// Not parallel — modifies os.Args
+	origArgs := os.Args
+	t.Cleanup(func() { os.Args = origArgs })
+	os.Args = []string{"threedoors", "--json", "nonexistent-command-xyz"}
+
+	code := Execute()
+	if code != ExitGeneralError {
+		t.Errorf("Execute() = %d, want %d", code, ExitGeneralError)
+	}
+}
+
+func TestNewRootCmd_SubcommandsComplete(t *testing.T) {
+	t.Parallel()
+
+	root := NewRootCmd()
+	subCmds := root.Commands()
+	names := make(map[string]bool)
+	for _, cmd := range subCmds {
+		names[cmd.Name()] = true
+	}
+
+	// Verify all commands added in NewRootCmd are present
+	expected := []string{
+		"task", "doors", "doctor", "version", "completion",
+		"mood", "stats", "config", "plan", "doc-audit",
+		"sources", "connect", "extract", "llm", "devices",
+	}
+	for _, want := range expected {
+		if !names[want] {
+			t.Errorf("missing %q subcommand", want)
+		}
+	}
+
+	// Verify total count matches expected
+	if len(subCmds) < len(expected) {
+		t.Errorf("found %d subcommands, want at least %d", len(subCmds), len(expected))
+	}
+}
+
+func TestKnownSubcommands_ContainsAllRegistered(t *testing.T) {
+	t.Parallel()
+
+	names := KnownSubcommands()
+	nameSet := make(map[string]bool)
+	for _, n := range names {
+		nameSet[n] = true
+	}
+
+	// All subcommands from NewRootCmd should appear in KnownSubcommands
+	root := NewRootCmd()
+	for _, cmd := range root.Commands() {
+		if !nameSet[cmd.Name()] {
+			t.Errorf("KnownSubcommands() missing registered command %q", cmd.Name())
+		}
 	}
 }
