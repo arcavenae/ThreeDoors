@@ -148,7 +148,7 @@ Increase `internal/cli` from 34.8% to ≥70% coverage. Only critical gap from TE
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
-### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 3/4 stories done
+### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 4/4 stories done — COMPLETE
 
 Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
 
@@ -156,7 +156,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 |-------|-------|--------|----------|------------|
 | 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | Done (PR #340) | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ### Epic 30: Linear Integration (P2) — 4/4 stories done — COMPLETE
@@ -273,7 +273,7 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 
 | Epic | Title | Stories |
 |------|-------|---------|
-| 0 | Infrastructure & Process (Backfill) | 34/35 (0.33 In Review) |
+| 0 | Infrastructure & Process (Backfill) | 35/35 |
 | 1 | Three Doors Technical Demo | 7/7 |
 | 2 | Apple Notes Integration | 6/6 |
 | 3 | Enhanced Interaction | 7/7 |
@@ -508,14 +508,14 @@ ClickUp as task source via REST API v2. Follows the established 4-story integrat
 
 **Dependency graph:** Stories 63.3 & 63.4 can parallelize after 63.2 completes.
 
-### Epic 64: Cross-Computer Sync (P2) — 1/6 stories done
+### Epic 64: Cross-Computer Sync (P2) — 2/6 stories done
 
 Task data synchronization across multiple computers. Architecturally distinct from provider sync. Requires research spike before implementation.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 64.1 | Architecture Research Spike | Done (PR #715) | P2 | None |
-| 64.2 | Device Identity & Registration | Not Started | P2 | 64.1 |
+| 64.2 | Device Identity & Registration | Done (PR #721) | P2 | 64.1 |
 | 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
 | 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
 | 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |

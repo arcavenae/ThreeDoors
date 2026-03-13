@@ -369,7 +369,7 @@
 **Epic 29: Task Dependencies & Blocked-Task Filtering** (P1)
 - **Goal:** Native dependency graph support. Blocks tasks with unmet dependencies from door selection
 - **Prerequisites:** None
-- **Status:** In Progress (3/4 stories done; 29.3 remaining)
+- **Status:** COMPLETE — All 4 stories done (PRs #307, #319, #340, #356)
 - **Stories:** 29.1-29.4 (4 stories)
 
 **Epic 30: Linear Integration** (P2)
@@ -816,7 +816,7 @@
 **Epic 64: Cross-Computer Sync** (P2)
 - **Goal:** Enable task data synchronization across multiple computers, with research spike to determine architecture
 - **Prerequisites:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
-- **Status:** In Progress (1/6 done — PR #715)
+- **Status:** In Progress (2/6 done — PRs #715, #721)
 - **Deliverables:**
   - ADR documenting chosen sync architecture (transport, conflict resolution, identity)
   - Device identity and registration system
@@ -879,7 +879,7 @@
 | Epic 26: GitHub Issues Integration | 4 | Complete |
 | Epic 27: Daily Planning Mode | 5 | Complete |
 | Epic 28: Snooze/Defer | 4 | Complete |
-| Epic 29: Task Dependencies | 4 | In Progress (3/4) |
+| Epic 29: Task Dependencies | 4 | Complete (4/4 done) |
 | Epic 30: Linear Integration | 4 | Complete (4/4 done) |
 | Epic 31: Expand/Fork Key | 5 | Complete (5/5 done) |
 | Epic 32: Undo Task Completion | 3 | Complete |
@@ -914,7 +914,7 @@
 | Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
 | Epic 63: ClickUp Integration | 4 | In Progress (2/4 done) |
-| Epic 64: Cross-Computer Sync | 6 | In Progress (1/6 done) |
+| Epic 64: Cross-Computer Sync | 6 | In Progress (2/6 done) |
 | Epic 65: CLI Test Coverage Hardening | 3 | Not Started (0/3) |
 | **Total** | **339** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---
