@@ -375,7 +375,7 @@
 **Epic 30: Linear Integration** (P2)
 - **Goal:** Integrate Linear as a task source for engineering teams via the Linear GraphQL API, leveraging Linear's excellent task model alignment (rich workflow states, priority, estimates, labels, due dates) for high-fidelity task import
 - **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 13 (Multi-Source Aggregation — complete)
-- **Status:** In Progress (3/4 done — PRs #446, #699, #705)
+- **Status:** COMPLETE — All 4 stories done (PRs #446, #699, #705, #709)
 - **Deliverables:**
   - Linear GraphQL client with typed queries, cursor-based pagination, and API key auth
   - Read-only LinearProvider with full field mapping (status, priority, effort, labels, due dates)
@@ -869,7 +869,7 @@
 | Epic 27: Daily Planning Mode | 5 | Complete |
 | Epic 28: Snooze/Defer | 4 | Complete |
 | Epic 29: Task Dependencies | 4 | In Progress (3/4) |
-| Epic 30: Linear Integration | 4 | In Progress (3/4 done) |
+| Epic 30: Linear Integration | 4 | Complete (4/4 done) |
 | Epic 31: Expand/Fork Key | 5 | In Progress (4/5 done) |
 | Epic 32: Undo Task Completion | 3 | Complete |
 | Epic 33: Seasonal Theme Variants | 4 | Complete |
