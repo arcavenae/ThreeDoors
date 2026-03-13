@@ -218,24 +218,25 @@ func TestDetailView_ExpandInput_EnterWithTextSendsExpandMsg(t *testing.T) {
 	if em.ParentTask.Text != "parent task" {
 		t.Errorf("expected parent task 'parent task', got %q", em.ParentTask.Text)
 	}
+	// Should stay in expand mode (sequential mode)
+	if dv.mode != DetailModeExpandInput {
+		t.Errorf("expected to stay in DetailModeExpandInput, got %d", dv.mode)
+	}
+	if dv.expandInput != "" {
+		t.Errorf("expected input cleared, got %q", dv.expandInput)
+	}
+	if dv.expandSubtaskCount != 1 {
+		t.Errorf("expected subtask count 1, got %d", dv.expandSubtaskCount)
+	}
 }
 
-func TestDetailView_ExpandInput_EnterEmptyShowsFlash(t *testing.T) {
+func TestDetailView_ExpandInput_EnterEmptyIgnored(t *testing.T) {
 	dv := newTestDetailView("test task")
 	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
 
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	if cmd == nil {
-		t.Fatal("Enter with empty text should return a command")
-		return
-	}
-	msg := cmd()
-	fm, ok := msg.(FlashMsg)
-	if !ok {
-		t.Fatalf("expected FlashMsg, got %T", msg)
-	}
-	if !strings.Contains(fm.Text, "cannot be empty") {
-		t.Errorf("expected empty warning, got %q", fm.Text)
+	if cmd != nil {
+		t.Error("Enter with empty text should be ignored (no command)")
 	}
 	if dv.mode != DetailModeExpandInput {
 		t.Error("should stay in expand input mode after empty submit")
@@ -272,8 +273,157 @@ func TestDetailView_ExpandMode_ShowsInputPrompt(t *testing.T) {
 	dv.SetWidth(80)
 	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
 	view := dv.View()
-	if !strings.Contains(view, "subtask") || !strings.Contains(view, "Enter") {
+	if !strings.Contains(view, "subtask") || !strings.Contains(view, "Esc") {
 		t.Error("View should show expand input prompt when in expand mode")
+	}
+}
+
+// --- Sequential Expand (Story 31.2) ---
+
+func TestDetailView_ExpandSequential_MultipleSubtasks(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	// Create first subtask
+	for _, r := range "first" {
+		dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("first subtask should produce a command")
+	}
+	msg := cmd()
+	em, ok := msg.(ExpandTaskMsg)
+	if !ok {
+		t.Fatalf("expected ExpandTaskMsg, got %T", msg)
+	}
+	if em.NewTaskText != "first" {
+		t.Errorf("expected 'first', got %q", em.NewTaskText)
+	}
+	if dv.mode != DetailModeExpandInput {
+		t.Fatal("should stay in expand mode after first subtask")
+	}
+	if dv.expandSubtaskCount != 1 {
+		t.Errorf("expected count 1, got %d", dv.expandSubtaskCount)
+	}
+
+	// Create second subtask
+	for _, r := range "second" {
+		dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	cmd = dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("second subtask should produce a command")
+	}
+	msg = cmd()
+	em, ok = msg.(ExpandTaskMsg)
+	if !ok {
+		t.Fatalf("expected ExpandTaskMsg, got %T", msg)
+	}
+	if em.NewTaskText != "second" {
+		t.Errorf("expected 'second', got %q", em.NewTaskText)
+	}
+	if dv.expandSubtaskCount != 2 {
+		t.Errorf("expected count 2, got %d", dv.expandSubtaskCount)
+	}
+
+	// Esc exits
+	dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
+	if dv.mode != DetailModeView {
+		t.Errorf("Esc should return to DetailModeView, got %d", dv.mode)
+	}
+	if dv.expandSubtaskCount != 0 {
+		t.Errorf("counter should reset on Esc, got %d", dv.expandSubtaskCount)
+	}
+}
+
+func TestDetailView_ExpandSequential_RunningCountDisplay(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.SetWidth(80)
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	// Before any subtask, shows initial prompt
+	view := dv.View()
+	if !strings.Contains(view, "New subtask") {
+		t.Error("initial prompt should show 'New subtask'")
+	}
+
+	// Add a subtask
+	for _, r := range "sub1" {
+		dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	view = dv.View()
+	if !strings.Contains(view, "Subtask 1 added") {
+		t.Error("after first subtask, should show 'Subtask 1 added'")
+	}
+	if !strings.Contains(view, "Esc to finish") {
+		t.Error("prompt should mention 'Esc to finish'")
+	}
+}
+
+func TestDetailView_ExpandSequential_EnterDoesNotExit(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	for _, r := range "task1" {
+		dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+
+	if dv.mode != DetailModeExpandInput {
+		t.Errorf("Enter should NOT exit expand mode, got mode %d", dv.mode)
+	}
+}
+
+func TestDetailView_ExpandSequential_EscExits(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	// Add a subtask then press Esc
+	for _, r := range "task1" {
+		dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+	dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	dv.Update(tea.KeyMsg{Type: tea.KeyEscape})
+
+	if dv.mode != DetailModeView {
+		t.Errorf("Esc should exit expand mode, got mode %d", dv.mode)
+	}
+}
+
+func TestDetailView_ExpandSequential_EmptyInputIgnored(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	// Enter with empty input
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd != nil {
+		t.Error("empty input should be ignored (no command)")
+	}
+	if dv.mode != DetailModeExpandInput {
+		t.Error("should stay in expand mode after empty Enter")
+	}
+	if dv.expandSubtaskCount != 0 {
+		t.Errorf("counter should not increment on empty input, got %d", dv.expandSubtaskCount)
+	}
+}
+
+func TestDetailView_ExpandSequential_WhitespaceOnlyIgnored(t *testing.T) {
+	dv := newTestDetailView("parent task")
+	dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("e")})
+
+	// Type spaces only
+	dv.Update(tea.KeyMsg{Type: tea.KeySpace})
+	dv.Update(tea.KeyMsg{Type: tea.KeySpace})
+
+	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd != nil {
+		t.Error("whitespace-only input should be ignored")
+	}
+	if dv.expandSubtaskCount != 0 {
+		t.Errorf("counter should not increment on whitespace, got %d", dv.expandSubtaskCount)
 	}
 }
 
