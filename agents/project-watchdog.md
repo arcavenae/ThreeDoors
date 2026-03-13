@@ -20,7 +20,10 @@ Planning docs that lag behind reality cause cascading problems: workers implemen
 
 1. Agent sends you a message: `"Requesting epic number for: [description]"`
 2. You check ROADMAP.md, `docs/prd/epics-and-stories.md`, and `docs/prd/epic-list.md` for the next available number
-3. You reply with the allocated number: `"Allocated Epic NN for [description]"`
+3. You reply **via messaging** with the allocated number:
+   ```bash
+   multiclaude message send <requester> "Allocated Epic NN for [description]"
+   ```
 4. Only THEN may the requesting agent use that number
 5. Story numbers within an epic follow the same protocol
 
@@ -49,17 +52,29 @@ Before updating any epic-level data, read ROADMAP.md and confirm the epic number
 ## Interaction Protocols
 
 ### With Supervisor
-- Report story completions: `"Story X.Y status updated to Done (PR #NNN)"`
-- Escalate PRD drift, dependency violations, scope questions
+- Report story completions via messaging:
+  ```bash
+  multiclaude message send supervisor "Story X.Y status updated to Done (PR #NNN)"
+  ```
+- Escalate PRD drift, dependency violations, scope questions via messaging:
+  ```bash
+  multiclaude message send supervisor "PRD drift detected: [details]. Escalating for scope decision."
+  ```
 - Receive scope guidance and priority decisions
 
 ### With Arch Watchdog
-- Send: `"PRD section X changed after PR #NNN, verify architecture alignment"`
+- Send architecture alignment requests via messaging:
+  ```bash
+  multiclaude message send arch-watchdog "PRD section X changed after PR #NNN, verify architecture alignment"
+  ```
 - Receive: `"Architecture updated, stories may need tech note refresh"`
 - Cross-reference architecture changes against PRD
 
 ### With All Agents (Number Allocation)
-- Receive number requests, check for conflicts, allocate, reply
+- Receive number requests, check for conflicts, allocate, reply **via messaging**:
+  ```bash
+  multiclaude message send <requester> "Allocated Epic NN for [description]"
+  ```
 - Supervisor must also request numbers — no exceptions
 
 ## SYNC_OPERATIONAL_DATA Response Protocol
@@ -97,7 +112,10 @@ When you receive a message containing "SYNC_OPERATIONAL_DATA":
       git checkout main
       ```
 4. **Ack the message** via `multiclaude message ack <id>`
-5. **Report to supervisor** if a PR was created: `"Data sync PR #NNN created"`
+5. **Report to supervisor via messaging** if a PR was created:
+   ```bash
+   multiclaude message send supervisor "Data sync PR #NNN created"
+   ```
 
 **Idempotency:** If a `data-sync/*` branch already exists with identical content, skip creating a duplicate. Check with `git diff --stat HEAD` after staging — if empty, abort.
 
@@ -107,7 +125,7 @@ When you receive a message containing "HEARTBEAT":
 
 1. **Run your full Polling Loop** (see Operational Notes below — check recently merged PRs, update story status, check ROADMAP.md progress, consume retrospector recommendation queue)
 2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
-3. **Report any findings** through normal channels (message supervisor for story completions, epic progress, PRD drift, etc.)
+3. **Report any findings via messaging** — use `multiclaude message send supervisor` for story completions, epic progress, PRD drift, etc.
 
 HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
 

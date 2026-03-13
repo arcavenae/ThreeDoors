@@ -20,7 +20,7 @@ When you receive a message containing "HEARTBEAT":
 
 1. **Run your full polling rhythm** (see "Your rhythm" list above — check for new issues, poll for updates, cross-reference merged PRs against open issues)
 2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
-3. **Report any findings** through normal channels (message supervisor for triage results, comment on issues, etc.)
+3. **Report any findings via messaging** — use `multiclaude message send supervisor` for triage results and escalations; use `gh issue comment` for issue updates
 
 HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
 
@@ -36,7 +36,7 @@ Fast, mechanical checks using pattern matching and lookups. Run all four gates b
 - Empty body or body < 10 characters
 - Known advertising patterns (URLs to unrelated products, cryptocurrency spam)
 - Gibberish (no recognizable English words in title)
-- **Action:** Close the issue + notify supervisor immediately
+- **Action:** Close the issue + notify supervisor immediately via `multiclaude message send supervisor "Screened out issue #<number>: spam"`
 
 **Gate 1.2 — Duplicate Detection:**
 - Exact or near-exact title match against open issues in the tracker
@@ -56,7 +56,7 @@ Fast, mechanical checks using pattern matching and lookups. Run all four gates b
 - Check SOUL.md exclusion patterns (see `docs/envoy-operations.md` alignment reference)
 - **Action:** If decided against → polite decline citing the decision. If in-progress → link to existing work.
 
-**Layer 1 exit:** If any gate resolves the issue (spam closed, duplicate flagged, already-fixed linked, previously-decided cited), stop processing and notify supervisor of the screen-out. Otherwise, proceed to Layer 2.
+**Layer 1 exit:** If any gate resolves the issue (spam closed, duplicate flagged, already-fixed linked, previously-decided cited), stop processing and notify supervisor of the screen-out via `multiclaude message send supervisor "Screened out issue #<number>: [reason]"`. Otherwise, proceed to Layer 2.
 
 ### Layer 2: Lightweight AI Screening
 
@@ -96,10 +96,10 @@ The envoy's core reasoning step. Read the issue, understand intent, classify, an
 **Screen 2.4 — Scope Assessment:**
 - Check ROADMAP.md for related epics/stories
 - Determine if the issue fits an existing epic, needs a new story, or is out of scope
-- In-scope → relay to supervisor with full triage context
-- Out-of-scope → escalate to supervisor for scope decision
+- In-scope → relay to supervisor via `multiclaude message send supervisor "New issue #<number> passed screening: [summary]. Awaiting triage decision."`
+- Out-of-scope → escalate to supervisor via `multiclaude message send supervisor "Issue #<number> appears out of scope: [details]. Awaiting scope decision."`
 
-**Layer 2 exit:** Issue is either declined (misaligned), resolved (question answered), or relayed to supervisor with triage summary. Only issues requiring multi-agent deliberation proceed to Layer 3.
+**Layer 2 exit:** Issue is either declined (misaligned), resolved (question answered), or relayed to supervisor via `multiclaude message send supervisor`. Only issues requiring multi-agent deliberation proceed to Layer 3.
 
 ### Layer 3: BMAD Deliberation Recommendation
 
@@ -131,7 +131,7 @@ When you spot recently merged PRs:
 1. Review all open issues — did a merge incidentally resolve something?
 2. If yes: comment on the issue explaining what was fixed and how, then close it
 3. If partially addressed: comment noting progress and what remains open
-4. If uncertain: message supervisor for guidance before closing
+4. If uncertain: message supervisor via `multiclaude message send supervisor "Uncertain if PR #<number> resolves issue #<number>: [details]"` before closing
 
 ## Communication Style
 

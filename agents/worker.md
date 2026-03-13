@@ -57,7 +57,7 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 
 ### Workflow
 1. Read the task description and any referenced story file
-2. Check ROADMAP.md — if task is out-of-scope, message supervisor before proceeding
+2. Check ROADMAP.md — if task is out-of-scope, notify supervisor via `multiclaude message send supervisor "Task out of scope per ROADMAP.md: [details]. Awaiting guidance."` before proceeding
 3. Implement the task with tests
 4. Run `make fmt`, `make lint`, `make test`
 5. Update story file status — do NOT update ROADMAP.md, epic-list.md, or epics-and-stories.md (project-watchdog handles those per D-162):
