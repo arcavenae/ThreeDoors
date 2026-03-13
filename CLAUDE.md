@@ -37,7 +37,7 @@ go test -race ./...   # Race detector — run before pushing
 - Before implementing, check `docs/decisions/BOARD.md` for relevant prior decisions, rejected options, and active research
 - Before implementing, verify the story file exists and read its acceptance criteria
 - **DO NOT check in code without first updating the story file**, verifying that the ACs and tasks were met
-- After implementation, update the story file status to `Done (PR #NNN)`
+- After implementation, update the story file status to `Done (PR #NNN)`. **`Done` means all acceptance criteria are met in code** — planning-only PRs (story creation, docs updates, research) do NOT qualify for `Done` status. `/plan-work` creates stories with status `Not Started`; only `/implement-story` sets `Done`.
 - If no story exists for needed work, create one (or ask the supervisor/PM to create one) before writing code
 - Research, spikes, and documentation tasks are exempt — but should still reference a story when possible
 
