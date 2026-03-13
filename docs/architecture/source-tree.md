@@ -75,8 +75,10 @@ As the architecture evolves, the source tree expands to accommodate adapters, sy
 ```
 ThreeDoors/
 ├── cmd/
-│   └── threedoors/
-│       └── main.go                    # Application entry point
+│   ├── threedoors/
+│   │   └── main.go                    # Application entry point
+│   └── multiclaude-mcp-bridge/
+│       └── main.go                    # MCP bridge server entry point (Epic 53)
 │
 ├── internal/                          # Private application code
 │   ├── tui/                          # TUI Layer - Bubbletea components
@@ -255,6 +257,11 @@ ThreeDoors/
 │   │       └── oauth/               # OAuth device code flow
 │   │           ├── devicecode.go    # Device code grant implementation
 │   │           └── browser.go       # Cross-platform browser launcher
+│   │
+│   ├── mcpbridge/                    # MCP Bridge Server (Epic 53)
+│   │   ├── server.go               # MCP server implementation
+│   │   ├── tools.go                # MCP tool definitions and handlers
+│   │   └── runner.go               # Bridge runner/lifecycle
 │   │
 │   ├── tasks/                        # Domain Layer (Phase 1 - Tech Demo)
 │   │   ├── task.go                  # Task model (Tech Demo)
