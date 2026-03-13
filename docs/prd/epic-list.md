@@ -788,7 +788,19 @@
 - **Decisions:** D-174 (MkDocs + Material for MkDocs)
 - **Note:** Story 61.1 PR requires manual merge by project owner (workflow scope limitation)
 
-**Epic 62+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 62: Retrospector Agent Reliability — Messaging, BOARD.md Access, and Context Resilience** (P1)
+- **Goal:** Fix three infrastructure reliability issues preventing the retrospector agent (SLAES) from operating as designed: broken messaging identity registration, inability to persist BOARD.md recommendations, and context exhaustion with state loss
+- **Prerequisites:** Epic 51 (SLAES) — retrospector agent definition exists
+- **Status:** Not Started
+- **Deliverables:**
+  - File-based fallback inbox for agent messaging with identity verification
+  - Recommendation queue file with batch pipeline to BOARD.md via project-watchdog
+  - JSON checkpoint file for analytical state persistence across restarts
+  - Optimized retrospector agent definition for context budget
+- **Stories:** 62.1-62.3 (3 stories: messaging, recommendations, checkpointing)
+- **Decisions:** D-176 (file-based inbox), D-177 (recommendation queue), D-178 (checkpoint file)
+
+**Epic 63+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -861,5 +873,6 @@
 | Epic 59: Full-Terminal Vertical Layout | 2 | Not Started |
 | Epic 60: README Overhaul | 5 | In Progress (1/5 done) |
 | Epic 61: GitHub Pages User Guide | 4 | Not Started |
-| **Total** | **321** | **152 complete, 9 epics in progress, 161 not started** |
+| Epic 62: Retrospector Agent Reliability | 3 | Not Started |
+| **Total** | **324** | **152 complete, 9 epics in progress, 164 not started** |
 ---

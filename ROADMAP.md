@@ -419,6 +419,18 @@ Polish the README with centered badge clusters, table of contents, foldable refe
 
 **Dependency graph:** Stories 60.1-60.4 can parallelize. Story 60.5 depends on 60.4.
 
+### Epic 62: Retrospector Agent Reliability — Messaging, BOARD.md Access, and Context Resilience (P1) — 0/3 stories done
+
+Fix three infrastructure reliability issues preventing the retrospector agent (SLAES) from operating as designed: broken messaging identity registration, inability to persist BOARD.md recommendations, and context exhaustion with state loss. All changes are to agent definitions and operational files — no application code.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 62.1 | Messaging Identity Verification + File-Based Fallback | Not Started | P1 | None |
+| 62.2 | Recommendation Queue File + BOARD.md Batch Pipeline | Not Started | P1 | None |
+| 62.3 | Structured Checkpointing + Context Budget Optimization | Not Started | P1 | None |
+
+**Dependency graph:** All three stories are fully independent and can be implemented in parallel.
+
 ## Icebox (Deferred Indefinitely)
 
 | Epic | Title | Stories | Decision Date | Rationale |

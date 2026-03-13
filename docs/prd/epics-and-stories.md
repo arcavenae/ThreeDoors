@@ -6092,3 +6092,90 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 - Planning artifact: `_bmad-output/planning-artifacts/gh-pages-user-guide-plan.md`
 - Research PRs: #481 and #500
+
+## Epic 62: Retrospector Agent Reliability — Messaging, BOARD.md Access, and Context Resilience (P1)
+
+**Goal:** Fix three infrastructure reliability issues preventing the retrospector agent (SLAES) from operating as designed: broken messaging identity registration, inability to persist BOARD.md recommendations, and context exhaustion with state loss.
+
+**Prerequisites:** Epic 51 (SLAES) — retrospector agent definition exists
+
+**Status:** Not Started (0/3 stories)
+
+**Phasing:** All three stories are independent and can be parallelized.
+
+### Story 62.1: Messaging Identity Verification + File-Based Fallback
+
+**As a** multiclaude operator, **I want** the retrospector agent to verify its messaging identity on startup and fall back to a file-based inbox when multiclaude messaging is broken, **so that** the supervisor can reliably communicate with the retrospector regardless of daemon messaging state.
+
+**Acceptance Criteria:**
+- On startup, retrospector sends itself a test message and verifies receipt within 30 seconds
+- If probe fails, retrospector logs warning and falls back to polling `docs/operations/retrospector-inbox.jsonl`
+- Supervisor can append messages to the file-based inbox as a fallback channel
+- Retrospector processes file-based messages on its 15-minute polling cycle
+- Agent continues operating without blocking — never prompts user
+
+**Technical Notes:**
+- Inbox uses JSONL format consistent with `retrospector-findings.jsonl`
+- Schema: `{"id": "msg-001", "from": "supervisor", "content": "...", "timestamp": "...", "processed": false}`
+- Update `agents/supervisor.md` to document the fallback path
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 62.2: Recommendation Queue File + BOARD.md Batch Pipeline
+
+**As a** multiclaude operator, **I want** retrospector to write recommendations to a queue file instead of directly to BOARD.md, **so that** recommendations are durably persisted without PR conflicts or authority violations.
+
+**Acceptance Criteria:**
+- Retrospector writes recommendations to `docs/operations/retrospector-recommendations.jsonl` instead of BOARD.md
+- Queue entries include: recommendation ID, text, date, confidence, evidence links, status
+- Project-watchdog periodically reads the queue and applies pending recommendations to BOARD.md via governed PR
+- Queue entries updated with "applied" status and PR number after batch processing
+- Retrospector authority table updated: CAN write to queue file, CANNOT write to BOARD.md
+
+**Technical Notes:**
+- Queue file location: `docs/operations/retrospector-recommendations.jsonl`
+- Update `agents/project-watchdog.md` to add queue consumption responsibility
+- Recommendation IDs continue from highest existing ID in BOARD.md
+
+**Priority:** P1 | **Depends On:** None
+
+### Story 62.3: Structured Checkpointing + Context Budget Optimization
+
+**As a** multiclaude operator, **I want** the retrospector to checkpoint its analytical state periodically and restore from checkpoints on restart, **so that** pattern detection survives across restarts and context exhaustion doesn't lose analytical progress.
+
+**Acceptance Criteria:**
+- Checkpoint file (`docs/operations/retrospector-checkpoint.json`) written every 5 PRs or 2 hours
+- Checkpoint includes: last PR, mode rotation index, rolling window values, operational counters
+- On restart, checkpoint is read first, then JSONL log for delta entries only
+- Falls back to full JSONL rebuild if no checkpoint exists (first run)
+- Agent definition optimized: ≥15% line count reduction while preserving all safety-critical sections
+- Pre-restart checklist includes checkpoint flush
+
+**Technical Notes:**
+- Checkpoint schema: `{"version": 1, "last_pr": N, "mode_rotation_index": N, "rolling_windows": {...}, ...}`
+- Context budget optimization targets: condense Dual-Loop Architecture, trim JSONL examples, inline mode rotation notes
+- MUST preserve: Watchmen safeguards, anti-prompting guardrail, authority table, communication section
+
+**Priority:** P1 | **Depends On:** None
+
+### Dependency Graph
+
+```
+62.1 (Messaging)       ─── independent
+62.2 (Recommendations) ─── independent
+62.3 (Checkpointing)   ─── independent
+```
+
+All three stories can be parallelized. No inter-story dependencies.
+
+### Decisions
+
+- D-176: File-based fallback inbox for agent messaging (durable, conflict-free, matches JSONL patterns)
+- D-177: Recommendation queue file instead of direct BOARD.md writes (separates detection from persistence)
+- D-178: JSON checkpoint file for state persistence (minimal, sufficient, file-based)
+
+### Research
+
+- Sprint change proposal: `_bmad-output/planning-artifacts/sprint-change-proposal-2026-03-12-retrospector-reliability.md`
+- Party mode: `_bmad-output/planning-artifacts/retrospector-reliability-party-mode.md`
+- Related: Story 51.11 autonomy investigation `_bmad-output/planning-artifacts/retrospector-autonomy-investigation.md`
