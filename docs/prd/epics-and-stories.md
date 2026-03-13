@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-49, 50-53, 55-62 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is 34/35 (0.33 In Review). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epics 30-31 NOT STARTED or IN PROGRESS. 690+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-49, 50-53, 55-62 are COMPLETE. Epic 5 reopened (1/2, Story 5.3 added). Epic 29 is 3/4 (29.3 In Review). Epic 0 is 34/35 (0.33 In Review). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epics 30-31 NOT STARTED or IN PROGRESS. Epics 63-64 NOT STARTED (PRD coverage gaps). 690+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -55,7 +55,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 - FR22: macOS binaries code-signed with Apple Developer certificate ✅ (Story 5.1)
 - FR23: Notarized with Apple's notarization service ✅ (Story 5.1)
 - FR24: Installable via Homebrew tap ✅ (Story 5.1)
-- FR25: DMG or pkg installer as alternative ✅ (Story 5.1)
+- FR25: DMG or pkg installer as alternative ⏳ Story 5.3 (Not Started)
 - FR26: Automated release process ✅ (Story 5.1)
 
 **Phase 5 - Data Layer & Enrichment:**
@@ -265,10 +265,10 @@ Use historical session metrics to analyze user patterns and adapt door selection
 **Prerequisites:** Epic 3 complete ✅, Epic 3.5 stories 3.5.5/3.5.6 complete ✅
 **Status:** All 6 stories complete (PRs #40, #42-#45, #82).
 
-### Epic 5: macOS Distribution & Packaging ✅ COMPLETE
+### Epic 5: macOS Distribution & Packaging — 1/2 stories done
 Code signing, notarization, Homebrew tap, and pkg installer.
 **FRs covered:** FR22-FR26
-**Status:** Story 5.1 consolidated and implemented (PR #30).
+**Status:** Story 5.1 complete (PR #30). Story 5.3 (DMG/pkg Installer) Not Started.
 
 ### Epic 6: Data Layer & Enrichment (Optional) ✅ COMPLETE
 SQLite enrichment database for metadata beyond what backends support.
@@ -6179,3 +6179,90 @@ All three stories can be parallelized. No inter-story dependencies.
 - Sprint change proposal: `_bmad-output/planning-artifacts/sprint-change-proposal-2026-03-12-retrospector-reliability.md`
 - Party mode: `_bmad-output/planning-artifacts/retrospector-reliability-party-mode.md`
 - Related: Story 51.11 autonomy investigation `_bmad-output/planning-artifacts/retrospector-autonomy-investigation.md`
+
+---
+
+## Epic 63: ClickUp Integration
+
+**Priority:** P2
+**Status:** Not Started (0/4 stories)
+**Dependencies:** Epic 7 (Adapter SDK — complete), Epic 43 (Connection Manager — complete)
+
+### Epic Goal
+
+Integrate ClickUp as a task source following the established adapter pattern (Jira, Todoist, GitHub Issues, Linear). ClickUp REST API v2 with token auth. Read-only provider → bidirectional sync → contract tests.
+
+### PRD Reference
+
+product-scope.md Phase 5: "Additional integrations (GitHub Issues, ClickUp)"
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 63.1 | ClickUp REST API Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
+| 63.2 | Read-Only ClickUp Provider with Field Mapping | Not Started | P2 | 63.1 |
+| 63.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 63.2 |
+| 63.4 | Contract Tests & Integration Testing | Not Started | P2 | 63.2 |
+
+### Dependency Graph
+
+```
+63.1 (API Client) → 63.2 (Read-Only Provider) → 63.3 (Bidirectional Sync)
+                                                → 63.4 (Contract Tests)
+```
+
+Stories 63.3 and 63.4 can parallelize after 63.2 completes.
+
+### Research
+
+- PRD coverage gap analysis: `_bmad-output/planning-artifacts/prd-coverage-gap-analysis.md`
+- Sprint change proposal: `_bmad-output/planning-artifacts/sprint-change-proposal-2026-03-13-prd-coverage-gaps.md`
+- Party mode: `_bmad-output/planning-artifacts/prd-coverage-gaps-party-mode.md`
+
+---
+
+## Epic 64: Cross-Computer Sync
+
+**Priority:** P2
+**Status:** Not Started (0/6 stories)
+**Dependencies:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
+
+### Epic Goal
+
+Enable task data synchronization across multiple computers. Architecturally distinct from provider sync (which syncs between ThreeDoors and external services). Requires research spike to determine sync protocol, transport mechanism, and conflict resolution strategy before implementation.
+
+### PRD Reference
+
+product-scope.md Phase 5: "Cross-computer sync" (in-scope)
+technical-assumptions.md: "Cross-computer sync is deferred post-MVP; single-computer local storage is sufficient"
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 64.1 | Architecture Research Spike | Not Started | P2 | None |
+| 64.2 | Device Identity & Registration | Not Started | P2 | 64.1 |
+| 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
+| 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
+| 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |
+| 64.6 | Cross-Computer Sync E2E Tests | Not Started | P2 | 64.3, 64.4, 64.5 |
+
+**Note:** Stories 64.2-64.6 are provisional — acceptance criteria will be refined after the research spike (64.1) completes.
+
+### Dependency Graph
+
+```
+64.1 (Research Spike)
+  → 64.2 (Device Identity) → 64.3 (Transport) → 64.5 (Offline Queue) → 64.6 (E2E Tests)
+                            → 64.4 (Conflict)  → 64.5
+                                                → 64.6
+```
+
+Story 64.1 must complete before all others. Stories 64.3 and 64.4 can parallelize after 64.2. Story 64.5 depends on both 64.3 and 64.4. Story 64.6 depends on 64.3, 64.4, and 64.5.
+
+### Research
+
+- PRD coverage gap analysis: `_bmad-output/planning-artifacts/prd-coverage-gap-analysis.md`
+- Sprint change proposal: `_bmad-output/planning-artifacts/sprint-change-proposal-2026-03-13-prd-coverage-gaps.md`
+- Party mode: `_bmad-output/planning-artifacts/prd-coverage-gaps-party-mode.md`

@@ -66,10 +66,11 @@
 - **Stories:** 4.1-4.6 (6 stories)
 - **FRs covered:** FR20, FR21
 
-**Epic 5: macOS Distribution & Packaging** COMPLETE
+**Epic 5: macOS Distribution & Packaging** IN PROGRESS (1/2)
 - **Goal:** Provide a trusted, seamless installation experience on macOS by signing, notarizing, and packaging the binary so Gatekeeper does not quarantine it
-- **Status:** COMPLETE -- Story 5.1 consolidated all deliverables (PR #30)
+- **Status:** Story 5.1 complete (PR #30). Story 5.3 (DMG/pkg Installer) Not Started.
 - **Independence:** This epic is independent of the story pipeline
+- **Stories:** 5.1 (Code Signing, Notarization, Homebrew), 5.3 (DMG/pkg Installer)
 - **FRs covered:** FR22-FR26
 
 **Epic 6: Data Layer & Enrichment (Optional)** COMPLETE
@@ -800,7 +801,34 @@
 - **Stories:** 62.1-62.3 (3 stories: messaging, recommendations, checkpointing)
 - **Decisions:** D-176 (file-based inbox), D-177 (recommendation queue), D-178 (checkpoint file)
 
-**Epic 63+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 63: ClickUp Integration** (P2)
+- **Goal:** Integrate ClickUp as a task source following the established adapter pattern (Jira, Todoist, GitHub Issues, Linear)
+- **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 43 (Connection Manager — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - ClickUp REST API v2 client with token auth
+  - Read-only provider with field mapping (status, priority, due date, tags)
+  - Bidirectional sync with WAL integration and circuit breaker
+  - Contract tests and integration testing
+- **Stories:** 63.1-63.4 (4 stories following standard integration pattern)
+- **PRD Reference:** product-scope.md Phase 5 ("Additional integrations (GitHub Issues, ClickUp)")
+
+**Epic 64: Cross-Computer Sync** (P2)
+- **Goal:** Enable task data synchronization across multiple computers, with research spike to determine architecture
+- **Prerequisites:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
+- **Status:** Not Started
+- **Deliverables:**
+  - ADR documenting chosen sync architecture (transport, conflict resolution, identity)
+  - Device identity and registration system
+  - Sync transport layer (mechanism TBD by research spike)
+  - Cross-machine conflict resolution
+  - Offline queue and reconciliation
+  - E2E test suite
+- **Stories:** 64.1-64.6 (6 stories; 64.2-64.6 provisional pending research spike 64.1)
+- **PRD Reference:** product-scope.md Phase 5 ("Cross-computer sync")
+- **Note:** Stories 64.2-64.6 will be refined after the research spike completes
+
+**Epic 65+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -816,7 +844,7 @@
 | Epic 3: Enhanced Interaction | 7 | Complete |
 | Epic 3.5: Platform Readiness (Bridging) | 8 | Complete |
 | Epic 4: Learning & Door Selection | 6 | Complete |
-| Epic 5: macOS Distribution | 1 | Complete |
+| Epic 5: macOS Distribution | 2 | In Progress (1/2) |
 | Epic 6: Data Layer (Optional) | 2 | Complete |
 | Epic 7: Plugin/Adapter SDK | 3 | Complete |
 | Epic 8: Obsidian Integration | 4 | Complete |
@@ -874,5 +902,7 @@
 | Epic 60: README Overhaul | 5 | Complete (5/5 done) |
 | Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
-| **Total** | **324** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
+| Epic 63: ClickUp Integration | 4 | Not Started |
+| Epic 64: Cross-Computer Sync | 6 | Not Started |
+| **Total** | **335** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---
