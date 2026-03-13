@@ -71,6 +71,14 @@ func (h *contractMockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	// Match PUT /task/{id} (status update)
+	if r.Method == http.MethodPut && strings.HasPrefix(path, "/task/") {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{}`))
+		return
+	}
+
 	// Match /user
 	if r.Method == http.MethodGet && path == "/user" {
 		w.Header().Set("Content-Type", "application/json")
@@ -616,8 +624,8 @@ func TestLifecycleAuthLoadSyncError(t *testing.T) {
 	if err := p.DeleteTask(tasks[0].ID); !errors.Is(err, core.ErrReadOnly) {
 		t.Errorf("DeleteTask: %v, want ErrReadOnly", err)
 	}
-	if err := p.MarkComplete(tasks[0].ID); !errors.Is(err, core.ErrReadOnly) {
-		t.Errorf("MarkComplete: %v, want ErrReadOnly", err)
+	if err := p.MarkComplete(tasks[0].ID); err != nil {
+		t.Errorf("MarkComplete: unexpected error: %v", err)
 	}
 
 	// Step 4: Watch returns nil (poll-based)
