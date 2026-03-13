@@ -109,7 +109,20 @@ brew install arcaven/tap/threedoors-a
 
 Both can be installed side-by-side. Stable runs as `threedoors`, alpha as `threedoors-a`.
 
-### Option 2: Download Pre-built Binary
+### Option 2: macOS Installer (.pkg)
+
+Download the `.pkg` installer from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Double-click to launch the standard macOS installer, which places `threedoors` in `/usr/local/bin/`.
+
+| Platform | Installer |
+|----------|-----------|
+| macOS (Apple Silicon) | `threedoors_*_darwin_arm64.pkg` |
+| macOS (Intel) | `threedoors_*_darwin_amd64.pkg` |
+
+The `.pkg` installer is **code-signed and Apple-notarized**.
+
+To uninstall: `sudo rm /usr/local/bin/threedoors`
+
+### Option 3: Download Pre-built Binary
 
 Download the latest release from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries are available for:
 
@@ -126,13 +139,13 @@ mv threedoors-darwin-arm64 /usr/local/bin/threedoors   # adjust for your platfor
 
 All macOS binaries are **code-signed and Apple-notarized**.
 
-### Option 3: Install with `go install`
+### Option 4: Install with `go install`
 
 ```bash
 go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
 ```
 
-### Option 4: Build from Source
+### Option 5: Build from Source
 
 **Prerequisites:** Go 1.25.4+, Git, Make (optional)
 

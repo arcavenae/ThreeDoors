@@ -144,6 +144,75 @@ jobs:
             rm "$ZIP_FOR_NOTARIZATION"
           done
 
+      - name: Import installer certificate
+        env:
+          APPLE_INSTALLER_CERTIFICATE_P12: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_P12 }}
+          APPLE_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$APPLE_INSTALLER_CERTIFICATE_P12" | base64 --decode > installer-cert.p12
+          security import installer-cert.p12 -k build.keychain \
+            -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/productbuild -T /usr/bin/pkgbuild
+          rm installer-cert.p12
+
+          # Re-apply partition list so pkgbuild/productbuild can access the key
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+
+      - name: Build macOS pkg installers
+        env:
+          APPLE_INSTALLER_IDENTITY: ${{ secrets.APPLE_INSTALLER_IDENTITY }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          for ARCH in arm64 amd64; do
+            ARCHIVE="threedoors_${VERSION}_darwin_${ARCH}.tar.gz"
+            PKG="threedoors_${VERSION}_darwin_${ARCH}.pkg"
+            WORKDIR="pkg-work-${ARCH}"
+
+            echo "=== Building pkg for ${ARCH} ==="
+
+            # Extract the signed binary from the archive
+            mkdir -p "$WORKDIR"
+            tar xzf "$ARCHIVE" -C "$WORKDIR"
+
+            # Use the existing create-pkg.sh script
+            chmod +x scripts/create-pkg.sh
+            ./scripts/create-pkg.sh \
+              "${WORKDIR}/threedoors" \
+              "$VERSION" \
+              "$APPLE_INSTALLER_IDENTITY" \
+              "$PKG"
+
+            # Verify pkg signature
+            pkgutil --check-signature "$PKG"
+            echo "pkg signature verified for ${ARCH}"
+
+            rm -rf "$WORKDIR"
+          done
+
+      - name: Notarize pkg installers
+        env:
+          APPLE_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_NOTARIZATION_APPLE_ID }}
+          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
+          APPLE_NOTARIZATION_TEAM_ID: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          for ARCH in arm64 amd64; do
+            PKG="threedoors_${VERSION}_darwin_${ARCH}.pkg"
+
+            echo "Notarizing ${ARCH} pkg..."
+            xcrun notarytool submit "$PKG" \
+              --apple-id "$APPLE_NOTARIZATION_APPLE_ID" \
+              --password "$APPLE_NOTARIZATION_PASSWORD" \
+              --team-id "$APPLE_NOTARIZATION_TEAM_ID" \
+              --wait --timeout 14400
+
+            # Staple the notarization ticket to the pkg
+            xcrun stapler staple "$PKG"
+            echo "Notarization stapled for ${ARCH} pkg"
+          done
+
       - name: Update checksums and re-upload to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -160,13 +229,29 @@ jobs:
             sed -i '' "s|^[a-f0-9]*  ${ARCHIVE}$|${NEW_CHECKSUM}  ${ARCHIVE}|" checksums.txt
           done
 
+          # Add or replace checksums for pkg installers
+          for ARCH in arm64 amd64; do
+            PKG="threedoors_${VERSION}_darwin_${ARCH}.pkg"
+            NEW_CHECKSUM=$(shasum -a 256 "$PKG" | cut -d' ' -f1)
+
+            if grep -q "  ${PKG}$" checksums.txt; then
+              # Replace existing pkg checksum (idempotent re-run)
+              sed -i '' "s|^[a-f0-9]*  ${PKG}$|${NEW_CHECKSUM}  ${PKG}|" checksums.txt
+            else
+              # First run — append pkg checksum
+              echo "${NEW_CHECKSUM}  ${PKG}" >> checksums.txt
+            fi
+          done
+
           echo "Updated checksums.txt:"
           cat checksums.txt
 
-          # Re-upload signed archives and updated checksums (--clobber replaces existing)
+          # Re-upload signed archives, pkg installers, and updated checksums (--clobber replaces existing)
           gh release upload "$TAG" --clobber \
             "threedoors_${VERSION}_darwin_arm64.tar.gz" \
             "threedoors_${VERSION}_darwin_amd64.tar.gz" \
+            "threedoors_${VERSION}_darwin_arm64.pkg" \
+            "threedoors_${VERSION}_darwin_amd64.pkg" \
             checksums.txt
 
       - name: Cleanup keychain
