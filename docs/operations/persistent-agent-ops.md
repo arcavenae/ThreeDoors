@@ -89,6 +89,21 @@ All persistent agents go idle after completing startup work because Claude has n
 
 Prime-number intervals prevent all agents from being poked simultaneously and avoid the :00/:30 minute marks.
 
+### Operational Data Sync Schedule
+
+In addition to heartbeats, a dedicated cron syncs retrospector operational data to git:
+
+| Purpose | Interval | Cron Expression | Target Agent | Message |
+|---------|----------|----------------|--------------|---------|
+| Data sync | 3 hours | `0 */3 * * *` | project-watchdog | `SYNC_OPERATIONAL_DATA` |
+
+This runs at :00 on hours 0, 3, 6, 9, 12, 15, 18, 21 — deliberately NOT using prime intervals (reserved for heartbeats).
+
+**Supervisor startup must include:**
+```
+CronCreate("0 */3 * * *", "multiclaude message send project-watchdog SYNC_OPERATIONAL_DATA")
+```
+
 ### Limitations
 
 - **Session-scoped:** CronCreate jobs are lost when the supervisor exits and auto-expire after 3 days
@@ -101,6 +116,44 @@ Prime-number intervals prevent all agents from being poked simultaneously and av
 When checking agent health, verify heartbeats are working:
 - Agent should show activity every 1-2 heartbeat intervals
 - If an agent is idle for 3+ intervals, check: (1) supervisor crons exist, (2) messaging is working, (3) agent isn't context-exhausted
+
+---
+
+## Operational Data Convention
+
+### Canonical Path
+
+`docs/operations/` is the canonical directory for all agent-generated operational data files. Any persistent agent that produces operational data (findings, checkpoints, recommendations, metrics) should write files here.
+
+### Tracked Files
+
+| File | Format | Producer | Purpose |
+|------|--------|----------|---------|
+| `retrospector-findings.jsonl` | JSONL (append-only) | retrospector | Operational findings and analysis results |
+| `retrospector-checkpoint.json` | JSON | retrospector | Current analysis state and rolling metrics |
+| `retrospector-inbox.jsonl` | JSONL (append-only) | supervisor/agents | Inbound analysis requests for retrospector |
+| `retrospector-recommendations.jsonl` | JSONL (append-only) | retrospector | Recommendations pending project-watchdog consumption |
+
+### Sync Pipeline
+
+The `SYNC_OPERATIONAL_DATA` cron (every 3 hours) triggers project-watchdog to:
+1. Check `docs/operations/` for uncommitted or untracked data files (`*.jsonl`, `*.json`)
+2. If changes exist: create `data-sync/<timestamp>` branch, commit, push, create PR
+3. If no changes: do nothing (idempotent)
+
+Data sync PRs go through normal branch protection (PR + CI). merge-queue handles them like any other PR.
+
+### Staleness SLA
+
+`docs/operations/*.jsonl` files in git should never be more than 6 hours stale relative to the main checkout (2x the 3-hour sync interval). If no `data-sync` commits appear in `git log --oneline docs/operations/ --since="8 hours ago"` and retrospector is active, investigate the sync pipeline.
+
+### Adding New Operational Data
+
+When a new agent needs to persist operational data:
+1. Create the file in `docs/operations/`
+2. Add it to the tracked files table above
+3. The sync cron will automatically pick it up — no additional configuration needed
+4. For JSONL files: use append-only format for merge-friendliness
 
 ---
 
@@ -128,3 +181,5 @@ merge-queue cannot merge PRs that modify `.github/workflows/` files — the OAut
 | Agent message backlog | Every 30 min | Restart if messages unacknowledged >30 min |
 | Heartbeat crons active | On supervisor restart | Re-create CronCreate jobs (see Heartbeat Mechanism) |
 | Agent activity after heartbeat | Every 2-3 intervals | If idle for 3+ intervals, check crons/messaging/context |
+| Operational data freshness | Every 8 hours | `git log --oneline docs/operations/ --since="8 hours ago"` — if no commits and retrospector active, investigate sync pipeline |
+| Data sync cron active | On supervisor restart | Re-create `SYNC_OPERATIONAL_DATA` CronCreate job (see Operational Data Sync Schedule) |

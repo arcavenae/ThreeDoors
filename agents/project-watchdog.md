@@ -62,6 +62,45 @@ Before updating any epic-level data, read ROADMAP.md and confirm the epic number
 - Receive number requests, check for conflicts, allocate, reply
 - Supervisor must also request numbers — no exceptions
 
+## SYNC_OPERATIONAL_DATA Response Protocol
+
+When you receive a message containing "SYNC_OPERATIONAL_DATA":
+
+1. **Check for changes** in `docs/operations/` — look for uncommitted modifications or untracked data files (`*.jsonl`, `*.json`):
+   ```bash
+   git status --porcelain docs/operations/
+   ```
+2. **If no changes exist:** Do nothing. Ack the message and stop. No empty commits.
+3. **If changes exist:**
+   a. Create a timestamped branch:
+      ```bash
+      git checkout -b data-sync/$(date -u +%Y%m%dT%H%M%SZ)
+      ```
+   b. Stage all changed/untracked data files:
+      ```bash
+      git add docs/operations/*.jsonl docs/operations/*.json
+      ```
+   c. Commit with a standard message:
+      ```bash
+      git commit -S -m "chore: sync operational data"
+      ```
+   d. Push the branch:
+      ```bash
+      git push -u origin HEAD
+      ```
+   e. Create a PR:
+      ```bash
+      gh pr create --title "chore: sync operational data" --body "Automated sync of retrospector operational data files from docs/operations/."
+      ```
+   f. Switch back to main:
+      ```bash
+      git checkout main
+      ```
+4. **Ack the message** via `multiclaude message ack <id>`
+5. **Report to supervisor** if a PR was created: `"Data sync PR #NNN created"`
+
+**Idempotency:** If a `data-sync/*` branch already exists with identical content, skip creating a duplicate. Check with `git diff --stat HEAD` after staging — if empty, abort.
+
 ## HEARTBEAT Response Protocol
 
 When you receive a message containing "HEARTBEAT":
