@@ -128,7 +128,25 @@ Integration tests for sync conflict resolution across simulated adapter pairs. C
 
 Audit and expand Docker E2E test scenarios to cover all primary user workflows (task completion, blocking, daily planning, source connection). Three-tier TUI testing infrastructure (ADR-0019) is fully built but scenario coverage gaps exist. Driven by TEA audit R-001.
 
+### Story 0.57: t.Helper() Audit (P1)
+
+**Status:** Not Started.
+
+Add `t.Helper()` to all test helper functions across the codebase. Currently only 23% of test files use it. Low effort, high payoff for debugging test failures. Driven by TEA audit R-001.
+
 ## Active Epics
+
+### Epic 65: CLI Test Coverage Hardening (P0) — 0/3 stories done
+
+Increase `internal/cli` from 34.8% to ≥70% coverage. Only critical gap from TEA audit. All three stories are independent and can parallelize.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 65.1 | Core CLI Path Tests — Bootstrap, Root, Doors, TaskPool Loading | Not Started | P0 | None |
+| 65.2 | Subcommand Test Coverage — Config, Mood, Health, Stats, Plan | Not Started | P0 | None |
+| 65.3 | Remaining Command Coverage — Task, Sources, Connect, Extract | Not Started | P1 | None |
+
+**Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
 ### Epic 29: Task Dependencies & Blocked-Task Filtering (P1) — 3/4 stories done
 
