@@ -209,7 +209,7 @@ TUI interfaces for data source management: setup wizard (`:connect`), sources da
 | 44.6 | Disconnection Flow with Task Preservation Options | Done (PR #581) | P1 | 44.2 |
 | 44.7 | Re-Authentication Flow | Done (PR #654) | P1 | 44.3, Epic 46 |
 
-### Epic 45: Sources CLI (P1) — 5/5 stories done — COMPLETE
+### Epic 45: Sources CLI (P1) — 6/6 stories done — COMPLETE
 
 Non-interactive CLI commands for data source management: `threedoors connect`, `threedoors sources` (list/status/test/manage/log), and JSON output support for scripting and CI/automation.
 
@@ -220,6 +220,7 @@ Non-interactive CLI commands for data source management: `threedoors connect`, `
 | 45.3 | `threedoors sources` Management Commands | Done (PR #587) | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Done (PR #589) | P1 | 45.1-45.4 |
+| 45.6 | Wire Connect Wizard into CLI Entry Point | Done (PR #732) | P1 | 44.1 |
 
 ### Epic 46: OAuth Device Code Flow (P2) — 4/4 stories done — COMPLETE
 
@@ -495,7 +496,7 @@ Transform door rendering from imperceptible wireframe shadows into solid, 3D-fee
 
 **Re-entry gate for Epic 16:** Revisit if 5+ distinct user requests for mobile access, OR if MCP proves insufficient for on-the-go task management.
 
-### Epic 63: ClickUp Integration (P2) — 2/4 stories done
+### Epic 63: ClickUp Integration (P2) — 4/4 stories done — COMPLETE
 
 ClickUp as task source via REST API v2. Follows the established 4-story integration adapter pattern (Jira, Todoist, GitHub Issues, Linear).
 
@@ -503,8 +504,8 @@ ClickUp as task source via REST API v2. Follows the established 4-story integrat
 |-------|-------|--------|----------|------------|
 | 63.1 | ClickUp REST API Client & Auth Configuration | Done (PR #706) | P2 | Epic 7 (done) |
 | 63.2 | Read-Only ClickUp Provider with Field Mapping | Done (PR #719) | P2 | 63.1 |
-| 63.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 63.2 |
-| 63.4 | Contract Tests & Integration Testing | Not Started | P2 | 63.2 |
+| 63.3 | Bidirectional Sync & WAL Integration | Done (PR #728) | P2 | 63.2 |
+| 63.4 | Contract Tests & Integration Testing | Done (PR #727) | P2 | 63.2 |
 
 **Dependency graph:** Stories 63.3 & 63.4 can parallelize after 63.2 completes.
 

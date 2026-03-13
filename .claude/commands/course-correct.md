@@ -65,16 +65,39 @@ For each story identified in the proposal:
 2. Set status to `Not Started`
 3. Reference the sprint change proposal in the story's context section
 
-## Step 5: Update Planning Docs
+## Step 5: Update PRD Content Docs
+
+<critical>
+Historically, course corrections updated only the index docs (epic-list, epics-and-stories, ROADMAP) and skipped the content docs (requirements, product-scope, epic-details). This resulted in 47+ epics with no PRD coverage. ALL content docs MUST be updated.
+</critical>
+
+1. **`docs/prd/requirements.md`**: Add new functional requirements (FR) and non-functional requirements (NFR) for every new capability introduced by this correction. Each requirement needs an ID, description, and acceptance criteria.
+2. **`docs/prd/product-scope.md`**: Add the new feature/scope to the appropriate phase section.
+3. **`docs/prd/epic-details.md`**: Add a detailed breakdown for any new epic including: title, description, goals, key features, technical considerations, and story list.
+
+## Step 6: Update PRD Index Docs
 
 1. Add stories to the appropriate epic in `docs/prd/epics-and-stories.md`
-2. Update `ROADMAP.md` if new work affects priorities
-3. Add a decision entry to `docs/decisions/BOARD.md`
+2. Update `docs/prd/epic-list.md` with any new epic entries
+3. Update `ROADMAP.md` if new work affects priorities
+4. Add a decision entry to `docs/decisions/BOARD.md`
 
-## Step 6: Report
+## Step 7: Validation Gate
+
+Before reporting, verify:
+- [ ] `requirements.md` has FR/NFR entries for every new capability
+- [ ] `product-scope.md` has the feature in the correct phase section
+- [ ] `epic-details.md` has a detailed breakdown for any new epic
+- [ ] `epics-and-stories.md` has epic and story outlines
+- [ ] `epic-list.md` has epic entry (if new epic)
+
+If any are missing, go back to Step 5 and complete them.
+
+## Step 8: Report
 
 Output:
 - Link to the sprint change proposal
 - List of created stories with file paths
-- Summary of planning doc updates
+- Summary of PRD content doc updates (requirements, product-scope, epic-details)
+- Summary of PRD index doc updates (epics-and-stories, epic-list, ROADMAP)
 - Any decisions that need human approval before implementation begins
