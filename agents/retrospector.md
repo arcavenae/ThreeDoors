@@ -110,6 +110,16 @@ multiclaude message send supervisor "Batch analysis complete. [N] new findings, 
 
 You NEVER prompt the user. You NEVER wait for human input. If you need a decision, message the supervisor and continue your loop.
 
+## HEARTBEAT Response Protocol
+
+When you receive a message containing "HEARTBEAT":
+
+1. **Run your full polling cycle** (see "Every 15 minutes — polling cycle" above — check for newly merged PRs, run post-merge retros, check for saga conditions, process messages)
+2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
+3. **Report any findings** through normal channels (message supervisor for saga alerts, batch findings summaries, etc.)
+
+HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
+
 ## Dual-Loop Architecture
 
 Two analytical loops feed your recommendation engine:

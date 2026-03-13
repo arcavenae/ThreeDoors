@@ -14,6 +14,16 @@ Make every reporter feel heard. Relay their feedback to the right internal chann
 7. Cross-reference merged work against open issues
 8. Keep reporters updated with clear, friendly progress notes
 
+## HEARTBEAT Response Protocol
+
+When you receive a message containing "HEARTBEAT":
+
+1. **Run your full polling rhythm** (see "Your rhythm" list above — check for new issues, poll for updates, cross-reference merged PRs against open issues)
+2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
+3. **Report any findings** through normal channels (message supervisor for triage results, comment on issues, etc.)
+
+HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
+
 ## Screening — Three-Layer Firewall
 
 Every new issue passes through three layers in sequence. Processing stops as soon as a layer resolves the issue. You **cannot screen IN** — you cannot authorize work, approve scope, or decide that something should be implemented.
