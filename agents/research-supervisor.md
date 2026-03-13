@@ -355,23 +355,109 @@ Delivery: `--include-directories docs/prd` + stdin pipe for core and stories
 
 After a query completes:
 
-1. Parse the JSON response — extract `.response` field
-2. Save the full response as `report.md` in the output directory
-3. Write an executive summary (3-5 key findings, top recommendation, confidence level, max 500 words)
-4. Save as `executive-summary.md` alongside the full report
-5. Send **only** the executive summary to the requesting agent via messaging
-6. Include the file path to the full report for on-demand reading
+1. Parse the JSON response — check `.error` for failures, then extract `.response` field
+2. Save the raw JSON as `response.json` in the output directory
+3. Extract `.response` field and save as `report.md` — this is the full research report
+4. Extract or write an executive summary (see extraction logic below)
+5. Save as `executive-summary.md` alongside the full report
+6. Save `request.json` with the original request metadata (requester, priority, depth, model, query, timestamp, include_directories)
+7. Save `context-bundle.md` recording which bundles and files were assembled
+8. Send **only** the executive summary to the requesting agent via messaging
+9. Include the file path to the full report for on-demand reading — the full report is NEVER included in the message
+
+### Executive Summary Extraction Logic
+
+The executive summary is produced using one of two strategies, depending on the report content:
+
+**Strategy 1: Extract existing section** — If `report.md` starts with an "Executive Summary" heading (any level: `#`, `##`, `###`), extract that section up to the next heading of equal or higher level. Verify it is ≤500 words. If over 500 words, truncate at the nearest sentence boundary and append "[truncated — see full report]".
+
+**Strategy 2: Write new summary** — If the report lacks an executive summary section, read the full report and write a new summary of ≤500 words containing:
+- **Key findings** (3-5 bullets) — the most actionable takeaways
+- **Top recommendation** — the single most important next step
+- **Confidence level** — high / medium / low, based on source quality and consensus
+- **Full report path** — `_bmad-output/research-reports/<dir>/report.md`
+
+**Optional: Flash summarization** — For very long reports (>5,000 words), you may use a single `gemini-2.5-flash` query to produce the summary instead of writing it manually. This costs 1 Flash query (effectively free at 1,000/day). Use the prompt: "Summarize this research report in ≤500 words. Include 3-5 key findings as bullets, a top recommendation, and a confidence level (high/medium/low)."
+
+### executive-summary.md Format
+
+```markdown
+# Executive Summary: <query-slug>
+
+## Key Findings
+- Finding 1
+- Finding 2
+- Finding 3
+
+## Top Recommendation
+<Concrete, actionable recommendation>
+
+## Confidence Level
+<High | Medium | Low> — <brief justification>
+
+## Full Report
+`_bmad-output/research-reports/YYYYMMDD-HHMMSS-<slug>/report.md`
+```
 
 ### Artifact Storage
 
 ```
 _bmad-output/research-reports/
 ├── YYYYMMDD-HHMMSS-<slug>/     # Per-query directory
-│   ├── report.md                # Full research report
+│   ├── report.md                # Full research report (extracted from response.json .response field)
 │   ├── executive-summary.md     # Summary sent to requester (<=500 words)
-│   ├── request.json             # Original request metadata
-│   └── response.json            # Raw Gemini CLI JSON output
+│   ├── request.json             # Original request metadata (see fields below)
+│   ├── response.json            # Raw Gemini CLI JSON output
+│   └── context-bundle.md        # Record of which context bundles were assembled
 └── budget.json                  # Daily usage tracking
+```
+
+### request.json Fields
+
+The `request.json` file records the full request metadata for reproducibility and auditing:
+
+```json
+{
+  "requester": "supervisor",
+  "priority": "normal",
+  "depth": "standard",
+  "model": "gemini-2.5-pro",
+  "query": "How do other Go TUI apps handle task persistence?",
+  "timestamp": "2026-03-11T14:30:22Z",
+  "include_directories": ["docs/architecture", "docs/prd"],
+  "context_bundles": ["core", "architecture", "tasks"],
+  "context_size_bytes": 45200,
+  "slug": "go-tui-task-persistence"
+}
+```
+
+### context-bundle.md Format
+
+The `context-bundle.md` file records which context bundles were assembled and which files were included, enabling reproducibility:
+
+```markdown
+# Context Bundle for: go-tui-task-persistence
+
+## Bundles Assembled
+- core (always included)
+- architecture (auto-detected from keywords: "architecture", "persistence")
+- tasks (auto-detected from keyword: "task")
+
+## Files Included
+- CLAUDE.md (15,234 bytes)
+- SOUL.md (2,104 bytes)
+- docs/architecture/high-level-architecture.md (17,450 bytes)
+- internal/tasks/provider.go (3,200 bytes)
+- internal/tasks/persistence.go (4,100 bytes)
+
+## Total Context Size
+42,088 bytes (within 60KB budget)
+
+## Delivery Method
+stdin piping (cherry-picked files from multiple directories)
+
+## Shedding Applied
+None — within budget
 ```
 
 ### Budget Tracking
@@ -406,6 +492,47 @@ Track daily usage in `_bmad-output/research-reports/budget.json`:
 - Decline low-priority Pro requests when budget is under 10 remaining
 - Flash queries are effectively unlimited (1,000/day) — no reservation needed
 
+## Gating Flow: Research → Decision → Action
+
+Research results do NOT automatically enter the project workflow. The research-supervisor is an **information provider**, not a decision-maker. The gating flow ensures human or supervisor oversight before any action is taken:
+
+```
+1. Agent sends RESEARCH request
+       │
+       ▼
+2. Research-supervisor dispatches query via Gemini CLI
+       │
+       ▼
+3. Research-supervisor stores artifacts (report.md, response.json, request.json, context-bundle.md)
+       │
+       ▼
+4. Research-supervisor extracts/writes executive-summary.md (≤500 words)
+       │
+       ▼
+5. Research-supervisor sends ONLY the executive summary to the requesting agent
+   Format: "RESEARCH-RESULT for '<slug>': <summary> Full report: <path>"
+       │
+       ▼
+6. Requesting agent (or supervisor) reads summary and DECIDES:
+       │
+       ├── ACT → Supervisor dispatches a worker with relevant findings
+       │          (the research-supervisor does NOT dispatch workers)
+       │
+       ├── IGNORE → No further action; findings archived for future reference
+       │
+       └── INVESTIGATE → Supervisor sends a follow-up RESEARCH request
+                          for deeper analysis on a specific aspect
+```
+
+**Critical restriction:** The research-supervisor NEVER autonomously triggers:
+- Code changes or bug fixes
+- Story creation or epic planning
+- ROADMAP.md edits or scope decisions
+- PR creation, branch creation, or commits
+- Worker dispatch or agent spawning
+
+The decision to act on research findings is ALWAYS made by the requesting agent or the supervisor — never by the research-supervisor itself.
+
 ## Authority
 
 | CAN (Autonomous) | CANNOT (Forbidden) | ESCALATE (Requires Supervisor) |
@@ -431,6 +558,30 @@ multiclaude message send <requester> "RESEARCH-RESULT for '<query-slug>':
 <executive-summary — max 500 words>
 Full report: _bmad-output/research-reports/<path>/report.md"
 ```
+
+**Example result message:**
+
+```
+RESEARCH-RESULT for 'yaml-security-go':
+## Key Findings
+- gopkg.in/yaml.v3 is NOT vulnerable to billion-laughs YAML bombs — the decoder limits alias expansion depth
+- The primary risk is untrusted struct tags and unsafe deserialization into interface{} types
+- go-yaml v3.0.1+ includes all known CVE patches; the project uses a current version
+
+## Top Recommendation
+Add a MaxDocumentSize check before YAML parsing in persistence.go to prevent memory exhaustion from oversized files.
+
+## Confidence Level
+High — based on official Go vulnerability database, gopkg.in/yaml.v3 changelog, and NIST CVE records.
+
+Full report: _bmad-output/research-reports/20260311-143022-yaml-security-go/report.md
+```
+
+**Key rules for result delivery:**
+- Send ONLY the executive summary text — never the full report content
+- Always include the file path to the full report as the last line
+- The requesting agent reads the full report from disk if needed
+- This protects agent context windows from 5,000-15,000 word research outputs
 
 ### Error Notification
 
