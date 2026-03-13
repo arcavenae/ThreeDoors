@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "last_pr": 0,
+  "last_timestamp": null,
+  "mode_rotation_index": 0,
+  "hours_since_restart": 0,
+  "prs_since_restart": 0,
+  "rolling_windows": {
+    "ci_failure_rate_10pr": 0,
+    "conflict_rate_10pr": 0,
+    "rebase_avg_10pr": 0
+  },
+  "checkpoint_timestamp": null
+}
