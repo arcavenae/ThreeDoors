@@ -75,9 +75,32 @@ func (tp *TaskPool) GetTasksByStatus(status TaskStatus) []*Task {
 	return result
 }
 
+// GetSubtasks returns all tasks whose ParentID matches the given parent ID.
+// Returns an empty slice if no children exist.
+func (tp *TaskPool) GetSubtasks(parentID string) []*Task {
+	var result []*Task
+	for _, t := range tp.tasks {
+		if t.ParentID != nil && *t.ParentID == parentID {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+// HasSubtasks returns true if any task in the pool has the given task ID as its ParentID.
+func (tp *TaskPool) HasSubtasks(taskID string) bool {
+	for _, t := range tp.tasks {
+		if t.ParentID != nil && *t.ParentID == taskID {
+			return true
+		}
+	}
+	return false
+}
+
 // GetAvailableForDoors returns tasks eligible for door selection.
 // Eligible: status is todo, blocked, or in-progress, not orphaned,
-// not recently shown, and not blocked by unmet dependencies.
+// not recently shown, not blocked by unmet dependencies, and not a
+// parent task that has subtasks (FR123 — work the pieces, not the parent).
 func (tp *TaskPool) GetAvailableForDoors() []*Task {
 	var result []*Task
 	for _, t := range tp.tasks {
@@ -85,12 +108,12 @@ func (tp *TaskPool) GetAvailableForDoors() []*Task {
 			continue
 		}
 		if t.Status == StatusTodo || t.Status == StatusBlocked || t.Status == StatusInProgress {
-			if !tp.IsRecentlyShown(t.ID) && !HasUnmetDependencies(t, tp) {
+			if !tp.IsRecentlyShown(t.ID) && !HasUnmetDependencies(t, tp) && !tp.HasSubtasks(t.ID) {
 				result = append(result, t)
 			}
 		}
 	}
-	// If not enough non-recent tasks, include recently shown ones (still excluding dependency-blocked and orphaned)
+	// If not enough non-recent tasks, include recently shown ones (still excluding dependency-blocked, orphaned, and parents)
 	if len(result) < 3 {
 		result = nil
 		for _, t := range tp.tasks {
@@ -98,7 +121,7 @@ func (tp *TaskPool) GetAvailableForDoors() []*Task {
 				continue
 			}
 			if t.Status == StatusTodo || t.Status == StatusBlocked || t.Status == StatusInProgress {
-				if !HasUnmetDependencies(t, tp) {
+				if !HasUnmetDependencies(t, tp) && !tp.HasSubtasks(t.ID) {
 					result = append(result, t)
 				}
 			}
