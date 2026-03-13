@@ -152,14 +152,14 @@ Linear as task source via GraphQL API. Best task model alignment of all evaluate
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Done (PR #705) | P2 | 30.2 |
 
-### Epic 31: Expand/Fork Key Implementations (P2) — 2/5 stories done
+### Epic 31: Expand/Fork Key Implementations (P2) — 3/5 stories done
 
 Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 31.1 | Task Model ParentID Extension | Done (PR #698) | P2 | None |
-| 31.2 | Enhanced Expand — Sequential Subtask Creation | Not Started | P2 | 31.1 |
+| 31.2 | Enhanced Expand — Sequential Subtask Creation | Done (PR #708) | P2 | 31.1 |
 | 31.3 | Subtask List Rendering in Detail View | Not Started | P2 | 31.1, 31.2 |
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Done (PR #701) | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |

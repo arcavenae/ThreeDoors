@@ -288,11 +288,21 @@ ThreeDoors/
 │   │   │   ├── github_client.go    # GitHub API client (issues, bug reports)
 │   │   │   ├── github_provider.go  # GitHub TaskProvider implementation
 │   │   │   └── oauth.go            # GitHub OAuth device code flow integration
-│   │   ├── linear/                  # Linear adapter (Epic 46)
+│   │   ├── jira/                    # Jira adapter
+│   │   │   └── ...                 # Jira REST API client & provider
+│   │   ├── linear/                  # Linear adapter (Epic 30, 46)
 │   │   │   ├── client.go           # Linear GraphQL API client
 │   │   │   ├── config.go           # Linear adapter configuration
+│   │   │   ├── provider.go         # LinearProvider — read-only TaskProvider (Story 30.2)
 │   │   │   ├── types.go            # GraphQL query/response types
 │   │   │   └── oauth.go            # Linear OAuth integration
+│   │   ├── clickup/                 # ClickUp adapter (Epic 63)
+│   │   │   ├── clickup_client.go   # ClickUp REST API v2 client
+│   │   │   └── config.go           # ClickUp auth & workspace configuration
+│   │   ├── reminders/               # Apple Reminders adapter
+│   │   │   └── ...                 # Reminders EventKit bridge
+│   │   ├── todoist/                 # Todoist adapter
+│   │   │   └── ...                 # Todoist REST API client & provider
 │   │   └── obsidian/                # Obsidian vault adapter (Epic 8)
 │   │       ├── adapter.go          # ObsidianAdapter
 │   │       ├── markdown.go         # Markdown task parser
