@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-49, 50-53, 55-62 are COMPLETE. Epic 5 reopened (1/2, Story 5.3 added). Epic 29 is 3/4 (29.3 In Review). Epic 0 is 34/35 (0.33 In Review). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epics 30-31 NOT STARTED or IN PROGRESS. Epics 63-64 NOT STARTED (PRD coverage gaps). 690+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-62 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 63 (2/4) IN PROGRESS. Epic 64 (2/6) IN PROGRESS. Epic 65 (0/3) NOT STARTED. 720+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements and test coverage hardening from TEA audit (R-001).
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 34 of 35 stories complete. Story 0.33 In Review.
+**Status:** 35 of 35 stories complete.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -268,7 +268,7 @@ Use historical session metrics to analyze user patterns and adapt door selection
 ### Epic 5: macOS Distribution & Packaging — 1/2 stories done
 Code signing, notarization, Homebrew tap, and pkg installer.
 **FRs covered:** FR22-FR26
-**Status:** Story 5.1 complete (PR #30). Story 5.3 (DMG/pkg Installer) Not Started.
+**Status:** COMPLETE — Story 5.1 (PR #30), Story 5.3 (PR #707).
 
 ### Epic 6: Data Layer & Enrichment (Optional) ✅ COMPLETE
 SQLite enrichment database for metadata beyond what backends support.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements and test coverage hardening from the TEA audit (R-001).
 
-**Status:** 34 of 35 stories complete. Story 0.33 In Review.
+**Status:** 35 of 35 stories complete.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -4271,7 +4271,7 @@ Surface existing `StatusDeferred` as a first-class user action with date-based s
 ## Epic 29: Task Dependencies & Blocked-Task Filtering
 
 **Priority:** P1
-**Status:** In Progress (3/4 stories done; 29.3 remaining)
+**Status:** COMPLETE (4/4 stories done — PRs #307, #319, #340, #356)
 **Dependencies:** None
 
 ### Epic Goal
@@ -4284,7 +4284,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 |-------|-------|--------|----------|------------|
 | 29.1 | DependsOn Field, DependencyResolver, and YAML Persistence | Done (PR #307) | P1 | None |
 | 29.2 | Door Selection Filter and Auto-Unblock on Completion | Done (PR #319) | P1 | 29.1 |
-| 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
+| 29.3 | TUI Blocked-By Indicator and Dependency Management | Done (PR #340) | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
 ---
@@ -6240,7 +6240,7 @@ Stories 63.3 and 63.4 can parallelize after 63.2 completes.
 ## Epic 64: Cross-Computer Sync
 
 **Priority:** P2
-**Status:** Not Started (0/6 stories)
+**Status:** In Progress (2/6 stories done — PRs #715, #721)
 **Dependencies:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
 
 ### Epic Goal
@@ -6256,8 +6256,8 @@ technical-assumptions.md: "Cross-computer sync is deferred post-MVP; single-comp
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 64.1 | Architecture Research Spike | Not Started | P2 | None |
-| 64.2 | Device Identity & Registration | Not Started | P2 | 64.1 |
+| 64.1 | Architecture Research Spike | Done (PR #715) | P2 | None |
+| 64.2 | Device Identity & Registration | Done (PR #721) | P2 | 64.1 |
 | 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
 | 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
 | 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |
