@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-49, 52, 55-62 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is 34/35 (0.33 In Review). Epic 16 is ICEBOX. Epic 50 (2/3), Epic 51 (6/11), Epic 53 (3/5), Epic 54 (3/5) IN PROGRESS. Epics 30-31 NOT STARTED or IN PROGRESS. 680+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-49, 50-53, 55-62 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is 34/35 (0.33 In Review). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epics 30-31 NOT STARTED or IN PROGRESS. 690+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
