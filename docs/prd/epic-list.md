@@ -853,26 +853,26 @@
 | Epic 39: Keybinding Display System | 13 | COMPLETE (12/13, 1 cancelled) |
 | Epic 40: Beautiful Stats Display | 10 | Complete |
 | Epic 41: Charm Ecosystem Adoption | 6 | Complete |
-| Epic 42: Application Security Hardening | 5 | In Progress (4/5 done) |
+| Epic 42: Application Security Hardening | 5 | Complete (5/5 done) |
 | Epic 43: Connection Manager Infrastructure | 6 | Complete (6/6 done) |
-| Epic 44: Sources TUI | 7 | In Progress (6/7 done) |
+| Epic 44: Sources TUI | 7 | Complete (7/7 done) |
 | Epic 45: Sources CLI | 5 | Complete (5/5 done) |
-| Epic 46: OAuth Device Code Flow | 4 | In Progress (2/4 done) |
-| Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
+| Epic 46: OAuth Device Code Flow | 4 | Complete (4/4 done) |
+| Epic 47: Sync Lifecycle & Advanced Features | 4 | Complete (4/4 done) |
 | Epic 48: Door-Like Doors | 4 | Complete (4/4 done) |
 | Epic 49: ThreeDoors Doctor | 10 | Complete (10/10 done) |
-| Epic 50: In-App Bug Reporting | 3 | In Progress (50.1 In Review) |
-| Epic 51: SLAES | 11 | In Progress (5/11 done) |
+| Epic 50: In-App Bug Reporting | 3 | In Progress (2/3 done; 50.1 In Review) |
+| Epic 51: SLAES | 11 | In Progress (6/11 done) |
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
-| Epic 53: Remote Collaboration | 5 | Not Started |
-| Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
+| Epic 53: Remote Collaboration | 5 | In Progress (3/5 done) |
+| Epic 54: Gemini Research Supervisor | 5 | In Progress (3/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
 | Epic 56: Door Visual Redesign | 5 | Complete (5/5 done) |
-| Epic 57: LLM CLI Services | 8 | Not Started |
-| Epic 58: Supervisor Shift Handover | 7 | Not Started |
-| Epic 59: Full-Terminal Vertical Layout | 2 | Not Started |
-| Epic 60: README Overhaul | 5 | In Progress (1/5 done) |
-| Epic 61: GitHub Pages User Guide | 4 | Not Started |
+| Epic 57: LLM CLI Services | 8 | Complete (8/8 done) |
+| Epic 58: Supervisor Shift Handover | 7 | Complete (7/7 done) |
+| Epic 59: Full-Terminal Vertical Layout | 2 | Complete (2/2 done) |
+| Epic 60: README Overhaul | 5 | Complete (5/5 done) |
+| Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
-| **Total** | **324** | **152 complete, 9 epics in progress, 164 not started** |
+| **Total** | **324** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---

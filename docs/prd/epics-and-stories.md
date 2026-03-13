@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-41, 43, 45, 48-49, 52, 55-56, 62 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is partial (12/19). Epic 16 is ICEBOX. Epic 42 (4/5), Epic 44 (6/7), Epic 46 (2/4), Epic 51 (5/11), Epic 54 (2/5) IN PROGRESS. Epics 30-31, 47, 50, 53, 57-59, 61 NOT STARTED or IN PROGRESS. 670+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 1-15, 3.5, 17-28, 32-49, 52, 55-62 are COMPLETE. Epic 29 is 3/4 (29.3 In Review). Epic 0 is 34/35 (0.33 In Review). Epic 16 is ICEBOX. Epic 50 (2/3), Epic 51 (6/11), Epic 53 (3/5), Epic 54 (3/5) IN PROGRESS. Epics 30-31 NOT STARTED or IN PROGRESS. 680+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements and test coverage hardening from TEA audit (R-001).
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 12 of 22 stories complete. Stories 0.29, 0.50, 0.51, 0.52, 0.53 not started.
+**Status:** 34 of 35 stories complete. Story 0.33 In Review.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements and test coverage hardening from the TEA audit (R-001).
 
-**Status:** 12 of 22 stories complete. Stories 0.29, 0.50, 0.51, 0.52, 0.53 not started.
+**Status:** 34 of 35 stories complete. Story 0.33 In Review.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -4628,7 +4628,7 @@ Bridge all 8 existing adapters to ConnectionManager. Wrap sync cycles to emit Sy
 ## Epic 44: Sources TUI
 
 **Priority:** P1
-**Status:** In Progress (6/7 done)
+**Status:** COMPLETE (7/7 done)
 **Dependencies:** Epic 43 (Connection Manager Infrastructure)
 
 ### Epic Goal
@@ -4762,7 +4762,7 @@ Consistent JSON serialization across all sources subcommands. Error envelope: `{
 ## Epic 46: OAuth Device Code Flow
 
 **Priority:** P2
-**Status:** Not Started
+**Status:** COMPLETE (4/4 stories done)
 **Dependencies:** None (consumed by Epics 44/45 for OAuth-supporting providers)
 
 ### Epic Goal
@@ -4817,7 +4817,7 @@ Pre-emptive refresh when token within 5 min of expiry. Refresh failure → AuthE
 ## Epic 47: Sync Lifecycle & Advanced Features
 
 **Priority:** P2
-**Status:** Not Started
+**Status:** COMPLETE (4/4 stories done)
 **Dependencies:** Epic 43 (Connection Manager Infrastructure), Epic 44 (Sources TUI)
 
 ### Epic Goal
@@ -4926,7 +4926,7 @@ Pin third-party GitHub Actions (golangci-lint-action, paths-filter, goreleaser-a
 ## Epic 49: ThreeDoors Doctor — Self-Diagnosis Command
 
 **Priority:** P1
-**Status:** Not Started
+**Status:** COMPLETE (10/10 stories done)
 **Dependencies:** Epic 23 (CLI Interface — complete)
 
 ### Epic Goal
@@ -5042,7 +5042,7 @@ GitHub Releases API with 24h cache. Channel-aware comparison. Opt-out controls. 
 **Epic Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission methods.
 
 **Prerequisites:** None (standalone feature)
-**Status:** In Progress (0/3 done; 50.1 In Review)
+**Status:** In Progress (2/3 done; 50.1 In Review)
 **Priority:** P2
 
 ### Overview
@@ -5112,7 +5112,7 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 
 **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
 
-**Status:** In Progress (5/11 stories done; 5 In Review)
+**Status:** In Progress (6/11 stories done; 5 In Review)
 
 **Phasing:**
 - Phase 0 (Bootstrap): Stories 51.1-51.2 — Agent definition rewrites
@@ -5222,7 +5222,7 @@ Rewrite `agents/retrospector.md` to eliminate language that causes Claude to see
 
 **Dependencies:** None (agent infrastructure, not application code)
 
-**Status:** In Progress (2/5 stories done — PRs #537, #538)
+**Status:** In Progress (3/5 stories done — PRs #537, #538, #664)
 
 **Rearchitecture Note:** This epic was originally designed around `24601/agent-deep-research` (Python, paid API key). Rearchitected per user request to use the official Gemini CLI with OAuth (free tier). See D-164 (supersedes D-154).
 
@@ -5489,7 +5489,7 @@ Stories 56.1 & 56.2 can parallelize. Stories 56.3 & 56.4 can parallelize after 5
 
 **Prerequisites:** Epic 14 (LLM Decomposition — complete), Epic 23 (CLI Interface — complete)
 
-**Status:** Not Started (0/8 stories done)
+**Status:** COMPLETE (8/8 stories done)
 
 **Two Directions of Integration:**
 - Direction 1 (THIS EPIC): ThreeDoors → LLM CLIs. ThreeDoors invokes claude/gemini/ollama CLIs via `os/exec` for task extraction, enrichment, breakdown. ThreeDoors is the CLIENT.
@@ -5620,7 +5620,7 @@ Stories 56.1 & 56.2 can parallelize. Stories 56.3 & 56.4 can parallelize after 5
 
 **Prerequisites:** None (multiclaude daemon infrastructure already exists)
 
-**Status:** Not Started (0/7 stories)
+**Status:** COMPLETE (7/7 stories)
 
 **Phasing:**
 - Phase 1 (MVP): Stories 58.1-58.4 — Shift clock, rolling snapshot, handover orchestrator, supervisor startup
@@ -5828,7 +5828,7 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 **Prerequisites:** None (foundational layout work)
 
-**Status:** Not Started (0/2 stories)
+**Status:** COMPLETE (2/2 stories)
 
 **Phasing:**
 - Story A (MVP): AltScreen, layout engine, door height cap, vertical centering, help dynamic height, SetHeight propagation
@@ -5881,7 +5881,7 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 **Prerequisites:** None (documentation-only epic)
 
-**Status:** In Progress (1/5 done)
+**Status:** COMPLETE (5/5 done)
 
 ### Story 60.1: README Badges & Header Polish
 
@@ -5987,7 +5987,7 @@ Phase 2 (Hardening):  58.5, 58.6, 58.7 can parallelize after Phase 1
 
 **Prerequisites:** None
 
-**Status:** Not Started (0/4 stories)
+**Status:** COMPLETE (4/4 stories)
 
 **Phasing:**
 - Story A (Infrastructure): MkDocs setup, GitHub Actions, landing page, philosophy page
