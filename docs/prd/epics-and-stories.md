@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-62 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 63 (2/4) IN PROGRESS. Epic 64 (2/6) IN PROGRESS. Epic 65 (0/3) NOT STARTED. 720+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-63 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 64 (2/6) IN PROGRESS. Epic 65 (0/3) NOT STARTED. 730+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -4735,6 +4735,7 @@ Non-interactive CLI commands for data source management. Supports both human pow
 | 45.3 | `threedoors sources` Management Commands | Done (PR #587) | P1 | Epic 43 |
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Done (PR #589) | P1 | 45.1-45.4 |
+| 45.6 | Wire Connect Wizard into CLI Entry Point | Done (PR #732) | P1 | 44.1 |
 
 ### Story Details
 
@@ -6200,7 +6201,7 @@ All three stories can be parallelized. No inter-story dependencies.
 ## Epic 63: ClickUp Integration
 
 **Priority:** P2
-**Status:** Not Started (0/4 stories)
+**Status:** COMPLETE (4/4 stories done — PRs #706, #719, #727, #728)
 **Dependencies:** Epic 7 (Adapter SDK — complete), Epic 43 (Connection Manager — complete)
 
 ### Epic Goal
@@ -6215,10 +6216,10 @@ product-scope.md Phase 5: "Additional integrations (GitHub Issues, ClickUp)"
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 63.1 | ClickUp REST API Client & Auth Configuration | Not Started | P2 | Epic 7 (done) |
-| 63.2 | Read-Only ClickUp Provider with Field Mapping | Not Started | P2 | 63.1 |
-| 63.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 63.2 |
-| 63.4 | Contract Tests & Integration Testing | Not Started | P2 | 63.2 |
+| 63.1 | ClickUp REST API Client & Auth Configuration | Done (PR #706) | P2 | Epic 7 (done) |
+| 63.2 | Read-Only ClickUp Provider with Field Mapping | Done (PR #719) | P2 | 63.1 |
+| 63.3 | Bidirectional Sync & WAL Integration | Done (PR #728) | P2 | 63.2 |
+| 63.4 | Contract Tests & Integration Testing | Done (PR #727) | P2 | 63.2 |
 
 ### Dependency Graph
 
