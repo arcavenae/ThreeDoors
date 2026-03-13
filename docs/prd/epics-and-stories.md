@@ -922,6 +922,21 @@ So that I can be confident the full application works end-to-end in a clean envi
 - **AC5:** No flaky tests — deterministic timing with teatest `WaitFor`
 - **AC6:** CI integration unchanged (push-only per Story 55.1)
 
+### Story 0.57: t.Helper() Audit
+
+As a developer,
+I want all test helper functions to call `t.Helper()`,
+So that test failure messages report the caller's line number instead of the helper's, making failures faster to diagnose.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Every test helper function (accepts `*testing.T`/`*testing.B`, not `Test*`/`Benchmark*`/`Fuzz*`) calls `t.Helper()` as first statement
+- **AC2:** Audit covers all packages in the codebase
+- **AC3:** No functional test behavior changes
+- **AC4:** All tests pass with `go test ./... -race`
+- **AC5:** `make lint` passes with zero warnings
+
 ---
 
 ## Epic 1: Three Doors Technical Demo ✅ COMPLETE
@@ -6266,3 +6281,91 @@ Story 64.1 must complete before all others. Stories 64.3 and 64.4 can paralleliz
 - PRD coverage gap analysis: `_bmad-output/planning-artifacts/prd-coverage-gap-analysis.md`
 - Sprint change proposal: `_bmad-output/planning-artifacts/sprint-change-proposal-2026-03-13-prd-coverage-gaps.md`
 - Party mode: `_bmad-output/planning-artifacts/prd-coverage-gaps-party-mode.md`
+
+---
+
+## Epic 65: CLI Test Coverage Hardening
+
+**Priority:** P0
+**Status:** Not Started (0/3 stories)
+**Dependencies:** None
+
+### Epic Goal
+
+Increase `internal/cli` package test coverage from 34.8% to ≥70%, addressing the only critical coverage gap identified by the TEA audit. The CLI is the primary user entry point — untested paths can break silently and affect every user. All other TEA recommendations (contract tests, benchmarks, integration tests, Docker E2E) have already been implemented.
+
+### Research
+
+- TEA audit: `_bmad-output/planning-artifacts/state-of-testing-report.md`
+
+### Stories
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 65.1 | Core CLI Path Tests — Bootstrap, Root, Doors, TaskPool Loading | Not Started | P0 | None |
+| 65.2 | Subcommand Test Coverage — Config, Mood, Health, Stats, Plan | Not Started | P0 | None |
+| 65.3 | Remaining Command Coverage — Task, Sources, Connect, Extract | Not Started | P1 | None |
+
+### Dependency Graph
+
+```
+65.1 (Core Paths)  ──┐
+65.2 (Subcommands) ──┼── All independent, can parallelize
+65.3 (Remaining)   ──┘
+```
+
+All three stories are fully independent and can be implemented in parallel. Together they must bring `internal/cli` coverage to ≥70%.
+
+### Story 65.1: Core CLI Path Tests — Bootstrap, Root, Doors, TaskPool Loading
+
+As a developer,
+I want the critical CLI entry paths to have comprehensive test coverage,
+So that regressions in application startup, command routing, and the primary doors command are caught before release.
+
+**Status:** Not Started | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** `bootstrap()` tested with mock dependencies
+- **AC2:** `Execute()` tested — root command setup and error propagation
+- **AC3:** `KnownSubcommands()` tested for completeness
+- **AC4:** `NewDoorsCmd()` coverage ≥70% — flags, loadTaskPool, error paths
+- **AC5:** `loadTaskPool()` tested — success, missing config, invalid provider, fallback
+- **AC6:** `isJSONOutput()` and `isTerminal()` table-driven tests
+- **AC7:** Output formatting helpers tested for all modes (text, JSON, quiet)
+- **AC8:** All tests pass with `-race`
+
+### Story 65.2: Subcommand Test Coverage — Config, Mood, Health, Stats, Plan
+
+As a developer,
+I want all CLI subcommands to have table-driven test coverage,
+So that argument parsing, flag handling, and output formatting are verified.
+
+**Status:** Not Started | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** `runConfigShow/Get/Set` tested with table-driven tests
+- **AC2:** `runMoodSet/History` tested with mock session data
+- **AC3:** `runHealth()` tested — healthy/unhealthy, JSON output
+- **AC4:** Stats command tested — metrics, formatting, empty data
+- **AC5:** Plan command tested — daily plan, empty task pool
+- **AC6:** Version command tested
+- **AC7:** All tests use table-driven pattern with `t.Run`
+- **AC8:** All tests pass with `-race`
+
+### Story 65.3: Remaining Command Coverage — Task, Sources, Connect, Extract
+
+As a developer,
+I want comprehensive test coverage for all remaining CLI commands,
+So that the overall `internal/cli` package reaches ≥70% coverage.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Task commands tested — add, list, complete, block, unblock
+- **AC2:** Source management commands tested
+- **AC3:** Connect command tested — wizard flow, error handling
+- **AC4:** Extract command tested with mock LLM backend
+- **AC5:** Interactive mode tested with piped stdin
+- **AC6:** Completion and flag completion helpers tested
+- **AC7:** Overall `internal/cli` coverage ≥70%
+- **AC8:** All tests pass with `-race`

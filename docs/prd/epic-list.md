@@ -828,7 +828,18 @@
 - **PRD Reference:** product-scope.md Phase 5 ("Cross-computer sync")
 - **Note:** Stories 64.2-64.6 will be refined after the research spike completes
 
-**Epic 65+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
+**Epic 65: CLI Test Coverage Hardening** (P0)
+- **Goal:** Increase `internal/cli` package test coverage from 34.8% to ≥70%, addressing the only critical coverage gap identified by the TEA audit (state-of-testing-report.md, 2026-03-09)
+- **Prerequisites:** None
+- **Status:** Not Started (0/3 done)
+- **Deliverables:**
+  - Core CLI path tests (bootstrap, root, doors, loadTaskPool, output)
+  - Subcommand tests (config, mood, health, stats, plan, version)
+  - Remaining command tests (task, sources, connect, extract, interactive)
+- **Stories:** 65.1-65.3 (3 stories)
+- **Research:** `_bmad-output/planning-artifacts/state-of-testing-report.md`
+
+**Epic 66+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
 
@@ -904,5 +915,6 @@
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
 | Epic 63: ClickUp Integration | 4 | In Progress (1/4 done) |
 | Epic 64: Cross-Computer Sync | 6 | In Progress (1/6 done) |
-| **Total** | **335** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
+| Epic 65: CLI Test Coverage Hardening | 3 | Not Started (0/3) |
+| **Total** | **339** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---
