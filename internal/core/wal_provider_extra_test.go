@@ -26,10 +26,13 @@ func TestWALProvider_Watch(t *testing.T) {
 func TestWALProvider_HealthCheck(t *testing.T) {
 	t.Parallel()
 	wp, _, _ := newTestWALProvider(t)
-	// mockProvider returns empty HealthCheckResult - WAL delegates to inner
+	// mockProvider returns empty HealthCheckResult; WAL appends wal_queue item
 	result := wp.HealthCheck()
-	if len(result.Items) != 0 {
-		t.Errorf("expected 0 items (from mock), got %d", len(result.Items))
+	if len(result.Items) != 1 {
+		t.Errorf("expected 1 item (wal_queue), got %d", len(result.Items))
+	}
+	if len(result.Items) > 0 && result.Items[0].Name != "wal_queue" {
+		t.Errorf("expected wal_queue item, got %q", result.Items[0].Name)
 	}
 }
 

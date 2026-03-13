@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/arcaven/ThreeDoors/internal/core"
@@ -29,9 +31,22 @@ var statusTypeMap = map[string]core.TaskStatus{
 	"cancelled": core.StatusArchived,
 }
 
+// issueInfo stores the Linear-side identifiers needed to mutate an issue.
+type issueInfo struct {
+	issueID string // Linear UUID (for GraphQL mutations)
+	teamID  string // Team UUID (for workflow state lookup)
+}
+
+// stateCache stores a discovered completed-state ID with its fetch time.
+type stateCache struct {
+	stateID   string
+	fetchedAt time.Time
+}
+
 // LinearProvider implements core.TaskProvider for Linear issues.
-// SaveTask, SaveTasks, and DeleteTask return core.ErrReadOnly.
-// MarkComplete returns core.ErrReadOnly (read-only in this story).
+// MarkComplete transitions issues to the team's completed workflow state.
+// SaveTask updates issue title and description.
+// SaveTasks and DeleteTask return core.ErrReadOnly.
 type LinearProvider struct {
 	client          GraphQLClient
 	config          *LinearConfig
@@ -41,15 +56,35 @@ type LinearProvider struct {
 	cachedTasks     []*core.Task
 	watchCh         chan core.ChangeEvent
 	stopCh          chan struct{}
+
+	// issueIndex maps ThreeDoors task ID ("linear:TEAM-123") to Linear-side identifiers.
+	// Populated during LoadTasks and used by MarkComplete/SaveTask.
+	issueIndex map[string]issueInfo
+
+	// completedStates caches the team→completed workflow state mapping with TTL.
+	completedStates map[string]stateCache
+	stateCacheTTL   time.Duration
+
+	// lastSyncSuccess tracks when the last successful write operation occurred.
+	lastSyncSuccess time.Time
+
+	// logger for sync observability (AC5).
+	logger *log.Logger
+
+	mu sync.RWMutex // protects issueIndex, completedStates, lastSyncSuccess
 }
 
 // NewLinearProvider creates a LinearProvider with the given client and config.
 func NewLinearProvider(client GraphQLClient, config *LinearConfig) *LinearProvider {
 	return &LinearProvider{
-		client:   client,
-		config:   config,
-		cacheTTL: defaultTTL,
-		stopCh:   make(chan struct{}),
+		client:          client,
+		config:          config,
+		cacheTTL:        defaultTTL,
+		stateCacheTTL:   defaultTTL,
+		stopCh:          make(chan struct{}),
+		issueIndex:      make(map[string]issueInfo),
+		completedStates: make(map[string]stateCache),
+		logger:          log.New(os.Stderr, "[linear-sync] ", log.LstdFlags),
 	}
 }
 
@@ -95,6 +130,7 @@ func (p *LinearProvider) LoadTasks() ([]*core.Task, error) {
 func (p *LinearProvider) loadFromAPI() ([]*core.Task, error) {
 	ctx := context.Background()
 	var allTasks []*core.Task
+	newIndex := make(map[string]issueInfo)
 
 	for _, teamID := range p.config.TeamIDs {
 		issues, err := p.fetchTeamIssues(ctx, teamID)
@@ -105,8 +141,18 @@ func (p *LinearProvider) loadFromAPI() ([]*core.Task, error) {
 		for i := range issues {
 			task := mapIssueToTask(&issues[i])
 			allTasks = append(allTasks, task)
+
+			// Build issue index for mutation support (Story 30.3)
+			newIndex[task.ID] = issueInfo{
+				issueID: issues[i].ID,
+				teamID:  issues[i].Team.ID,
+			}
 		}
 	}
+
+	p.mu.Lock()
+	p.issueIndex = newIndex
+	p.mu.Unlock()
 
 	if allTasks == nil {
 		allTasks = []*core.Task{}
@@ -254,24 +300,124 @@ func mapEstimateToEffort(estimate *float64) core.TaskEffort {
 	}
 }
 
-// SaveTask returns ErrReadOnly; Linear provider is read-only (AC5).
-func (p *LinearProvider) SaveTask(_ *core.Task) error {
-	return core.ErrReadOnly
+// SaveTask updates the Linear issue's title and description via GraphQL mutation (AC4).
+// Status changes are not supported through SaveTask — use MarkComplete instead.
+func (p *LinearProvider) SaveTask(task *core.Task) error {
+	info, err := p.lookupIssue(task.ID)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	result, err := p.client.MutateIssueUpdate(ctx, info.issueID, task.Text, task.Context)
+	if err != nil {
+		p.logger.Printf("SaveTask failed for %s: %v", task.ID, err)
+		return fmt.Errorf("linear save task %s: %w", task.ID, err)
+	}
+
+	if !result.Success {
+		p.logger.Printf("SaveTask mutation returned success=false for %s", task.ID)
+		return fmt.Errorf("linear save task %s: mutation returned success=false", task.ID)
+	}
+
+	p.mu.Lock()
+	p.lastSyncSuccess = time.Now().UTC()
+	p.mu.Unlock()
+
+	return nil
 }
 
-// SaveTasks returns ErrReadOnly; Linear provider is read-only (AC5).
+// SaveTasks returns ErrReadOnly; batch update is not supported for Linear.
 func (p *LinearProvider) SaveTasks(_ []*core.Task) error {
 	return core.ErrReadOnly
 }
 
-// DeleteTask returns ErrReadOnly; Linear provider is read-only (AC5).
+// DeleteTask returns ErrReadOnly; Linear issue deletion is destructive and not supported (AC6).
 func (p *LinearProvider) DeleteTask(_ string) error {
 	return core.ErrReadOnly
 }
 
-// MarkComplete returns ErrReadOnly; Linear provider is read-only (AC5).
-func (p *LinearProvider) MarkComplete(_ string) error {
-	return core.ErrReadOnly
+// MarkComplete transitions the Linear issue to the team's "completed" workflow state (AC1).
+// The completed state ID is discovered dynamically per team and cached (AC2).
+func (p *LinearProvider) MarkComplete(taskID string) error {
+	info, err := p.lookupIssue(taskID)
+	if err != nil {
+		return err
+	}
+
+	completedStateID, err := p.resolveCompletedState(info.teamID)
+	if err != nil {
+		p.logger.Printf("MarkComplete failed to resolve completed state for task %s (team %s): %v", taskID, info.teamID, err)
+		return fmt.Errorf("linear mark complete %s: %w", taskID, err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	result, err := p.client.MutateIssueState(ctx, info.issueID, completedStateID)
+	if err != nil {
+		p.logger.Printf("MarkComplete mutation failed for %s: %v", taskID, err)
+		return fmt.Errorf("linear mark complete %s: %w", taskID, err)
+	}
+
+	if !result.Success {
+		p.logger.Printf("MarkComplete mutation returned success=false for %s", taskID)
+		return fmt.Errorf("linear mark complete %s: mutation returned success=false", taskID)
+	}
+
+	p.mu.Lock()
+	p.lastSyncSuccess = time.Now().UTC()
+	p.mu.Unlock()
+
+	return nil
+}
+
+// lookupIssue retrieves the Linear-side identifiers for a ThreeDoors task ID.
+func (p *LinearProvider) lookupIssue(taskID string) (issueInfo, error) {
+	p.mu.RLock()
+	info, ok := p.issueIndex[taskID]
+	p.mu.RUnlock()
+
+	if !ok {
+		return issueInfo{}, fmt.Errorf("linear issue not found for task %s: load tasks first", taskID)
+	}
+	return info, nil
+}
+
+// resolveCompletedState discovers the "completed" workflow state ID for a team.
+// Results are cached with TTL to avoid re-querying on every completion (AC2).
+func (p *LinearProvider) resolveCompletedState(teamID string) (string, error) {
+	p.mu.RLock()
+	cached, ok := p.completedStates[teamID]
+	p.mu.RUnlock()
+
+	if ok && time.Since(cached.fetchedAt) < p.stateCacheTTL {
+		return cached.stateID, nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	states, err := p.client.QueryWorkflowStates(ctx, teamID)
+	if err != nil {
+		return "", fmt.Errorf("query workflow states for team %s: %w", teamID, err)
+	}
+
+	for _, s := range states {
+		if s.Type == "completed" {
+			p.mu.Lock()
+			p.completedStates[teamID] = stateCache{
+				stateID:   s.ID,
+				fetchedAt: time.Now().UTC(),
+			}
+			p.mu.Unlock()
+			return s.ID, nil
+		}
+	}
+
+	return "", fmt.Errorf("no completed workflow state found for team %s", teamID)
 }
 
 // Watch returns a channel that emits ChangeEvents at poll_interval (AC6).
@@ -324,41 +470,77 @@ func (p *LinearProvider) Stop() {
 	}
 }
 
-// HealthCheck verifies API connectivity via QueryViewer.
+// HealthCheck verifies API connectivity and reports sync status (AC7).
 func (p *LinearProvider) HealthCheck() core.HealthCheckResult {
 	start := time.Now().UTC()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := p.client.QueryViewer(ctx)
-	duration := time.Since(start)
+	var items []core.HealthCheckItem
 
+	_, err := p.client.QueryViewer(ctx)
 	if err != nil {
-		return core.HealthCheckResult{
-			Items: []core.HealthCheckItem{
-				{
-					Name:       "linear_connectivity",
-					Status:     core.HealthFail,
-					Message:    fmt.Sprintf("Linear API unreachable: %v", err),
-					Suggestion: "Check LINEAR_API_KEY and network connectivity",
-				},
-			},
-			Overall:  core.HealthFail,
-			Duration: duration,
-		}
+		items = append(items, core.HealthCheckItem{
+			Name:       "linear_connectivity",
+			Status:     core.HealthFail,
+			Message:    fmt.Sprintf("Linear API unreachable: %v", err),
+			Suggestion: "Check LINEAR_API_KEY and network connectivity",
+		})
+	} else {
+		items = append(items, core.HealthCheckItem{
+			Name:    "linear_connectivity",
+			Status:  core.HealthOK,
+			Message: "Linear API reachable",
+		})
 	}
 
+	// Sync status reporting (AC7)
+	p.mu.RLock()
+	lastSync := p.lastSyncSuccess
+	p.mu.RUnlock()
+
+	if lastSync.IsZero() {
+		items = append(items, core.HealthCheckItem{
+			Name:    "linear_sync",
+			Status:  core.HealthWarn,
+			Message: "No successful sync recorded",
+		})
+	} else {
+		items = append(items, core.HealthCheckItem{
+			Name:    "linear_sync",
+			Status:  core.HealthOK,
+			Message: fmt.Sprintf("Last successful sync: %s", lastSync.Format(time.RFC3339)),
+		})
+	}
+
+	duration := time.Since(start)
 	return core.HealthCheckResult{
-		Items: []core.HealthCheckItem{
-			{
-				Name:    "linear_connectivity",
-				Status:  core.HealthOK,
-				Message: "Linear API reachable",
-			},
-		},
-		Overall:  core.HealthOK,
+		Items:    items,
+		Overall:  computeOverall(items),
 		Duration: duration,
 	}
+}
+
+// LastSyncSuccess returns the time of the last successful write operation.
+// Returns zero time if no successful sync has occurred.
+func (p *LinearProvider) LastSyncSuccess() time.Time {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.lastSyncSuccess
+}
+
+// computeOverall determines the worst status across all items.
+func computeOverall(items []core.HealthCheckItem) core.HealthStatus {
+	overall := core.HealthOK
+	for _, item := range items {
+		if item.Status == core.HealthFail {
+			return core.HealthFail
+		}
+		if item.Status == core.HealthWarn && overall == core.HealthOK {
+			overall = core.HealthWarn
+		}
+	}
+	return overall
 }
 
 // Factory creates a LinearProvider from a ProviderConfig.

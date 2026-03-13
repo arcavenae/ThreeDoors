@@ -24,6 +24,18 @@ type mockGraphQLClient struct {
 	// pages supports multi-page pagination: teamID → []IssueConnection (one per page).
 	// When set, QueryTeamIssues returns pages sequentially using the cursor.
 	pages map[string][]IssueConnection
+
+	// Mutation tracking
+	mutateStateIssueID string
+	mutateStateStateID string
+	mutateStateResult  *MutationResult
+	mutateStateErr     error
+
+	mutateUpdateIssueID string
+	mutateUpdateTitle   string
+	mutateUpdateDesc    string
+	mutateUpdateResult  *MutationResult
+	mutateUpdateErr     error
 }
 
 func (m *mockGraphQLClient) QueryViewer(_ context.Context) (*Viewer, error) {
@@ -72,6 +84,21 @@ func (m *mockGraphQLClient) QueryWorkflowStates(_ context.Context, teamID string
 		return nil, m.statesErr
 	}
 	return m.states[teamID], nil
+}
+
+func (m *mockGraphQLClient) MutateIssueState(_ context.Context, issueID, stateID string) (*MutationResult, error) {
+	m.callCount++
+	m.mutateStateIssueID = issueID
+	m.mutateStateStateID = stateID
+	return m.mutateStateResult, m.mutateStateErr
+}
+
+func (m *mockGraphQLClient) MutateIssueUpdate(_ context.Context, issueID, title, description string) (*MutationResult, error) {
+	m.callCount++
+	m.mutateUpdateIssueID = issueID
+	m.mutateUpdateTitle = title
+	m.mutateUpdateDesc = description
+	return m.mutateUpdateResult, m.mutateUpdateErr
 }
 
 func newTestConfig() *LinearConfig {
@@ -385,17 +412,12 @@ func TestLinearProvider_ReadOnly(t *testing.T) {
 
 	provider := NewLinearProvider(&mockGraphQLClient{}, newTestConfig())
 
-	if err := provider.SaveTask(&core.Task{}); err != core.ErrReadOnly {
-		t.Errorf("SaveTask() = %v, want ErrReadOnly", err)
-	}
+	// SaveTasks and DeleteTask remain read-only (AC6)
 	if err := provider.SaveTasks([]*core.Task{}); err != core.ErrReadOnly {
 		t.Errorf("SaveTasks() = %v, want ErrReadOnly", err)
 	}
 	if err := provider.DeleteTask("x"); err != core.ErrReadOnly {
 		t.Errorf("DeleteTask() = %v, want ErrReadOnly", err)
-	}
-	if err := provider.MarkComplete("x"); err != core.ErrReadOnly {
-		t.Errorf("MarkComplete() = %v, want ErrReadOnly", err)
 	}
 }
 
@@ -485,12 +507,13 @@ func TestLinearProvider_HealthCheck(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name      string
-		viewerErr error
-		wantOK    bool
+		name        string
+		viewerErr   error
+		wantOverall core.HealthStatus
 	}{
-		{"healthy", nil, true},
-		{"unhealthy", fmt.Errorf("auth failed"), false},
+		// Connectivity OK but no sync yet → WARN (sync item is WARN)
+		{"healthy no sync", nil, core.HealthWarn},
+		{"unhealthy", fmt.Errorf("auth failed"), core.HealthFail},
 	}
 
 	for _, tt := range tests {
@@ -503,11 +526,30 @@ func TestLinearProvider_HealthCheck(t *testing.T) {
 			provider := NewLinearProvider(client, newTestConfig())
 			result := provider.HealthCheck()
 
-			if tt.wantOK && result.Overall != core.HealthOK {
-				t.Errorf("Overall = %q, want OK", result.Overall)
+			if result.Overall != tt.wantOverall {
+				t.Errorf("Overall = %q, want %q", result.Overall, tt.wantOverall)
 			}
-			if !tt.wantOK && result.Overall != core.HealthFail {
-				t.Errorf("Overall = %q, want FAIL", result.Overall)
+
+			// Verify connectivity item exists
+			foundConn := false
+			for _, item := range result.Items {
+				if item.Name == "linear_connectivity" {
+					foundConn = true
+				}
+			}
+			if !foundConn {
+				t.Error("HealthCheck should include linear_connectivity item")
+			}
+
+			// Verify sync item exists
+			foundSync := false
+			for _, item := range result.Items {
+				if item.Name == "linear_sync" {
+					foundSync = true
+				}
+			}
+			if !foundSync {
+				t.Error("HealthCheck should include linear_sync item")
 			}
 		})
 	}
@@ -583,6 +625,354 @@ func TestLinearProvider_Pagination(t *testing.T) {
 	// Verify all pages were fetched (3 API calls for 3 pages)
 	if client.callCount != 3 {
 		t.Errorf("made %d API calls, want 3 (one per page)", client.callCount)
+	}
+}
+
+// newMockWithIssuesAndStates creates a mock client with issues loaded and workflow states configured.
+func newMockWithIssuesAndStates() *mockGraphQLClient {
+	return &mockGraphQLClient{
+		viewer: &Viewer{ID: "u1", Name: "Test", Email: "test@example.com"},
+		issues: map[string]*IssueConnection{
+			"team-1": {
+				Nodes: []IssueNode{
+					{
+						ID:         "uuid-issue-1",
+						Identifier: "TEAM-1",
+						Title:      "Task One",
+						Priority:   2,
+						State:      IssueState{ID: "s4", Name: "In Progress", Type: "started"},
+						Team:       IssueTeam{ID: "team-1", Key: "TEAM"},
+						Labels:     IssueLabels{},
+						CreatedAt:  time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+						UpdatedAt:  time.Date(2026, 1, 2, 0, 0, 0, 0, time.UTC),
+					},
+				},
+				PageInfo: PageInfo{HasNextPage: false},
+			},
+		},
+		states: map[string][]WorkflowState{
+			"team-1": {
+				{ID: "s1", Name: "Triage", Type: "triage"},
+				{ID: "s3", Name: "Todo", Type: "unstarted"},
+				{ID: "s4", Name: "In Progress", Type: "started"},
+				{ID: "s5", Name: "Done", Type: "completed"},
+				{ID: "s6", Name: "Cancelled", Type: "cancelled"},
+			},
+		},
+		mutateStateResult:  &MutationResult{Success: true, Issue: &MutedIssue{ID: "uuid-issue-1", State: IssueState{ID: "s5", Name: "Done", Type: "completed"}}},
+		mutateUpdateResult: &MutationResult{Success: true, Issue: &MutedIssue{ID: "uuid-issue-1", State: IssueState{ID: "s4", Name: "In Progress", Type: "started"}}},
+	}
+}
+
+func TestLinearProvider_MarkComplete(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	provider := NewLinearProvider(client, newTestConfig())
+
+	// Load tasks first to populate issue index
+	_, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	// AC1: MarkComplete sends mutation to transition to completed state
+	err = provider.MarkComplete("linear:TEAM-1")
+	if err != nil {
+		t.Fatalf("MarkComplete() error = %v", err)
+	}
+
+	// Verify correct issue UUID was used
+	if client.mutateStateIssueID != "uuid-issue-1" {
+		t.Errorf("mutation issueID = %q, want %q", client.mutateStateIssueID, "uuid-issue-1")
+	}
+
+	// AC2: Verify the completed state ID was discovered dynamically
+	if client.mutateStateStateID != "s5" {
+		t.Errorf("mutation stateID = %q, want %q (completed state)", client.mutateStateStateID, "s5")
+	}
+}
+
+func TestLinearProvider_MarkComplete_CachesStateID(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	// Add a second issue
+	conn := client.issues["team-1"]
+	conn.Nodes = append(conn.Nodes, IssueNode{
+		ID:         "uuid-issue-2",
+		Identifier: "TEAM-2",
+		Title:      "Task Two",
+		Priority:   3,
+		State:      IssueState{ID: "s4", Name: "In Progress", Type: "started"},
+		Team:       IssueTeam{ID: "team-1", Key: "TEAM"},
+		Labels:     IssueLabels{},
+		CreatedAt:  time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:  time.Date(2026, 1, 2, 0, 0, 0, 0, time.UTC),
+	})
+
+	provider := NewLinearProvider(client, newTestConfig())
+	_, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	callsBefore := client.callCount
+
+	// First MarkComplete — queries workflow states
+	if err := provider.MarkComplete("linear:TEAM-1"); err != nil {
+		t.Fatalf("first MarkComplete() error = %v", err)
+	}
+	callsAfterFirst := client.callCount
+
+	// Second MarkComplete — should use cached state
+	if err := provider.MarkComplete("linear:TEAM-2"); err != nil {
+		t.Fatalf("second MarkComplete() error = %v", err)
+	}
+	callsAfterSecond := client.callCount
+
+	// First call: 1 QueryWorkflowStates + 1 MutateIssueState = 2 calls
+	firstCalls := callsAfterFirst - callsBefore
+	if firstCalls != 2 {
+		t.Errorf("first MarkComplete made %d API calls, want 2 (state query + mutation)", firstCalls)
+	}
+
+	// Second call: only 1 MutateIssueState (state cached)
+	secondCalls := callsAfterSecond - callsAfterFirst
+	if secondCalls != 1 {
+		t.Errorf("second MarkComplete made %d API calls, want 1 (cached state, only mutation)", secondCalls)
+	}
+}
+
+func TestLinearProvider_MarkComplete_UnknownTask(t *testing.T) {
+	t.Parallel()
+
+	provider := NewLinearProvider(&mockGraphQLClient{}, newTestConfig())
+
+	err := provider.MarkComplete("linear:UNKNOWN-999")
+	if err == nil {
+		t.Fatal("MarkComplete() should fail for unknown task ID")
+	}
+}
+
+func TestLinearProvider_MarkComplete_MutationFailure(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	client.mutateStateErr = fmt.Errorf("network error")
+
+	provider := NewLinearProvider(client, newTestConfig())
+	_, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	// AC5: Failed mutations are logged with task ID and error
+	err = provider.MarkComplete("linear:TEAM-1")
+	if err == nil {
+		t.Fatal("MarkComplete() should fail when mutation fails")
+	}
+	if !contains(err.Error(), "linear:TEAM-1") {
+		t.Errorf("error should contain task ID, got %q", err.Error())
+	}
+}
+
+func TestLinearProvider_MarkComplete_NoCompletedState(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	// Remove the completed state
+	client.states["team-1"] = []WorkflowState{
+		{ID: "s1", Name: "Triage", Type: "triage"},
+		{ID: "s4", Name: "In Progress", Type: "started"},
+	}
+
+	provider := NewLinearProvider(client, newTestConfig())
+	_, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	err = provider.MarkComplete("linear:TEAM-1")
+	if err == nil {
+		t.Fatal("MarkComplete() should fail when no completed state exists")
+	}
+	if !contains(err.Error(), "no completed workflow state") {
+		t.Errorf("error should mention missing state, got %q", err.Error())
+	}
+}
+
+func TestLinearProvider_MarkComplete_SuccessFalse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	client.mutateStateResult = &MutationResult{Success: false}
+
+	provider := NewLinearProvider(client, newTestConfig())
+	_, _ = provider.LoadTasks()
+
+	err := provider.MarkComplete("linear:TEAM-1")
+	if err == nil {
+		t.Fatal("MarkComplete() should fail when mutation returns success=false")
+	}
+	if !contains(err.Error(), "success=false") {
+		t.Errorf("error should mention success=false, got %q", err.Error())
+	}
+}
+
+func TestLinearProvider_SaveTask(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	provider := NewLinearProvider(client, newTestConfig())
+
+	_, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	// AC4: SaveTask updates title and description
+	task := &core.Task{
+		ID:      "linear:TEAM-1",
+		Text:    "Updated Title",
+		Context: "Updated description",
+	}
+	err = provider.SaveTask(task)
+	if err != nil {
+		t.Fatalf("SaveTask() error = %v", err)
+	}
+
+	if client.mutateUpdateIssueID != "uuid-issue-1" {
+		t.Errorf("mutation issueID = %q, want %q", client.mutateUpdateIssueID, "uuid-issue-1")
+	}
+	if client.mutateUpdateTitle != "Updated Title" {
+		t.Errorf("mutation title = %q, want %q", client.mutateUpdateTitle, "Updated Title")
+	}
+	if client.mutateUpdateDesc != "Updated description" {
+		t.Errorf("mutation description = %q, want %q", client.mutateUpdateDesc, "Updated description")
+	}
+}
+
+func TestLinearProvider_SaveTask_UnknownTask(t *testing.T) {
+	t.Parallel()
+
+	provider := NewLinearProvider(&mockGraphQLClient{}, newTestConfig())
+
+	err := provider.SaveTask(&core.Task{ID: "linear:UNKNOWN-999"})
+	if err == nil {
+		t.Fatal("SaveTask() should fail for unknown task ID")
+	}
+}
+
+func TestLinearProvider_SaveTask_MutationFailure(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	client.mutateUpdateErr = fmt.Errorf("network error")
+
+	provider := NewLinearProvider(client, newTestConfig())
+	_, _ = provider.LoadTasks()
+
+	err := provider.SaveTask(&core.Task{ID: "linear:TEAM-1", Text: "Updated"})
+	if err == nil {
+		t.Fatal("SaveTask() should fail when mutation fails")
+	}
+}
+
+func TestLinearProvider_HealthCheck_SyncStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		doSync          bool
+		viewerErr       error
+		wantOverall     core.HealthStatus
+		wantSyncMessage string
+	}{
+		{
+			name:            "no sync yet",
+			doSync:          false,
+			wantOverall:     core.HealthWarn,
+			wantSyncMessage: "No successful sync recorded",
+		},
+		{
+			name:            "after successful sync",
+			doSync:          true,
+			wantOverall:     core.HealthOK,
+			wantSyncMessage: "Last successful sync:",
+		},
+		{
+			name:            "api unreachable no sync",
+			doSync:          false,
+			viewerErr:       fmt.Errorf("connection refused"),
+			wantOverall:     core.HealthFail,
+			wantSyncMessage: "No successful sync recorded",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			client := newMockWithIssuesAndStates()
+			client.viewerErr = tt.viewerErr
+			provider := NewLinearProvider(client, newTestConfig())
+
+			if tt.doSync {
+				// Load tasks then complete one to set lastSyncSuccess
+				client.viewerErr = nil
+				_, _ = provider.LoadTasks()
+				_ = provider.MarkComplete("linear:TEAM-1")
+				// Restore viewerErr for health check
+				client.viewerErr = tt.viewerErr
+			}
+
+			result := provider.HealthCheck()
+
+			if result.Overall != tt.wantOverall {
+				t.Errorf("Overall = %q, want %q", result.Overall, tt.wantOverall)
+			}
+
+			// Check sync item exists
+			found := false
+			for _, item := range result.Items {
+				if item.Name == "linear_sync" {
+					found = true
+					if !contains(item.Message, tt.wantSyncMessage) {
+						t.Errorf("sync message = %q, want to contain %q", item.Message, tt.wantSyncMessage)
+					}
+				}
+			}
+			if !found {
+				t.Error("HealthCheck should include linear_sync item")
+			}
+		})
+	}
+}
+
+func TestLinearProvider_IssueIndexPopulatedOnLoad(t *testing.T) {
+	t.Parallel()
+
+	client := newMockWithIssuesAndStates()
+	provider := NewLinearProvider(client, newTestConfig())
+
+	_, err := provider.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	provider.mu.RLock()
+	info, ok := provider.issueIndex["linear:TEAM-1"]
+	provider.mu.RUnlock()
+
+	if !ok {
+		t.Fatal("issueIndex should contain linear:TEAM-1 after LoadTasks")
+	}
+	if info.issueID != "uuid-issue-1" {
+		t.Errorf("issueID = %q, want %q", info.issueID, "uuid-issue-1")
+	}
+	if info.teamID != "team-1" {
+		t.Errorf("teamID = %q, want %q", info.teamID, "team-1")
 	}
 }
 
