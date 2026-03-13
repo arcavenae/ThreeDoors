@@ -296,6 +296,27 @@ func (g *GitSyncTransport) Status(ctx context.Context) (SyncStatus, error) {
 		}
 	}
 
+	// Oldest unpushed commit timestamp
+	oldestOut, err := g.executor.Run(ctx, g.repoDir, "log", "--reverse", "--format=%aI", "@{upstream}..HEAD")
+	if err == nil {
+		lines := strings.Split(strings.TrimSpace(oldestOut), "\n")
+		if len(lines) > 0 && lines[0] != "" {
+			if t, parseErr := time.Parse(time.RFC3339, strings.TrimSpace(lines[0])); parseErr == nil {
+				status.OldestUnpushed = t
+			}
+		}
+	}
+
+	// Local and remote HEAD
+	localHead, err := g.executor.Run(ctx, g.repoDir, "rev-parse", "HEAD")
+	if err == nil {
+		status.LocalHEAD = strings.TrimSpace(localHead)
+	}
+	remoteHead, err := g.executor.Run(ctx, g.repoDir, "rev-parse", "@{upstream}")
+	if err == nil {
+		status.RemoteHEAD = strings.TrimSpace(remoteHead)
+	}
+
 	return status, nil
 }
 
@@ -311,9 +332,13 @@ sessions.jsonl merge=union
 
 // SyncStatus holds the current state of the sync repository.
 type SyncStatus struct {
-	State         string
-	LastSyncTime  time.Time
-	UnpushedCount int
-	RemoteURL     string
-	CircuitState  string
+	State             string    `json:"state"`
+	LastSyncTime      time.Time `json:"last_sync_time,omitempty"`
+	UnpushedCount     int       `json:"unpushed_count"`
+	RemoteURL         string    `json:"remote_url"`
+	CircuitState      string    `json:"circuit_state,omitempty"`
+	ConnectivityState string    `json:"connectivity_state,omitempty"`
+	OldestUnpushed    time.Time `json:"oldest_unpushed,omitempty"`
+	LocalHEAD         string    `json:"local_head,omitempty"`
+	RemoteHEAD        string    `json:"remote_head,omitempty"`
 }

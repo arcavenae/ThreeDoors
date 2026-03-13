@@ -253,6 +253,104 @@ func TestRenderSyncStatusBarWithWALPending(t *testing.T) {
 	}
 }
 
+func TestRenderOfflineInfoOnline(t *testing.T) {
+	t.Parallel()
+
+	info := OfflineInfo{Online: true, UnpushedCount: 0}
+	got := renderOfflineInfo(info)
+	if !strings.Contains(got, "online") {
+		t.Errorf("should contain 'online', got %q", got)
+	}
+	if !strings.Contains(got, "●") {
+		t.Errorf("online should show filled circle ●, got %q", got)
+	}
+}
+
+func TestRenderOfflineInfoOffline(t *testing.T) {
+	t.Parallel()
+
+	info := OfflineInfo{Online: false, UnpushedCount: 3}
+	got := renderOfflineInfo(info)
+	if !strings.Contains(got, "offline") {
+		t.Errorf("should contain 'offline', got %q", got)
+	}
+	if !strings.Contains(got, "○") {
+		t.Errorf("offline should show empty circle ○, got %q", got)
+	}
+	if !strings.Contains(got, "3 queued") {
+		t.Errorf("should show queue depth '3 queued', got %q", got)
+	}
+}
+
+func TestRenderOfflineInfoProbing(t *testing.T) {
+	t.Parallel()
+
+	info := OfflineInfo{Online: true, Probing: true}
+	got := renderOfflineInfo(info)
+	if !strings.Contains(got, "probing") {
+		t.Errorf("should contain 'probing', got %q", got)
+	}
+	if !strings.Contains(got, "↻") {
+		t.Errorf("probing should show ↻, got %q", got)
+	}
+}
+
+func TestRenderOfflineInfoWithLastSync(t *testing.T) {
+	t.Parallel()
+
+	info := OfflineInfo{Online: true, LastSyncTime: time.Now().UTC().Add(-5 * time.Minute)}
+	got := renderOfflineInfo(info)
+	if !strings.Contains(got, "5m ago") {
+		t.Errorf("should show last sync time '5m ago', got %q", got)
+	}
+}
+
+func TestRenderSyncStatusBarFullWithOfflineInfo(t *testing.T) {
+	t.Parallel()
+
+	tracker := core.NewSyncStatusTracker()
+	tracker.Register("Local")
+	info := &OfflineInfo{Online: true, UnpushedCount: 2}
+
+	got := RenderSyncStatusBarFull(tracker, info)
+	if !strings.Contains(got, "online") {
+		t.Errorf("should contain 'online', got %q", got)
+	}
+	if !strings.Contains(got, "2 queued") {
+		t.Errorf("should show queue depth, got %q", got)
+	}
+	if !strings.Contains(got, "Local") {
+		t.Errorf("should still show provider, got %q", got)
+	}
+}
+
+func TestRenderSyncStatusBarFullNilInfo(t *testing.T) {
+	t.Parallel()
+
+	tracker := core.NewSyncStatusTracker()
+	tracker.Register("Local")
+
+	got := RenderSyncStatusBarFull(tracker, nil)
+	// Should behave like RenderSyncStatusBar
+	want := RenderSyncStatusBar(tracker)
+	if got != want {
+		t.Errorf("RenderSyncStatusBarFull(tracker, nil) should match RenderSyncStatusBar(tracker)")
+	}
+}
+
+func TestRenderSyncStatusBarFullOnlyOfflineInfo(t *testing.T) {
+	t.Parallel()
+
+	info := &OfflineInfo{Online: false, UnpushedCount: 5}
+	got := RenderSyncStatusBarFull(nil, info)
+	if !strings.Contains(got, "offline") {
+		t.Errorf("should contain 'offline', got %q", got)
+	}
+	if !strings.Contains(got, "5 queued") {
+		t.Errorf("should show queue depth, got %q", got)
+	}
+}
+
 func TestStyleIconCircuitStates(t *testing.T) {
 	t.Parallel()
 

@@ -10,33 +10,87 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// OfflineInfo holds connectivity and queue information for TUI display (AC6).
+type OfflineInfo struct {
+	Online        bool
+	Probing       bool
+	UnpushedCount int
+	LastSyncTime  time.Time
+}
+
 // RenderSyncStatusBar renders a compact sync status bar for all tracked providers.
 // Returns an empty string if no providers are registered.
 func RenderSyncStatusBar(tracker *core.SyncStatusTracker) string {
-	if tracker == nil || tracker.Count() == 0 {
-		return ""
-	}
+	return RenderSyncStatusBarFull(tracker, nil)
+}
 
-	statuses := tracker.All()
-	// Sort by name for deterministic rendering
-	sort.Slice(statuses, func(i, j int) bool {
-		return statuses[i].Name < statuses[j].Name
-	})
+// RenderSyncStatusBarFull renders the sync status bar with optional offline info.
+func RenderSyncStatusBarFull(tracker *core.SyncStatusTracker, info *OfflineInfo) string {
+	if tracker == nil || tracker.Count() == 0 {
+		if info == nil {
+			return ""
+		}
+	}
 
 	var parts []string
-	for _, s := range statuses {
-		parts = append(parts, renderProviderStatus(s))
+
+	// Render connectivity indicator (AC6)
+	if info != nil {
+		parts = append(parts, renderOfflineInfo(*info))
 	}
 
-	bar := strings.Join(parts, syncStatusSeparator)
+	if tracker != nil && tracker.Count() > 0 {
+		statuses := tracker.All()
+		// Sort by name for deterministic rendering
+		sort.Slice(statuses, func(i, j int) bool {
+			return statuses[i].Name < statuses[j].Name
+		})
 
-	// Append WAL pending summary if any provider has pending items
-	walLine := renderWALPending(statuses)
-	if walLine != "" {
-		bar += "\n" + walLine
+		for _, s := range statuses {
+			parts = append(parts, renderProviderStatus(s))
+		}
+
+		bar := strings.Join(parts, syncStatusSeparator)
+
+		// Append WAL pending summary if any provider has pending items
+		walLine := renderWALPending(statuses)
+		if walLine != "" {
+			bar += "\n" + walLine
+		}
+
+		return syncStatusBarStyle.Render(bar)
 	}
 
-	return syncStatusBarStyle.Render(bar)
+	return syncStatusBarStyle.Render(strings.Join(parts, syncStatusSeparator))
+}
+
+// renderOfflineInfo renders the online/offline indicator with queue depth.
+func renderOfflineInfo(info OfflineInfo) string {
+	var icon, label string
+
+	switch {
+	case info.Probing:
+		icon = syncStatusHalfOpenStyle.Render("↻")
+		label = syncStatusLabelStyle.Render("probing")
+	case info.Online:
+		icon = syncStatusSyncedStyle.Render("●")
+		label = syncStatusLabelStyle.Render("online")
+	default:
+		icon = syncStatusErrorStyle.Render("○")
+		label = syncStatusLabelStyle.Render("offline")
+	}
+
+	result := fmt.Sprintf("%s %s", icon, label)
+
+	if info.UnpushedCount > 0 {
+		result += " " + syncStatusPendingStyle.Render(fmt.Sprintf("(%d queued)", info.UnpushedCount))
+	}
+
+	if !info.LastSyncTime.IsZero() {
+		result += " " + syncStatusDetailStyle.Render(formatSyncAge(info.LastSyncTime))
+	}
+
+	return result
 }
 
 // renderProviderStatus renders a single provider's status with appropriate styling.
