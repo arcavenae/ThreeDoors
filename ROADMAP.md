@@ -136,14 +136,14 @@ Add `t.Helper()` to all test helper functions across the codebase. Currently onl
 
 ## Active Epics
 
-### Epic 66: CLI/TUI Adapter Wiring Parity (P0) — 2/3 stories done
+### Epic 66: CLI/TUI Adapter Wiring Parity (P0) — 3/3 stories done — COMPLETE
 
 Fix three gaps where implemented adapter code is not properly connected to CLI and TUI entry points: CLI adapter registration bug (critical), ClickUp connect wiring, and provider spec parity.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 66.1 | CLI Adapter Registration Fix | Done (PR #749) | P0 | None |
-| 66.2 | ClickUp Connect Wiring | Not Started | P1 | 66.1 |
+| 66.2 | ClickUp Connect Wiring | Done (PR #751) | P1 | 66.1 |
 | 66.3 | Provider Spec Parity & Validation | Done (PR #750) | P1 | 66.2 |
 
 **Dependency graph:** Linear chain: 66.1 → 66.2 → 66.3. Story 66.1 is the critical bug fix.
@@ -377,7 +377,7 @@ Continuous improvement meta-system with a persistent `retrospector` agent that m
 
 **Dependency graph:** Stories 51.1 & 51.2 can parallelize. Stories 51.3-51.5 can parallelize after 51.1. Story 51.6 depends on 51.3-51.5. Phase 2 stories depend on Phase 1 validation.
 
-### Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (Rearchitected) (P2) — 3/5 stories done
+### Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure (Rearchitected) (P2) — 5/5 stories done — COMPLETE
 
 Persistent research-supervisor agent that wraps the official Gemini CLI (`@google/gemini-cli`) with OAuth authentication for web-grounded research. **Rearchitected** from the original Python/API-key approach (D-154 → D-164). Uses free tier: 50 Pro/day + 1,000 Flash/day. Features context packaging (8 bundles, `--include-directories`), three-layer result shielding, and dual-tier budget management. No Python, no API key, no third-party tools.
 
@@ -386,8 +386,8 @@ Persistent research-supervisor agent that wraps the official Gemini CLI (`@googl
 | 54.1 | Research-Supervisor Agent Definition (Gemini CLI + OAuth) | Done (PR #537) | P2 | None |
 | 54.2 | Gemini CLI Installation, OAuth Setup & Wrapper Script | Done (PR #538) | P2 | None |
 | 54.3 | Context Packaging & Prompt Engineering (Gemini CLI) | Done (PR #664) | P2 | 54.1 |
-| 54.4 | Result Shielding & Artifact Storage (Gemini CLI JSON) | Not Started | P2 | 54.1, 54.2 |
-| 54.5 | Rate Limiting, Budget Management & Model Selection | Not Started | P2 | 54.1, 54.2 |
+| 54.4 | Result Shielding & Artifact Storage (Gemini CLI JSON) | Done (PR #690) | P2 | 54.1, 54.2 |
+| 54.5 | Rate Limiting, Budget Management & Model Selection | Done (PR #689) | P2 | 54.1, 54.2 |
 
 **Dependency graph:** Stories 54.1 & 54.2 can parallelize. Stories 54.3, 54.4, 54.5 can parallelize after 54.1+54.2 complete.
 
