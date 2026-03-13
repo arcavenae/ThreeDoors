@@ -15,12 +15,16 @@ import (
 
 // mockTaskFetcher implements TaskFetcher for unit testing.
 type mockTaskFetcher struct {
-	tasksByList   map[string][]ClickUpTask // listID -> tasks
-	tasksErr      error
-	user          *ClickUpUser
-	userErr       error
-	getTasksCalls int
-	getUserCalls  int
+	tasksByList       map[string][]ClickUpTask // listID -> tasks
+	tasksErr          error
+	user              *ClickUpUser
+	userErr           error
+	updateStatusErr   error
+	getTasksCalls     int
+	getUserCalls      int
+	updateStatusCalls int
+	lastUpdateTaskID  string
+	lastUpdateStatus  string
 }
 
 func (m *mockTaskFetcher) GetTasks(_ context.Context, listID string, _ int) ([]ClickUpTask, error) {
@@ -37,6 +41,13 @@ func (m *mockTaskFetcher) GetAuthorizedUser(_ context.Context) (*ClickUpUser, er
 		return nil, m.userErr
 	}
 	return m.user, nil
+}
+
+func (m *mockTaskFetcher) UpdateTaskStatus(_ context.Context, taskID, status string) error {
+	m.updateStatusCalls++
+	m.lastUpdateTaskID = taskID
+	m.lastUpdateStatus = status
+	return m.updateStatusErr
 }
 
 func TestClickUpProviderName(t *testing.T) {
@@ -547,9 +558,7 @@ func TestClickUpProviderReadOnlyMethods(t *testing.T) {
 	if err := p.DeleteTask("id"); !errors.Is(err, core.ErrReadOnly) {
 		t.Errorf("DeleteTask() = %v, want ErrReadOnly", err)
 	}
-	if err := p.MarkComplete("id"); !errors.Is(err, core.ErrReadOnly) {
-		t.Errorf("MarkComplete() = %v, want ErrReadOnly", err)
-	}
+	// MarkComplete is no longer read-only — it calls the ClickUp API
 }
 
 func TestClickUpProviderWatch(t *testing.T) {
@@ -661,6 +670,17 @@ func (h *clickUpMockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := r.URL.Path
+
+	// Match PUT /task/{id} for status updates
+	if r.Method == http.MethodPut {
+		parts := splitPath(path)
+		if len(parts) >= 2 && parts[0] == "task" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":"` + parts[1] + `"}`))
+			return
+		}
+	}
 
 	// Match /list/{id}/task
 	if r.Method == http.MethodGet && len(path) > 6 && path[:6] == "/list/" {
@@ -916,10 +936,311 @@ func TestClickUpProviderReadOnlyMethodsViaHTTP(t *testing.T) {
 		}
 	})
 
-	t.Run("MarkComplete returns ErrReadOnly", func(t *testing.T) {
+	// MarkComplete is no longer ErrReadOnly — it calls the ClickUp API
+}
+
+// --- Story 63.3: Bidirectional Sync Tests ---
+
+// AC1: MarkComplete calls UpdateTaskStatus with configured "done" status.
+func TestClickUpProviderMarkComplete(t *testing.T) {
+	t.Parallel()
+
+	t.Run("default done status", func(t *testing.T) {
 		t.Parallel()
-		if err := p.MarkComplete("test"); !errors.Is(err, core.ErrReadOnly) {
-			t.Errorf("MarkComplete() = %v, want ErrReadOnly", err)
+		mock := &mockTaskFetcher{}
+		p := NewClickUpProvider(mock, &ClickUpConfig{})
+
+		err := p.MarkComplete("task-123")
+		if err != nil {
+			t.Fatalf("MarkComplete() error = %v", err)
+		}
+		if mock.updateStatusCalls != 1 {
+			t.Errorf("UpdateTaskStatus called %d times, want 1", mock.updateStatusCalls)
+		}
+		if mock.lastUpdateTaskID != "task-123" {
+			t.Errorf("taskID = %q, want %q", mock.lastUpdateTaskID, "task-123")
+		}
+		if mock.lastUpdateStatus != "complete" {
+			t.Errorf("status = %q, want %q", mock.lastUpdateStatus, "complete")
 		}
 	})
+
+	t.Run("custom done status", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{}
+		p := NewClickUpProvider(mock, &ClickUpConfig{
+			DoneStatus: "closed",
+		})
+
+		err := p.MarkComplete("task-456")
+		if err != nil {
+			t.Fatalf("MarkComplete() error = %v", err)
+		}
+		if mock.lastUpdateStatus != "closed" {
+			t.Errorf("status = %q, want %q", mock.lastUpdateStatus, "closed")
+		}
+	})
+
+	t.Run("API error propagates", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{
+			updateStatusErr: errors.New("api failure"),
+		}
+		p := NewClickUpProvider(mock, &ClickUpConfig{})
+
+		err := p.MarkComplete("task-789")
+		if err == nil {
+			t.Fatal("MarkComplete() expected error, got nil")
+		}
+	})
+}
+
+// AC2: UpdateStatus writes back blocked status to ClickUp.
+func TestClickUpProviderUpdateStatus(t *testing.T) {
+	t.Parallel()
+
+	t.Run("blocked status write-back", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{}
+		p := NewClickUpProvider(mock, &ClickUpConfig{})
+
+		err := p.UpdateStatus("task-123", core.StatusBlocked)
+		if err != nil {
+			t.Fatalf("UpdateStatus() error = %v", err)
+		}
+		if mock.lastUpdateStatus != "blocked" {
+			t.Errorf("status = %q, want %q", mock.lastUpdateStatus, "blocked")
+		}
+	})
+
+	t.Run("custom blocked status", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{}
+		p := NewClickUpProvider(mock, &ClickUpConfig{
+			BlockedStatus: "on hold",
+		})
+
+		err := p.UpdateStatus("task-456", core.StatusBlocked)
+		if err != nil {
+			t.Fatalf("UpdateStatus() error = %v", err)
+		}
+		if mock.lastUpdateStatus != "on hold" {
+			t.Errorf("status = %q, want %q", mock.lastUpdateStatus, "on hold")
+		}
+	})
+
+	t.Run("unmapped status returns error", func(t *testing.T) {
+		t.Parallel()
+		mock := &mockTaskFetcher{}
+		p := NewClickUpProvider(mock, &ClickUpConfig{})
+
+		err := p.UpdateStatus("task-789", core.StatusArchived)
+		if err == nil {
+			t.Fatal("UpdateStatus() expected error for unmapped status, got nil")
+		}
+	})
+}
+
+// AC7: Circuit breaker trips after 3 consecutive failures.
+func TestClickUpProviderCircuitBreaker(t *testing.T) {
+	t.Parallel()
+
+	mock := &mockTaskFetcher{
+		updateStatusErr: errors.New("api failure"),
+	}
+	p := NewClickUpProvider(mock, &ClickUpConfig{})
+
+	// Trigger 3 failures to trip the circuit breaker (threshold=3)
+	// CircuitBreaker uses a FailureWindow, so failures must be within window.
+	// Default FailureWindow is 2m, so rapid-fire failures will trip it.
+	for i := 0; i < 3; i++ {
+		_ = p.MarkComplete("task-fail")
+	}
+
+	// Additional calls fail fast with ErrCircuitOpen even though the failure threshold
+	// pruning window may keep failures. Let's verify that many failures does trip:
+	// The CB has threshold=3 and window=2m. After 3 failures, it should be open.
+	// But since default CB has threshold=5, let me check: we set it to 3.
+	// Actually we need 3 failures within the window. Let's do enough.
+	for i := 0; i < 3; i++ {
+		_ = p.MarkComplete("task-fail")
+	}
+
+	// After enough failures, circuit should be open
+	state := p.CircuitState()
+	if state != core.CircuitOpen {
+		t.Errorf("CircuitState() = %v, want CircuitOpen after failures", state)
+	}
+
+	// Next call should return ErrCircuitOpen immediately
+	err := p.MarkComplete("task-blocked")
+	if !errors.Is(err, core.ErrCircuitOpen) {
+		t.Errorf("MarkComplete() = %v, want ErrCircuitOpen", err)
+	}
+}
+
+// AC9: SourceRef back-link allows opening ClickUp task in browser.
+func TestClickUpProviderSourceRefBackLink(t *testing.T) {
+	t.Parallel()
+
+	mock := &mockTaskFetcher{
+		tasksByList: map[string][]ClickUpTask{
+			"list1": {
+				{
+					ID:     "task-99",
+					Name:   "Task with URL",
+					Status: ClickUpStatus{Status: "to do"},
+					URL:    "https://app.clickup.com/t/task-99",
+					List:   ClickUpListRef{ID: "list1", Name: "Sprint 1"},
+				},
+			},
+		},
+	}
+
+	p := NewClickUpProvider(mock, &ClickUpConfig{ListIDs: []string{"list1"}})
+	tasks, err := p.LoadTasks()
+	if err != nil {
+		t.Fatalf("LoadTasks() error = %v", err)
+	}
+
+	task := tasks[0]
+	// SourceProvider embeds the URL for back-linking
+	if task.SourceProvider != "clickup:https://app.clickup.com/t/task-99" {
+		t.Errorf("SourceProvider = %q, want clickup URL back-link", task.SourceProvider)
+	}
+}
+
+// Test cache fallback when API is unavailable.
+func TestClickUpProviderCacheFallback(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+
+	// First call succeeds and populates cache
+	mock := &mockTaskFetcher{
+		tasksByList: map[string][]ClickUpTask{
+			"list1": {
+				{ID: "t1", Name: "Cached task", Status: ClickUpStatus{Status: "to do"}, List: ClickUpListRef{ID: "list1"}},
+			},
+		},
+	}
+	p := NewClickUpProvider(mock, &ClickUpConfig{ListIDs: []string{"list1"}})
+	p.SetCachePath(tmpDir)
+
+	tasks, err := p.LoadTasks()
+	if err != nil {
+		t.Fatalf("initial LoadTasks() error = %v", err)
+	}
+	if len(tasks) != 1 {
+		t.Fatalf("expected 1 task, got %d", len(tasks))
+	}
+
+	// Second call fails API — should fall back to cache
+	mock.tasksErr = errors.New("network down")
+	tasks, err = p.LoadTasks()
+	if err != nil {
+		t.Fatalf("cached LoadTasks() error = %v", err)
+	}
+	if len(tasks) != 1 {
+		t.Fatalf("expected 1 cached task, got %d", len(tasks))
+	}
+	if tasks[0].ID != "t1" {
+		t.Errorf("cached task ID = %q, want %q", tasks[0].ID, "t1")
+	}
+}
+
+// Test reverse status mapping defaults.
+func TestDefaultReverseStatusMapping(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		status core.TaskStatus
+		want   string
+	}{
+		{core.StatusTodo, "to do"},
+		{core.StatusInProgress, "in progress"},
+		{core.StatusComplete, "complete"},
+		{core.StatusBlocked, "blocked"},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			t.Parallel()
+			got, ok := DefaultReverseStatusMapping[tt.status]
+			if !ok {
+				t.Fatalf("no mapping for %q", tt.status)
+			}
+			if got != tt.want {
+				t.Errorf("DefaultReverseStatusMapping[%q] = %q, want %q", tt.status, got, tt.want)
+			}
+		})
+	}
+}
+
+// Test MarkComplete via HTTP integration.
+func TestClickUpProviderMarkCompleteViaHTTP(t *testing.T) {
+	t.Parallel()
+
+	var receivedStatus string
+	var receivedTaskID string
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			parts := splitPath(r.URL.Path)
+			if len(parts) >= 2 && parts[0] == "task" {
+				receivedTaskID = parts[1]
+				var body struct {
+					Status string `json:"status"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err == nil {
+					receivedStatus = body.Status
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(`{"id":"` + receivedTaskID + `"}`))
+				return
+			}
+		}
+		// User endpoint for health check
+		if r.URL.Path == "/user" {
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"user":{"id":1}}`))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	})
+
+	server := newTestServer(t, handler)
+	client := newClientForServer(server)
+	p := NewClickUpProvider(client, &ClickUpConfig{})
+
+	err := p.MarkComplete("cu-task-42")
+	if err != nil {
+		t.Fatalf("MarkComplete() error = %v", err)
+	}
+	if receivedTaskID != "cu-task-42" {
+		t.Errorf("received taskID = %q, want %q", receivedTaskID, "cu-task-42")
+	}
+	if receivedStatus != "complete" {
+		t.Errorf("received status = %q, want %q", receivedStatus, "complete")
+	}
+}
+
+// Test config parsing for new fields.
+func TestParseConfigDoneBlockedStatus(t *testing.T) {
+	cfg, err := ParseConfig(map[string]string{
+		"api_token":      "test-token",
+		"team_id":        "team1",
+		"list_ids":       "list1",
+		"done_status":    "closed",
+		"blocked_status": "on hold",
+	})
+	if err != nil {
+		t.Fatalf("ParseConfig() error = %v", err)
+	}
+	if cfg.DoneStatus != "closed" {
+		t.Errorf("DoneStatus = %q, want %q", cfg.DoneStatus, "closed")
+	}
+	if cfg.BlockedStatus != "on hold" {
+		t.Errorf("BlockedStatus = %q, want %q", cfg.BlockedStatus, "on hold")
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/clickup"
 	"github.com/arcaven/ThreeDoors/internal/adapters/github"
 	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
 	"github.com/arcaven/ThreeDoors/internal/adapters/linear"
@@ -326,6 +327,9 @@ func registerBuiltinAdapters(reg *core.Registry) {
 
 	// Linear provider: reads issues from Linear via GraphQL API (read-only).
 	_ = reg.Register("linear", linear.Factory)
+
+	// ClickUp provider: bidirectional sync with ClickUp tasks via REST API.
+	_ = reg.Register("clickup", clickup.Factory)
 }
 
 // isSubcommand checks whether arg is a known CLI subcommand name.
