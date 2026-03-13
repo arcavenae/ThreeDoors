@@ -24,26 +24,28 @@ type SourceRef struct {
 
 // Task represents a single task with full lifecycle metadata.
 type Task struct {
-	ID             string                `yaml:"id" json:"id"`
-	Text           string                `yaml:"text" json:"text"`
-	Context        string                `yaml:"context,omitempty" json:"context,omitempty"`
-	Status         TaskStatus            `yaml:"status" json:"status"`
-	Type           TaskType              `yaml:"type,omitempty" json:"type,omitempty"`
-	Effort         TaskEffort            `yaml:"effort,omitempty" json:"effort,omitempty"`
-	Location       TaskLocation          `yaml:"location,omitempty" json:"location,omitempty"`
-	Notes          []TaskNote            `yaml:"notes,omitempty" json:"notes,omitempty"`
-	Blocker        string                `yaml:"blocker,omitempty" json:"blocker,omitempty"`
-	CreatedAt      time.Time             `yaml:"created_at" json:"created_at"`
-	UpdatedAt      time.Time             `yaml:"updated_at" json:"updated_at"`
-	CompletedAt    *time.Time            `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
-	DeferUntil     *time.Time            `yaml:"defer_until,omitempty" json:"defer_until,omitempty"`
-	SourceProvider string                `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
-	SourceRefs     []SourceRef           `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
-	ParentID       *string               `yaml:"parent_id,omitempty" json:"parent_id,omitempty"`
-	DependsOn      []string              `yaml:"depends_on,omitempty" json:"depends_on,omitempty"`
-	DevDispatch    *dispatch.DevDispatch `yaml:"dev_dispatch,omitempty" json:"dev_dispatch,omitempty"`
-	Orphaned       bool                  `yaml:"orphaned,omitempty" json:"orphaned,omitempty"`
-	OrphanedAt     *time.Time            `yaml:"orphaned_at,omitempty" json:"orphaned_at,omitempty"`
+	ID             string                  `yaml:"id" json:"id"`
+	Text           string                  `yaml:"text" json:"text"`
+	Context        string                  `yaml:"context,omitempty" json:"context,omitempty"`
+	Status         TaskStatus              `yaml:"status" json:"status"`
+	Type           TaskType                `yaml:"type,omitempty" json:"type,omitempty"`
+	Effort         TaskEffort              `yaml:"effort,omitempty" json:"effort,omitempty"`
+	Location       TaskLocation            `yaml:"location,omitempty" json:"location,omitempty"`
+	Notes          []TaskNote              `yaml:"notes,omitempty" json:"notes,omitempty"`
+	Blocker        string                  `yaml:"blocker,omitempty" json:"blocker,omitempty"`
+	CreatedAt      time.Time               `yaml:"created_at" json:"created_at"`
+	UpdatedAt      time.Time               `yaml:"updated_at" json:"updated_at"`
+	CompletedAt    *time.Time              `yaml:"completed_at,omitempty" json:"completed_at,omitempty"`
+	DeferUntil     *time.Time              `yaml:"defer_until,omitempty" json:"defer_until,omitempty"`
+	SourceProvider string                  `yaml:"source_provider,omitempty" json:"source_provider,omitempty"`
+	SourceRefs     []SourceRef             `yaml:"source_refs,omitempty" json:"source_refs,omitempty"`
+	ParentID       *string                 `yaml:"parent_id,omitempty" json:"parent_id,omitempty"`
+	DependsOn      []string                `yaml:"depends_on,omitempty" json:"depends_on,omitempty"`
+	DevDispatch    *dispatch.DevDispatch   `yaml:"dev_dispatch,omitempty" json:"dev_dispatch,omitempty"`
+	Orphaned       bool                    `yaml:"orphaned,omitempty" json:"orphaned,omitempty"`
+	OrphanedAt     *time.Time              `yaml:"orphaned_at,omitempty" json:"orphaned_at,omitempty"`
+	FieldVersions  map[string]FieldVersion `yaml:"field_versions,omitempty" json:"field_versions,omitempty"`
+	VectorClock    map[string]uint64       `yaml:"vector_clock,omitempty" json:"vector_clock,omitempty"`
 }
 
 // HasSourceRef returns true if the task has a SourceRef matching the given provider and native ID.
