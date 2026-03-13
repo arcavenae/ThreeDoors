@@ -509,7 +509,7 @@ ClickUp as task source via REST API v2. Follows the established 4-story integrat
 
 **Dependency graph:** Stories 63.3 & 63.4 can parallelize after 63.2 completes.
 
-### Epic 64: Cross-Computer Sync (P2) — 4/6 stories done
+### Epic 64: Cross-Computer Sync (P2) — 5/6 stories done
 
 Task data synchronization across multiple computers. Architecturally distinct from provider sync. Requires research spike before implementation.
 
@@ -519,7 +519,7 @@ Task data synchronization across multiple computers. Architecturally distinct fr
 | 64.2 | Device Identity & Registration | Done (PR #721) | P2 | 64.1 |
 | 64.3 | Sync Transport Layer | Done (PR #734) | P2 | 64.1, 64.2 |
 | 64.4 | Cross-Machine Conflict Resolution | Done (PR #731) | P2 | 64.1, 64.2 |
-| 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |
+| 64.5 | Offline Queue & Reconciliation | Done (PR #743) | P2 | 64.3, 64.4 |
 | 64.6 | Cross-Computer Sync E2E Tests | Not Started | P2 | 64.3, 64.4, 64.5 |
 
 **Note:** Stories 64.2-64.6 are provisional — acceptance criteria will be refined after the research spike (64.1) completes.
