@@ -816,7 +816,7 @@
 **Epic 64: Cross-Computer Sync** (P2)
 - **Goal:** Enable task data synchronization across multiple computers, with research spike to determine architecture
 - **Prerequisites:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
-- **Status:** In Progress (5/6 done — PRs #715, #721, #731, #734, #743)
+- **Status:** COMPLETE — All 6 stories done (PRs #715, #721, #731, #734, #743, #748)
 - **Deliverables:**
   - ADR documenting chosen sync architecture (transport, conflict resolution, identity)
   - Device identity and registration system
@@ -914,7 +914,7 @@
 | Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
 | Epic 63: ClickUp Integration | 4 | Complete (4/4 done) |
-| Epic 64: Cross-Computer Sync | 6 | In Progress (5/6 done) |
+| Epic 64: Cross-Computer Sync | 6 | Complete (6/6 done) |
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
 | Epic 66: CLI/TUI Adapter Wiring Parity (PROVISIONAL) | 3 | Not Started (0/3 done) |
 | **Total** | **342** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
