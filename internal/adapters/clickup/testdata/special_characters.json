@@ -1,0 +1,47 @@
+{
+  "tasks": [
+    {
+      "id": "cu-unicode",
+      "name": "Review café résumé — handle naïve edge cases «here»",
+      "description": "Contains: em-dash—, quotes\u201c\u201d, ellipsis…, ñ, ü, ß",
+      "status": {
+        "status": "to do",
+        "type": "custom"
+      },
+      "priority": {
+        "id": "3"
+      },
+      "due_date": "",
+      "tags": [
+        {"name": "i18n"}
+      ],
+      "url": "https://app.clickup.com/t/cu-unicode",
+      "list": {
+        "id": "list-200",
+        "name": "Backlog"
+      }
+    },
+    {
+      "id": "cu-emoji",
+      "name": "🎉 Ship release 2.0 🚀",
+      "description": "Celebrate with 🍕 and 🎂",
+      "status": {
+        "status": "in progress",
+        "type": "custom"
+      },
+      "priority": {
+        "id": "1"
+      },
+      "due_date": "",
+      "tags": [
+        {"name": "release"},
+        {"name": "🏷️"}
+      ],
+      "url": "https://app.clickup.com/t/cu-emoji",
+      "list": {
+        "id": "list-200",
+        "name": "Backlog"
+      }
+    }
+  ]
+}
