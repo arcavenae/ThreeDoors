@@ -239,13 +239,13 @@ Remediate findings from the application security audit. Fix permissive file perm
 | 42.4 | Credential Protection in Config Files | Done (PR #477) | P2 | 42.1 |
 | 42.5 | CI Supply Chain Hardening | Done (PR #607) | P1 | None |
 
-### Epic 50: In-App Bug Reporting (P2) — 2/3 stories done
+### Epic 50: In-App Bug Reporting (P2) — 3/3 stories done — COMPLETE
 
 In-app `:bug` command for frictionless bug reporting without leaving the TUI. Breadcrumb navigation trail, environment data collection with strict privacy allowlist, mandatory preview, and tiered submission (browser URL, GitHub API, local file).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 50.1 | Breadcrumb Tracking System | In Review | P2 | None |
+| 50.1 | Breadcrumb Tracking System | Done (PR #478) | P2 | None |
 | 50.2 | Bug Report View & Environment Collection | Done (PR #624) | P2 | 50.1 |
 | 50.3 | Submission Methods (Browser, API, File) | Done (PR #649) | P2 | 50.2 |
 
@@ -324,18 +324,18 @@ Document and enable remote collaboration with multiclaude via SSH, with future M
 | 53.4 | Remote Worker Dispatch | Not Started | P2 | 53.2, 53.3 |
 | 53.5 | MCP Bridge Prototype | Not Started | P2 | 53.1 |
 
-### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 6/11 stories done
+### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 11/11 stories done — COMPLETE
 
 Continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality (did we build the right thing?) and operational efficiency (are we building efficiently?).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | In Review | P1 | None |
+| 51.1 | Retrospector Agent Definition (Responsibility+WHY Format) | Done (PR #461) | P1 | None |
 | 51.2 | Rewrite Operational Agent Definitions (Responsibility+WHY Format) | Done (PR #460) | P1 | None |
-| 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | In Review (PR #462) | P1 | 51.1 |
-| 51.4 | Saga Detection (Dispatch Waste Alerting) | In Review | P1 | 51.1 |
-| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | In Review | P1 | 51.1 |
-| 51.6 | BOARD.md Recommendation Pipeline | In Review | P1 | 51.3, 51.4, 51.5 |
+| 51.3 | JSONL Findings Log & Per-Merge Lightweight Retro | Done (PR #462) | P1 | 51.1 |
+| 51.4 | Saga Detection (Dispatch Waste Alerting) | Done (PR #464) | P1 | 51.1 |
+| 51.5 | Doc Consistency Audit (Periodic Cross-Check) | Done (PR #465) | P1 | 51.1 |
+| 51.6 | BOARD.md Recommendation Pipeline | Done (PR #463) | P1 | 51.3, 51.4, 51.5 |
 | 51.7 | Merge Conflict Rate Analysis | Done (PR #506) | P2 | 51.3, 51.6 |
 | 51.8 | CI Failure Rate Analysis & Coding Standard Proposals | Done (PR #505) | P2 | 51.3, 51.6 |
 | 51.9 | Research Lifecycle Tracking | Done (PR #507) | P2 | 51.3, 51.6 |
