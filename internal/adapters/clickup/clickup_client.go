@@ -29,13 +29,27 @@ func IsRateLimitError(err error) bool {
 	return errors.As(err, &rle)
 }
 
+// ClickUpTag represents a tag attached to a ClickUp task.
+type ClickUpTag struct {
+	Name string `json:"name"`
+}
+
+// ClickUpPriority represents a task's priority in ClickUp.
+type ClickUpPriority struct {
+	ID string `json:"id"` // "1"=Urgent, "2"=High, "3"=Normal, "4"=Low
+}
+
 // ClickUpTask represents a task from the ClickUp API.
 type ClickUpTask struct {
-	ID     string         `json:"id"`
-	Name   string         `json:"name"`
-	Status ClickUpStatus  `json:"status"`
-	URL    string         `json:"url"`
-	List   ClickUpListRef `json:"list"`
+	ID          string           `json:"id"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	Status      ClickUpStatus    `json:"status"`
+	Priority    *ClickUpPriority `json:"priority"`
+	DueDate     string           `json:"due_date"` // Unix milliseconds as string, or empty
+	Tags        []ClickUpTag     `json:"tags"`
+	URL         string           `json:"url"`
+	List        ClickUpListRef   `json:"list"`
 }
 
 // ClickUpStatus represents a task's status in ClickUp.
