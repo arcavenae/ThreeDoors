@@ -146,6 +146,38 @@ func TestVisualWidthConsistency(t *testing.T) {
 	}
 }
 
+// TestGolden_ShadowWidthTiers tests shadow rendering at narrow, medium, and wide
+// widths for each theme in door mode (height=16), verifying width-adaptive
+// gradient shadow behavior (Story 56.5).
+func TestGolden_ShadowWidthTiers(t *testing.T) {
+	setAsciiProfile(t)
+
+	tiers := []struct {
+		label string
+		width int
+	}{
+		{"narrow_w16", 16},
+		{"medium_w24", 24},
+		{"wide_w38", 38},
+	}
+
+	for _, theme := range allThemes() {
+		for _, tier := range tiers {
+			for _, sel := range []bool{false, true} {
+				state := "unselected"
+				if sel {
+					state = "selected"
+				}
+				name := theme.Name + "/" + state + "_" + tier.label
+				t.Run(name, func(t *testing.T) {
+					out := theme.Render("Buy groceries for the week", tier.width, 16, sel, "", 0.0)
+					golden.RequireEqual(t, []byte(out))
+				})
+			}
+		}
+	}
+}
+
 // TestNoANSIEscapeLeak verifies that no raw ANSI escape codes appear as literal
 // text (without a preceding ESC byte) in any theme's output.
 func TestNoANSIEscapeLeak(t *testing.T) {

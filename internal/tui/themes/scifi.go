@@ -17,10 +17,13 @@ func NewSciFiTheme() *DoorTheme {
 	frameColor := lipgloss.CompleteColor{TrueColor: "#00afff", ANSI256: "39", ANSI: "4"}
 	selectedColor := lipgloss.CompleteColor{TrueColor: "#00ffff", ANSI256: "51", ANSI: "14"}
 
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#2080a0", ANSI256: "31", ANSI: "6"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#001a2f", ANSI256: "17", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "scifi",
 		Description: "Sci-fi spaceship — double-line frame, shade panels, ACCESS label",
-		Render:      scifiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#061425", ANSI256: "17", ANSI: "0"}),
+		Render:      scifiRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#061425", ANSI256: "17", ANSI: "0"}, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1a2e", ANSI256: "17", ANSI: "0"},
@@ -30,8 +33,8 @@ func NewSciFiTheme() *DoorTheme {
 			FillLower:  lipgloss.CompleteColor{TrueColor: "#061425", ANSI256: "17", ANSI: "0"},
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#00d7ff", ANSI256: "45", ANSI: "14"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#005f7f", ANSI256: "24", ANSI: "4"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#003f5f", ANSI256: "23", ANSI: "4"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#001a2f", ANSI256: "17", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#22C55E", // neon green
 			StatsGradientStart: "#22C55E", // green
@@ -42,7 +45,7 @@ func NewSciFiTheme() *DoorTheme {
 	}
 }
 
-func scifiRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func scifiRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		shadeChar := "░"
@@ -78,7 +81,7 @@ func scifiRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalCol
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill, fillLower)
+		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -149,7 +152,7 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 // scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: outer left border stays double-line (╔║╚), outer right uses
 // single-vertical with double-horizontal connections (╕│╛) for lighter weight.
-func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
+func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -250,7 +253,7 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 	fmt.Fprintf(&b, "\n%s", style.Render(grating))
 
 	if cracked {
-		return ApplyShadowWithCrack(b.String(), width, 16, selected)
+		return ApplyShadowWithCrack(b.String(), width, 16, selected, shadowNear, shadowFar)
 	}
-	return ApplyShadow(b.String(), width, 16, selected)
+	return ApplyShadow(b.String(), width, 16, selected, shadowNear, shadowFar)
 }

@@ -14,10 +14,13 @@ func NewSummerTheme() *DoorTheme {
 	frameColor := lipgloss.CompleteColor{TrueColor: "#ffaa00", ANSI256: "214", ANSI: "11"}
 	selectedColor := lipgloss.CompleteColor{TrueColor: "#ffdd55", ANSI256: "221", ANSI: "11"}
 
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#a08828", ANSI256: "136", ANSI: "3"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#3a2a08", ANSI256: "236", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "summer",
 		Description: "Summer radiance — bold geometric shapes, radiating lines",
-		Render:      summerRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#141005", ANSI256: "233", ANSI: "0"}),
+		Render:      summerRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#141005", ANSI256: "233", ANSI: "0"}, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#1a1508", ANSI256: "234", ANSI: "0"},
@@ -27,8 +30,8 @@ func NewSummerTheme() *DoorTheme {
 			FillLower:  lipgloss.CompleteColor{TrueColor: "#141005", ANSI256: "233", ANSI: "0"},
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#ffd060", ANSI256: "221", ANSI: "11"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#8f7020", ANSI256: "136", ANSI: "3"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#6a5518", ANSI256: "94", ANSI: "3"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#3a2a08", ANSI256: "236", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#FFAA00",
 			StatsGradientStart: "#CC5500",
@@ -43,7 +46,7 @@ func NewSummerTheme() *DoorTheme {
 	}
 }
 
-func summerRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func summerRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "═"
@@ -68,7 +71,7 @@ func summerRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalCo
 			return summerCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return summerDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower)
+		return summerDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -124,7 +127,7 @@ func summerCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
+func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -230,9 +233,9 @@ func summerDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
 	if cracked {
-		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+		return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)
 	}
-	return ApplyShadow(b.String(), width, 15, selected)
+	return ApplyShadow(b.String(), width, 15, selected, shadowNear, shadowFar)
 }
 
 // buildRadiatingPattern creates a spaced geometric pattern centered in the given width.

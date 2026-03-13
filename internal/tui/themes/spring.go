@@ -14,10 +14,13 @@ func NewSpringTheme() *DoorTheme {
 	frameColor := lipgloss.CompleteColor{TrueColor: "#77dd77", ANSI256: "114", ANSI: "10"}
 	selectedColor := lipgloss.CompleteColor{TrueColor: "#c1f0c1", ANSI256: "157", ANSI: "10"}
 
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#408850", ANSI256: "65", ANSI: "2"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#102a14", ANSI256: "233", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "spring",
 		Description: "Spring bloom — flowing curves, light open patterns",
-		Render:      springRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#061408", ANSI256: "232", ANSI: "0"}),
+		Render:      springRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#061408", ANSI256: "232", ANSI: "0"}, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0a1a0d", ANSI256: "233", ANSI: "0"},
@@ -27,8 +30,8 @@ func NewSpringTheme() *DoorTheme {
 			FillLower:  lipgloss.CompleteColor{TrueColor: "#061408", ANSI256: "232", ANSI: "0"},
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#80e090", ANSI256: "114", ANSI: "10"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#306838", ANSI256: "65", ANSI: "2"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#204a28", ANSI256: "22", ANSI: "2"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#102a14", ANSI256: "233", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#77DD77",
 			StatsGradientStart: "#2E7D32",
@@ -43,7 +46,7 @@ func NewSpringTheme() *DoorTheme {
 	}
 }
 
-func springRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func springRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -68,7 +71,7 @@ func springRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalCo
 			return springCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower)
+		return springDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -124,7 +127,7 @@ func springCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
+func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -219,7 +222,7 @@ func springDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
 	if cracked {
-		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+		return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)
 	}
-	return ApplyShadow(b.String(), width, 15, selected)
+	return ApplyShadow(b.String(), width, 15, selected, shadowNear, shadowFar)
 }

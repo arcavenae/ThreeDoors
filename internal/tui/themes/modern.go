@@ -17,10 +17,13 @@ func NewModernTheme() *DoorTheme {
 	frameColor := lipgloss.CompleteColor{TrueColor: "#444444", ANSI256: "238", ANSI: "8"}
 	selectedColor := lipgloss.CompleteColor{TrueColor: "#eeeeee", ANSI256: "255", ANSI: "15"}
 
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#707070", ANSI256: "242", ANSI: "8"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#111111", ANSI256: "233", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "modern",
 		Description: "Modern minimalist — clean lines, generous whitespace",
-		Render:      modernRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#080808", ANSI256: "232", ANSI: "0"}),
+		Render:      modernRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#080808", ANSI256: "232", ANSI: "0"}, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0d0d0d", ANSI256: "233", ANSI: "0"},
@@ -30,8 +33,8 @@ func NewModernTheme() *DoorTheme {
 			FillLower:  lipgloss.CompleteColor{TrueColor: "#080808", ANSI256: "232", ANSI: "0"},
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#666666", ANSI256: "241", ANSI: "7"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#2a2a2a", ANSI256: "235", ANSI: "8"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#222222", ANSI256: "235", ANSI: "8"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#111111", ANSI256: "233", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#0D9488", // cool teal
 			StatsGradientStart: "#2563EB", // blue
@@ -42,7 +45,7 @@ func NewModernTheme() *DoorTheme {
 	}
 }
 
-func modernRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func modernRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -66,7 +69,7 @@ func modernRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalCo
 		}
 
 		// Door-like proportions using DoorAnatomy
-		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis, fill, fillLower)
+		return modernDoor(content, width, height, inner, hChar, vChar, style, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -128,7 +131,7 @@ func modernCompact(content string, inner int, hChar, vChar string, style lipglos
 	return b.String()
 }
 
-func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
+func modernDoor(content string, width, height, inner int, hChar, vChar string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -227,7 +230,7 @@ func modernDoor(content string, width, height, inner int, hChar, vChar string, s
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
 	if cracked {
-		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+		return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)
 	}
-	return ApplyShadow(b.String(), width, 15, selected)
+	return ApplyShadow(b.String(), width, 15, selected, shadowNear, shadowFar)
 }

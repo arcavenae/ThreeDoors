@@ -15,10 +15,13 @@ func NewWinterTheme() *DoorTheme {
 	frameColor := lipgloss.CompleteColor{TrueColor: "#87ceeb", ANSI256: "117", ANSI: "14"}
 	selectedColor := lipgloss.CompleteColor{TrueColor: "#e0f0ff", ANSI256: "195", ANSI: "15"}
 
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#5088a0", ANSI256: "67", ANSI: "6"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#1a2a38", ANSI256: "236", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "winter",
 		Description: "Winter crystalline — angular frames, dense dot patterns",
-		Render:      winterRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a0f1a", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#060a14", ANSI256: "232", ANSI: "0"}),
+		Render:      winterRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#0a0f1a", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#060a14", ANSI256: "232", ANSI: "0"}, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#0a0f1a", ANSI256: "233", ANSI: "0"},
@@ -28,8 +31,8 @@ func NewWinterTheme() *DoorTheme {
 			FillLower:  lipgloss.CompleteColor{TrueColor: "#060a14", ANSI256: "232", ANSI: "0"},
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#a0d2e8", ANSI256: "152", ANSI: "14"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#4a6a80", ANSI256: "66", ANSI: "4"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#354f60", ANSI256: "59", ANSI: "8"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#1a2a38", ANSI256: "236", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#87CEEB",
 			StatsGradientStart: "#1E3A5F",
@@ -44,7 +47,7 @@ func NewWinterTheme() *DoorTheme {
 	}
 }
 
-func winterRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func winterRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -69,7 +72,7 @@ func winterRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalCo
 			return winterCompact(content, inner, hChar, vChar, cornerTL, cornerTR, cornerBL, cornerBR, style, hint)
 		}
 
-		return winterDoor(content, width, height, inner, hChar, vChar, cornerTL, cornerTR, cornerBL, cornerBR, style, selected, hint, emphasis, fill, fillLower)
+		return winterDoor(content, width, height, inner, hChar, vChar, cornerTL, cornerTR, cornerBL, cornerBR, style, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -130,7 +133,7 @@ func winterCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
+func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -251,7 +254,7 @@ func winterDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
 	if cracked {
-		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+		return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)
 	}
-	return ApplyShadow(b.String(), width, 15, selected)
+	return ApplyShadow(b.String(), width, 15, selected, shadowNear, shadowFar)
 }

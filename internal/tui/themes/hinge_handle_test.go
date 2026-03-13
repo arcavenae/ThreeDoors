@@ -174,11 +174,11 @@ func TestHandleAtRightEdge(t *testing.T) {
 			handlePos := ansi.StringWidth(handleLine[:idx])
 			lineWidth := ansi.StringWidth(handleLine)
 
-			// Handle should be within 2 chars of the right border
-			// (1 char for the right border itself, plus possible shadow)
+			// Handle should be near the right border, accounting for
+			// border char + up to 3 shadow gradient columns
 			distFromRight := lineWidth - handlePos - 1
-			if distFromRight > 3 {
-				t.Errorf("handle %q should be near right edge (within 3 chars), but is %d chars from right in: %q",
+			if distFromRight > 5 {
+				t.Errorf("handle %q should be near right edge (within 5 chars), but is %d chars from right in: %q",
 					tt.handleSym, distFromRight, handleLine)
 			}
 		})
@@ -210,7 +210,7 @@ func TestSciFiHandleAtRightEdge(t *testing.T) {
 	lineWidth := ansi.StringWidth(handleLine)
 
 	distFromRight := lineWidth - handleEnd
-	if distFromRight > 4 {
+	if distFromRight > 7 {
 		t.Errorf("Sci-Fi handle ◈──┤ should be near right edge, but %d chars from right in: %q",
 			distFromRight, handleLine)
 	}

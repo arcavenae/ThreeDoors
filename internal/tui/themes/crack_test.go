@@ -230,19 +230,30 @@ func TestCrackOfLight_VisualWidthConsistency(t *testing.T) {
 	}
 }
 
-// TestApplyShadow_CrackMode verifies ApplyShadow uses ░ when cracked=true.
+// TestApplyShadow_CrackMode verifies ApplyShadowWithCrack uses ░ for the first
+// shadow column while ApplyShadow uses █ for selected doors.
 func TestApplyShadow_CrackMode(t *testing.T) {
 	t.Parallel()
 
 	input := "line1\nline2\nline3"
 
-	normal := ApplyShadow(input, 20, 15, true)
-	if strings.Contains(normal, "░") {
-		t.Error("non-cracked shadow should not contain ░")
+	// At width=17, minWidth=15, extra=2, selected=true → 2 cols
+	// Normal: first col is █, second is ░
+	// Cracked: first col is ░ (overridden), second is ░
+	normal := ApplyShadow(input, 17, 15, true, nil, nil)
+	cracked := ApplyShadowWithCrack(input, 17, 15, true, nil, nil)
+
+	if normal == cracked {
+		t.Error("cracked and non-cracked shadow output should differ")
 	}
 
-	cracked := ApplyShadowWithCrack(input, 20, 15, true)
-	if !strings.Contains(cracked, "░") {
-		t.Error("cracked shadow should contain ░")
+	// Normal selected shadow should contain █ (full block)
+	if !strings.Contains(normal, shadowRightSelected) {
+		t.Errorf("non-cracked selected shadow should contain %q", shadowRightSelected)
+	}
+
+	// Cracked shadow should contain crack shade character ░
+	if !strings.Contains(cracked, crackShade) {
+		t.Error("cracked shadow should contain crack shade ░")
 	}
 }

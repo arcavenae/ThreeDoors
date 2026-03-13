@@ -26,22 +26,25 @@ func NewClassicTheme() *DoorTheme {
 		Padding(1, 2)
 
 	fillColor := lipgloss.CompleteColor{TrueColor: "#0d0d2a", ANSI256: "17", ANSI: "0"}
+	fillLowerColor := lipgloss.CompleteColor{TrueColor: "#080820", ANSI256: "17", ANSI: "0"}
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#6868b8", ANSI256: "104", ANSI: "13"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#15152a", ANSI256: "235", ANSI: "0"}
 
 	return &DoorTheme{
 		Name:        "classic",
 		Description: "Classic rounded border — the original ThreeDoors look",
-		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle, fillColor, lipgloss.CompleteColor{TrueColor: "#080820", ANSI256: "17", ANSI: "0"}),
+		Render:      classicRender(frameColor, selectedColor, unselectedStyle, selectedStyle, fillColor, fillLowerColor, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
-			Fill:     lipgloss.CompleteColor{TrueColor: "#0d0d2a", ANSI256: "17", ANSI: "0"},
+			Fill:     fillColor,
 			Accent:   frameColor,
 			Selected: selectedColor,
 
-			FillLower:  lipgloss.CompleteColor{TrueColor: "#080820", ANSI256: "17", ANSI: "0"},
+			FillLower:  fillLowerColor,
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#7070ff", ANSI256: "63", ANSI: "5"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#3a3a8f", ANSI256: "61", ANSI: "4"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#2a2a50", ANSI256: "237", ANSI: "8"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#15152a", ANSI256: "235", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#D97706", // warm amber
 			StatsGradientStart: "#D97706", // amber
@@ -52,7 +55,7 @@ func NewClassicTheme() *DoorTheme {
 	}
 }
 
-func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use original Lipgloss card style
 		if height < 10 {
@@ -172,8 +175,8 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 		fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
 		if cracked {
-			return ApplyShadowWithCrack(b.String(), width, 15, selected)
+			return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)
 		}
-		return ApplyShadow(b.String(), width, 15, selected)
+		return ApplyShadow(b.String(), width, 15, selected, shadowNear, shadowFar)
 	}
 }

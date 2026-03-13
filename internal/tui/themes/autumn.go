@@ -14,10 +14,13 @@ func NewAutumnTheme() *DoorTheme {
 	frameColor := lipgloss.CompleteColor{TrueColor: "#cc7722", ANSI256: "172", ANSI: "3"}
 	selectedColor := lipgloss.CompleteColor{TrueColor: "#eebb55", ANSI256: "179", ANSI: "11"}
 
+	shadowNear := lipgloss.CompleteColor{TrueColor: "#a87038", ANSI256: "137", ANSI: "1"}
+	shadowFar := lipgloss.CompleteColor{TrueColor: "#3a1a08", ANSI256: "236", ANSI: "0"}
+
 	return &DoorTheme{
 		Name:        "autumn",
 		Description: "Autumn harvest — layered block elements, angular textures",
-		Render:      autumnRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#140a05", ANSI256: "232", ANSI: "0"}),
+		Render:      autumnRender(frameColor, selectedColor, lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"}, lipgloss.CompleteColor{TrueColor: "#140a05", ANSI256: "232", ANSI: "0"}, shadowNear, shadowFar),
 		Colors: ThemeColors{
 			Frame:    frameColor,
 			Fill:     lipgloss.CompleteColor{TrueColor: "#1a0f08", ANSI256: "233", ANSI: "0"},
@@ -27,8 +30,8 @@ func NewAutumnTheme() *DoorTheme {
 			FillLower:  lipgloss.CompleteColor{TrueColor: "#140a05", ANSI256: "232", ANSI: "0"},
 			Highlight:  lipgloss.CompleteColor{TrueColor: "#e09040", ANSI256: "172", ANSI: "3"},
 			ShadowEdge: lipgloss.CompleteColor{TrueColor: "#8f5020", ANSI256: "130", ANSI: "1"},
-			ShadowNear: lipgloss.CompleteColor{TrueColor: "#6a3818", ANSI256: "94", ANSI: "1"},
-			ShadowFar:  lipgloss.CompleteColor{TrueColor: "#3a1a08", ANSI256: "236", ANSI: "0"},
+			ShadowNear: shadowNear,
+			ShadowFar:  shadowFar,
 
 			StatsAccent:        "#CC7722",
 			StatsGradientStart: "#8B4513",
@@ -43,7 +46,7 @@ func NewAutumnTheme() *DoorTheme {
 	}
 }
 
-func autumnRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+func autumnRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		hChar := "─"
@@ -68,7 +71,7 @@ func autumnRender(frameColor, selectedColor, fill, fillLower lipgloss.TerminalCo
 			return autumnCompact(content, inner, hChar, vChar, tl, tr, bl, br, style, hint)
 		}
 
-		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower)
+		return autumnDoor(content, width, height, inner, hChar, vChar, tl, tr, bl, br, style, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -124,7 +127,7 @@ func autumnCompact(content string, inner int, hChar, vChar, tl, tr, bl, br strin
 	return b.String()
 }
 
-func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower lipgloss.TerminalColor) string {
+func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, bl, br string, style lipgloss.Style, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -236,7 +239,7 @@ func autumnDoor(content string, width, height, inner int, hChar, vChar, tl, tr, 
 	fmt.Fprintf(&b, "\n%s", style.Render(threshold))
 
 	if cracked {
-		return ApplyShadowWithCrack(b.String(), width, 15, selected)
+		return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)
 	}
-	return ApplyShadow(b.String(), width, 15, selected)
+	return ApplyShadow(b.String(), width, 15, selected, shadowNear, shadowFar)
 }
