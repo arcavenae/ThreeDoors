@@ -1136,6 +1136,22 @@ These non-functional requirements establish code quality gates that all contribu
 
 **NFR-TC3:** All subcommands (config, mood, health, stats, plan, version, task, sources, connect, extract) shall have dedicated test coverage
 
+## Retrospector Operational Data Pipeline (Epic 67, Accepted)
+
+> Requirements for automated sync of retrospector operational data to git.
+
+**NFR-ODP1:** The system shall periodically commit retrospector operational data files (`docs/operations/*.jsonl`, `docs/operations/*.json`) to git via a cron-triggered agent pipeline, ensuring worker agents in isolated worktrees have access to current operational data
+
+**NFR-ODP2:** Operational data files in git shall be no more than 6 hours behind the main checkout (2x the commit interval as buffer for the staleness SLA)
+
+**NFR-ODP3:** The data sync pipeline shall be idempotent — if no operational data files have changed since the last sync, no commit or PR shall be created
+
+**NFR-ODP4:** Operational data commits shall go through branch protection (PR workflow), not direct pushes to main
+
+**NFR-ODP5:** Data sync PRs shall not interfere with or delay story PRs in the merge queue
+
+---
+
 ## CLI/TUI Adapter Wiring Parity Requirements
 
 > Requirements for ensuring all registered adapters are accessible through both CLI and TUI entry points.
