@@ -72,6 +72,13 @@ func DefaultProviderSpecs() []ProviderFormSpec {
 			EnvTokenFunc: defaultLinearEnvTokenFunc,
 		},
 		{
+			Name:        "clickup",
+			DisplayName: "ClickUp",
+			Description: "ClickUp workspace tasks",
+			AuthType:    AuthAPIToken,
+			TokenHelp:   "Settings → Apps → API Token (or set CLICKUP_API_TOKEN env var)",
+		},
+		{
 			Name:        "obsidian",
 			DisplayName: "Obsidian",
 			Description: "Obsidian vault tasks",
@@ -98,13 +105,6 @@ func DefaultProviderSpecs() []ProviderFormSpec {
 			DisplayName: "Apple Notes",
 			Description: "macOS Notes app (read-only)",
 			AuthType:    AuthNone,
-		},
-		{
-			Name:        "clickup",
-			DisplayName: "ClickUp",
-			Description: "ClickUp task management",
-			AuthType:    AuthAPIToken,
-			TokenHelp:   "Settings → Apps → API Token (or generate a personal token)",
 		},
 	}
 }

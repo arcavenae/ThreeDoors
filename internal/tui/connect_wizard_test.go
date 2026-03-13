@@ -199,6 +199,7 @@ func TestConnectWizard_DefaultProviderSpecsAuthTypes(t *testing.T) {
 		{"todoist needs API token", "todoist", AuthAPIToken},
 		{"github needs OAuth", "github", AuthOAuth},
 		{"jira needs API token", "jira", AuthAPIToken},
+		{"clickup needs API token", "clickup", AuthAPIToken},
 		{"textfile needs no auth", "textfile", AuthNone},
 		{"reminders needs no auth", "reminders", AuthNone},
 	}
@@ -247,6 +248,55 @@ func TestConnectWizard_TokenHelpForAPITokenProviders(t *testing.T) {
 		if spec.AuthType == AuthAPIToken && spec.TokenHelp == "" {
 			t.Errorf("provider %q with AuthAPIToken should have TokenHelp", spec.Name)
 		}
+	}
+}
+
+func TestConnectWizard_ClickUpInWizard(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := DefaultProviderSpecs()
+	w := NewConnectWizard(specs, connMgr)
+	w.SetWidth(80)
+
+	view := w.View()
+	if !strings.Contains(view, "ClickUp") {
+		t.Error("wizard should show ClickUp as a selectable provider")
+	}
+}
+
+func TestConnectWizard_ClickUpSetProvider(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := DefaultProviderSpecs()
+	w := NewConnectWizard(specs, connMgr)
+
+	w.SetProvider("clickup")
+	if w.Step() != StepProviderConfig {
+		t.Errorf("step = %v, want StepProviderConfig after SetProvider(clickup)", w.Step())
+	}
+	if w.SelectedProvider() != "clickup" {
+		t.Errorf("selectedProvider = %q, want %q", w.SelectedProvider(), "clickup")
+	}
+}
+
+func TestConnectWizard_ClickUpStep2Form(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := DefaultProviderSpecs()
+	w := NewConnectWizard(specs, connMgr)
+
+	w.selectedProvider = "clickup"
+	w.buildStep2Form()
+
+	view := w.form.View()
+	if !strings.Contains(view, "Give this connection a name") {
+		t.Error("step 2 should contain label field")
+	}
+	if !strings.Contains(view, "API Token") {
+		t.Error("step 2 for ClickUp should contain API Token field")
 	}
 }
 
