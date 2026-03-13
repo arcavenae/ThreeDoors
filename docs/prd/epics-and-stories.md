@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-63, 65 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 64 (5/6) IN PROGRESS. 746+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-65 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 66 (0/3) NOT STARTED. 748+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -6241,7 +6241,7 @@ Stories 63.3 and 63.4 can parallelize after 63.2 completes.
 ## Epic 64: Cross-Computer Sync
 
 **Priority:** P2
-**Status:** In Progress (5/6 stories done — PRs #715, #721, #731, #734, #743)
+**Status:** COMPLETE (6/6 stories done — PRs #715, #721, #731, #734, #743, #748)
 **Dependencies:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
 
 ### Epic Goal
@@ -6262,7 +6262,7 @@ technical-assumptions.md: "Cross-computer sync is deferred post-MVP; single-comp
 | 64.3 | Sync Transport Layer | Done (PR #734) | P2 | 64.1, 64.2 |
 | 64.4 | Cross-Machine Conflict Resolution | Done (PR #731) | P2 | 64.1, 64.2 |
 | 64.5 | Offline Queue & Reconciliation | Done (PR #743) | P2 | 64.3, 64.4 |
-| 64.6 | Cross-Computer Sync E2E Tests | Not Started | P2 | 64.3, 64.4, 64.5 |
+| 64.6 | Cross-Computer Sync E2E Tests | Done (PR #748) | P2 | 64.3, 64.4, 64.5 |
 
 **Note:** Stories 64.2-64.6 are provisional — acceptance criteria will be refined after the research spike (64.1) completes.
 
