@@ -15,11 +15,14 @@ func TestIntegration_FullSession(t *testing.T) {
 
 	runner := &mockRunner{
 		output: map[string]string{
-			"multiclaude status":               "Daemon: running\nAgents: supervisor, merge-queue, pr-shepherd\nWorkers: 2 active",
-			"multiclaude worker list":          "zealous-squirrel  implement story 53.3  2026-03-12T10:00:00Z",
-			"multiclaude message list":         "msg-abc  supervisor  Check PR status",
-			"multiclaude message read msg-abc": "From: supervisor\nTo: merge-queue\nBody: Check PR #42 status and merge if green",
-			"multiclaude repo history -n 3":    "task-001  completed  story 53.1\ntask-002  completed  story 53.2\ntask-003  in_progress  story 53.3",
+			"multiclaude status":                                  "Daemon: running\nAgents: supervisor, merge-queue, pr-shepherd\nWorkers: 2 active",
+			"multiclaude worker list":                             "zealous-squirrel  implement story 53.3  2026-03-12T10:00:00Z",
+			"multiclaude message list":                            "msg-abc  supervisor  Check PR status",
+			"multiclaude message read msg-abc":                    "From: supervisor\nTo: merge-queue\nBody: Check PR #42 status and merge if green",
+			"multiclaude repo history -n 3":                       "task-001  completed  story 53.1\ntask-002  completed  story 53.2\ntask-003  in_progress  story 53.3",
+			"multiclaude message send merge-queue PR 42 is green": "msg-def456",
+			"multiclaude message ack msg-abc":                     "acknowledged",
+			"multiclaude worker create implement story 53.4":      "jolly-dolphin",
 		},
 	}
 	server := NewBridgeServer(runner, "1.0.0-integration")
@@ -53,8 +56,8 @@ func TestIntegration_FullSession(t *testing.T) {
 	if err := json.Unmarshal(resultBytes, &toolsList); err != nil {
 		t.Fatalf("unmarshal tools list: %v", err)
 	}
-	if len(toolsList.Tools) != 5 {
-		t.Errorf("expected 5 tools, got %d", len(toolsList.Tools))
+	if len(toolsList.Tools) != 8 {
+		t.Errorf("expected 8 tools, got %d", len(toolsList.Tools))
 	}
 
 	// Step 4: Call each tool and verify output.
@@ -93,6 +96,24 @@ func TestIntegration_FullSession(t *testing.T) {
 			tool:     "multiclaude_repo_history",
 			args:     `{"count":3}`,
 			contains: "task-001",
+		},
+		{
+			name:     "message_send",
+			tool:     "multiclaude_message_send",
+			args:     `{"recipient":"merge-queue","body":"PR 42 is green"}`,
+			contains: "msg-def456",
+		},
+		{
+			name:     "message_ack",
+			tool:     "multiclaude_message_ack",
+			args:     `{"message_id":"msg-abc"}`,
+			contains: "acknowledged",
+		},
+		{
+			name:     "worker_create",
+			tool:     "multiclaude_worker_create",
+			args:     `{"task":"implement story 53.4"}`,
+			contains: "jolly-dolphin",
 		},
 	}
 
