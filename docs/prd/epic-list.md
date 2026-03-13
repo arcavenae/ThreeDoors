@@ -596,7 +596,7 @@
   - `threedoors sources` list, status, test, pause/resume/sync/disconnect commands
   - `threedoors sources log` with filtering
   - JSON output for all commands
-- **Stories:** 45.1-45.5 (5 stories)
+- **Stories:** 45.1-45.6 (6 stories)
 - **Research:** See `_bmad-output/planning-artifacts/data-source-setup-ux-research.md`
 
 **Epic 46: OAuth Device Code Flow** (P2)
@@ -804,7 +804,7 @@
 **Epic 63: ClickUp Integration** (P2)
 - **Goal:** Integrate ClickUp as a task source following the established adapter pattern (Jira, Todoist, GitHub Issues, Linear)
 - **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 43 (Connection Manager — complete)
-- **Status:** In Progress (2/4 done — PRs #706, #719)
+- **Status:** COMPLETE — All 4 stories done (PRs #706, #719, #727, #728)
 - **Deliverables:**
   - ClickUp REST API v2 client with token auth
   - Read-only provider with field mapping (status, priority, due date, tags)
@@ -895,7 +895,7 @@
 | Epic 42: Application Security Hardening | 5 | Complete (5/5 done) |
 | Epic 43: Connection Manager Infrastructure | 6 | Complete (6/6 done) |
 | Epic 44: Sources TUI | 7 | Complete (7/7 done) |
-| Epic 45: Sources CLI | 5 | Complete (5/5 done) |
+| Epic 45: Sources CLI | 6 | Complete (6/6 done) |
 | Epic 46: OAuth Device Code Flow | 4 | Complete (4/4 done) |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Complete (4/4 done) |
 | Epic 48: Door-Like Doors | 4 | Complete (4/4 done) |
@@ -913,7 +913,7 @@
 | Epic 60: README Overhaul | 5 | Complete (5/5 done) |
 | Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
-| Epic 63: ClickUp Integration | 4 | In Progress (2/4 done) |
+| Epic 63: ClickUp Integration | 4 | Complete (4/4 done) |
 | Epic 64: Cross-Computer Sync | 6 | In Progress (2/6 done) |
 | Epic 65: CLI Test Coverage Hardening | 3 | Not Started (0/3) |
 | **Total** | **339** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
