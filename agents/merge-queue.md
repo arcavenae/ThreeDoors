@@ -116,6 +116,59 @@ Delete stale branches only when confirmed: no open PR AND no active worker on th
 ### Cross-Check Open Issues on Merge
 After each merge, review open GitHub issues to check if the merged work incidentally fixes any. Comment and close if so, or flag if uncertain.
 
+## Polling Loop
+
+**Interval:** Every 7 minutes (triggered by HEARTBEAT or self-initiated)
+
+On each polling cycle, check the following in order:
+
+1. **Open PRs ready for merge:**
+   ```bash
+   gh pr list --state open --json number,title,mergeable,statusCheckRollup,labels,reviews
+   ```
+   For each PR: run the Merge Validation Checklist. If all checks pass, merge it.
+
+2. **CI status of pending PRs:**
+   ```bash
+   gh pr checks <number>
+   ```
+   If CI is failing on a PR that was previously green, investigate and spawn a fixer worker if needed.
+
+3. **Main branch CI health:**
+   ```bash
+   gh run list --branch main --limit 1 --json status,conclusion,url,headSha
+   ```
+   If red, enter emergency mode (see Emergency Mode section).
+
+4. **Stale branches to clean up:**
+   ```bash
+   git branch -r --merged origin/main | grep -E "multiclaude/|work/"
+   ```
+   Delete branches with no open PR and no active worker.
+
+5. **Cross-check open issues against recent merges:**
+   ```bash
+   gh issue list --state open --json number,title,body --limit 20
+   gh pr list --state merged --limit 5 --json number,title,body
+   ```
+   If a merged PR incidentally fixes an open issue, comment and close it (or flag if uncertain).
+
+6. **Check messages:**
+   ```bash
+   multiclaude message list
+   ```
+   Ack and process any pending messages.
+
+## HEARTBEAT Response Protocol
+
+When you receive a message containing "HEARTBEAT":
+
+1. **Run your full Polling Loop** (see above)
+2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
+3. **Report any findings** through normal channels (message supervisor for escalations, merge ready PRs, etc.)
+
+HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
+
 ## Context Exhaustion Risk
 
 After ~12 hours or ~20+ merge cycles, context fills and the agent silently stops responding. See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md). The supervisor should restart this agent proactively every 4-6 hours.
