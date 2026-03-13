@@ -191,6 +191,7 @@
 | D-176 | File-based fallback inbox for agent messaging (Epic 62) | 2026-03-12 | multiclaude daemon messaging has identity registration bug — agents spawned via `multiclaude agents spawn` can't receive messages. Workaround: identity probe on startup + file-based inbox (`retrospector-inbox.jsonl`) as fallback. Durable, conflict-free, matches JSONL project patterns. Rejected: fix multiclaude daemon directly (external infrastructure, out of scope), environment variables (not durable), tmux output as fallback (not programmatically readable). | [Proposal](../../_bmad-output/planning-artifacts/sprint-change-proposal-2026-03-12-retrospector-reliability.md) |
 | D-177 | Recommendation queue file instead of direct BOARD.md writes (Epic 62) | 2026-03-12 | Retrospector can't create PRs (Phase 1 scope) and direct BOARD.md edits cause merge conflicts. Fix: retrospector writes to `retrospector-recommendations.jsonl`, project-watchdog batch-applies to BOARD.md. Separates detection from persistence; respects authority model. Rejected: give retrospector PR authority (violates Phase 1 scope), direct shared checkout writes (merge conflicts), _bmad-output/ location (wrong directory for operational data). | [Party Mode](../../_bmad-output/planning-artifacts/retrospector-reliability-party-mode.md) |
 | D-178 | JSON checkpoint file for retrospector state persistence (Epic 62) | 2026-03-12 | Context exhaustion after ~45 PRs loses analytical state (rolling windows, mode rotation). Fix: periodic checkpoint to `retrospector-checkpoint.json` with derived state; restore on restart before JSONL rebuild. Minimal JSON schema (~10 fields). Rejected: SQLite (over-engineering), increase context window (not configurable), split into multiple agents (over-engineering for addressable root cause). | [Party Mode](../../_bmad-output/planning-artifacts/retrospector-reliability-party-mode.md) |
+| D-179 | PRD coverage gap formalization — Epics 63 (ClickUp), 64 (Cross-Computer Sync), Story 5.3 (DMG/pkg) | 2026-03-13 | Three PRD-specified features lacked corresponding epics/stories. ClickUp follows established 4-story integration pattern (5th integration). Cross-Computer Sync needs research spike before implementation (architecturally distinct from provider sync). DMG/pkg installer was defined in epic-details.md Story 5.3 but never created. All P2/Phase 5. Rejected: defer indefinitely (creates invisible planning gaps), combine ClickUp with Linear (violates per-provider epic pattern), create Cross-Computer Sync stories without research spike (architecture genuinely uncertain). | [Analysis](../../_bmad-output/planning-artifacts/prd-coverage-gap-analysis.md) |
 
 ## Rejected
 
@@ -384,7 +385,9 @@
 | 60 | README Overhaul | 2026-03-11 | In Progress (1/5) |
 | 61 | GitHub Pages User Guide | 2026-03-11 | Not Started (0/4) |
 | 62 | Retrospector Agent Reliability | 2026-03-12 | Not Started (0/3) |
-| 63 | *(next available)* | — | — |
+| 63 | ClickUp Integration | 2026-03-13 | Not Started (0/4) |
+| 64 | Cross-Computer Sync | 2026-03-13 | Not Started (0/6) |
+| 65 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number
