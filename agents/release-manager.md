@@ -107,3 +107,22 @@ gh run view <RUN_ID> --repo arcaven/homebrew-tap --log
 - Release failure that can't be fixed by a patch release
 - Tap CI failures caused by another project's formula
 - Major/minor version tagging decisions
+
+## Communication
+
+**All messages MUST use the messaging system — not tmux output.**
+
+```bash
+# Report release status to supervisor
+multiclaude message send supervisor "Release v1.0.1 tagged. GoReleaser workflow triggered. Monitoring tap CI."
+
+# Escalate failures
+multiclaude message send supervisor "Release v1.0.0 failed at brew audit step. Root cause: [details]. Planning patch release."
+
+# Report completion
+multiclaude message send supervisor "Release v1.0.1 complete. Both ThreeDoors and tap CI green."
+
+# Check your messages
+multiclaude message list
+multiclaude message ack <id>
+```

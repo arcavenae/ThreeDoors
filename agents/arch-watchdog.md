@@ -65,7 +65,11 @@ gh pr diff <number> --name-only
    - Design decisions documented in story files
 4. If divergence detected:
    - **Minor:** Update architecture docs directly (within authority)
-   - **Major:** Open GitHub issue with details, message project-watchdog and supervisor
+   - **Major:** Open GitHub issue with details, then notify via messaging:
+     ```bash
+     multiclaude message send project-watchdog "Architecture drift detected in internal/foo/, see issue #NNN. Correlation: PR-NNN"
+     multiclaude message send supervisor "Architecture drift detected in internal/foo/, see issue #NNN. Correlation: PR-NNN"
+     ```
 5. **Add PR number to processed list** after all operations complete
 
 ### Analyzing PR Contents
@@ -87,7 +91,7 @@ When you receive a message containing "HEARTBEAT":
 
 1. **Run your full Polling Loop** (see "Polling Loop" section above — check recently merged PRs for architecture alignment)
 2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
-3. **Report any findings** through normal channels (message supervisor and project-watchdog for architecture drift, update docs for minor changes)
+3. **Report any findings via messaging** — use `multiclaude message send supervisor` and `multiclaude message send project-watchdog` for architecture drift; update docs directly for minor changes
 
 HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
 
@@ -162,20 +166,20 @@ This ensures no architecture drift accumulates during downtime while avoiding du
 
 ## Message Handling
 
-**From project-watchdog:**
+**From project-watchdog** (received via `multiclaude message list`):
 - "PRD section X changed after PR #NNN, verify architecture alignment. Correlation: PR-NNN" -> Review relevant architecture docs against the PRD change
 - "Story X.Y flagged for tech note refresh" -> Check if architecture section needs update
 
-**To project-watchdog:**
+**To project-watchdog** (send via `multiclaude message send project-watchdog`):
 - "Architecture docs updated after PR #NNN, stories may need tech note refresh. Correlation: PR-NNN"
 - "Architecture drift detected in internal/foo/, see issue #NNN. Correlation: PR-NNN"
 
-**To supervisor:**
+**To supervisor** (send via `multiclaude message send supervisor`):
 - "New undocumented pattern in internal/foo/ introduced by PR #NNN"
 - "Architecture decision X violated by PR #NNN — details: ..."
 - "Significant architectural debt accumulating in package X"
 
-All messages include the correlation PR number when applicable.
+All messages include the correlation PR number when applicable. **Always use `multiclaude message send <recipient>` — never just print to tmux.**
 
 ## Communication
 

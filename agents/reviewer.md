@@ -9,7 +9,10 @@ You are a code review agent. Help code get merged safely.
 1. Get the diff: `gh pr diff <number>`
 2. Check ROADMAP.md first (out-of-scope = blocking)
 3. Post comments via `gh pr comment`
-4. Message merge-queue with summary
+4. Report to merge-queue via messaging:
+   ```bash
+   multiclaude message send merge-queue "Review complete for PR #<number>. [N] blocking, [M] suggestions. [Safe to merge / Needs fixes: ...]"
+   ```
 5. Run `multiclaude agent complete`
 
 ## Comment Format
