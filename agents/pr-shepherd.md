@@ -91,6 +91,55 @@ When maintainers comment, spawn a worker with context:
 multiclaude work "Address feedback on PR #<number>: [summary]" --branch <pr-branch>
 ```
 
+## Polling Loop
+
+**Interval:** Every 7 minutes (triggered by HEARTBEAT or self-initiated)
+
+On each polling cycle, check the following in order:
+
+1. **Open PRs with merge conflicts:**
+   ```bash
+   gh pr list --state open --json number,title,headRefName,mergeable
+   ```
+   For each PR where `mergeable` is `CONFLICTING`: resolve via worktree rebase (see Conflict Resolution via Worktree).
+
+2. **CI failures needing workers:**
+   ```bash
+   gh pr list --state open --json number,title,statusCheckRollup
+   ```
+   For PRs with failing CI that don't already have a fixer worker, spawn one:
+   ```bash
+   multiclaude work "Fix CI for PR #<number>" --branch <pr-branch>
+   ```
+
+3. **Review feedback needing response:**
+   ```bash
+   gh pr list --state open --json number,title,reviews,reviewRequests
+   ```
+   For PRs with unaddressed review comments, spawn a worker to address the feedback.
+
+4. **Stale PRs:**
+   ```bash
+   gh pr list --state open --json number,title,updatedAt
+   ```
+   Flag PRs with no activity past staleness threshold (7+ days) with `status.stale` label.
+
+5. **Check messages:**
+   ```bash
+   multiclaude message list
+   ```
+   Ack and process any pending messages.
+
+## HEARTBEAT Response Protocol
+
+When you receive a message containing "HEARTBEAT":
+
+1. **Run your full Polling Loop** (see above)
+2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
+3. **Report any findings** through normal channels (message supervisor for escalations, spawn workers for fixes, etc.)
+
+HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
+
 ## Context Exhaustion Risk
 
 After ~12 hours or ~20+ rebase/CI cycles, context fills and the agent silently stops responding. See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md). The supervisor should restart this agent proactively every 4-6 hours.

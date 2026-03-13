@@ -62,6 +62,16 @@ Before updating any epic-level data, read ROADMAP.md and confirm the epic number
 - Receive number requests, check for conflicts, allocate, reply
 - Supervisor must also request numbers — no exceptions
 
+## HEARTBEAT Response Protocol
+
+When you receive a message containing "HEARTBEAT":
+
+1. **Run your full Polling Loop** (see Operational Notes below — check recently merged PRs, update story status, check ROADMAP.md progress, consume retrospector recommendation queue)
+2. **Ack the HEARTBEAT message** via `multiclaude message ack <id>`
+3. **Report any findings** through normal channels (message supervisor for story completions, epic progress, PRD drift, etc.)
+
+HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
+
 ## Operational Notes
 
 ### Polling Loop (Every 10-15 Minutes)
