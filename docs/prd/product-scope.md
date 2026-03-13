@@ -154,14 +154,127 @@
 
 ---
 
-## Phase 5: Future Expansion (12+ months out)
+## Phase 4: Task Source Integration & Sync Hardening (Epics 19-21, 25-26, 30, 43-47, 63)
 
 **In Scope:**
-- iPhone mobile app (SwiftUI) with Apple Notes sync and Three Doors card carousel
-- Self-driving development pipeline (multiclaude worker dispatch from TUI)
+- Jira integration: read-only adapter (JQL search, status mapping, auth config), then bidirectional sync (Epic 19)
+- Apple Reminders integration: JXA-based adapter with full CRUD (Epic 20)
+- Sync protocol hardening: per-provider sync scheduler, circuit breaker, canonical ID mapping via SourceRef (Epic 21)
+- Todoist integration: REST API v1 with priority-to-effort mapping, project filtering, bidirectional sync (Epic 25)
+- GitHub Issues integration: go-github SDK with label/milestone mapping, bidirectional sync (Epic 26)
 - Linear integration: GraphQL-based adapter with full field mapping, bidirectional sync (Epic 30)
-- Additional integrations (GitHub Issues, ClickUp)
-- Cross-computer sync
+- Connection Manager Infrastructure: 7-state machine, keychain credential storage, config schema v3, CRUD operations, sync event logging, adapter migration (Epic 43)
+- Sources TUI: setup wizard (charmbracelet/huh), sources dashboard, detail view, sync log, status bar alerts, disconnect/re-auth flows (Epic 44)
+- Sources CLI: `threedoors connect`, `threedoors sources` commands with `--json` output (Epic 45)
+- OAuth Device Code Flow: generic RFC 8628 client, GitHub and Linear integrations, token refresh (Epic 46)
+- Sync Lifecycle: conflict resolution (field-level strategy), orphaned task handling, tool auto-detection, predictive warnings (Epic 47)
+- ClickUp integration: REST API v2 with token auth, standard adapter pattern (Epic 63)
+
+**Out of Scope for Phase 4:**
+- OAuth 2.0 authorization code flows (device code flow only)
+- EventKit/cgo-based Apple Reminders (future optimization)
+- Property-level conflict resolution beyond field-level strategy
+
+---
+
+## Phase 4.5: Self-Driving Development & CLI/MCP (Epics 22-24)
+
+**In Scope:**
+- Self-driving development pipeline: DevDispatch model, multiclaude CLI wrapper, TUI dispatch key ('x'), dev queue view, worker status polling, auto-generated follow-up tasks, safety guardrails (Epic 22)
+- CLI Interface: Cobra-based `threedoors` command with `--json` flag, task CRUD, door commands, session/analytics commands, shell completions for 4 shells (Epic 23)
+- MCP/LLM Integration Server: MCP server exposing task management tools, structured JSON responses, resource endpoints for LLM agent consumption (Epic 24)
+
+**Out of Scope for this Phase:**
+- GUI or web-based dispatch interface
+- Real-time worker output streaming to TUI
+
+---
+
+## Phase 5: Feature Richness (Epics 27-32, 57)
+
+**In Scope:**
+- Daily Planning Mode: guided morning planning ritual with review/select/confirm steps, energy matching, focus-aware door scoring (Epic 27)
+- Snooze/Defer: Z-key action, date-based snooze with auto-return, `:deferred` command, additional status transitions (Epic 28)
+- Task Dependencies: `depends_on` field, automatic door filtering, blocked-by indicators, circular detection, DependencyResolver (Epic 29)
+- Expand/Fork: E key subtask creation with parent_id, subtask rendering, parent exclusion from doors; F key variant creation with field copy/reset semantics (Epic 31)
+- Undo Task Completion: complete→todo transition, dependency re-evaluation on undo (Epic 32)
+- LLM CLI Services: CLIProvider wrapping Claude/Gemini/Ollama CLIs, TaskExtractor, TaskEnricher, TaskBreakdown, `threedoors llm status` (Epic 57)
+
+**Out of Scope for Phase 5:**
+- Calendar date picker widget (text input for snooze dates)
+- Recursive subtask nesting (single-level parent-child only)
+- Drag-and-drop subtask reordering
+
+---
+
+## Phase 5.5: Visual Polish & UX Enhancement (Epics 33, 35-36, 39-41, 48, 56, 59)
+
+**In Scope:**
+- Seasonal Door Theme Variants: time-based auto-switching by calendar date (Epic 33)
+- Door Visual Appearance: portrait orientation, panel dividers, asymmetric handles, threshold lines, compact mode fallback, shadow/depth effects (Epic 35)
+- Door Selection Feedback: high-contrast selection, deselect toggle, universal quit, selection animation (Epic 36)
+- Keybinding Display System: compile-time registry, bottom bar, full overlay (`?`), `h` toggle unifying door indicators and bar, `:hints` command (Epic 39)
+- Beautiful Stats Display: Lipgloss panels, gradient sparklines, fun facts, bar charts, heatmap, animated counters, tab navigation, theme-matched colors, milestone celebrations (Epic 40)
+- Charm Ecosystem Adoption: bubbles/spinner, lipgloss layout, bubbles/viewport, harmonica spring-physics, adaptive color profiles (Epic 41)
+- Door-Like Doors: side handles, hinge marks, threshold line, crack-of-light selection, handle turn animation (Epic 48)
+- Door Visual Redesign: three-layer depth (background fill, bevel lighting, gradient shadow), panel zone shading, width-adaptive shadow (Epic 56)
+- Full-Terminal Vertical Layout: AltScreen, layout engine, door height cap, perceptual centering, graceful degradation breakpoints (Epic 59)
+
+**Out of Scope for this Phase:**
+- Voice interface
+- Apple Watch/iPad apps
+
+---
+
+## Phase 6: Developer Experience & Tooling (Epics 34, 42, 49-50, 55, 65)
+
+**In Scope:**
+- SOUL.md + Custom Dev Skills: project philosophy document, `/pre-pr`, `/validate-adapter`, `/check-patterns`, `/new-story` slash commands (Epic 34)
+- Application Security Hardening: file permissions, symlink validation, input size limits, credential protection, CI supply chain (Epic 42)
+- ThreeDoors Doctor: `threedoors doctor` command with 6 check categories, flutter-style output, auto-repair, channel-aware version checking (Epic 49)
+- In-App Bug Reporting: `:bug` command, breadcrumb tracking, tiered submission (browser/API/file), privacy allowlist (Epic 50)
+- CI Optimization: Docker E2E push-only, benchmark path filtering, `make test-fast` (Epic 55)
+- CLI Test Coverage Hardening: coverage from 34.8% to ≥70% (Epic 65)
+
+**Out of Scope for this Phase:**
+- Automated security scanning beyond govulncheck
+- Performance profiling tools
+
+---
+
+## Phase 6+: Autonomous Project Governance (Epics 37-38, 51-53, 58, 62)
+
+**In Scope:**
+- Persistent BMAD Agent Infrastructure: project-watchdog, arch-watchdog agent definitions, SM/QA cron jobs, agent communication architecture (Epic 37)
+- Dual Homebrew Distribution: stable + alpha channels, signing parity, publishing toggle, retention management (Epic 38)
+- SLAES: retrospector agent, saga detection, doc consistency audit, BOARD.md recommendations, CI failure taxonomy, weekly trends, 5 Watchmen safeguards (Epic 51)
+- Envoy Three-Layer Firewall: structured issue screening with syntax/scope/impact layers (Epic 52)
+- Remote Collaboration: SSH access, tmux management, MCP bridge design, security hardening (Epic 53)
+- Supervisor Shift Handover: transcript monitoring, rolling state snapshot, 5-step handover protocol, emergency handover, history logging (Epic 58)
+- Retrospector Agent Reliability: file-based inbox, recommendation queue, checkpoint persistence (Epic 62)
+
+**Out of Scope for this Phase:**
+- Tech Writer persistent agent
+- Analyst persistent agent
+- Webhook-based event triggers
+- Adaptive polling intervals
+
+---
+
+## Phase 7: Documentation & Distribution (Epics 60-61)
+
+**In Scope:**
+- README Overhaul: badges, table of contents, foldable sections, feature audit, visual demo (Epic 60)
+- GitHub Pages User Guide: MkDocs + Material, CI deployment, guides for all features and integrations (Epic 61)
+
+---
+
+## Phase 8: Future Expansion
+
+**In Scope:**
+- iPhone mobile app (SwiftUI) — deferred indefinitely (Epic 16, Icebox)
+- Cross-computer sync (Epic 64, In Progress)
+- Gemini Research Supervisor (Epic 54, In Progress)
 
 **Out of Scope (Deferred Indefinitely):**
 - iPad app
@@ -170,26 +283,5 @@
 - Multi-user support
 - Web interface
 - Voice interface
-
----
-
-## Phase 5+: Autonomous Project Governance
-
-**In Scope:**
-- Persistent project-watchdog agent (PM role): merged PR monitoring, story status updates, ROADMAP.md sync, PRD drift detection, monthly research document sweep
-- Persistent arch-watchdog agent (Architect role): code-to-architecture-doc alignment, undocumented pattern detection, architectural drift flagging via GitHub issues
-- Sprint health cron (SM role): 4-hourly sprint status summary, blocked story detection, stale PR alerts, idle worker monitoring
-- Coverage audit cron (QA/TEA role): weekly test coverage trend analysis, regression flagging against stored baseline
-- Agent communication via multiclaude message bus (`multiclaude message send`) — no shared state files
-- Agent authority boundaries: each agent edits only its designated doc domain (PM → story files/ROADMAP, Architect → architecture docs)
-- Idempotent, rate-limited polling with correlation IDs for cascade prevention
-- Restart recovery: agents re-scan last 10 merged PRs on startup to catch gaps
-
-**Out of Scope for this Phase:**
-- Tech Writer persistent agent (fold doc staleness checks into PM's monitoring loop)
-- Analyst persistent agent (fold research sweep into PM's monthly cycle)
-- UX Designer persistent agent (no continuous monitoring surface for CLI/TUI project)
-- Webhook-based event triggers (polling is sufficient at current project scale)
-- Adaptive polling intervals (deferred to tuning phase)
 
 ---

@@ -1615,3 +1615,987 @@
 **Dependencies:** Stories 21.1, 21.2
 
 ---
+
+## Epic 22: Self-Driving Development Pipeline
+
+**Epic Goal:** Enable ThreeDoors tasks to directly trigger multiclaude worker agents, creating a closed loop where the app dispatches its own development work and tracks results (PRs, CI status) back in the TUI.
+
+**Scope:** DevDispatch data model, file-based queue persistence, dispatch engine wrapping multiclaude CLI, TUI dispatch key binding and command, dev queue view, worker status polling, auto-generated follow-up tasks, and safety guardrails.
+
+**Status:** COMPLETE — All 8 stories implemented and merged (PRs #149, #152, #163, #162, #161, #164, #159, #160)
+
+---
+
+### Story 22.1: DevDispatch Data Model & Queue Persistence
+
+**As a** ThreeDoors user,
+**I want** a persistent dev dispatch queue,
+**so that** dispatched development tasks survive TUI restarts.
+
+**Acceptance Criteria:**
+1. `DevDispatch` model with fields: ID, TaskID, Description, Status (pending/dispatched/completed/failed), WorkerName, PRNumber, CIStatus, timestamps
+2. File-based queue persistence at `~/.threedoors/dev-queue.yaml`
+3. Queue CRUD operations: add, list, update status, remove
+4. Atomic writes for queue file updates
+
+---
+
+### Story 22.2: Dispatch Engine (multiclaude CLI Wrapper)
+
+**As a** ThreeDoors user,
+**I want** to dispatch development tasks to multiclaude workers,
+**so that** coding work can be automated from within the TUI.
+
+**Acceptance Criteria:**
+1. `DispatchEngine` wraps multiclaude CLI: `CreateWorker`, `ListWorkers`, `GetHistory`, `RemoveWorker`
+2. Worker creation generates task description from selected task context
+3. Error handling for multiclaude CLI failures (not installed, not configured, etc.)
+4. Thread-safe dispatch operations
+
+---
+
+### Story 22.3: TUI Dispatch Key Binding & Command
+
+**As a** ThreeDoors user,
+**I want** to dispatch a task for development from the detail view,
+**so that** I can trigger development work without leaving the TUI.
+
+**Acceptance Criteria:**
+1. `x` key in detail view triggers dispatch workflow
+2. `:dispatch` command in command palette
+3. Confirmation dialog before dispatching
+4. Visual feedback on successful dispatch
+
+---
+
+### Story 22.4: Dev Queue View
+
+**As a** ThreeDoors user,
+**I want** to see and manage my dev dispatch queue,
+**so that** I can track which tasks are being worked on.
+
+**Acceptance Criteria:**
+1. Dev queue view showing all queue items with status indicators
+2. Approve, kill, and remove actions on queue items
+3. Status icons for pending/dispatched/completed/failed
+
+---
+
+### Story 22.5: Worker Status Polling
+
+**As a** ThreeDoors user,
+**I want** automatic status updates on dispatched workers,
+**so that** I know when work is complete.
+
+**Acceptance Criteria:**
+1. `tea.Tick` polling at 30-second intervals for active workers
+2. Status updates reflected in queue view and status bar
+3. PR number captured when worker creates a PR
+
+---
+
+### Story 22.6: Auto-Generated Follow-Up Tasks
+
+**As a** ThreeDoors user,
+**I want** follow-up tasks automatically created when workers complete,
+**so that** I don't forget to review PRs and fix CI.
+
+**Acceptance Criteria:**
+1. On worker completion, generate "Review PR #NNN" task
+2. On CI failure, generate "Fix CI for PR #NNN" task
+3. Follow-up tasks added to main task pool
+
+---
+
+### Story 22.7: Optional Story File Generation
+
+**As a** ThreeDoors user,
+**I want** optional story file generation for dispatched tasks,
+**so that** complex tasks get proper story-driven development.
+
+**Acceptance Criteria:**
+1. Optional story generation via existing `AgentService` (Epic 14)
+2. Toggle in dispatch dialog
+3. Generated story file path included in worker task description
+
+---
+
+### Story 22.8: Safety Guardrails
+
+**As a** ThreeDoors user,
+**I want** safety limits on development dispatch,
+**so that** I don't accidentally overwhelm the system.
+
+**Acceptance Criteria:**
+1. Max concurrent workers limit (configurable, default 3)
+2. Approval gate for dispatches (configurable)
+3. Rate limiting (min interval between dispatches)
+4. Audit log of all dispatch operations
+
+---
+
+## Epic 23: CLI Interface
+
+**Epic Goal:** Provide a complete non-TUI CLI interface for ThreeDoors that serves both human power users (scriptable task management) and LLM agents (structured JSON output).
+
+**Scope:** Cobra-based CLI scaffold with `--json` persistent flag, task CRUD commands, door selection commands, session and analytics commands, shell completions.
+
+**Status:** COMPLETE — All 11 stories implemented and merged (PRs #170-#195, #225)
+
+---
+
+### Story 23.1: CLI Scaffold & Output Formatter
+
+**As a** developer or LLM agent,
+**I want** a Cobra-based CLI with JSON output support,
+**so that** I can script ThreeDoors operations.
+
+**Acceptance Criteria:**
+1. Cobra root command `threedoors` with `--json` persistent flag
+2. Output formatter interface supporting human-readable and JSON modes
+3. Version, help, and completion subcommands
+4. Shell completions for bash, zsh, fish, PowerShell
+
+---
+
+### Stories 23.2-23.11: Task CRUD, Door Commands, Session Commands
+
+Stories 23.2-23.11 implement the full CLI command surface: `task list`, `task show`, `task add`, `task update`, `task complete`, `doors`, `doors pick`, `doors roll`, session commands, and analytics commands. Each follows the same pattern: Cobra command definition, domain layer integration, human and JSON output formatting, and test coverage.
+
+---
+
+## Epic 24: MCP/LLM Integration Server
+
+**Epic Goal:** Expose ThreeDoors functionality as an MCP (Model Context Protocol) server enabling LLM agents to interact with tasks programmatically.
+
+**Scope:** MCP server with tool definitions for task management, structured JSON responses, resource endpoints for task context, integration with existing TaskProvider infrastructure.
+
+**Status:** COMPLETE — All 8 stories implemented and merged (PRs #177-#197)
+
+---
+
+### Stories 24.1-24.8: MCP Server Implementation
+
+Stories implement the full MCP server: tool registration and discovery, task management tools (list, show, add, update, complete), door interaction tools (roll, pick), resource endpoints for task context and session data, and integration testing. The server runs as a subprocess invoked by LLM agents via the MCP protocol.
+
+---
+
+## Epic 25: Todoist Integration
+
+**Epic Goal:** Integrate Todoist as a task source via REST API v1 with thin HTTP client, read-only then bidirectional sync.
+
+**Scope:** Todoist REST API v1 client with API token auth, read-only provider with field mapping (priority-to-effort, project filtering), bidirectional sync with WAL integration, contract tests.
+
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #308, #321, plus Stories 25.3 & 25.4)
+
+---
+
+### Story 25.1: Todoist HTTP Client & Auth
+
+**Acceptance Criteria:**
+1. Thin HTTP client for Todoist REST API v1
+2. API token authentication via config.yaml/env var
+3. Task listing with project filtering
+4. Error handling with rate limit respect (NFR20)
+
+### Story 25.2: Read-Only Provider
+
+**Acceptance Criteria:**
+1. `TodoistProvider` implementing `TaskProvider` interface
+2. Priority-to-effort mapping (P1→High, P2→Medium, etc.)
+3. Project filtering configuration
+4. Local cache with TTL (NFR21)
+
+### Story 25.3: Bidirectional Sync
+
+**Acceptance Criteria:**
+1. Complete tasks via Todoist API
+2. WAL offline queuing for write operations
+3. Circuit breaker integration (NFR23)
+
+### Story 25.4: Contract Tests
+
+**Acceptance Criteria:**
+1. Contract tests with mocked HTTP responses
+2. Integration tests verifying field mapping
+3. Edge case coverage (empty projects, API errors)
+
+---
+
+## Epic 26: GitHub Issues Integration
+
+**Epic Goal:** Integrate GitHub Issues as a task source, enabling developers to see their GitHub issues as ThreeDoors tasks.
+
+**Scope:** GitHub API client via go-github SDK, read-only provider with issue-to-task mapping, bidirectional sync (close issues), contract tests.
+
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #201-#205)
+
+---
+
+### Stories 26.1-26.4: GitHub Issues Provider
+
+Follows the standard 4-story integration pattern: SDK client, read-only provider with field mapping (labels→tags, milestones→context, assignee filtering), bidirectional sync (close issues on task completion), and contract tests with mocked GitHub API responses.
+
+---
+
+## Epic 27: Daily Planning Mode
+
+**Epic Goal:** Add a guided daily planning ritual that transforms ThreeDoors from a reactive task picker into a proactive morning engagement tool, driving long-term retention through structured planning sessions.
+
+**Scope:** Planning data model with session-scoped `+focus` tag, review incomplete tasks flow, focus selection flow, energy level matching, planning session metrics, focus-aware door selection scoring, CLI and TUI commands.
+
+**Status:** COMPLETE — All 5 stories implemented and merged
+
+**Requirements:** FR97-FR103 (already in requirements.md)
+
+---
+
+### Stories 27.1-27.5: Daily Planning Implementation
+
+Five stories implementing the full planning flow: 27.1 (planning data model and review flow), 27.2 (focus selection with energy matching), 27.3 (planning metrics logging), 27.4 (focus-aware door scoring), 27.5 (CLI `threedoors plan` and TUI `:plan` commands).
+
+---
+
+## Epic 28: Snooze/Defer as First-Class Action
+
+**Epic Goal:** Surface existing `StatusDeferred` as a first-class user action with date-based snooze and auto-return.
+
+**Scope:** Z-key snooze action, defer_until timestamp, auto-return logic, `:deferred` command, additional status transitions, session metrics logging.
+
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #310, #338, #358, #355)
+
+**Requirements:** FR104-FR109 (already in requirements.md)
+
+---
+
+### Stories 28.1-28.4: Snooze/Defer Implementation
+
+Four stories: 28.1 (Z-key action and SnoozeView with quick options), 28.2 (auto-return via startup check + tea.Tick), 28.3 (`:deferred` command with un-snooze and edit), 28.4 (status transitions and metrics).
+
+---
+
+## Epic 29: Task Dependencies & Blocked-Task Filtering
+
+**Epic Goal:** Native dependency graph support. Blocks tasks with unmet dependencies from door selection.
+
+**Scope:** `depends_on` field, automatic filtering, pessimistic orphan handling, blocked-by indicators, auto-unblock, dependency management UI, circular dependency detection, metrics logging, DependencyResolver.
+
+**Status:** COMPLETE — All 4 stories done (PRs #307, #319, #340, #356)
+
+**Requirements:** FR110-FR115 (already in requirements.md)
+
+---
+
+### Stories 29.1-29.4: Dependency Implementation
+
+Four stories: 29.1 (depends_on field and door filtering), 29.2 (blocked-by indicators and auto-unblock), 29.3 (dependency management UI with +/- keys), 29.4 (circular detection and DependencyResolver).
+
+---
+
+## Epic 30: Linear Integration
+
+**Epic Goal:** Integrate Linear as a task source via GraphQL API with full field mapping and bidirectional sync.
+
+**Scope:** Linear GraphQL client, typed queries with cursor-based pagination, API key auth, read-only provider with full field mapping, bidirectional sync via GraphQL mutations, WAL offline queuing, contract tests.
+
+**Status:** COMPLETE — All 4 stories done (PRs #446, #699, #705, #709)
+
+**Requirements:** FR116-FR119 (referenced in epic-list.md)
+
+---
+
+### Stories 30.1-30.4: Linear Integration
+
+Follows the standard 4-story integration pattern: 30.1 (GraphQL client with typed queries and pagination), 30.2 (read-only provider with status/priority/effort/label/due-date mapping), 30.3 (bidirectional sync with complete-task mutation and WAL), 30.4 (contract tests with mocked GraphQL server).
+
+---
+
+## Epic 31: Expand/Fork Key Implementations
+
+**Epic Goal:** Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9.
+
+**Scope:** E key expand mode, parent_id field, subtask list rendering, parent exclusion from doors, F key fork with field copy/reset semantics, fork cross-references via enrichment DB.
+
+**Status:** COMPLETE — All 5 stories done (PRs #698, #701, #708, #714, #718)
+
+**Requirements:** FR120-FR126 (already in requirements.md)
+
+---
+
+### Stories 31.1-31.5: Expand/Fork Implementation
+
+Five stories: 31.1 (E key expand mode with sequential subtask creation), 31.2 (parent_id field and subtask list rendering), 31.3 (parent exclusion from door selection), 31.4 (F key fork with copy/reset semantics), 31.5 (fork cross-references and enrichment DB integration).
+
+---
+
+## Epic 32: Undo Task Completion
+
+**Epic Goal:** Allow reversing accidental task completion via `complete → todo` transition.
+
+**Scope:** Status transition, CompletedAt clearing, session metrics logging, immutable completed log preservation, dependency re-evaluation.
+
+**Status:** COMPLETE — All 3 stories done
+
+**Requirements:** FR127-FR131 (already in requirements.md)
+
+---
+
+### Stories 32.1-32.3: Undo Implementation
+
+Three stories: 32.1 (complete→todo transition and CompletedAt clearing), 32.2 (undo_complete metrics event), 32.3 (dependency re-evaluation on undo).
+
+---
+
+## Epic 33: Seasonal Door Theme Variants
+
+**Epic Goal:** Time-based seasonal theme variants that auto-switch based on current date, extending Epic 17's theme infrastructure.
+
+**Scope:** Seasonal theme variant system, date-based auto-switching, seasonal theme definitions, configuration options.
+
+**Status:** COMPLETE — All 4 stories done
+
+---
+
+### Stories 33.1-33.4: Seasonal Themes
+
+Four stories implementing seasonal theme variants that auto-switch based on calendar date, extending the Epic 17 theme registry with time-aware variant selection.
+
+---
+
+## Epic 34: SOUL.md + Custom Development Skills
+
+**Epic Goal:** Create SOUL.md project philosophy document and 4 custom Claude Code slash commands to improve AI agent alignment and developer workflow.
+
+**Scope:** SOUL.md at project root, `/pre-pr` validation automation, `/validate-adapter` compliance checking, `/check-patterns` violation scanning, `/new-story` template generator.
+
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #222, #224, #228, #230)
+
+**Requirements:** NFR-DX1 through NFR-DX6 (already in requirements.md)
+
+---
+
+### Story 34.1: SOUL.md Project Philosophy Document
+
+**Acceptance Criteria:**
+1. SOUL.md at project root with philosophy, design principles, behavioral guidelines
+2. Core tenets: progress over perfection, work with human nature, three doors not three hundred, local-first privacy-always, meet users where they are, solo human agent team
+
+### Story 34.2: /pre-pr Validation Slash Command
+
+**Acceptance Criteria:**
+1. 8-step pre-PR validation: branch freshness, formatting, linting, tests, race detection, dead code, scope review, commit cleanliness
+
+### Story 34.3: /validate-adapter Slash Command
+
+**Acceptance Criteria:**
+1. TaskProvider interface compliance check
+2. Error wrapping pattern validation
+3. Factory registration, test coverage, atomic write usage checks
+
+### Story 34.4: /check-patterns and /new-story Slash Commands
+
+**Acceptance Criteria:**
+1. `/check-patterns`: scans for design pattern violations (direct status mutation, direct file writes, fmt.Println in TUI, panics, etc.)
+2. `/new-story`: generates story files from standard template
+
+---
+
+## Epic 35: Door Visual Appearance — Door-Like Proportions
+
+**Epic Goal:** Redesign all door themes to visually read as actual doors using portrait orientation, panel dividers, asymmetric handles, and threshold/floor lines.
+
+**Scope:** DoorAnatomy helper type, height-aware Render signature, all themes updated with door-like proportions, compact mode fallback, shadow/depth effects, golden file test regeneration, accessibility validation.
+
+**Status:** COMPLETE — All 7 stories implemented and merged (PRs #226, #229, #234, #236, #237, #238, #239)
+
+**Requirements:** FR138-FR147
+
+---
+
+### Stories 35.1-35.7: Door Visual Redesign
+
+Seven stories: 35.1 (DoorAnatomy type and height-aware rendering), 35.2 (classic theme door-like proportions), 35.3 (modern theme), 35.4 (minimal theme), 35.5 (art-deco theme), 35.6 (compact mode fallback for short terminals), 35.7 (shadow/depth effects and golden file regeneration).
+
+---
+
+## Epic 36: Door Selection Interaction Feedback
+
+**Epic Goal:** Make door selection feel responsive and satisfying by enhancing visual feedback contrast, adding deselect toggle, and ensuring universal quit.
+
+**Scope:** Selection highlight contrast enhancement, deselect toggle (press same key to deselect), universal quit handler, selection animation feedback.
+
+**Status:** COMPLETE — All 4 stories done
+
+**Requirements:** FR148-FR151
+
+---
+
+### Stories 36.1-36.4: Selection Feedback
+
+Four stories: 36.1 (high-contrast selection highlight), 36.2 (deselect toggle — pressing same door key deselects), 36.3 (universal quit handler), 36.4 (selection animation feedback).
+
+---
+
+## Epic 37: Persistent BMAD Agent Infrastructure
+
+**Epic Goal:** Enable autonomous project governance by adding persistent BMAD agents and cron jobs that maintain story status, ROADMAP accuracy, architecture doc currency, and quality metrics.
+
+**Scope:** Agent definition files for project-watchdog and arch-watchdog, cron configuration for SM sprint health and QA coverage audit, agent communication architecture, monitoring and evaluation framework.
+
+**Status:** COMPLETE — All 4 stories implemented (PR #271, PR #280, PR #279, PR #281)
+
+---
+
+### Story 37.1: Project-Watchdog Agent Definition
+
+**Acceptance Criteria:**
+1. Agent definition file at `agents/project-watchdog.md`
+2. PM role: merged PR monitoring, story status updates, ROADMAP sync, PRD drift detection
+3. Responsibility+WHY format per D-10
+
+### Story 37.2: Arch-Watchdog Agent Definition
+
+**Acceptance Criteria:**
+1. Agent definition file at `agents/arch-watchdog.md`
+2. Architect role: code-to-architecture-doc alignment, undocumented pattern detection, drift flagging
+3. Responsibility+WHY format
+
+### Story 37.3: SM Sprint Health & QA Coverage Cron
+
+**Acceptance Criteria:**
+1. Cron setup documentation at `docs/quality/cron-setup.md`
+2. SM role: 4-hourly sprint status, blocked story detection, stale PR alerts
+3. QA role: weekly coverage audit, regression flagging
+
+### Story 37.4: Agent Communication Architecture
+
+**Acceptance Criteria:**
+1. Architecture doc at `_bmad-output/planning-artifacts/architecture-persistent-agent-infrastructure.md`
+2. Monitoring framework at `docs/operations/agent-evaluation.md`
+3. multiclaude message bus patterns documented
+
+---
+
+## Epic 38: Dual Homebrew Distribution
+
+**Epic Goal:** Establish parallel Homebrew distribution channels (stable + alpha) with signing parity, publishing controls, verification, and retention management.
+
+**Scope:** Alpha Homebrew formula, publishing toggle, code signing and notarization, alpha formula verification, alpha release retention cleanup.
+
+**Status:** COMPLETE — All 6 stories done
+
+---
+
+### Stories 38.1-38.6: Dual Homebrew
+
+Six stories implementing parallel distribution: alpha formula (`threedoors-a.rb`), publishing toggle (`vars.ALPHA_TAP_ENABLED`), code signing for stable releases, alpha formula verification via tap CI, alpha retention cleanup (keep last 30), documentation and testing.
+
+---
+
+## Epic 39: Keybinding Display System
+
+**Epic Goal:** Add toggleable keybinding discoverability to the TUI: context-sensitive bottom bar, full keybinding overlay, and inline door key indicators unified under `h` toggle.
+
+**Scope:** Compile-time keybinding registry, concise bottom bar, full-screen overlay, `h` toggle unifying door key indicators and bar, terminal size adaptation, context-sensitive content, `:hints` command.
+
+**Status:** COMPLETE — 12/13 stories done, 1 cancelled (D-140: auto-fade rejected)
+
+---
+
+### Stories 39.1-39.13: Keybinding Display
+
+Thirteen stories (one cancelled): 39.1 (keybinding registry), 39.2 (bottom bar rendering), 39.3 (full overlay with `?` key), 39.4 (terminal size adaptation), 39.5 (context-sensitive bar content), 39.6 (door key indicators `[a]`/`[w]`/`[d]`), 39.7 (`h` toggle unification per D-137), 39.8-39.11 (refinements and edge cases), 39.12 (auto-fade — CANCELLED per D-140), 39.13 (`:hints` command alias).
+
+---
+
+## Epic 40: Beautiful Stats Display
+
+**Epic Goal:** Transform the insights dashboard from plain text into a visually delightful display using Lipgloss styled panels, gradient sparklines, bar charts, fun facts, heatmaps, and milestone celebrations.
+
+**Scope:** Three-phase implementation: Phase 1 (dashboard shell, sparklines, fun facts), Phase 2 (bar charts, heatmap, hidden metrics, animated counters, tab navigation), Phase 3 (theme-matched colors, milestone celebrations).
+
+**Status:** COMPLETE — All 10 stories done
+
+---
+
+### Stories 40.1-40.10: Beautiful Stats
+
+Ten stories across three phases: 40.1 (Lipgloss bordered dashboard shell), 40.2 (gradient sparklines with colorblind-safe palette), 40.3 (fun facts engine), 40.4 (mood correlation bar charts), 40.5 (GitHub-style activity heatmap), 40.6 (surface hidden session metrics), 40.7 (animated counter reveals), 40.8 (tab navigation for Overview/Detail), 40.9 (theme-matched color palettes), 40.10 (milestone celebrations with observation language).
+
+---
+
+## Epic 41: Charm Ecosystem Adoption & TUI Polish
+
+**Epic Goal:** Systematically adopt underutilized charmbracelet ecosystem components to reduce custom code maintenance, improve UX consistency, and deliver on SOUL.md's "physical objects" promise.
+
+**Scope:** bubbles/spinner for async feedback, lipgloss layout composition, bubbles/viewport for scroll views, harmonica spring-physics spike, adaptive color profile support.
+
+**Status:** COMPLETE — All 6 stories done
+
+---
+
+### Stories 41.1-41.6: Charm Ecosystem
+
+Six stories: 41.1 (bubbles/spinner for provider operations), 41.2 (lipgloss.JoinVertical + Place for layout), 41.3 (bubbles/viewport replacing 3 custom scroll implementations), 41.4 (harmonica spring-physics door transition spike), 41.5 (adaptive color profile for terminal-aware degradation), 41.6 (integration testing and polish).
+
+---
+
+## Epic 42: Application Security Hardening
+
+**Epic Goal:** Remediate all actionable findings from the application security audit — standardize file permissions, add symlink validation, enforce input size limits, protect credentials, and harden CI supply chain.
+
+**Scope:** File permission standardization, symlink validation, file size limits, credential exposure protection, CI supply chain hardening.
+
+**Status:** COMPLETE — All 5 stories done
+
+---
+
+### Story 42.1: File Permission Standardization
+
+**Acceptance Criteria:**
+1. All directory creation uses 0o700 permissions
+2. All file creation uses 0o600 permissions
+3. Startup migration for existing installs with incorrect permissions
+
+### Story 42.2: Symlink Validation
+
+**Acceptance Criteria:**
+1. `os.Lstat()` check on startup for config/data directories
+2. Symlink validation before file writes
+3. Warning log for unexpected symlinks
+
+### Story 42.3: Input Size Limits
+
+**Acceptance Criteria:**
+1. File size limits before YAML reads (prevent DoS via large files)
+2. Explicit scanner buffer limits on all JSONL readers
+3. Configurable limits with safe defaults
+
+### Story 42.4: Credential Protection
+
+**Acceptance Criteria:**
+1. Credential exposure warning on startup (if tokens visible in config)
+2. `yaml:"-"` tag on all token/secret fields
+3. Config file permission check
+
+### Story 42.5: CI Supply Chain Hardening
+
+**Acceptance Criteria:**
+1. SHA-pinned third-party GitHub Actions
+2. govulncheck added to CI quality gate
+3. Dependency review for known vulnerabilities
+
+---
+
+## Epic 43: Connection Manager Infrastructure
+
+**Epic Goal:** Build the connection lifecycle layer for data source integrations: state machine, credential storage, config schema v3, CRUD operations, sync event logging, and adapter migration.
+
+**Scope:** ConnectionManager with 7-state machine, CredentialStore with keychain/env/file fallback, config schema v3 with `connections:` array, connection CRUD, JSONL sync event logging, adapter migration.
+
+**Status:** COMPLETE — All 6 stories implemented and merged (PRs #428, #442, #467, #526, #439, #540)
+
+---
+
+### Story 43.1: ConnectionManager State Machine
+
+**Acceptance Criteria:**
+1. `ConnectionManager` type with 7 states: Disconnected, Connecting, Connected, Syncing, Error, AuthExpired, Paused
+2. Valid state transitions defined and enforced
+3. Thread-safe state management
+
+### Story 43.2: CredentialStore
+
+**Acceptance Criteria:**
+1. System keychain integration via 99designs/keyring
+2. Env var fallback for CI/headless environments
+3. Encrypted file fallback as last resort
+4. Credential CRUD: store, retrieve, delete, rotate
+
+### Story 43.3: Config Schema v3
+
+**Acceptance Criteria:**
+1. `connections:` array with named connections and ULID IDs
+2. Auto-migration from config schema v2
+3. Backward compatibility with existing configs
+
+### Story 43.4: Connection CRUD Operations
+
+**Acceptance Criteria:**
+1. Add, remove, pause, resume, test, force-sync operations
+2. Validation on all mutations
+3. Event emission for state changes
+
+### Story 43.5: Sync Event Logging
+
+**Acceptance Criteria:**
+1. JSONL sync event log per connection
+2. Rolling retention policy
+3. Event types: sync_start, sync_complete, sync_error, auth_expired
+
+### Story 43.6: Adapter Migration
+
+**Acceptance Criteria:**
+1. All 8 existing adapters wrapped in ConnectionManager pattern
+2. Backward-compatible initialization
+3. Migration test coverage
+
+---
+
+## Epic 44: Sources TUI
+
+**Epic Goal:** TUI interfaces for data source management: setup wizard, sources dashboard, source detail view, sync log view, status bar alerts, disconnection flow, and re-authentication flow.
+
+**Scope:** 4-step setup wizard using charmbracelet/huh, sources dashboard, source detail view with health checks, sync log view, status bar health alerts, disconnect and re-auth flows.
+
+**Status:** COMPLETE — All 7 stories done
+
+---
+
+### Stories 44.1-44.7: Sources TUI
+
+Seven stories: 44.1 (`:connect` setup wizard with huh forms), 44.2 (sources dashboard with status indicators), 44.3 (source detail view with health checks and sync stats), 44.4 (sync log view with scrollable event history), 44.5 (status bar alerts for connections needing attention), 44.6 (disconnect flow with task preservation), 44.7 (re-authentication flow).
+
+---
+
+## Epic 45: Sources CLI
+
+**Epic Goal:** Non-interactive CLI commands for data source management with consistent `--json` output for scripting and CI/automation.
+
+**Scope:** `threedoors connect <provider>` with per-provider flags, `threedoors sources` commands (list, status, test, pause/resume/sync/disconnect, log), JSON output.
+
+**Status:** COMPLETE — All 6 stories done
+
+---
+
+### Stories 45.1-45.6: Sources CLI
+
+Six stories: 45.1 (`threedoors connect <provider>` with flag sets), 45.2 (`threedoors sources list` and `status`), 45.3 (`threedoors sources test` and health checks), 45.4 (`threedoors sources pause/resume/sync/disconnect`), 45.5 (`threedoors sources log` with filtering), 45.6 (JSON output and integration testing).
+
+---
+
+## Epic 46: OAuth Device Code Flow
+
+**Epic Goal:** Generic OAuth device code flow client (RFC 8628) for browser-based authentication, with provider-specific integrations for GitHub and Linear.
+
+**Scope:** Reusable device code flow client, GitHub OAuth integration with PAT fallback, Linear OAuth/API key integration, silent token refresh with re-auth on expiry.
+
+**Status:** COMPLETE — All 4 stories done
+
+---
+
+### Stories 46.1-46.4: OAuth Implementation
+
+Four stories: 46.1 (generic device code flow client per RFC 8628), 46.2 (GitHub OAuth with device code + PAT fallback), 46.3 (Linear OAuth/API key integration), 46.4 (silent token refresh lifecycle).
+
+---
+
+## Epic 47: Sync Lifecycle & Advanced Features
+
+**Epic Goal:** Advanced sync features: conflict resolution, orphaned task handling, auto-detection of installed tools, and proactive connection health notifications.
+
+**Scope:** ConflictResolver with field-level strategy, orphaned task marking and management UI, installed tool detection, predictive warnings.
+
+**Status:** COMPLETE — All 4 stories done
+
+---
+
+### Stories 47.1-47.4: Sync Lifecycle
+
+Four stories: 47.1 (ConflictResolver with remote-wins for metadata, local-wins for ThreeDoors fields), 47.2 (orphaned task marking and management), 47.3 (installed tool auto-detection for setup wizard), 47.4 (predictive warnings for token expiry, rate limits, error streaks).
+
+---
+
+## Epic 48: Door-Like Doors — Visual Door Metaphor Enhancement
+
+**Epic Goal:** Transform rectangular card/panel doors into visually convincing doors using side-mounted handles, hinge marks, threshold lines, crack-of-light selection feedback, and handle turn micro-animations.
+
+**Scope:** Side-mounted handle at right edge + hinge marks on left edge, continuous threshold/floor line, crack of light selection effect, handle turn micro-animation.
+
+**Status:** COMPLETE — All 4 stories done
+
+---
+
+### Stories 48.1-48.4: Door-Like Doors
+
+Four stories: 48.1 (side-mounted handles and hinge marks for asymmetry), 48.2 (continuous threshold/floor line grounding doors), 48.3 (crack-of-light effect on selection — door becomes "ajar"), 48.4 (handle turn micro-animation synced with spring physics).
+
+---
+
+## Epic 49: ThreeDoors Doctor — Self-Diagnosis Command
+
+**Epic Goal:** Comprehensive self-diagnosis command (`threedoors doctor`) with flutter-style category-based output, conservative auto-repair, and channel-aware version checking.
+
+**Scope:** Doctor command skeleton with DoctorChecker framework, 6 check categories, channel-aware version checking, conservative auto-repair, verbose/category/JSON modes.
+
+**Status:** COMPLETE — All 10 stories done
+
+---
+
+### Stories 49.1-49.10: Doctor Command
+
+Ten stories implementing the full doctor infrastructure: 49.1 (command skeleton and DoctorChecker framework), 49.2 (Environment checks), 49.3 (Task Data checks), 49.4 (Providers checks), 49.5 (Sessions checks), 49.6 (Sync checks), 49.7 (Database checks), 49.8 (channel-aware version checking with 24h cache), 49.9 (conservative auto-repair via `--fix`), 49.10 (verbose mode, category filter, JSON output).
+
+---
+
+## Epic 50: In-App Bug Reporting
+
+**Epic Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission.
+
+**Scope:** Ring buffer breadcrumb tracking, bug report view, three submission paths (browser URL, GitHub API, local file), strict privacy allowlist.
+
+**Status:** COMPLETE — All 3 stories implemented and merged (PRs #478, #624, #649)
+
+---
+
+### Story 50.1: Breadcrumb Tracking
+
+**Acceptance Criteria:**
+1. Ring buffer tracking 50 entries (view transitions + non-text keys)
+2. Privacy-safe: task content, search queries, personal data never collected
+3. Strict allowlist at capture level
+
+### Story 50.2: Bug Report View
+
+**Acceptance Criteria:**
+1. Text description input
+2. Environment summary (OS, terminal, Go version, ThreeDoors version)
+3. Mandatory preview before submission
+
+### Story 50.3: Submission Paths
+
+**Acceptance Criteria:**
+1. Browser URL: zero-auth, opens pre-filled GitHub issue URL
+2. GitHub API: PAT-based direct issue creation (optional upgrade)
+3. Local file: offline fallback saving report to disk
+
+---
+
+## Epic 51: SLAES — Self-Learning Agentic Engineering System
+
+**Epic Goal:** Build a continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste, audits doc consistency, analyzes CI/conflict patterns, and files improvement recommendations.
+
+**Scope:** Retrospector agent definition, JSONL findings log, saga detection, doc consistency audit, BOARD.md recommendation pipeline, merge conflict rate analysis, CI failure taxonomy, research lifecycle tracking, weekly trend reporting, 5 Watchmen safeguards.
+
+**Status:** COMPLETE — All 11 stories implemented and merged (PRs #460-#465, #505-#509, #608)
+
+---
+
+### Stories 51.1-51.11: SLAES Implementation
+
+Eleven stories across three phases:
+- Phase 0 (51.1-51.2): Retrospector agent definition in responsibility+WHY format; rewrite 5 operational agent definitions with incident-hardened guardrails
+- Phase 1 (51.3-51.7): JSONL findings log, per-merge lightweight retro, saga detection, doc consistency audit, BOARD.md recommendation pipeline with confidence scoring
+- Phase 2 (51.8-51.11): Merge conflict rate analysis, CI failure taxonomy, research lifecycle tracking, PR creation authority, weekly trend reporting
+
+5 Watchmen safeguards: no self-modification, audit trail, confidence scoring, periodic human review, kill switch (3 rejections → read-only).
+
+---
+
+## Epic 52: Envoy Three-Layer Firewall
+
+**Epic Goal:** Restructure the envoy agent definition into a formal three-layer firewall architecture for issue screening.
+
+**Scope:** Three-layer firewall (Layer 1: syntax/spam filter, Layer 2: scope/relevance check, Layer 3: impact assessment), clear entry/exit criteria per layer.
+
+**Status:** COMPLETE — All 4 stories implemented and merged (PRs #515, #517, #514, #516)
+
+---
+
+### Stories 52.1-52.4: Envoy Firewall
+
+Four stories: 52.1 (Layer 1: syntax and spam filtering), 52.2 (Layer 2: scope and relevance checking against ROADMAP), 52.3 (Layer 3: impact assessment and priority classification), 52.4 (integration and testing of full firewall pipeline).
+
+---
+
+## Epic 53: Remote Collaboration — multiclaude Cross-Machine Access
+
+**Epic Goal:** Document and enable remote collaboration with multiclaude via SSH, with future MCP bridge support.
+
+**Scope:** SSH remote access documentation, tmux session management for remote agents, MCP bridge architecture design, security considerations.
+
+**Status:** COMPLETE — All 5 stories done (PRs #613, #615, #665, #691, #693)
+
+---
+
+### Stories 53.1-53.5: Remote Collaboration
+
+Five stories: 53.1 (SSH tunnel setup and documentation), 53.2 (tmux session management for remote agent attachment), 53.3 (MCP bridge architecture design), 53.4 (security hardening for remote access), 53.5 (integration testing and operational guide).
+
+---
+
+## Epic 55: CI Optimization Phase 1
+
+**Epic Goal:** Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only — no test code modifications.
+
+**Scope:** Docker E2E moved to push-only, golangci-lint version fix, benchmark path filtering, `make test-fast` target, CI Go build cache verification.
+
+**Status:** COMPLETE — All 3 stories done
+
+---
+
+### Stories 55.1-55.3: CI Optimization
+
+Three stories: 55.1 (Docker E2E push-only + lint version fix), 55.2 (benchmark path filtering — only run when core code changes), 55.3 (local dev acceleration with `make test-fast` ~10s target).
+
+---
+
+## Epic 56: Door Visual Redesign — Three-Layer Depth System
+
+**Epic Goal:** Transform door rendering from imperceptible wireframe shadows into solid, 3D-feeling surfaces using background fill, bevel lighting, and gradient shadow.
+
+**Scope:** ThemeColors extension with depth fields, background fill for all themes, bevel lighting (lighter top/left, darker bottom/right), shadow overhaul with gradient (▓▒░), panel zone shading, width-adaptive shadow.
+
+**Status:** COMPLETE — All 5 stories done
+
+---
+
+### Stories 56.1-56.5: Door Visual Redesign
+
+Five stories: 56.1 (ThemeColors extension with FillLower, Highlight, ShadowEdge, ShadowNear, ShadowFar), 56.2 (background fill for all 8 theme door interiors), 56.3 (bevel lighting for raised-surface perception), 56.4 (shadow overhaul with gradient and per-theme rendering), 56.5 (panel zone shading and width-adaptive shadow).
+
+---
+
+## Epic 57: LLM CLI Services
+
+**Epic Goal:** Enable ThreeDoors to invoke LLM CLI tools (Claude CLI, Gemini CLI, Ollama CLI) as subprocess-based service providers for intelligent task operations.
+
+**Scope:** CLIProvider + CLISpec model implementing LLMBackend interface, pre-built specs for 4 CLI tools, auto-discovery with fallback chain, TaskExtractor/TaskEnricher/TaskBreakdown services, TUI and CLI commands, `threedoors llm status`.
+
+**Status:** COMPLETE — All 8 stories done
+
+---
+
+### Stories 57.1-57.8: LLM CLI Services
+
+Eight stories: 57.1 (CLIProvider and CLISpec declarative model), 57.2 (pre-built specs for Claude/Gemini/Ollama/custom CLIs), 57.3 (auto-discovery and fallback chain), 57.4 (TaskExtractor service and `:extract` TUI command), 57.5 (CLI `threedoors extract` with file/clipboard/stdin), 57.6 (TaskEnricher with before/after diff TUI), 57.7 (TaskBreakdown CLI backend extension), 57.8 (`threedoors llm status` command).
+
+---
+
+## Epic 58: Supervisor Shift Handover — Context-Aware Supervisor Rotation
+
+**Epic Goal:** Detect supervisor context window degradation, serialize operational state, and transfer control to a fresh supervisor instance while workers continue uninterrupted.
+
+**Scope:** Shift clock with three-tier thresholds, rolling state snapshot, handover orchestrator with 5-step protocol, supervisor startup with state file, emergency handover, handover history, manual trigger command.
+
+**Status:** COMPLETE — All 7 stories done
+
+---
+
+### Stories 58.1-58.7: Supervisor Shift Handover
+
+Seven stories in two phases:
+- MVP (58.1-58.4): Shift clock (daemon-side transcript monitoring), rolling state snapshot (YAML), handover orchestrator (request→delta→spawn→ready→kill), supervisor startup with state file
+- Hardening (58.5-58.7): Emergency handover (120s timeout force-kill), handover history (archived state files, JSONL log), manual trigger (`multiclaude supervisor handover`)
+
+---
+
+## Epic 59: Full-Terminal Vertical Layout
+
+**Epic Goal:** Transform ThreeDoors from a content-driven partial-terminal app into a full-terminal experience using AltScreen, layout engine, and graceful degradation.
+
+**Scope:** AltScreen for full-terminal ownership, layout engine (fixed header + flex middle + fixed footer), door height capping, perceptual centering, help view dynamic page size, SetHeight propagation, header/footer extraction, breakpoint-based degradation.
+
+**Status:** COMPLETE — All 2 stories done
+
+---
+
+### Stories 59.1-59.2: Full-Terminal Layout
+
+Two stories per D-120: 59.1 (MVP — AltScreen, layout engine, door height cap, perceptual centering, degradation breakpoints), 59.2 (follow-up — SetHeight propagation to all views, header/footer extraction, help view dynamic sizing).
+
+---
+
+## Epic 60: README Overhaul
+
+**Epic Goal:** Polish the README with centered badge clusters, table of contents, foldable reference sections, updated feature list, and visual demo section.
+
+**Scope:** Centered badge cluster, table of contents, foldable `<details>` sections, feature list audit, visual demo section.
+
+**Status:** COMPLETE — All 5 stories done
+
+---
+
+### Stories 60.1-60.5: README Overhaul
+
+Five stories: 60.1 (centered badge cluster), 60.2 (table of contents with anchor links), 60.3 (foldable reference sections), 60.4 (feature list audit covering all completed epics), 60.5 (visual demo section with screenshots).
+
+---
+
+## Epic 61: GitHub Pages User Guide
+
+**Epic Goal:** Publish ThreeDoors documentation as a professional GitHub Pages site using MkDocs + Material for MkDocs.
+
+**Scope:** MkDocs infrastructure, GitHub Actions deployment workflow, getting started guides, core user guide, per-integration setup guides, CLI reference, advanced guides, dark/light mode, search.
+
+**Status:** COMPLETE — All 4 stories done
+
+---
+
+### Stories 61.1-61.4: GitHub Pages
+
+Four stories: 61.1 (MkDocs + Material infrastructure and GitHub Actions workflow), 61.2 (getting started and core user guide pages), 61.3 (per-integration setup guides for 8 providers), 61.4 (CLI reference, config reference, advanced guides, troubleshooting).
+
+---
+
+## Epic 62: Retrospector Agent Reliability
+
+**Epic Goal:** Fix three infrastructure reliability issues preventing the retrospector agent (SLAES) from operating as designed.
+
+**Scope:** File-based fallback inbox for messaging, recommendation queue with batch pipeline to BOARD.md, JSON checkpoint for state persistence.
+
+**Status:** COMPLETE — All 3 stories done
+
+---
+
+### Stories 62.1-62.3: Retrospector Reliability
+
+Three stories: 62.1 (file-based fallback inbox with identity verification — D-176), 62.2 (recommendation queue file with batch pipeline to BOARD.md via project-watchdog — D-177), 62.3 (JSON checkpoint file for analytical state persistence across restarts — D-178).
+
+---
+
+## Epic 63: ClickUp Integration
+
+**Epic Goal:** Integrate ClickUp as a task source following the established adapter pattern.
+
+**Scope:** ClickUp REST API v2 client with token auth, read-only provider with field mapping, bidirectional sync with WAL and circuit breaker, contract tests.
+
+**Status:** COMPLETE — All 4 stories done (PRs #706, #719, #727, #728)
+
+---
+
+### Stories 63.1-63.4: ClickUp Integration
+
+Follows the standard 4-story integration pattern: 63.1 (REST API v2 client with token auth), 63.2 (read-only provider with status/priority/due-date/tag mapping), 63.3 (bidirectional sync with WAL integration and circuit breaker), 63.4 (contract tests and integration testing).
+
+---
+
+## Epic 65: CLI Test Coverage Hardening
+
+**Epic Goal:** Increase `internal/cli` package test coverage from 34.8% to ≥70%, addressing the critical coverage gap identified by the TEA audit.
+
+**Scope:** Core CLI path tests, subcommand tests, remaining command tests.
+
+**Status:** COMPLETE — All 3 stories done
+
+---
+
+### Story 65.1: Core CLI Path Tests
+
+**Acceptance Criteria:**
+1. Tests for bootstrap, root command, doors command, loadTaskPool, output formatting
+2. Coverage increase target: +15-20%
+
+### Story 65.2: Subcommand Test Coverage
+
+**Acceptance Criteria:**
+1. Tests for config, mood, health, stats, plan, version subcommands
+2. Coverage increase target: +15-20%
+
+### Story 65.3: Remaining Command Tests
+
+**Acceptance Criteria:**
+1. Tests for task, sources, connect, extract, interactive commands
+2. Final coverage ≥70%
+
+---

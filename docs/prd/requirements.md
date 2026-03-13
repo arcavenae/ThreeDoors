@@ -585,3 +585,555 @@ These non-functional requirements establish code quality gates that all contribu
 **NFR23:** The per-provider circuit breaker must trip to Open state after 5 consecutive failures within a 2-minute window; probe requests must occur at configurable intervals (default 30 seconds, max 30 minutes with exponential backoff)
 
 ---
+
+## Self-Driving Development Pipeline (Epic 22, Accepted)
+
+> Requirements for dispatching multiclaude workers from within the TUI.
+
+**FR73:** The system shall provide a DevDispatch data model with fields for dispatch ID, task ID, description, status (pending/dispatched/completed/failed), worker name, PR number, CI status, and timestamps — persisted as `~/.threedoors/dev-queue.yaml` with atomic file writes
+
+**FR74:** The system shall provide a dispatch engine wrapping the multiclaude CLI with operations: `CreateWorker`, `ListWorkers`, `GetHistory`, `RemoveWorker` — generating task descriptions from the selected task's context
+
+**FR75:** The system shall provide a dispatch action via the `x` key in the detail view and `:dispatch` command in the command palette, with a confirmation dialog before dispatching
+
+**FR76:** The system shall provide a dev queue view listing all queue items with status indicators, supporting approve, kill, and remove actions
+
+**FR77:** The system shall poll worker status at 30-second intervals via `tea.Tick`, updating queue items with PR numbers and CI status when workers create PRs
+
+**FR78:** The system shall auto-generate follow-up tasks when workers complete: "Review PR #NNN" on success, "Fix CI for PR #NNN" on CI failure
+
+**FR79:** The system shall optionally generate story files for dispatched tasks via the existing `AgentService` (Epic 14), toggled in the dispatch dialog
+
+**FR80:** The system shall enforce safety guardrails on development dispatch: configurable max concurrent workers (default 3), approval gate, minimum dispatch interval rate limiting, and audit log of all operations
+
+**NFR24:** The dispatch engine shall handle multiclaude CLI failures gracefully (not installed, not configured, network errors) without crashing the TUI
+
+**NFR25:** Dispatch operations shall be thread-safe and not block the TUI event loop
+
+**NFR26:** All dispatched worker task descriptions shall include contribution standards (commit signing, scope constraints)
+
+**NFR27:** The dev queue file shall survive TUI process restarts; on TUI launch the dispatch engine shall resume polling for active items
+
+---
+
+## CLI Interface (Epic 23, Accepted)
+
+> Requirements for the non-TUI CLI interface.
+
+**FR81:** The system shall provide a Cobra-based CLI interface with a `threedoors` root command and `--json` persistent flag for structured output suitable for scripting and LLM agent consumption
+
+**FR82:** The system shall provide task CRUD commands: `task list` (with filtering), `task show <id>`, `task add <text>`, `task update <id>`, `task complete <id>` — all supporting both human-readable and JSON output
+
+**FR83:** The system shall provide door interaction commands: `doors` (show current doors), `doors pick <position>`, `doors roll` — enabling non-interactive door selection workflows
+
+**FR84:** The system shall provide session and analytics commands for accessing metrics data via CLI
+
+**FR85:** The system shall generate shell completions for bash, zsh, fish, and PowerShell via `threedoors completion <shell>`
+
+---
+
+## MCP/LLM Integration Server (Epic 24, Accepted)
+
+> Requirements for the Model Context Protocol server.
+
+**FR86:** The system shall provide an MCP server exposing ThreeDoors task management as MCP tools: list_tasks, show_task, add_task, update_task, complete_task, roll_doors, pick_door
+
+**FR87:** The MCP server shall return structured JSON responses conforming to the MCP protocol specification for tool results and error responses
+
+**FR88:** The MCP server shall provide MCP resource endpoints for task context and session data, enabling LLM agents to read current state
+
+**FR89:** The MCP server shall integrate with the existing TaskProvider infrastructure, supporting all configured providers
+
+---
+
+## Todoist Integration (Epic 25, Accepted)
+
+> Requirements for Todoist as a task source.
+
+**FR90:** The system shall provide a Todoist REST API v1 client with API token authentication (configured via `config.yaml` or environment variable), supporting task listing with project filtering
+
+**FR91:** The system shall map Todoist task fields to ThreeDoors task fields: priority (P1→High, P2→Medium, P3→Low, P4→None) to effort, project to context, labels to tags, due date to due_date
+
+**FR92:** The system shall support bidirectional sync with Todoist: completing a task in ThreeDoors closes it in Todoist via API, with WAL offline queuing for write operations
+
+---
+
+## GitHub Issues Integration (Epic 26, Accepted)
+
+> Requirements for GitHub Issues as a task source.
+
+**FR93:** The system shall provide a GitHub Issues adapter using the go-github SDK with PAT authentication, supporting issue listing with repository, assignee, and label filtering
+
+**FR94:** The system shall map GitHub Issue fields to ThreeDoors task fields: labels to tags, milestones to context, assignee filtering for multi-repo setups
+
+**FR95:** The system shall support bidirectional sync with GitHub Issues: completing a task in ThreeDoors closes the issue via API, with WAL offline queuing
+
+---
+
+## Linear Integration (Epic 30, Accepted)
+
+> Requirements for Linear as a task source.
+
+**FR116:** The system shall provide a Linear GraphQL client with typed queries, cursor-based pagination, and API key authentication
+
+**FR117:** The system shall map Linear issue fields to ThreeDoors task fields: workflow state to status, priority to effort, estimate to effort, labels to tags, due date to due_date — preserving Linear's rich task model alignment
+
+**FR118:** The system shall support bidirectional sync with Linear: completing a task in ThreeDoors transitions the issue via GraphQL mutation, with WAL offline queuing
+
+**FR119:** The system shall provide contract tests for the Linear integration using a mocked GraphQL server
+
+---
+
+## Seasonal Door Theme Variants (Epic 33, Accepted)
+
+> Requirements for time-based seasonal theme switching.
+
+**FR132:** The system shall support seasonal theme variants that automatically switch based on the current calendar date, extending Epic 17's theme registry with time-aware variant selection
+
+**FR133:** The system shall provide seasonal theme definitions for spring, summer, autumn, and winter with date ranges (configurable, defaulting to meteorological seasons)
+
+**FR134:** The system shall allow users to opt out of seasonal auto-switching via configuration, locking to a specific theme
+
+---
+
+## Door Visual Appearance (Epic 35, Accepted)
+
+> Requirements for door-like visual proportions.
+
+**FR138:** The system shall render doors in portrait orientation with height-to-width ratio approximating real door proportions, using a `DoorAnatomy` helper type that encapsulates door visual structure
+
+**FR139:** The system shall render panel dividers within door frames, creating the visual impression of paneled doors
+
+**FR140:** The system shall render asymmetric door handles on the right edge of each door, with hinge indicators on the left edge
+
+**FR141:** The system shall render threshold/floor lines at the base of doors
+
+**FR142:** All four themes (classic, modern, minimal, art-deco) shall be updated with door-like proportions
+
+**FR143:** The system shall provide compact mode fallback for terminals shorter than the minimum door height, gracefully degrading visual detail
+
+**FR144:** The system shall apply shadow/depth effects to create 3D appearance for doors
+
+**FR145:** All golden file tests shall be regenerated to match updated door rendering
+
+**FR146:** Door rendering shall pass accessibility validation (sufficient contrast ratios for key elements)
+
+**FR147:** The `Render` method signature shall accept height as a parameter for dynamic door sizing
+
+---
+
+## Door Selection Interaction Feedback (Epic 36, Accepted)
+
+> Requirements for responsive door selection UX.
+
+**FR148:** The system shall provide high-contrast visual feedback when a door is selected, making the selected state immediately distinguishable from unselected doors
+
+**FR149:** The system shall support deselect toggle — pressing the same door key (a/w/d) again deselects the door, returning to the no-selection state
+
+**FR150:** The system shall provide a universal quit handler ensuring 'q' exits the application from any view (later scoped to doors view only per D-128)
+
+**FR151:** The system shall provide visual animation feedback on door selection to create a satisfying, responsive feel
+
+---
+
+## Persistent BMAD Agent Infrastructure (Epic 37, Accepted)
+
+> Requirements for autonomous project governance agents.
+
+**NFR-AG1:** The system shall provide agent definition files for project-watchdog (PM role) and arch-watchdog (Architect role) in the `agents/` directory, using the responsibility+WHY format (D-10)
+
+**NFR-AG2:** The project shall maintain cron configurations for SM sprint health monitoring (4-hourly) and QA coverage auditing (weekly), documented in `docs/quality/cron-setup.md`
+
+**NFR-AG3:** Agent communication shall use the multiclaude message bus (`multiclaude message send`) — no shared state files between agents
+
+**NFR-AG4:** Each agent shall edit only its designated document domain: PM → story files/ROADMAP, Architect → architecture docs
+
+---
+
+## Dual Homebrew Distribution (Epic 38, Accepted)
+
+> Requirements for parallel stable and alpha Homebrew distribution.
+
+**NFR-DH1:** The project shall maintain an alpha Homebrew formula (`threedoors-a.rb`) auto-updated on every push to main, parallel to the stable formula
+
+**NFR-DH2:** Alpha publishing shall be controlled via `vars.ALPHA_TAP_ENABLED` toggle for controlled activation and deactivation
+
+**NFR-DH3:** Stable GoReleaser releases shall include code signing and notarization via Apple Developer ID
+
+**NFR-DH4:** Alpha releases shall implement retention cleanup, keeping only the last 30 releases
+
+---
+
+## Keybinding Display System (Epic 39, Accepted)
+
+> Requirements for keybinding discoverability.
+
+**FR152:** The system shall maintain a compile-time keybinding registry mapping each ViewMode to its available key bindings with priority ordering
+
+**FR153:** The system shall display a concise bottom bar showing 5-6 priority keys per view, styled with Lipgloss dim rendering, in non-door views
+
+**FR154:** The system shall provide a full-screen keybinding overlay accessible via the `?` key, organized by category with scroll support via bubbles/viewport
+
+**FR155:** The system shall unify key hint toggling under the `h` key: in doors view, `h` toggles door key indicators (`[a]`/`[w]`/`[d]` on door frames); in non-door views, `h` toggles the bottom bar (D-137, D-138)
+
+**FR156:** The system shall adapt key hint display to terminal size: auto-hide bar on small terminals, compact mode, width truncation
+
+**FR157:** The system shall provide a `:hints` command as an alias for the `h` toggle
+
+---
+
+## Beautiful Stats Display (Epic 40, Accepted)
+
+> Requirements for the visual insights dashboard.
+
+**FR158:** The system shall render the insights dashboard with Lipgloss bordered panels and responsive layout
+
+**FR159:** The system shall display gradient sparklines for activity trends using a color-blind safe palette (blue-teal-yellow)
+
+**FR160:** The system shall generate celebration-oriented fun facts from session data
+
+**FR161:** The system shall display horizontal bar charts for mood correlation data
+
+**FR162:** The system shall display a GitHub-style activity heatmap showing 8 weeks of activity
+
+**FR163:** The system shall surface hidden session metrics: duration, fastest start, peak hour, completion streaks
+
+**FR164:** The system shall animate counter reveals on view entry for visual delight
+
+**FR165:** The system shall provide tab navigation between Overview and Detail views in the stats dashboard
+
+**FR166:** The system shall match stats color palettes to the active door theme
+
+**FR167:** The system shall display milestone celebrations at 4 thresholds using observation language (not gamification language)
+
+---
+
+## Charm Ecosystem Adoption (Epic 41, Accepted)
+
+> Requirements for charmbracelet component adoption.
+
+**FR168:** The system shall use bubbles/spinner for async provider operation feedback, replacing custom loading indicators
+
+**FR169:** The system shall use lipgloss.JoinVertical and lipgloss.Place for cleaner layout composition
+
+**FR170:** The system shall use bubbles/viewport for scrollable views (help, synclog, keybinding overlay), replacing 3 custom scroll implementations
+
+**FR171:** The system shall integrate harmonica spring-physics for door transition animations (proof of concept from spike)
+
+**FR172:** The system shall support adaptive color profiles for terminal-aware color degradation across 16-color, 256-color, and truecolor terminals
+
+---
+
+## Application Security Hardening (Epic 42, Accepted)
+
+> Requirements for security posture improvement.
+
+**NFR-SEC1:** All directory creation shall use 0o700 permissions and all file creation shall use 0o600 permissions, with a startup migration for existing installs
+
+**NFR-SEC2:** The system shall validate against symlinks via `os.Lstat()` on startup and before file writes to config/data directories
+
+**NFR-SEC3:** The system shall enforce file size limits before YAML reads and explicit scanner buffer limits on all JSONL readers
+
+**NFR-SEC4:** All token/secret fields in configuration structs shall use `yaml:"-"` tags to prevent accidental serialization; startup shall warn if credentials are exposed
+
+**NFR-SEC5:** CI shall use SHA-pinned third-party GitHub Actions and include govulncheck in the quality gate
+
+---
+
+## Connection Manager Infrastructure (Epic 43, Accepted)
+
+> Requirements for data source connection lifecycle management.
+
+**FR173:** The system shall provide a `ConnectionManager` type implementing a 7-state machine: Disconnected, Connecting, Connected, Syncing, Error, AuthExpired, Paused — with enforced valid state transitions
+
+**FR174:** The system shall provide a `CredentialStore` with a three-tier fallback chain: system keychain (via 99designs/keyring), environment variables, encrypted file
+
+**FR175:** The system shall implement config schema v3 with a `connections:` array containing named connections with ULID identifiers, with auto-migration from schema v2
+
+**FR176:** The system shall provide connection CRUD operations: add, remove, pause, resume, test, force-sync — with validation on all mutations
+
+**FR177:** The system shall log sync events per connection to JSONL files with rolling retention (sync_start, sync_complete, sync_error, auth_expired)
+
+**FR178:** All existing 8 adapters shall be migrated to use the ConnectionManager pattern with backward-compatible initialization
+
+---
+
+## Sources TUI (Epic 44, Accepted)
+
+> Requirements for TUI data source management interfaces.
+
+**FR179:** The system shall provide a 4-step setup wizard (`:connect` command) using charmbracelet/huh forms with provider-adaptive inputs (API token, OAuth device code, local path)
+
+**FR180:** The system shall provide a sources dashboard (`:sources` command) showing all configured connections with status indicators (connected/paused/error/auth expired)
+
+**FR181:** The system shall provide a source detail view with health checks and sync statistics per connection
+
+**FR182:** The system shall provide a sync log view with scrollable event history per connection
+
+**FR183:** The system shall display status bar alerts when connections need attention (auth expired, persistent errors)
+
+**FR184:** The system shall provide disconnect and re-authentication flows preserving associated tasks
+
+---
+
+## Sources CLI (Epic 45, Accepted)
+
+> Requirements for CLI data source management commands.
+
+**FR185:** The system shall provide `threedoors connect <provider>` with per-provider flag sets for non-interactive source configuration
+
+**FR186:** The system shall provide `threedoors sources` commands: list, status, test, pause, resume, sync, disconnect — with consistent `--json` output for scripting
+
+**FR187:** The system shall provide `threedoors sources log` with time-range and severity filtering
+
+---
+
+## OAuth Device Code Flow (Epic 46, Accepted)
+
+> Requirements for browser-based authentication.
+
+**FR188:** The system shall provide a reusable OAuth device code flow client implementing RFC 8628: request device code, display verification URL, poll for token
+
+**FR189:** The system shall integrate GitHub OAuth device code flow with PAT fallback for environments where browser auth is unavailable
+
+**FR190:** The system shall integrate Linear OAuth/API key authentication using the device code flow client
+
+**FR191:** The system shall implement silent token refresh with explicit re-authentication prompts on token expiry
+
+---
+
+## Sync Lifecycle & Advanced Features (Epic 47, Accepted)
+
+> Requirements for advanced sync capabilities.
+
+**FR192:** The system shall provide a `ConflictResolver` implementing field-level conflict strategy: remote-wins for metadata fields, local-wins for ThreeDoors-specific fields
+
+**FR193:** The system shall mark orphaned tasks (source deleted remotely) rather than deleting them, with a management UI for review and cleanup
+
+**FR194:** The system shall auto-detect installed tools (gh CLI, Todoist config, Obsidian vaults) in the setup wizard to suggest available providers
+
+**FR195:** The system shall provide predictive warnings for imminent issues: token expiry, approaching rate limits, error streak patterns
+
+---
+
+## Door-Like Doors Visual Enhancement (Epic 48, Accepted)
+
+> Requirements for visually convincing door metaphor.
+
+**FR196:** The system shall render side-mounted handles on the right edge and hinge marks on the left edge of each door for asymmetric realism
+
+**FR197:** The system shall render a continuous threshold/floor line grounding all three doors in a shared visual space
+
+**FR198:** The system shall display a crack-of-light effect on door selection, making the selected door appear "ajar"
+
+**FR199:** The system shall display a handle turn micro-animation on door selection, synced with spring physics from Epic 41
+
+---
+
+## ThreeDoors Doctor (Epic 49, Accepted)
+
+> Requirements for self-diagnosis command.
+
+**FR200:** The system shall provide a `threedoors doctor` command (with `health` alias) implementing a DoctorChecker framework with flutter-style output icons: `[✓]` pass, `[!]` warn, `[✗]` fail, `[i]` info, `[ ]` skip
+
+**FR201:** The doctor command shall check 6 categories: Environment, Task Data, Providers, Sessions, Sync, Database
+
+**FR202:** The doctor command shall perform channel-aware version checking with 24-hour cache (stable vs alpha release channels)
+
+**FR203:** The doctor command shall support conservative auto-repair via `--fix` flag, limited to safe/reversible operations (file permissions, cache clearing)
+
+**FR204:** The doctor command shall support verbose mode (`-v`), category filter (`--category`), and JSON output (`--json`)
+
+---
+
+## In-App Bug Reporting (Epic 50, Accepted)
+
+> Requirements for frictionless bug reporting.
+
+**FR205:** The system shall maintain a ring buffer tracking the last 50 navigation breadcrumbs (view transitions + non-text key presses) with a strict privacy allowlist — task content, search queries, and personal data shall never be collected
+
+**FR206:** The system shall provide a `:bug` command opening a bug report view with text description input, automatic environment summary (OS, terminal, Go/ThreeDoors version), and mandatory preview before submission
+
+**FR207:** The system shall support three submission paths: browser URL (zero-auth, pre-filled GitHub issue URL), GitHub API (PAT-based direct issue creation), and local file (offline fallback)
+
+---
+
+## SLAES — Self-Learning Agentic Engineering System (Epic 51, Accepted)
+
+> Requirements for continuous improvement meta-system.
+
+**NFR-SL1:** The project shall maintain a persistent `retrospector` agent that monitors PR merges, detects process waste (saga patterns: 2+ workers on same fix), audits doc consistency, and files improvement recommendations to BOARD.md
+
+**NFR-SL2:** The retrospector shall produce a JSONL findings log with per-merge lightweight retro analysis and confidence-scored recommendations
+
+**NFR-SL3:** The retrospector shall implement 5 Watchmen safeguards: no self-modification, audit trail, confidence scoring, periodic human review, kill switch (3 rejections triggers read-only mode)
+
+**NFR-SL4:** The retrospector shall analyze merge conflict rates (hot files, parallelization safety), CI failure taxonomy with spec-chain tracing, and research lifecycle tracking
+
+**NFR-SL5:** The retrospector shall produce weekly trend reports summarizing findings and recommendations
+
+---
+
+## Envoy Three-Layer Firewall (Epic 52, Accepted)
+
+> Requirements for structured issue screening.
+
+**NFR-EF1:** The envoy agent shall implement a three-layer firewall architecture: Layer 1 (syntax/spam filter), Layer 2 (scope/relevance check against ROADMAP), Layer 3 (impact assessment and priority classification)
+
+**NFR-EF2:** Each firewall layer shall have documented entry/exit criteria determining whether an issue advances to the next layer or is rejected
+
+---
+
+## Remote Collaboration (Epic 53, Accepted)
+
+> Requirements for cross-machine multiclaude access.
+
+**NFR-RC1:** The project shall document SSH-based remote access to multiclaude agents, including tmux session management for remote agent attachment
+
+**NFR-RC2:** The project shall provide an MCP bridge architecture design for future remote agent interaction
+
+**NFR-RC3:** Remote access shall include security hardening documentation (key-based auth, port restrictions, session isolation)
+
+---
+
+## CI Optimization (Epic 55, Accepted)
+
+> Requirements for CI performance improvement.
+
+**NFR-CI1:** Docker E2E tests shall run on push-to-main only (not on PR), eliminating ~2.5min runner cost per PR
+
+**NFR-CI2:** Benchmark tests shall use path filtering, running only when core domain or textfile code changes in PRs
+
+**NFR-CI3:** The project shall provide a `make test-fast` target for rapid local development feedback (~10s cycle time)
+
+---
+
+## Door Visual Redesign — Three-Layer Depth System (Epic 56, Accepted)
+
+> Requirements for 3D door rendering.
+
+**FR208:** The system shall extend ThemeColors with depth color fields: FillLower, Highlight, ShadowEdge, ShadowNear, ShadowFar
+
+**FR209:** The system shall render background fill for all 8 theme door interiors, providing visual mass with zero width cost
+
+**FR210:** The system shall render bevel lighting (lighter top/left borders, darker bottom/right borders) creating a raised-surface perception
+
+**FR211:** The system shall render gradient shadow effects (▓▒░ characters) with per-theme rendering, replacing the single-character post-processor shadow
+
+**FR212:** The system shall render differentiated upper/lower panel zone shading within doors
+
+**FR213:** The system shall adapt shadow width (0/1/2/3 columns) based on terminal width
+
+---
+
+## LLM CLI Services (Epic 57, Accepted)
+
+> Requirements for LLM tool invocation from ThreeDoors.
+
+**FR214:** The system shall provide a CLIProvider + CLISpec declarative model implementing the existing `LLMBackend` interface via `os/exec` subprocess invocation
+
+**FR215:** The system shall include pre-built CLISpec definitions for Claude CLI, Gemini CLI, Ollama CLI, and generic custom CLI tools
+
+**FR216:** The system shall auto-discover installed LLM CLI tools with a priority-ordered fallback chain
+
+**FR217:** The system shall provide a TaskExtractor service converting natural language text (from files, clipboard, or stdin) into structured tasks, with a `:extract` TUI command and `threedoors extract` CLI command
+
+**FR218:** The system shall provide a TaskEnricher service with before/after diff display in the TUI (`:enrich` command / E key in detail view)
+
+**FR219:** The system shall provide TaskBreakdown CLI backend support extending Epic 14's decomposer, with TUI (`:breakdown` / B key) integration
+
+**FR220:** The system shall provide `threedoors llm status` showing backend availability, fallback chain, and service readiness
+
+---
+
+## Supervisor Shift Handover (Epic 58, Accepted)
+
+> Requirements for context-aware supervisor rotation.
+
+**NFR-SH1:** The multiclaude daemon shall monitor supervisor transcript size with three-tier thresholds (green/yellow/red) using a hybrid time floor + usage ceiling shift clock
+
+**NFR-SH2:** The daemon shall maintain a rolling state snapshot (YAML) with worker state, persistent agent status, and open PRs, updated every 5 minutes from external sources
+
+**NFR-SH3:** The handover orchestrator shall implement a 5-step protocol: request → delta → spawn → ready → kill, with the daemon as authority mutex
+
+**NFR-SH4:** Emergency handover shall enforce a 120-second timeout force-kill for unresponsive supervisors, followed by full worker audit by the incoming supervisor
+
+**NFR-SH5:** Handover events shall be logged to JSONL with archived state files for post-incident analysis
+
+---
+
+## Full-Terminal Vertical Layout (Epic 59, Accepted)
+
+> Requirements for full-terminal TUI experience.
+
+**FR221:** The system shall use AltScreen for full-terminal ownership (standard TUI pattern)
+
+**FR222:** The system shall implement a layout engine with fixed header + flex content + fixed footer zones
+
+**FR223:** The system shall cap door height at 25 lines using formula `min(max(10, available * 0.5), 25)` with 40/60 top/bottom padding split for perceptual centering
+
+**FR224:** The system shall propagate SetHeight to all views and implement breakpoint-based graceful degradation across terminal sizes (<10, 10-15, 16-24, 25-40, 40+ lines)
+
+---
+
+## README Overhaul (Epic 60, Accepted)
+
+> Requirements for README polish.
+
+**NFR-RD1:** The README shall feature centered badge clusters (CI, release, Go Report Card, platform support)
+
+**NFR-RD2:** The README shall include a table of contents with emoji-prefixed anchor links
+
+**NFR-RD3:** The README shall use foldable `<details>` sections for reference material (~400 lines collapsed)
+
+**NFR-RD4:** The README feature list shall be audited to cover all completed epics
+
+---
+
+## GitHub Pages User Guide (Epic 61, Accepted)
+
+> Requirements for published documentation site.
+
+**NFR-UG1:** The project shall publish documentation as a GitHub Pages site using MkDocs + Material for MkDocs
+
+**NFR-UG2:** The documentation site shall include getting started guides, core user guide, per-integration setup guides (8 providers), CLI reference, configuration reference, and advanced guides
+
+**NFR-UG3:** GitHub Actions shall automatically deploy documentation on push to main
+
+---
+
+## Retrospector Agent Reliability (Epic 62, Accepted)
+
+> Requirements for SLAES infrastructure fixes.
+
+**NFR-RR1:** The retrospector agent shall use a file-based fallback inbox for messaging when multiclaude message bus identity registration fails (D-176)
+
+**NFR-RR2:** Recommendations shall queue to a file with batch pipeline to BOARD.md via project-watchdog, rather than requiring direct BOARD.md write access (D-177)
+
+**NFR-RR3:** The retrospector shall persist analytical state to a JSON checkpoint file for recovery across restarts (D-178)
+
+---
+
+## ClickUp Integration (Epic 63, Accepted)
+
+> Requirements for ClickUp as a task source.
+
+**FR225:** The system shall provide a ClickUp REST API v2 client with token authentication (configured via config.yaml or environment variable)
+
+**FR226:** The system shall map ClickUp task fields to ThreeDoors task fields: status to status, priority to effort, due date to due_date, tags to tags
+
+**FR227:** The system shall support bidirectional sync with ClickUp: completing a task in ThreeDoors updates it via API, with WAL offline queuing and circuit breaker integration
+
+---
+
+## CLI Test Coverage Hardening (Epic 65, Accepted)
+
+> Requirements for CLI package test quality.
+
+**NFR-TC1:** The `internal/cli` package shall maintain test coverage of at least 70%, up from the 34.8% baseline identified by the TEA audit
+
+**NFR-TC2:** Core CLI paths (bootstrap, root, doors, loadTaskPool, output) shall have dedicated test coverage
+
+**NFR-TC3:** All subcommands (config, mood, health, stats, plan, version, task, sources, connect, extract) shall have dedicated test coverage
+
+---
