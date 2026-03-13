@@ -332,9 +332,69 @@ ThreeDoors/
 │   │       ├── engine.go            # Pattern analysis
 │   │       └── patterns.go          # User pattern models
 │   │
-│   └── aggregator/                   # Multi-Source Aggregation (Phase 3, Epic 13)
-│       ├── aggregator.go            # MultiSourceAggregator
-│       └── dedup.go                 # DuplicateDetector
+│   ├── calendar/                      # Calendar Awareness (extracted from intelligence/)
+│   │   ├── calendar.go              # Calendar integration core
+│   │   ├── config.go                # Calendar configuration
+│   │   ├── applescript_reader.go    # macOS Calendar.app reader
+│   │   └── caldav_cache_reader.go   # CalDAV cache reader
+│   │
+│   ├── ci/                            # CI Validation
+│   │   └── ci_validation_test.go    # CI pipeline validation tests
+│   │
+│   ├── dispatch/                      # CLI Dispatch & Audit
+│   │   ├── cli_dispatcher.go        # CLI command dispatcher
+│   │   ├── command_runner.go        # Command execution runner
+│   │   └── audit.go                 # Dispatch audit logging
+│   │
+│   ├── dist/                          # Distribution & Packaging
+│   │   ├── dist.go                  # Distribution pipeline
+│   │   ├── codesign.go              # macOS code signing
+│   │   ├── notarize.go              # macOS notarization
+│   │   ├── pkg_builder.go           # Package builder
+│   │   └── version.go               # Version embedding
+│   │
+│   ├── docaudit/                      # Documentation Audit
+│   │   ├── audit.go                 # Documentation audit engine
+│   │   ├── loader.go                # Document loader
+│   │   └── parse_epic_list.go       # Epic list parser
+│   │
+│   ├── enrichment/                    # Task Enrichment
+│   │   ├── enrichment.go            # Enrichment engine
+│   │   └── cross_references.go      # Cross-reference analysis
+│   │
+│   ├── mcp/                           # MCP Server Tools (Epic 53+)
+│   │   ├── protocol.go              # MCP protocol implementation
+│   │   ├── middleware.go             # Request middleware
+│   │   ├── analytics.go             # Analytics tools
+│   │   ├── advanced_tools.go        # Advanced MCP tools
+│   │   ├── graph.go                 # Task graph tools
+│   │   ├── intake.go                # Task intake tools
+│   │   ├── prompts.go               # MCP prompt definitions
+│   │   ├── proposal.go              # Task proposal model
+│   │   ├── proposal_tools.go        # Proposal MCP tools
+│   │   └── proposal_store.go        # Proposal persistence
+│   │
+│   ├── retrospector/                  # Retrospective Analysis (Epic 62)
+│   │   ├── finding.go               # Finding model
+│   │   ├── findings.go              # Findings collection/persistence
+│   │   ├── ac_match.go              # Acceptance criteria matching
+│   │   ├── board.go                 # Decision board analysis
+│   │   ├── ci_analysis.go           # CI failure analysis
+│   │   ├── ci_taxonomy.go           # CI failure taxonomy
+│   │   ├── confidence.go            # Confidence scoring
+│   │   └── conflict_analysis.go     # Merge conflict analysis
+│   │
+│   ├── slaes/                         # Saga/Pattern Detection
+│   │   └── saga/                    # Saga pattern detector
+│   │       ├── detector.go          # Saga detection engine
+│   │       ├── dispatch.go          # Saga dispatch logic
+│   │       ├── findings.go          # Saga findings model
+│   │       └── recurrence.go        # Recurrence pattern detection
+│   │
+│   └── testkit/                       # Test Utilities
+│       ├── assertions.go            # Custom test assertions
+│       ├── factories.go             # Test data factories
+│       └── provider.go              # Mock TaskProvider for tests
 │
 ├── docs/                             # Documentation
 │   ├── prd/                         # Product Requirements Document (sharded)
@@ -367,11 +427,13 @@ User Data Directory (created at runtime):
 
 **Post-MVP Organization Principles:**
 
-1. **`internal/core/`** replaces `internal/tasks/` as the primary domain package (tasks/ kept for Phase 1 compatibility)
+1. **`internal/core/`** replaces `internal/tasks/` as the primary domain package (tasks/ kept for Phase 1 compatibility). Sync engine and aggregator live in core/.
 2. **`internal/adapters/`** each adapter in its own sub-package for isolation
-3. **`internal/sync/`** self-contained sync engine, no TUI dependencies
-4. **`internal/intelligence/`** optional features, no core dependencies
-5. **`internal/aggregator/`** bridges adapters and core via unified pool
-6. **Dependency direction:** TUI → Core → Adapters (never reverse)
+3. **`internal/intelligence/`** optional features, no core dependencies
+4. **`internal/mcp/`** MCP tool definitions; `internal/mcpbridge/` for the bridge server
+5. **`internal/retrospector/`** retrospective analysis (Epic 62), standalone package
+6. **`internal/dist/`** distribution/packaging pipeline, standalone from core
+7. **`internal/testkit/`** shared test utilities (factories, assertions, mock providers)
+8. **Dependency direction:** TUI → Core → Adapters (never reverse)
 
 ---
