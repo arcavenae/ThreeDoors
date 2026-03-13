@@ -209,6 +209,20 @@ func NewConnectWizard(specs []ProviderFormSpec, connMgr *connection.ConnectionMa
 	return w
 }
 
+// SetProvider pre-selects a provider and skips Step 1 (provider selection),
+// jumping directly to Step 2 (provider config). If the provider name is not
+// found in the spec list, it is ignored and the wizard starts at Step 1.
+func (w *ConnectWizard) SetProvider(name string) {
+	for _, spec := range w.specs {
+		if spec.Name == name {
+			w.selectedProvider = name
+			w.step = StepProviderConfig
+			w.buildStep2Form()
+			return
+		}
+	}
+}
+
 // SetWidth sets the terminal width.
 func (w *ConnectWizard) SetWidth(width int) {
 	w.width = width

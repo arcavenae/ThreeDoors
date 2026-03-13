@@ -9,6 +9,7 @@ import (
 
 	"github.com/arcaven/ThreeDoors/internal/core"
 	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -86,7 +87,7 @@ func newConnectCmd() *cobra.Command {
 When called with --label and other flags, runs in non-interactive mode.
 When called without flags in a terminal, launches the interactive setup wizard.`,
 		Args:      cobra.ExactArgs(1),
-		ValidArgs: []string{"todoist", "github", "jira", "textfile", "applenotes", "obsidian", "reminders"},
+		ValidArgs: []string{"todoist", "github", "jira", "textfile", "applenotes", "obsidian", "reminders", "linear"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			provider := args[0]
 			jsonMode := isJSONOutput(cmd)
@@ -98,7 +99,7 @@ When called without flags in a terminal, launches the interactive setup wizard.`
 						"interactive mode not supported with --json",
 						"provide --label and other required flags")
 				}
-				return fmt.Errorf("interactive wizard not yet available (Story 44.1), use flags: --label, --token, etc")
+				return runConnectWizard(provider, os.Stdout)
 			}
 
 			// Build flag values map from provided flags.
@@ -285,6 +286,52 @@ func buildConnectSettings(provider, token string, flagValues map[string]string) 
 	}
 
 	return settings, nil
+}
+
+// WizardRunnerFactory creates a tea.Model that wraps the connect wizard for
+// standalone CLI use. The provider arg pre-selects a provider. The returned
+// model should handle ConnectWizardCompleteMsg/CancelMsg internally.
+// The resultWriter receives post-program human-readable output.
+// The errorFunc returns any error from the wizard run.
+type WizardRunnerFactory func(
+	provider string,
+	svc *connection.ConnectionService,
+	manager *connection.ConnectionManager,
+) (model tea.Model, resultWriter func(io.Writer), errorFunc func() error)
+
+// NewConnectWizardRunner is set by cmd/threedoors to wire the tui package
+// into the CLI without creating an import cycle.
+var NewConnectWizardRunner WizardRunnerFactory
+
+// runConnectWizard launches the interactive connect wizard in a standalone
+// Bubbletea program. It detects TTY, bootstraps services, and runs the wizard.
+func runConnectWizard(provider string, w io.Writer) error {
+	if !isTerminal(os.Stdin.Fd()) {
+		return fmt.Errorf("interactive wizard requires a terminal; use --label and other flags in non-interactive mode")
+	}
+
+	if NewConnectWizardRunner == nil {
+		return fmt.Errorf("interactive wizard not available")
+	}
+
+	_, svc, manager, err := bootstrapForConnect()
+	if err != nil {
+		return err
+	}
+
+	model, resultWriter, errorFunc := NewConnectWizardRunner(provider, svc, manager)
+
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("wizard: %w", err)
+	}
+
+	if err := errorFunc(); err != nil {
+		return err
+	}
+
+	resultWriter(w)
+	return nil
 }
 
 // formatConnectTest converts a HealthCheckResult into a connectTestJSON.

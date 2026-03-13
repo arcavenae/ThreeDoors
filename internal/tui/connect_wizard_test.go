@@ -1355,6 +1355,64 @@ func TestDefaultGitHubEnvTokenFunc_Neither(t *testing.T) {
 	}
 }
 
+func TestConnectWizard_SetProvider_Valid(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := testProviderSpecs()
+	w := NewConnectWizard(specs, connMgr)
+
+	// Initially at Step 1.
+	if w.Step() != StepProviderSelect {
+		t.Fatalf("initial step = %v, want StepProviderSelect", w.Step())
+	}
+
+	w.SetProvider("todoist")
+
+	if w.Step() != StepProviderConfig {
+		t.Errorf("step = %v, want StepProviderConfig after SetProvider", w.Step())
+	}
+	if w.SelectedProvider() != "todoist" {
+		t.Errorf("selectedProvider = %q, want %q", w.SelectedProvider(), "todoist")
+	}
+}
+
+func TestConnectWizard_SetProvider_Invalid(t *testing.T) {
+	t.Parallel()
+
+	connMgr := connection.NewConnectionManager(nil)
+	specs := testProviderSpecs()
+	w := NewConnectWizard(specs, connMgr)
+
+	w.SetProvider("nonexistent")
+
+	// Should stay at Step 1 for invalid provider — does not advance.
+	if w.Step() != StepProviderSelect {
+		t.Errorf("step = %v, want StepProviderSelect for invalid provider", w.Step())
+	}
+}
+
+func TestConnectWizard_SetProvider_AllProviders(t *testing.T) {
+	t.Parallel()
+
+	specs := DefaultProviderSpecs()
+	for _, spec := range specs {
+		t.Run(spec.Name, func(t *testing.T) {
+			t.Parallel()
+			connMgr := connection.NewConnectionManager(nil)
+			w := NewConnectWizard(specs, connMgr)
+			w.SetProvider(spec.Name)
+
+			if w.Step() != StepProviderConfig {
+				t.Errorf("SetProvider(%q): step = %v, want StepProviderConfig", spec.Name, w.Step())
+			}
+			if w.SelectedProvider() != spec.Name {
+				t.Errorf("SetProvider(%q): selectedProvider = %q", spec.Name, w.SelectedProvider())
+			}
+		})
+	}
+}
+
 func TestConnectWizard_BuildOAuthConfig_GitHub(t *testing.T) {
 	t.Parallel()
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -36,6 +37,17 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Println(dist.FormatVersionWithChannel(version, channel))
 		os.Exit(0)
+	}
+
+	// Wire up the connect wizard factory so the CLI can launch the interactive
+	// wizard without importing the tui package directly (avoids import cycle).
+	cli.NewConnectWizardRunner = func(
+		provider string,
+		svc *connection.ConnectionService,
+		manager *connection.ConnectionManager,
+	) (tea.Model, func(io.Writer), func() error) {
+		runner := tui.NewConnectWizardRunner(provider, svc, manager)
+		return runner, runner.PrintResult, runner.Err
 	}
 
 	// Route to CLI if the first arg is a known subcommand (except "plan" which uses TUI)
