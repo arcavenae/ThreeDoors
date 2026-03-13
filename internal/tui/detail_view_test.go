@@ -279,26 +279,53 @@ func TestDetailView_ExpandMode_ShowsInputPrompt(t *testing.T) {
 
 // --- Fork ('F' key) ---
 
-func TestDetailView_FKey_SendsTaskAddedMsg(t *testing.T) {
+func TestDetailView_FKey_SendsTaskForkedMsg(t *testing.T) {
 	dv := newTestDetailView("original task")
+	dv.task.Context = "important context"
+	dv.task.Effort = core.EffortMedium
+	dv.task.Type = core.TypeCreative
+	dv.task.Location = core.LocationHome
+	_ = dv.task.UpdateStatus(core.StatusInProgress)
+
 	cmd := dv.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("f")})
 	if cmd == nil {
 		t.Fatal("'f' should return a command")
 		return
 	}
 	msg := cmd()
-	tam, ok := msg.(TaskAddedMsg)
+	tfm, ok := msg.(TaskForkedMsg)
 	if !ok {
-		t.Fatalf("expected TaskAddedMsg, got %T", msg)
+		t.Fatalf("expected TaskForkedMsg, got %T", msg)
 	}
-	if tam.Task.Text != "original task" {
-		t.Errorf("forked task should have same text, got %q", tam.Task.Text)
+	if tfm.Original != dv.task {
+		t.Error("Original should point to the original task")
 	}
-	if tam.Task.ID == dv.task.ID {
-		t.Error("forked task should have a different ID")
+	if tfm.Variant.Text != "original task" {
+		t.Errorf("variant text: got %q, want %q", tfm.Variant.Text, "original task")
 	}
-	if tam.Task.Status != core.StatusTodo {
-		t.Errorf("forked task should have todo status, got %q", tam.Task.Status)
+	if tfm.Variant.ID == dv.task.ID {
+		t.Error("variant should have a different ID")
+	}
+	if tfm.Variant.Status != core.StatusTodo {
+		t.Errorf("variant status: got %q, want %q", tfm.Variant.Status, core.StatusTodo)
+	}
+	if tfm.Variant.Context != "important context" {
+		t.Errorf("variant context: got %q, want %q", tfm.Variant.Context, "important context")
+	}
+	if tfm.Variant.Effort != core.EffortMedium {
+		t.Errorf("variant effort: got %q, want %q", tfm.Variant.Effort, core.EffortMedium)
+	}
+	if tfm.Variant.Type != core.TypeCreative {
+		t.Errorf("variant type: got %q, want %q", tfm.Variant.Type, core.TypeCreative)
+	}
+	if tfm.Variant.Location != core.LocationHome {
+		t.Errorf("variant location: got %q, want %q", tfm.Variant.Location, core.LocationHome)
+	}
+	if len(tfm.Variant.Notes) != 1 {
+		t.Fatalf("variant notes: got %d, want 1", len(tfm.Variant.Notes))
+	}
+	if tfm.Variant.Notes[0].Text != "Forked from: original task" {
+		t.Errorf("variant note: got %q", tfm.Variant.Notes[0].Text)
 	}
 }
 
@@ -316,7 +343,7 @@ func TestDetailView_AllStatusKeys(t *testing.T) {
 		{"r", "ReturnToDoorsMsg", false},
 		{"m", "ShowMoodMsg", false},
 		{"e", "", true}, // transitions to expand input mode
-		{"f", "TaskAddedMsg", false},
+		{"f", "TaskForkedMsg", false},
 	}
 
 	for _, tt := range tests {
@@ -351,6 +378,8 @@ func TestDetailView_AllStatusKeys(t *testing.T) {
 				msgType = "FlashMsg"
 			case TaskAddedMsg:
 				msgType = "TaskAddedMsg"
+			case TaskForkedMsg:
+				msgType = "TaskForkedMsg"
 			default:
 				msgType = "unknown"
 			}

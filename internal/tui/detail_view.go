@@ -192,8 +192,9 @@ func (dv *DetailView) handleDetailKeys(msg tea.KeyMsg) tea.Cmd {
 		dv.mode = DetailModeExpandInput
 		dv.expandInput = ""
 	case "f", "F":
-		forked := core.NewTask(dv.task.Text)
-		return func() tea.Msg { return TaskAddedMsg{Task: forked} }
+		original := dv.task
+		variant := core.ForkTask(original)
+		return func() tea.Msg { return TaskForkedMsg{Original: original, Variant: variant} }
 	case "p", "P":
 		// Procrastinate: just return to doors (task stays in pool)
 		return func() tea.Msg { return ReturnToDoorsMsg{} }

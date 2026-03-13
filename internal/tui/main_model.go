@@ -952,6 +952,28 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setViewMode(ViewDoors)
 		return m, ClearFlashCmd()
 
+	case TaskForkedMsg:
+		m.pool.AddTask(msg.Variant)
+		if err := m.saveTasks(); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
+		}
+		if m.enrichDB != nil {
+			ref := &enrichment.CrossReference{
+				SourceTaskID: msg.Original.ID,
+				TargetTaskID: msg.Variant.ID,
+				SourceSystem: "local",
+				Relationship: "forked-from",
+			}
+			if err := m.enrichDB.AddCrossReference(ref); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: failed to create fork cross-reference: %v\n", err)
+			}
+		}
+		m.flash = "Forked!"
+		m.detailView = nil
+		m.doorsView.RefreshDoors()
+		m.setViewMode(ViewDoors)
+		return m, ClearFlashCmd()
+
 	case TaskAddedMsg:
 		m.pool.AddTask(msg.Task)
 		if err := m.saveTasks(); err != nil {

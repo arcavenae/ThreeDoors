@@ -116,6 +116,27 @@ func NewTaskWithContext(text, context string) *Task {
 	return task
 }
 
+// ForkTask creates a variant of the given task.
+// Preserves: Text, Context, Effort, Type, Location
+// Resets: Status (todo), Blocker (""), Notes (empty), timestamps (now)
+// Adds: Note "Forked from: [truncated text]"
+// Does NOT copy: ParentID, DependsOn, DevDispatch, SourceRefs
+func ForkTask(original *Task) *Task {
+	forked := NewTask(original.Text)
+	forked.Context = original.Context
+	forked.Effort = original.Effort
+	forked.Type = original.Type
+	forked.Location = original.Location
+
+	truncated := original.Text
+	if len(truncated) > 60 {
+		truncated = truncated[:57] + "..."
+	}
+	forked.AddNote("Forked from: " + truncated)
+
+	return forked
+}
+
 // UpdateStatus changes the task's status after validating the transition.
 func (t *Task) UpdateStatus(newStatus TaskStatus) error {
 	if t.Status == newStatus {

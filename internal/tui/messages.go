@@ -43,6 +43,12 @@ type ExpandTaskMsg struct {
 	NewTaskText string
 }
 
+// TaskForkedMsg is sent when a task variant is created via Fork.
+type TaskForkedMsg struct {
+	Original *core.Task
+	Variant  *core.Task
+}
+
 // FlashMsg triggers a temporary message display.
 type FlashMsg struct {
 	Text string
