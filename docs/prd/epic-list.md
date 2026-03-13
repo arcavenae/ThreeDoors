@@ -389,7 +389,7 @@
 **Epic 31: Expand/Fork Key Implementations** (P2)
 - **Goal:** Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9
 - **Prerequisites:** None
-- **Status:** In Progress (1/5 done — PR #698)
+- **Status:** In Progress (2/5 done — PRs #698, #701)
 - **Stories:** 31.1-31.5 (5 stories)
 
 **Epic 32: Undo Task Completion** (P1)
@@ -870,7 +870,7 @@
 | Epic 28: Snooze/Defer | 4 | Complete |
 | Epic 29: Task Dependencies | 4 | In Progress (3/4) |
 | Epic 30: Linear Integration | 4 | In Progress (2/4 done) |
-| Epic 31: Expand/Fork Key | 5 | In Progress (1/5 done) |
+| Epic 31: Expand/Fork Key | 5 | In Progress (2/5 done) |
 | Epic 32: Undo Task Completion | 3 | Complete |
 | Epic 33: Seasonal Theme Variants | 4 | Complete |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
