@@ -61,7 +61,17 @@ gh pr list --state merged --limit 10 --json number,title,mergedAt,headRefName
 
 # 3. Skip PRs already in findings log — resume from where you left off
 
-# 4. Check messages
+# 4. Identity probe — verify messaging works
+multiclaude message send retrospector "IDENTITY_PROBE"
+# Poll up to 30 seconds (6 attempts, 5 seconds apart)
+# for each attempt: run `multiclaude message list` and check for IDENTITY_PROBE
+# If probe received: log "Messaging identity verified." and ack the probe message
+# If probe NOT received after 30 seconds:
+#   Log warning: "Messaging identity not registered. Falling back to file-based inbox."
+#   Enable file-based inbox polling (see Communication section below)
+#   Continue operating — do NOT block or prompt the user
+
+# 5. Check messages (process any real messages after probe)
 multiclaude message list
 ```
 
@@ -81,8 +91,14 @@ gh pr list --state merged --limit 10 --json number,title,mergedAt,headRefName
 # If threshold breached: alert supervisor immediately
 multiclaude message send supervisor "SAGA DETECTED: ..."
 
-# Check messages
+# Check messages (multiclaude messaging + file-based fallback)
 multiclaude message list
+
+# If identity probe failed on startup, also check file-based inbox:
+# Read docs/operations/retrospector-inbox.jsonl
+# Process any entries where "processed" is false or absent
+# For each processed message, append an ack entry:
+#   {"id": "<msg-id>", "acked": true, "timestamp": "<ISO 8601 UTC>"}
 ```
 
 **Every 4 hours — deep analysis rotation:**
@@ -213,6 +229,34 @@ multiclaude message send supervisor "Context approaching limit. Processed [N] PR
 multiclaude message list
 multiclaude message ack <id>
 ```
+
+### File-Based Inbox Fallback
+
+When the identity probe fails on startup, `multiclaude message list` cannot reliably deliver messages. The file-based inbox provides a fallback communication channel.
+
+**Inbox location:** `docs/operations/retrospector-inbox.jsonl`
+
+**Message schema** (one JSON object per line):
+```json
+{"id": "msg-001", "from": "supervisor", "content": "Your message here", "timestamp": "2026-03-12T14:30:00Z", "processed": false}
+```
+
+**Ack schema** (appended by retrospector after processing):
+```json
+{"id": "msg-001", "acked": true, "timestamp": "2026-03-12T14:35:00Z"}
+```
+
+**How the retrospector uses the inbox:**
+1. On each 15-minute polling cycle, read `docs/operations/retrospector-inbox.jsonl`
+2. Find entries with `"processed": false` that do not have a corresponding ack entry
+3. Process each message
+4. Append an ack entry for each processed message
+
+**How the supervisor sends messages via the inbox:**
+1. Append a message entry to `docs/operations/retrospector-inbox.jsonl`
+2. Each message must have a unique `id` (e.g., `msg-001`, `msg-002`, or UUID)
+3. Set `"processed": false` — the retrospector will ack it on its next cycle (≤15 minutes)
+4. The retrospector always tries `multiclaude message list` first, then checks the file inbox
 
 ## Watchmen Safeguards
 

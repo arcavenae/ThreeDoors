@@ -249,3 +249,20 @@ multiclaude message send <agent> "message"
 multiclaude message list
 multiclaude message ack <id>
 ```
+
+### Retrospector Messaging Fallback
+
+The retrospector runs an identity probe on startup. If `multiclaude message list` is unreliable (probe fails), the retrospector falls back to a file-based inbox.
+
+**When to use the fallback:** If the retrospector reports "Messaging identity not registered. Falling back to file-based inbox." — use the file inbox instead of (or in addition to) `multiclaude message send retrospector`.
+
+**How to send a message via the file inbox:**
+```bash
+# Append a message to the retrospector's file-based inbox
+echo '{"id": "msg-NNN", "from": "supervisor", "content": "Your message here", "timestamp": "2026-03-12T14:30:00Z", "processed": false}' >> docs/operations/retrospector-inbox.jsonl
+```
+
+- Each message needs a unique `id` (increment the number or use a timestamp-based ID)
+- Set `timestamp` to the current UTC time
+- The retrospector checks this file every ≤15 minutes and appends an ack entry when processed
+- Always try `multiclaude message send retrospector` first — the file inbox is a fallback, not a replacement
