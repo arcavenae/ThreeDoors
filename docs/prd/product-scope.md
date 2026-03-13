@@ -258,7 +258,7 @@
 
 ---
 
-## Phase 6+: Autonomous Project Governance (Epics 37-38, 51-53, 58, 62)
+## Phase 6+: Autonomous Project Governance (Epics 37-38, 51-53, 58, 62, 67)
 
 **In Scope:**
 - Persistent BMAD Agent Infrastructure: project-watchdog, arch-watchdog agent definitions, SM/QA cron jobs, agent communication architecture (Epic 37)
@@ -268,6 +268,7 @@
 - Remote Collaboration: SSH access, tmux management, MCP bridge design, security hardening (Epic 53)
 - Supervisor Shift Handover: transcript monitoring, rolling state snapshot, 5-step handover protocol, emergency handover, history logging (Epic 58)
 - Retrospector Agent Reliability: file-based inbox, recommendation queue, checkpoint persistence (Epic 62)
+- Retrospector Operational Data Pipeline: cron-triggered project-watchdog sync of `docs/operations/` to git (Epic 67)
 
 **Out of Scope for this Phase:**
 - Tech Writer persistent agent
