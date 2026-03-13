@@ -46,6 +46,9 @@ func NewSciFiTheme() *DoorTheme {
 }
 
 func scifiRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	highlightColor := lipgloss.CompleteColor{TrueColor: "#00d7ff", ANSI256: "45", ANSI: "14"}
+	shadowEdgeColor := lipgloss.CompleteColor{TrueColor: "#005f7f", ANSI256: "24", ANSI: "4"}
+
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		color := frameColor
 		shadeChar := "░"
@@ -80,8 +83,18 @@ func scifiRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowF
 			return scifiRenderCompact(style, content, contentLines, width, contentW, rail, shadeChar, selected, hint)
 		}
 
+		// Bevel lighting for door mode
+		var hlStyle, shStyle lipgloss.Style
+		if selected {
+			hlStyle = lipgloss.NewStyle().Foreground(selectedColor)
+			shStyle = lipgloss.NewStyle().Foreground(selectedColor)
+		} else {
+			hlStyle = lipgloss.NewStyle().Foreground(highlightColor)
+			shStyle = lipgloss.NewStyle().Foreground(shadowEdgeColor)
+		}
+
 		// Door-like proportions using DoorAnatomy
-		return scifiRenderDoor(style, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
+		return scifiRenderDoor(hlStyle, shStyle, contentLines, width, contentW, rail, shadeChar, railW, height, selected, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -152,7 +165,7 @@ func scifiRenderCompact(style lipgloss.Style, _ string, contentLines []string, w
 // scifiRenderDoor renders the Sci-Fi theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: outer left border stays double-line (╔║╚), outer right uses
 // single-vertical with double-horizontal connections (╕│╛) for lighter weight.
-func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
+func scifiRenderDoor(hlStyle, shStyle lipgloss.Style, contentLines []string, width, contentW int, rail, shadeChar string, railW, height int, selected bool, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
@@ -177,19 +190,23 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 		outerBR = crackBR
 	}
 
+	// Rail strings styled for bevel: left rail = highlight, right rail = shadow
+	hlRail := hlStyle.Render(rail)
+	shRail := shStyle.Render(rail)
+
 	for row := 0; row < height; row++ {
 		bg := panelBg(row, anatomy.PanelDivider, fill, fillLower)
 
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s", style.Render(
+			fmt.Fprintf(&b, "%s", hlStyle.Render(
 				"╔"+strings.Repeat("═", railW)+"╤"+strings.Repeat("═", contentW)+"╤"+strings.Repeat("═", railW)+outerTR))
 
 		case row == anatomy.PanelDivider:
 			fmt.Fprintf(&b, "%s%s%s%s%s",
-				style.Render("║"), rail,
-				style.Render("╞"+strings.Repeat("═", contentW)+"╡"),
-				rail, style.Render(outerR))
+				hlStyle.Render("║"), hlRail,
+				shStyle.Render("╞"+strings.Repeat("═", contentW)+"╡"),
+				shRail, shStyle.Render(outerR))
 
 		case row == anatomy.HandleRow:
 			handleChar := HandleCharForEmphasis(emphasis, selected, SciFiHandleFrames)
@@ -201,9 +218,9 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			}
 			handleLine := strings.Repeat(" ", leftPad) + handleStr
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-				style.Render("║"), rail, style.Render("│"),
+				hlStyle.Render("║"), hlRail, hlStyle.Render("│"),
 				bgFillContent(handleLine, contentW, 0, bg),
-				style.Render("│"), rail, style.Render(outerR))
+				shStyle.Render("│"), shRail, shStyle.Render(outerR))
 
 		case row == accessRow:
 			label := "[ACCESS]"
@@ -216,12 +233,12 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 				leftPad = 0
 			}
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-				style.Render("║"), rail, style.Render("│"),
+				hlStyle.Render("║"), hlRail, hlStyle.Render("│"),
 				bgFillContent(label, contentW, leftPad, bg),
-				style.Render("│"), rail, style.Render(outerR))
+				shStyle.Render("│"), shRail, shStyle.Render(outerR))
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s", style.Render(
+			fmt.Fprintf(&b, "%s", shStyle.Render(
 				"╚"+strings.Repeat("═", railW)+"╧"+strings.Repeat("═", contentW)+"╧"+strings.Repeat("═", railW)+outerBR))
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
@@ -229,17 +246,17 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 			if lineIdx < len(contentLines) {
 				line := contentLines[lineIdx]
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-					style.Render("║"), rail, style.Render("│"),
+					hlStyle.Render("║"), hlRail, hlStyle.Render("│"),
 					bgFillContent(line, contentW, 2, bg),
-					style.Render("│"), rail, style.Render(outerR))
+					shStyle.Render("│"), shRail, shStyle.Render(outerR))
 			} else {
 				fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-					style.Render("║"), rail, style.Render("│"), bgFillLine(contentW, bg), style.Render("│"), rail, style.Render(outerR))
+					hlStyle.Render("║"), hlRail, hlStyle.Render("│"), bgFillLine(contentW, bg), shStyle.Render("│"), shRail, shStyle.Render(outerR))
 			}
 
 		default:
 			fmt.Fprintf(&b, "%s%s%s%s%s%s%s",
-				style.Render("║"), rail, style.Render("│"), bgFillLine(contentW, bg), style.Render("│"), rail, style.Render(outerR))
+				hlStyle.Render("║"), hlRail, hlStyle.Render("│"), bgFillLine(contentW, bg), shStyle.Render("│"), shRail, shStyle.Render(outerR))
 		}
 
 		if row < height-1 {
@@ -250,7 +267,7 @@ func scifiRenderDoor(style lipgloss.Style, contentLines []string, width, content
 	// Floor grating line below the door
 	gratingChar := "▓"
 	grating := strings.Repeat(gratingChar, width)
-	fmt.Fprintf(&b, "\n%s", style.Render(grating))
+	fmt.Fprintf(&b, "\n%s", shStyle.Render(grating))
 
 	if cracked {
 		return ApplyShadowWithCrack(b.String(), width, 16, selected, shadowNear, shadowFar)

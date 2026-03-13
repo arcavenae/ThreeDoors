@@ -56,6 +56,9 @@ func NewClassicTheme() *DoorTheme {
 }
 
 func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedStyle, selectedStyle lipgloss.Style, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	highlightColor := lipgloss.CompleteColor{TrueColor: "#7070ff", ANSI256: "63", ANSI: "5"}
+	shadowEdgeColor := lipgloss.CompleteColor{TrueColor: "#3a3a8f", ANSI256: "61", ANSI: "4"}
+
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use original Lipgloss card style
 		if height < 10 {
@@ -67,12 +70,17 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 
 		// Door-like proportions using DoorAnatomy
 		anatomy := NewDoorAnatomy(height)
-		color := frameColor
-		if selected {
-			color = selectedColor
-		}
-		style := lipgloss.NewStyle().Foreground(color)
 
+		// Bevel lighting: top/left edges use Highlight, bottom/right use ShadowEdge.
+		// When selected, both use Selected color to maintain selection visual.
+		var hlStyle, shStyle lipgloss.Style
+		if selected {
+			hlStyle = lipgloss.NewStyle().Foreground(selectedColor)
+			shStyle = lipgloss.NewStyle().Foreground(selectedColor)
+		} else {
+			hlStyle = lipgloss.NewStyle().Foreground(highlightColor)
+			shStyle = lipgloss.NewStyle().Foreground(shadowEdgeColor)
+		}
 		// Interior width: total width minus 2 border characters
 		inner := width - 2
 		if inner < 1 {
@@ -129,10 +137,10 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 
 			switch {
 			case row == anatomy.LintelRow:
-				fmt.Fprintf(&b, "%s%s", style.Render(hingeTL+hBar+openTR), shade)
+				fmt.Fprintf(&b, "%s%s", hlStyle.Render(hingeTL+hBar+openTR), shade)
 
 			case row == anatomy.PanelDivider:
-				fmt.Fprintf(&b, "%s%s", style.Render(hingeTee+hBar+openTee), shade)
+				fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeTee+hBar+openTee), shade)
 
 			case row == anatomy.HandleRow:
 				knobPad := inner - 1
@@ -142,27 +150,27 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 				handleChar := HandleCharForEmphasis(emphasis, selected, RoundKnobFrames)
 				knobLine := renderHandleWithHint(inner, knobPad, handleChar, hint)
 				bgKnob := bgFillContent(knobLine, inner, 0, bg)
-				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeTee), bgKnob, style.Render(openV), shade)
+				fmt.Fprintf(&b, "%s%s%s%s", hlStyle.Render(hingeTee), bgKnob, shStyle.Render(openV), shade)
 
 			case row == anatomy.ThresholdRow:
-				fmt.Fprintf(&b, "%s%s", style.Render(hingeBL+hBar+openBR), shade)
+				fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeBL+hBar+openBR), shade)
 
 			case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 				lineIdx := row - anatomy.ContentStart
 				if lineIdx < len(contentLines) {
 					line := contentLines[lineIdx]
 					fmt.Fprintf(&b, "%s%s%s%s",
-						style.Render(hingeV),
+						hlStyle.Render(hingeV),
 						bgFillContent(line, inner, 2, bg),
-						style.Render(openV),
+						shStyle.Render(openV),
 						shade,
 					)
 				} else {
-					fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillLine(inner, bg), style.Render(openV), shade)
+					fmt.Fprintf(&b, "%s%s%s%s", hlStyle.Render(hingeV), bgFillLine(inner, bg), shStyle.Render(openV), shade)
 				}
 
 			default:
-				fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillLine(inner, bg), style.Render(openV), shade)
+				fmt.Fprintf(&b, "%s%s%s%s", hlStyle.Render(hingeV), bgFillLine(inner, bg), shStyle.Render(openV), shade)
 			}
 
 			if row < height-1 {
@@ -172,7 +180,7 @@ func classicRender(frameColor, selectedColor lipgloss.TerminalColor, unselectedS
 
 		// Threshold line below the door
 		threshold := strings.Repeat("▔", width)
-		fmt.Fprintf(&b, "\n%s", style.Render(threshold))
+		fmt.Fprintf(&b, "\n%s", shStyle.Render(threshold))
 
 		if cracked {
 			return ApplyShadowWithCrack(b.String(), width, 15, selected, shadowNear, shadowFar)

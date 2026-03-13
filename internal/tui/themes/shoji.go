@@ -56,13 +56,16 @@ type shojiChars struct {
 }
 
 func shojiRender(frameColor, selectedColor, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) func(string, int, int, bool, string, float64) string {
+	highlightColor := lipgloss.CompleteColor{TrueColor: "#e8c888", ANSI256: "186", ANSI: "11"}
+	shadowEdgeColor := lipgloss.CompleteColor{TrueColor: "#8f7540", ANSI256: "137", ANSI: "3"}
+
 	return func(content string, width int, height int, selected bool, hint string, emphasis float64) string {
 		// Compact mode: use existing fixed layout
 		if height < 14 {
 			return shojiCompactRender(content, width, selected, frameColor, selectedColor, hint)
 		}
 
-		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
+		return shojiDoorRender(content, width, height, selected, frameColor, selectedColor, highlightColor, shadowEdgeColor, hint, emphasis, fill, fillLower, shadowNear, shadowFar)
 	}
 }
 
@@ -124,11 +127,10 @@ func shojiCompactRender(content string, width int, selected bool, frameColor, se
 // shojiDoorRender renders the Shoji theme with door-like proportions using DoorAnatomy.
 // Hinge asymmetry: left uses heavier junctions (double-vert unselected, heavy selected),
 // right uses standard-weight junctions.
-func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor lipgloss.TerminalColor, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
+func shojiDoorRender(content string, width, height int, selected bool, frameColor, selectedColor, highlightColor, shadowEdgeColor lipgloss.TerminalColor, hint string, emphasis float64, fill, fillLower, shadowNear, shadowFar lipgloss.TerminalColor) string {
 	anatomy := NewDoorAnatomy(height)
 	cracked := isCracked(selected, emphasis)
 
-	color := frameColor
 	// Left (hinge) and right (opening) character sets
 	var hingeTop, openTop string
 	var hingeBot, openBot string
@@ -137,7 +139,6 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	var cross, h string
 
 	if selected {
-		color = selectedColor
 		hingeTop, openTop = "┳", "┬"
 		hingeBot, openBot = "┻", "┴"
 		hingeV, openV = "┃", "│"
@@ -158,8 +159,16 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		openBot = crackBR
 		openV = crackV
 	}
-	style := lipgloss.NewStyle().Foreground(color)
 
+	// Bevel lighting styles
+	var hlStyle, shStyle lipgloss.Style
+	if selected {
+		hlStyle = lipgloss.NewStyle().Foreground(selectedColor)
+		shStyle = lipgloss.NewStyle().Foreground(selectedColor)
+	} else {
+		hlStyle = lipgloss.NewStyle().Foreground(highlightColor)
+		shStyle = lipgloss.NewStyle().Foreground(shadowEdgeColor)
+	}
 	innerW := width - 2
 	if cracked {
 		innerW = width - 3 // reduce for shade column
@@ -183,12 +192,12 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		shade = crackShade
 	}
 
-	// Helper for empty row with hinge asymmetry
+	// Helper for empty row with bevel asymmetry
 	emptyRowFn := func(bg lipgloss.TerminalColor) string {
-		return style.Render(hingeV) + bgFillLine(innerW, bg) + style.Render(openV) + shade
+		return hlStyle.Render(hingeV) + bgFillLine(innerW, bg) + shStyle.Render(openV) + shade
 	}
 
-	// Helper for content row with hinge asymmetry
+	// Helper for content row with bevel asymmetry
 	contentRow := func(text string, bg lipgloss.TerminalColor) string {
 		cw := innerW - 2
 		if cw < 1 {
@@ -198,22 +207,22 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 		if textWidth > cw {
 			text = ansi.Truncate(text, cw, "")
 		}
-		return style.Render(hingeV) + bgFillContent(text, innerW, 1, bg) + style.Render(openV) + shade
+		return hlStyle.Render(hingeV) + bgFillContent(text, innerW, 1, bg) + shStyle.Render(openV) + shade
 	}
 
-	// Helper for horizontal bar with hinge asymmetry
+	// Helper for horizontal bar with bevel (lattice/divider bars → shadow)
 	hBar := func() string {
-		return style.Render(hingeTee + strings.Repeat(h, innerW) + openTee)
+		return shStyle.Render(hingeTee + strings.Repeat(h, innerW) + openTee)
 	}
 
-	// Helper for cross bar with hinge asymmetry
+	// Helper for cross bar with bevel (divider → shadow)
 	crossBar := func() string {
 		left := crossPos
 		right := innerW - crossPos - 1
 		if right < 0 {
 			right = 0
 		}
-		return style.Render(hingeTee + strings.Repeat(h, left) + cross + strings.Repeat(h, right) + openTee)
+		return shStyle.Render(hingeTee + strings.Repeat(h, left) + cross + strings.Repeat(h, right) + openTee)
 	}
 
 	// Place a lattice bar one row after ContentStart (gives a pane above content)
@@ -235,7 +244,7 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 
 		switch {
 		case row == anatomy.LintelRow:
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeTop+strings.Repeat(h, innerW)+openTop), shade)
+			fmt.Fprintf(&b, "%s%s", hlStyle.Render(hingeTop+strings.Repeat(h, innerW)+openTop), shade)
 
 		case row == latticeBarRow:
 			fmt.Fprintf(&b, "%s%s", hBar(), shade)
@@ -250,13 +259,13 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 			}
 			handleChar := HandleCharForEmphasis(emphasis, selected, OpenKnobFrames)
 			knobLine := renderHandleWithHint(innerW, knobPad, handleChar, hint)
-			fmt.Fprintf(&b, "%s%s%s%s", style.Render(hingeV), bgFillContent(knobLine, innerW, 0, bg), style.Render(openV), shade)
+			fmt.Fprintf(&b, "%s%s%s%s", hlStyle.Render(hingeV), bgFillContent(knobLine, innerW, 0, bg), shStyle.Render(openV), shade)
 
 		case row == latticeBar2Row:
 			fmt.Fprintf(&b, "%s%s", hBar(), shade)
 
 		case row == anatomy.ThresholdRow:
-			fmt.Fprintf(&b, "%s%s", style.Render(hingeBot+strings.Repeat(h, innerW)+openBot), shade)
+			fmt.Fprintf(&b, "%s%s", shStyle.Render(hingeBot+strings.Repeat(h, innerW)+openBot), shade)
 
 		case row >= anatomy.ContentStart && row < anatomy.PanelDivider:
 			lineIdx := row - anatomy.ContentStart
@@ -276,7 +285,7 @@ func shojiDoorRender(content string, width, height int, selected bool, frameColo
 	}
 
 	// Threshold line below the door
-	fmt.Fprintf(&b, "\n%s", style.Render(strings.Repeat("▔", width)))
+	fmt.Fprintf(&b, "\n%s", shStyle.Render(strings.Repeat("▔", width)))
 
 	if cracked {
 		return ApplyShadowWithCrack(b.String(), width, 19, selected, shadowNear, shadowFar)
