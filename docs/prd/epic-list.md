@@ -627,7 +627,7 @@
 **Epic 50: In-App Bug Reporting** (P2)
 - **Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission (browser URL, GitHub API, local file)
 - **Prerequisites:** None (standalone feature)
-- **Status:** In Progress (0/3 done; 50.1 In Review)
+- **Status:** COMPLETE — All 3 stories implemented and merged (PRs #478, #624, #649)
 - **Deliverables:**
   - Ring buffer breadcrumb tracking (50 entries, view transitions + non-text keys, privacy-safe)
   - Bug report view with text description input, environment summary, and mandatory preview
@@ -640,7 +640,7 @@
 **Epic 51: SLAES — Self-Learning Agentic Engineering System** (P1)
 - **Goal:** Build a continuous improvement meta-system with a persistent `retrospector` agent that monitors PR merges, detects process waste (saga patterns), audits doc consistency, analyzes CI/conflict patterns, and files improvement recommendations to BOARD.md. Dual-loop architecture: spec-chain quality and operational efficiency.
 - **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
-- **Status:** In Progress (5/10 stories done — PRs #460, #505, #506, #507, #509; 5 In Review)
+- **Status:** COMPLETE — All 11 stories implemented and merged (PRs #460, #461, #462, #463, #464, #465, #505, #506, #507, #509, #608)
 - **Deliverables:**
   - Phase 0: Retrospector agent definition in responsibility+WHY format; rewrite 5 operational agent definitions with incident-hardened guardrails
   - Phase 1 (MVP): JSONL findings log with per-merge lightweight retro, saga detection (2+ workers on same fix), doc consistency audit (periodic cross-check of planning docs), BOARD.md recommendation pipeline with confidence scoring
@@ -861,8 +861,8 @@
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Complete (4/4 done) |
 | Epic 48: Door-Like Doors | 4 | Complete (4/4 done) |
 | Epic 49: ThreeDoors Doctor | 10 | Complete (10/10 done) |
-| Epic 50: In-App Bug Reporting | 3 | In Progress (2/3 done; 50.1 In Review) |
-| Epic 51: SLAES | 11 | In Progress (6/11 done) |
+| Epic 50: In-App Bug Reporting | 3 | Complete (3/3 done) |
+| Epic 51: SLAES | 11 | Complete (11/11 done) |
 | Epic 52: Envoy Three-Layer Firewall | 4 | Complete (4/4 done) |
 | Epic 53: Remote Collaboration | 5 | In Progress (3/5 done) |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (3/5 done) |
