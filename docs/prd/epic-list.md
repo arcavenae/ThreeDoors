@@ -375,7 +375,7 @@
 **Epic 30: Linear Integration** (P2)
 - **Goal:** Integrate Linear as a task source for engineering teams via the Linear GraphQL API, leveraging Linear's excellent task model alignment (rich workflow states, priority, estimates, labels, due dates) for high-fidelity task import
 - **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 13 (Multi-Source Aggregation — complete)
-- **Status:** In Progress (2/4 done — PRs #446, #699)
+- **Status:** In Progress (3/4 done — PRs #446, #699, #705)
 - **Deliverables:**
   - Linear GraphQL client with typed queries, cursor-based pagination, and API key auth
   - Read-only LinearProvider with full field mapping (status, priority, effort, labels, due dates)
@@ -804,7 +804,7 @@
 **Epic 63: ClickUp Integration** (P2)
 - **Goal:** Integrate ClickUp as a task source following the established adapter pattern (Jira, Todoist, GitHub Issues, Linear)
 - **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 43 (Connection Manager — complete)
-- **Status:** Not Started
+- **Status:** In Progress (1/4 done — PR #706)
 - **Deliverables:**
   - ClickUp REST API v2 client with token auth
   - Read-only provider with field mapping (status, priority, due date, tags)
@@ -869,7 +869,7 @@
 | Epic 27: Daily Planning Mode | 5 | Complete |
 | Epic 28: Snooze/Defer | 4 | Complete |
 | Epic 29: Task Dependencies | 4 | In Progress (3/4) |
-| Epic 30: Linear Integration | 4 | In Progress (2/4 done) |
+| Epic 30: Linear Integration | 4 | In Progress (3/4 done) |
 | Epic 31: Expand/Fork Key | 5 | In Progress (2/5 done) |
 | Epic 32: Undo Task Completion | 3 | Complete |
 | Epic 33: Seasonal Theme Variants | 4 | Complete |
@@ -902,7 +902,7 @@
 | Epic 60: README Overhaul | 5 | Complete (5/5 done) |
 | Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
-| Epic 63: ClickUp Integration | 4 | Not Started |
+| Epic 63: ClickUp Integration | 4 | In Progress (1/4 done) |
 | Epic 64: Cross-Computer Sync | 6 | Not Started |
 | **Total** | **335** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---
