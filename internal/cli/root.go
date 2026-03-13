@@ -42,6 +42,7 @@ launch the interactive TUI, or use subcommands for scriptable access.`,
 	cmd.AddCommand(newConnectCmd())
 	cmd.AddCommand(newExtractCmd())
 	cmd.AddCommand(newLLMCmd())
+	cmd.AddCommand(newDevicesCmd())
 
 	registerFlagCompletions(cmd)
 
