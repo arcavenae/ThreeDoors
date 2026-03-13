@@ -164,9 +164,39 @@ func (wp *WALProvider) Watch() <-chan ChangeEvent {
 	return wp.inner.Watch()
 }
 
-// HealthCheck delegates to the inner provider's HealthCheck.
+// HealthCheck delegates to the inner provider's HealthCheck and appends WAL status.
 func (wp *WALProvider) HealthCheck() HealthCheckResult {
-	return wp.inner.HealthCheck()
+	result := wp.inner.HealthCheck()
+
+	wp.mu.Lock()
+	count := len(wp.pending)
+	var oldest time.Time
+	if count > 0 {
+		oldest = wp.pending[0].Timestamp
+	}
+	wp.mu.Unlock()
+
+	if count == 0 {
+		result.Items = append(result.Items, HealthCheckItem{
+			Name:    "wal_queue",
+			Status:  HealthOK,
+			Message: "No pending WAL entries",
+		})
+	} else {
+		status := HealthWarn
+		msg := fmt.Sprintf("%d pending WAL entries (oldest: %s)", count, oldest.Format("2006-01-02T15:04:05Z"))
+		result.Items = append(result.Items, HealthCheckItem{
+			Name:       "wal_queue",
+			Status:     status,
+			Message:    msg,
+			Suggestion: "Check network connectivity; pending writes will be retried",
+		})
+		if result.Overall == HealthOK {
+			result.Overall = HealthWarn
+		}
+	}
+
+	return result
 }
 
 // PendingCount returns the number of pending WAL entries.
