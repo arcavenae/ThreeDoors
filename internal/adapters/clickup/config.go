@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/arcaven/ThreeDoors/internal/core"
 )
 
 // Default values for optional ClickUp configuration fields.
@@ -13,14 +15,25 @@ const (
 	DefaultPollInterval = 30 * time.Second
 )
 
+// DefaultStatusMapping maps common ClickUp status strings to ThreeDoors statuses.
+var DefaultStatusMapping = map[string]core.TaskStatus{
+	"to do":       core.StatusTodo,
+	"open":        core.StatusTodo,
+	"in progress": core.StatusInProgress,
+	"complete":    core.StatusComplete,
+	"closed":      core.StatusComplete,
+	"done":        core.StatusComplete,
+}
+
 // ClickUpConfig holds parsed and validated ClickUp integration settings.
 type ClickUpConfig struct {
-	APIToken     string        `yaml:"-"`
-	TeamID       string        `yaml:"team_id"`
-	SpaceIDs     []string      `yaml:"space_ids"`
-	ListIDs      []string      `yaml:"list_ids"`
-	Assignee     string        `yaml:"assignee"`
-	PollInterval time.Duration `yaml:"poll_interval"`
+	APIToken      string                     `yaml:"-"`
+	TeamID        string                     `yaml:"team_id"`
+	SpaceIDs      []string                   `yaml:"space_ids"`
+	ListIDs       []string                   `yaml:"list_ids"`
+	Assignee      string                     `yaml:"assignee"`
+	PollInterval  time.Duration              `yaml:"poll_interval"`
+	StatusMapping map[string]core.TaskStatus `yaml:"status_mapping"`
 }
 
 // ParseConfig creates a ClickUpConfig from a settings map with environment variable
