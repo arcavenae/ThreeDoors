@@ -2598,6 +2598,46 @@ Follows the standard 4-story integration pattern: 63.1 (REST API v2 client with 
 1. Tests for task, sources, connect, extract, interactive commands
 2. Final coverage ≥70%
 
+## Epic 67: Retrospector Operational Data Pipeline
+
+**Epic Goal:** Automate periodic sync of retrospector operational data (`docs/operations/`) to git via a cron-triggered project-watchdog pipeline, so worker agents in isolated worktrees have access to current operational data.
+
+**Scope:** CronCreate setup for `SYNC_OPERATIONAL_DATA` trigger, supervisor standing orders for cron creation and staleness verification. The project-watchdog handler already exists (added during Epic 62 reliability work).
+
+**Status:** Not Started (0/1 done)
+
+**Prerequisites:** Epic 62 (Retrospector Agent Reliability) — COMPLETE
+
+**Triggered by:** Party mode research: `_bmad-output/planning-artifacts/retrospector-data-pipeline-party-mode.md`
+
+**NFRs covered:** NFR-ODP1 through NFR-ODP5
+
+---
+
+### Story 67.1: Cron-Triggered Operational Data Sync Pipeline
+
+**As a** multiclaude operator,
+**I want** retrospector operational data to be automatically committed to git every 3 hours,
+**so that** worker agents in isolated worktrees can access current operational data and the data is durable in version control.
+
+**Acceptance Criteria:**
+1. Supervisor startup checklist includes a `CronCreate("0 */3 * * *", "multiclaude message send project-watchdog SYNC_OPERATIONAL_DATA")` entry
+2. project-watchdog receives `SYNC_OPERATIONAL_DATA` messages and creates data-sync PRs when `docs/operations/` has changes (handler already exists — verify it works)
+3. If no files changed, no commit or PR is created (idempotency)
+4. Supervisor has a standing order to periodically verify data freshness: `git log --oneline docs/operations/ --since="8 hours ago"` — investigate if no commits and retrospector is active
+5. All changes go through PR workflow (branch protection compliance)
+6. Data sync PRs use the standard `data-sync/<timestamp>` branch naming convention
+
+**Technical Notes:**
+- project-watchdog definition already contains the `SYNC_OPERATIONAL_DATA Response Protocol` (lines 80-121 of `agents/project-watchdog.md`)
+- This story primarily involves supervisor configuration (cron setup, standing orders) and verification
+- Cron interval: every 3 hours (party mode recommended 2-4 hours; 3 hours balances freshness vs. PR noise)
+- Staleness SLA: 6 hours (2x commit interval)
+
+**Estimated Time:** 30-45 minutes
+
+---
+
 ## Epic 66: CLI/TUI Adapter Wiring Parity (PROVISIONAL)
 
 **Epic Goal:** Fix three gaps where implemented adapter code is not properly connected to CLI and TUI entry points, ensuring all registered adapters are accessible through both the CLI and TUI connect flows with proper flag validation.
