@@ -141,7 +141,7 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
-### Epic 30: Linear Integration (P2) — 3/4 stories done
+### Epic 30: Linear Integration (P2) — 4/4 stories done — COMPLETE
 
 Linear as task source via GraphQL API. Best task model alignment of all evaluated services.
 
@@ -149,7 +149,7 @@ Linear as task source via GraphQL API. Best task model alignment of all evaluate
 |-------|-------|--------|----------|------------|
 | 30.1 | Linear GraphQL Client & Auth Configuration | Done (PR #446) | P2 | Epic 7 (done) |
 | 30.2 | Read-Only Linear Provider with Field Mapping | Done (PR #699) | P2 | 30.1 |
-| 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
+| 30.3 | Bidirectional Sync & WAL Integration | Done (PR #709) | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Done (PR #705) | P2 | 30.2 |
 
 ### Epic 31: Expand/Fork Key Implementations (P2) — 4/5 stories done
