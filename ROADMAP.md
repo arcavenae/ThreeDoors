@@ -141,24 +141,24 @@ Native dependency graph support. Blocks tasks with unmet dependencies from door 
 | 29.3 | TUI Blocked-By Indicator and Dependency Management | In Review | P1 | 29.1 |
 | 29.4 | Session Metrics Logging for Dependency Events | Done (PR #356) | P1 | 29.1 |
 
-### Epic 30: Linear Integration (P2) — 0/4 stories done
+### Epic 30: Linear Integration (P2) — 2/4 stories done
 
 Linear as task source via GraphQL API. Best task model alignment of all evaluated services.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 30.1 | Linear GraphQL Client & Auth Configuration | In Review | P2 | Epic 7 (done) |
-| 30.2 | Read-Only Linear Provider with Field Mapping | Not Started | P2 | 30.1 |
+| 30.1 | Linear GraphQL Client & Auth Configuration | Done (PR #446) | P2 | Epic 7 (done) |
+| 30.2 | Read-Only Linear Provider with Field Mapping | Done (PR #699) | P2 | 30.1 |
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Not Started | P2 | 30.2 |
 
-### Epic 31: Expand/Fork Key Implementations (P2) — 0/5 stories done
+### Epic 31: Expand/Fork Key Implementations (P2) — 1/5 stories done
 
 Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 31.1 | Task Model ParentID Extension | Not Started | P2 | None |
+| 31.1 | Task Model ParentID Extension | Done (PR #698) | P2 | None |
 | 31.2 | Enhanced Expand — Sequential Subtask Creation | Not Started | P2 | 31.1 |
 | 31.3 | Subtask List Rendering in Detail View | Not Started | P2 | 31.1, 31.2 |
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Not Started | P2 | None |

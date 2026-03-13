@@ -375,7 +375,7 @@
 **Epic 30: Linear Integration** (P2)
 - **Goal:** Integrate Linear as a task source for engineering teams via the Linear GraphQL API, leveraging Linear's excellent task model alignment (rich workflow states, priority, estimates, labels, due dates) for high-fidelity task import
 - **Prerequisites:** Epic 7 (Adapter SDK — complete), Epic 13 (Multi-Source Aggregation — complete)
-- **Status:** In Progress (0/4 done; 30.1 In Review)
+- **Status:** In Progress (2/4 done — PRs #446, #699)
 - **Deliverables:**
   - Linear GraphQL client with typed queries, cursor-based pagination, and API key auth
   - Read-only LinearProvider with full field mapping (status, priority, effort, labels, due dates)
@@ -389,7 +389,7 @@
 **Epic 31: Expand/Fork Key Implementations** (P2)
 - **Goal:** Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9
 - **Prerequisites:** None
-- **Status:** Not Started
+- **Status:** In Progress (1/5 done — PR #698)
 - **Stories:** 31.1-31.5 (5 stories)
 
 **Epic 32: Undo Task Completion** (P1)
@@ -869,8 +869,8 @@
 | Epic 27: Daily Planning Mode | 5 | Complete |
 | Epic 28: Snooze/Defer | 4 | Complete |
 | Epic 29: Task Dependencies | 4 | In Progress (3/4) |
-| Epic 30: Linear Integration | 4 | In Progress (30.1 In Review) |
-| Epic 31: Expand/Fork Key | 5 | Not Started |
+| Epic 30: Linear Integration | 4 | In Progress (2/4 done) |
+| Epic 31: Expand/Fork Key | 5 | In Progress (1/5 done) |
 | Epic 32: Undo Task Completion | 3 | Complete |
 | Epic 33: Seasonal Theme Variants | 4 | Complete |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
