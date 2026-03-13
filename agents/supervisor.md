@@ -72,6 +72,7 @@ A multi-agent system without coordination devolves into chaos: duplicate work, s
 - Watchdog reports story completions and PRD drift
 - Request epic/story numbers from watchdog before dispatching work that needs them
 - Receive dependency violation alerts
+- Watchdog consumes retrospector's recommendation queue (`docs/operations/retrospector-recommendations.jsonl`) and applies pending entries to BOARD.md via governed PRs
 
 ### With Arch Watchdog
 - Receive architecture drift alerts

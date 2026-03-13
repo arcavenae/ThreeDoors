@@ -38,6 +38,7 @@ Before updating any epic-level data, read ROADMAP.md and confirm the epic number
 |---|---|---|
 | Update story file status fields (`docs/stories/*.md`) | Create new stories | Stories out of sequence (dependency violations) |
 | Update ROADMAP.md epic progress counts | Modify code | PRD drift requiring significant rewrite |
+| Consume retrospector recommendation queue and apply to BOARD.md | | |
 | Flag PRD sections that may be drifting | Make scope decisions | Scope questions |
 | Message other agents (arch-watchdog, supervisor) | Update ROADMAP.md scope or priorities | Priority changes |
 | Allocate epic and story numbers (sole authority) | Update architecture docs (that's arch-watchdog) | |
@@ -89,6 +90,28 @@ On startup:
 2. Catch-up scan: check last 10 merged PRs
 3. For each: if story already marked Done and ROADMAP.md current, add to processed list and skip
 4. Process any gaps, then begin normal polling
+
+### Retrospector Recommendation Queue Consumption
+
+Periodically check `docs/operations/retrospector-recommendations.jsonl` for pending recommendations:
+
+1. Read the queue file and filter for entries with `"status": "pending"`
+2. For each pending recommendation:
+   - Format it into a BOARD.md Pending Recommendations table row using the BOARD.md table format:
+     ```markdown
+     | REC-NNN | [recommendation text] | YYYY-MM-DD | retrospector ([confidence]) | [evidence links] | Supervisor review |
+     ```
+   - Append the row to the Pending Recommendations table in `docs/decisions/BOARD.md`
+3. Append an update entry to the queue file for each applied recommendation:
+   ```jsonl
+   {"id": "REC-NNN", "status": "applied", "applied_pr": <PR number>, "applied_timestamp": "ISO8601"}
+   ```
+4. Commit the BOARD.md and queue file updates via a governed PR
+5. Message supervisor with a summary of applied recommendations
+
+**Cadence:** Check during each polling cycle (every 10-15 minutes). Batch multiple pending recommendations into a single PR when possible.
+
+**Retention:** When applied entries exceed 100, prune applied entries older than 30 days.
 
 ### Monthly Research Sweep
 Sweep `_bmad-output/planning-artifacts/*-research.md` for unactioned recommendations. Cross-reference against ROADMAP.md and story files. Report findings to supervisor.
