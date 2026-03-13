@@ -312,7 +312,7 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 61 | GitHub Pages User Guide | 4/4 |
 | 62 | Retrospector Agent Reliability | 3/3 |
 
-### Epic 53: Remote Collaboration — multiclaude Cross-Machine Access (P2) — 3/5 stories done
+### Epic 53: Remote Collaboration — multiclaude Cross-Machine Access (P2) — 5/5 stories done — COMPLETE
 
 Document and enable remote collaboration with multiclaude via SSH, with future MCP bridge support.
 
@@ -321,8 +321,8 @@ Document and enable remote collaboration with multiclaude via SSH, with future M
 | 53.1 | SSH Tunnel Setup & Documentation | Done (PR #613) | P2 | None |
 | 53.2 | Remote Agent Attachment | Done (PR #615) | P2 | 53.1 |
 | 53.3 | Cross-Machine Message Routing | Done (PR #665) | P2 | 53.1 |
-| 53.4 | Remote Worker Dispatch | Not Started | P2 | 53.2, 53.3 |
-| 53.5 | MCP Bridge Prototype | Not Started | P2 | 53.1 |
+| 53.4 | Remote Worker Dispatch | Done (PR #691) | P2 | 53.2, 53.3 |
+| 53.5 | MCP Bridge Prototype | Done (PR #693) | P2 | 53.1 |
 
 ### Epic 51: SLAES — Self-Learning Agentic Engineering System (P1) — 11/11 stories done — COMPLETE
 
