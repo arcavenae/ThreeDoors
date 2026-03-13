@@ -99,6 +99,13 @@ func DefaultProviderSpecs() []ProviderFormSpec {
 			Description: "macOS Notes app (read-only)",
 			AuthType:    AuthNone,
 		},
+		{
+			Name:        "clickup",
+			DisplayName: "ClickUp",
+			Description: "ClickUp task management",
+			AuthType:    AuthAPIToken,
+			TokenHelp:   "Settings → Apps → API Token (or generate a personal token)",
+		},
 	}
 }
 

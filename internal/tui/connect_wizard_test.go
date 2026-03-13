@@ -173,7 +173,7 @@ func TestConnectWizard_DefaultProviderSpecs(t *testing.T) {
 	}
 
 	// Verify known providers are present
-	expectedProviders := []string{"todoist", "github", "jira", "textfile", "obsidian", "reminders"}
+	expectedProviders := []string{"todoist", "github", "jira", "textfile", "obsidian", "reminders", "clickup"}
 	for _, name := range expectedProviders {
 		if !names[name] {
 			t.Errorf("expected provider %q not found in DefaultProviderSpecs", name)

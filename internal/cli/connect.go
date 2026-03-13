@@ -66,28 +66,77 @@ var knownProviderSpecs = map[string]providerFlagSpec{
 			"path": "path",
 		},
 	},
+	"applenotes": {
+		tokenKey: "",
+		required: []string{"note-title"},
+		flagToSetting: map[string]string{
+			"note-title": "note_title",
+		},
+	},
+	"obsidian": {
+		tokenKey: "",
+		required: []string{"path"},
+		flagToSetting: map[string]string{
+			"path":         "vault_path",
+			"tasks-folder": "tasks_folder",
+			"file-pattern": "file_pattern",
+		},
+	},
+	"reminders": {
+		tokenKey: "",
+		required: nil,
+		flagToSetting: map[string]string{
+			"list": "lists",
+		},
+	},
+	"linear": {
+		tokenKey: "api_key",
+		required: nil,
+		flagToSetting: map[string]string{
+			"team-ids": "team_ids",
+		},
+	},
+	"clickup": {
+		tokenKey: "api_token",
+		required: []string{"team-id"},
+		flagToSetting: map[string]string{
+			"team-id":   "team_id",
+			"space-ids": "space_ids",
+			"list-ids":  "list_ids",
+		},
+	},
 }
 
 func newConnectCmd() *cobra.Command {
 	var (
-		label      string
-		token      string
-		repos      string
-		server     string
-		path       string
-		projectIDs string
-		filter     string
+		label       string
+		token       string
+		repos       string
+		server      string
+		path        string
+		projectIDs  string
+		filter      string
+		noteTitle   string
+		tasksFolder string
+		filePattern string
+		list        string
+		teamIDs     string
+		teamID      string
+		spaceIDs    string
+		listIDs     string
+		workspaceID string
 	)
 
 	cmd := &cobra.Command{
 		Use:   "connect <provider>",
 		Short: "Configure a data source connection",
-		Long: `Configure a data source connection. Supported providers: todoist, github, jira, textfile.
+		Long: `Configure a data source connection. Supported providers:
+  applenotes, clickup, github, jira, linear, obsidian, reminders, textfile, todoist.
 
 When called with --label and other flags, runs in non-interactive mode.
 When called without flags in a terminal, launches the interactive setup wizard.`,
 		Args:      cobra.ExactArgs(1),
-		ValidArgs: []string{"todoist", "github", "jira", "textfile", "applenotes", "obsidian", "reminders", "linear"},
+		ValidArgs: []string{"applenotes", "clickup", "github", "jira", "linear", "obsidian", "reminders", "textfile", "todoist"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			provider := args[0]
 			jsonMode := isJSONOutput(cmd)
@@ -104,11 +153,20 @@ When called without flags in a terminal, launches the interactive setup wizard.`
 
 			// Build flag values map from provided flags.
 			flagValues := map[string]string{
-				"repos":       repos,
-				"server":      server,
-				"path":        path,
-				"project-ids": projectIDs,
-				"filter":      filter,
+				"repos":        repos,
+				"server":       server,
+				"path":         path,
+				"project-ids":  projectIDs,
+				"filter":       filter,
+				"note-title":   noteTitle,
+				"tasks-folder": tasksFolder,
+				"file-pattern": filePattern,
+				"list":         list,
+				"team-ids":     teamIDs,
+				"team-id":      teamID,
+				"space-ids":    spaceIDs,
+				"list-ids":     listIDs,
+				"workspace-id": workspaceID,
 			}
 
 			configPath, svc, manager, err := bootstrapForConnect()
@@ -128,9 +186,18 @@ When called without flags in a terminal, launches the interactive setup wizard.`
 	cmd.Flags().StringVar(&token, "token", "", "authentication token (or set via environment variable)")
 	cmd.Flags().StringVar(&repos, "repos", "", "comma-separated repository list (github)")
 	cmd.Flags().StringVar(&server, "server", "", "server URL (jira)")
-	cmd.Flags().StringVar(&path, "path", "", "file path (textfile)")
+	cmd.Flags().StringVar(&path, "path", "", "file or directory path (textfile, obsidian)")
 	cmd.Flags().StringVar(&projectIDs, "project-ids", "", "comma-separated project IDs (todoist)")
 	cmd.Flags().StringVar(&filter, "filter", "", "task filter expression (todoist)")
+	cmd.Flags().StringVar(&noteTitle, "note-title", "", "Apple Notes note title (applenotes)")
+	cmd.Flags().StringVar(&tasksFolder, "tasks-folder", "", "tasks subfolder within vault (obsidian)")
+	cmd.Flags().StringVar(&filePattern, "file-pattern", "", "file glob pattern for tasks (obsidian)")
+	cmd.Flags().StringVar(&list, "list", "", "reminder list name (reminders)")
+	cmd.Flags().StringVar(&teamIDs, "team-ids", "", "comma-separated team IDs (linear)")
+	cmd.Flags().StringVar(&teamID, "team-id", "", "team ID (clickup)")
+	cmd.Flags().StringVar(&spaceIDs, "space-ids", "", "comma-separated space IDs (clickup)")
+	cmd.Flags().StringVar(&listIDs, "list-ids", "", "comma-separated list IDs (clickup)")
+	cmd.Flags().StringVar(&workspaceID, "workspace-id", "", "workspace ID (clickup)")
 
 	return cmd
 }
