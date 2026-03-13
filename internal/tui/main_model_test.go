@@ -1227,3 +1227,73 @@ func TestGlobalCommandMode_TableDriven(t *testing.T) {
 		})
 	}
 }
+
+// --- ExpandTaskMsg Handler (Story 31.2) ---
+
+func TestMainModel_ExpandTaskMsg_SetsParentID(t *testing.T) {
+	m := makeModel("parent task", "other task")
+	parentTask := m.pool.GetAllTasks()[0]
+
+	updated, _ := m.Update(ExpandTaskMsg{
+		ParentTask:  parentTask,
+		NewTaskText: "child subtask",
+	})
+	m = updated.(*MainModel)
+
+	subtasks := m.pool.GetSubtasks(parentTask.ID)
+	if len(subtasks) != 1 {
+		t.Fatalf("expected 1 subtask, got %d", len(subtasks))
+	}
+	if subtasks[0].Text != "child subtask" {
+		t.Errorf("expected text 'child subtask', got %q", subtasks[0].Text)
+	}
+	if subtasks[0].ParentID == nil {
+		t.Fatal("ParentID should be set")
+	}
+	if *subtasks[0].ParentID != parentTask.ID {
+		t.Errorf("ParentID = %q, want %q", *subtasks[0].ParentID, parentTask.ID)
+	}
+}
+
+func TestMainModel_ExpandTaskMsg_StaysInCurrentView(t *testing.T) {
+	m := makeModel("parent task")
+	parentTask := m.pool.GetAllTasks()[0]
+
+	// Set up as if we're in detail view
+	m.setViewMode(ViewDetail)
+	viewBefore := m.viewMode
+
+	updated, _ := m.Update(ExpandTaskMsg{
+		ParentTask:  parentTask,
+		NewTaskText: "child subtask",
+	})
+	m = updated.(*MainModel)
+
+	// Should NOT change view mode (stays in detail for sequential expand)
+	if m.viewMode != viewBefore {
+		t.Errorf("viewMode changed from %d to %d; should stay the same", viewBefore, m.viewMode)
+	}
+}
+
+func TestMainModel_ExpandTaskMsg_MultipleSubtasksGetParentID(t *testing.T) {
+	m := makeModel("parent task")
+	parentTask := m.pool.GetAllTasks()[0]
+
+	for _, text := range []string{"sub1", "sub2", "sub3"} {
+		updated, _ := m.Update(ExpandTaskMsg{
+			ParentTask:  parentTask,
+			NewTaskText: text,
+		})
+		m = updated.(*MainModel)
+	}
+
+	subtasks := m.pool.GetSubtasks(parentTask.ID)
+	if len(subtasks) != 3 {
+		t.Fatalf("expected 3 subtasks, got %d", len(subtasks))
+	}
+	for _, sub := range subtasks {
+		if sub.ParentID == nil || *sub.ParentID != parentTask.ID {
+			t.Errorf("subtask %q: ParentID not set correctly", sub.Text)
+		}
+	}
+}
