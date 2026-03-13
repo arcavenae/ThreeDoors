@@ -103,6 +103,11 @@ This is the complete planning workflow that takes research findings and formaliz
    - Ensure each story has: acceptance criteria, task breakdown, dev notes, dependencies
    - Story files go in `docs/stories/{epic}.{story}.story.md`
 3. Verify all stories reference the sprint change proposal and party mode artifact.
+4. Set the status of each newly created story to `Not Started`.
+
+<critical>
+Planning workers NEVER set story status to `Done` — that is reserved for `/implement-story` workers who have completed all acceptance criteria in code. A story file being *created* is not the same as a story being *implemented*.
+</critical>
 
 ---
 
@@ -121,6 +126,8 @@ This is the complete planning workflow that takes research findings and formaliz
 ## Phase 8: Create Pull Request
 
 **Goal:** Package all planning artifacts into a single PR.
+
+**IMPORTANT:** Do NOT set any story status to `Done`. Stories created by `/plan-work` must have status `Not Started` or `Draft`. Only `/implement-story` sets `Done` after all acceptance criteria are met in code.
 
 1. Stage all changed/created files:
    - Sprint change proposal artifact
