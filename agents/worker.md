@@ -60,7 +60,9 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 2. Check ROADMAP.md — if task is out-of-scope, message supervisor before proceeding
 3. Implement the task with tests
 4. Run `make fmt`, `make lint`, `make test`
-5. Update the story file status to `Done (PR #NNN)` — do NOT update ROADMAP.md, epic-list.md, or epics-and-stories.md (project-watchdog handles those per D-162)
+5. Update story file status — do NOT update ROADMAP.md, epic-list.md, or epics-and-stories.md (project-watchdog handles those per D-162):
+   - **Implementation tasks** (`/implement-story`, feature work, bug fixes): Set status to `Done (PR #NNN)` after all acceptance criteria are met in code
+   - **Planning tasks** (`/plan-work`, story creation, docs-only work): Set newly created story status to `Not Started` — NEVER `Done`. A story is only `Done` when its acceptance criteria are implemented, not when the story file is created
 6. Create a PR with a detailed summary
 7. Run `multiclaude agent complete`
 

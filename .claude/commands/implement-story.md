@@ -26,8 +26,12 @@ This is the complete, end-to-end workflow for implementing a story from preparat
 1. Search for the story file matching the identifier "$ARGUMENTS" in:
    - `{project-root}/_bmad-output/implementation-artifacts/` (primary, pattern: `{epic}-{story}-*.md`)
    - `{project-root}/docs/stories/` (fallback, pattern: `{epic}.{story}.story.md`)
-2. If the story file exists and has status `ready-for-dev` or `in-progress`, note its path and proceed to Phase 2.
-3. If the story file does NOT exist or needs preparation:
+2. If the story file exists and has status `ready-for-dev`, `in-progress`, or `Not Started`, note its path and proceed to Phase 2.
+3. If the story file has status `Done`:
+   - HALT. Check if the Done status is correct by examining the referenced PR.
+   - If the PR is docs-only (story file creation, no implementation code), the Done status is incorrect — a `/plan-work` worker mistakenly set it. Reset the status to `Not Started` and proceed to Phase 2.
+   - If the PR contains implementation code, the story is already implemented — report to the user and stop.
+4. If the story file does NOT exist or needs preparation:
    - Launch `/sm` (Scrum Master agent) to create/prepare the story.
    - Provide the story identifier so SM knows which story to create.
    - Wait for SM to complete story creation.
