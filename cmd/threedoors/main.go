@@ -51,14 +51,15 @@ func main() {
 		return runner, runner.PrintResult, runner.Err
 	}
 
+	// Register built-in adapters with the global registry.
+	// Must happen before CLI routing so CLI commands can resolve providers.
+	registerBuiltinAdapters(core.DefaultRegistry())
+
 	// Route to CLI if the first arg is a known subcommand (except "plan" which uses TUI)
 	isPlanMode := len(os.Args) > 1 && os.Args[1] == "plan"
 	if len(os.Args) > 1 && isSubcommand(os.Args[1]) && !isPlanMode {
 		os.Exit(cli.Execute())
 	}
-
-	// Register built-in adapters with the global registry
-	registerBuiltinAdapters(core.DefaultRegistry())
 
 	configDir, configErr := core.GetConfigDirPath()
 	var cfg *core.ProviderConfig
