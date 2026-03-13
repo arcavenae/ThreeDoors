@@ -5042,7 +5042,7 @@ GitHub Releases API with 24h cache. Channel-aware comparison. Opt-out controls. 
 **Epic Goal:** Add a `:bug` command for frictionless in-app bug reporting with navigation breadcrumb trail, automatic environment context, mandatory preview, and tiered submission methods.
 
 **Prerequisites:** None (standalone feature)
-**Status:** In Progress (2/3 done; 50.1 In Review)
+**Status:** COMPLETE — All 3 stories done (PRs #478, #624, #649)
 **Priority:** P2
 
 ### Overview
@@ -5112,7 +5112,7 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 
 **Prerequisites:** Epic 37 (Persistent BMAD Agents — complete)
 
-**Status:** In Progress (6/11 stories done; 5 In Review)
+**Status:** COMPLETE — All 11 stories done (PRs #460, #461, #462, #463, #464, #465, #505, #506, #507, #509, #608)
 
 **Phasing:**
 - Phase 0 (Bootstrap): Stories 51.1-51.2 — Agent definition rewrites
