@@ -15,18 +15,20 @@ const commandTimeout = 30 * time.Second
 
 // registerTools wires up all MCP tool handlers for the bridge server.
 func (s *BridgeServer) registerTools() map[string]ToolHandler {
-	return map[string]ToolHandler{
+	tools := map[string]ToolHandler{
 		"multiclaude_status":       s.handleStatus,
 		"multiclaude_worker_list":  s.handleWorkerList,
 		"multiclaude_message_list": s.handleMessageList,
 		"multiclaude_message_read": s.handleMessageRead,
 		"multiclaude_repo_history": s.handleRepoHistory,
 	}
+	s.registerWriteTools(tools)
+	return tools
 }
 
 // toolDefinitions returns the MCP tool definitions for tools/list.
 func toolDefinitions() []mcp.ToolItem {
-	return []mcp.ToolItem{
+	defs := []mcp.ToolItem{
 		{
 			Name:        "multiclaude_status",
 			Description: "Returns the current multiclaude system status including agents, their states, and worker count.",
@@ -83,6 +85,7 @@ func toolDefinitions() []mcp.ToolItem {
 			},
 		},
 	}
+	return append(defs, writeToolDefinitions()...)
 }
 
 func (s *BridgeServer) runMulticlaude(args ...string) (string, error) {
