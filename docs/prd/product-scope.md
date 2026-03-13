@@ -156,6 +156,22 @@
 
 ## Phase 4: Task Source Integration & Sync Hardening (Epics 19-21, 25-26, 30, 43-47, 63)
 
+## Phase 4+: CLI/TUI Adapter Wiring Parity
+
+**In Scope:**
+- CLI adapter registry initialization: ensure `registerBuiltinAdapters()` runs before both CLI and TUI code paths
+- ClickUp connect wiring: add ClickUp to CLI `knownProviderSpecs`, `ValidArgs`, and TUI `DefaultProviderSpecs()`
+- Provider spec parity: all 9 registered adapters have complete flag specs in CLI connect command with required flag enforcement
+- Parity test: build-time verification that adapter registry, CLI specs, CLI args, and TUI specs are in sync
+
+**Out of Scope for this Phase:**
+- Auto-generating provider specs from adapter metadata (premature abstraction)
+- Interactive CLI wizard for providers without the TUI connect wizard (covered by Story 45.6)
+
+---
+
+## Phase 5: Future Expansion (12+ months out)
+
 **In Scope:**
 - Jira integration: read-only adapter (JQL search, status mapping, auth config), then bidirectional sync (Epic 19)
 - Apple Reminders integration: JXA-based adapter with full CRUD (Epic 20)

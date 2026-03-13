@@ -2598,4 +2598,67 @@ Follows the standard 4-story integration pattern: 63.1 (REST API v2 client with 
 1. Tests for task, sources, connect, extract, interactive commands
 2. Final coverage ≥70%
 
+## Epic 66: CLI/TUI Adapter Wiring Parity (PROVISIONAL)
+
+**Epic Goal:** Fix three gaps where implemented adapter code is not properly connected to CLI and TUI entry points, ensuring all registered adapters are accessible through both the CLI and TUI connect flows with proper flag validation.
+
+**Scope:** CLI adapter registration ordering bug (critical), ClickUp connect wiring, and provider spec parity across CLI/TUI. All work targets `cmd/threedoors/main.go`, `internal/cli/connect.go`, and `internal/tui/connect_wizard.go`.
+
+**Triggered by:** Unwired features audit (2026-03-13) — see `_bmad-output/planning-artifacts/unwired-features-audit.md`
+
+**FRs covered:** FR152, FR153, FR154, FR155, FR156, NFR24
+
+---
+
+### Story 66.1: CLI Adapter Registration Fix
+
+**As a** user with a non-textfile provider configured,
+**I want** CLI commands to work correctly,
+**so that** I can manage my tasks from the command line regardless of which provider I use.
+
+**Acceptance Criteria:**
+1. `registerBuiltinAdapters(core.DefaultRegistry())` is called before the CLI/TUI routing branch in `main()`
+2. CLI commands (`task list`, `doors`, etc.) work correctly with non-textfile providers
+3. Regression test verifies the adapter registry is populated before CLI command execution
+4. TUI path continues to work correctly
+5. `go test -race ./cmd/threedoors/... ./internal/cli/...` passes
+
+**Estimated Time:** 30 minutes
+
+---
+
+### Story 66.2: ClickUp Connect Wiring
+
+**As a** ClickUp user,
+**I want** to connect my ClickUp workspace via `threedoors connect clickup` or the TUI `:connect` wizard,
+**so that** I can use ThreeDoors with my ClickUp tasks.
+
+**Acceptance Criteria:**
+1. `clickup` added to CLI `knownProviderSpecs` with correct flag spec
+2. `clickup` added to TUI `DefaultProviderSpecs()`
+3. `threedoors connect clickup --label "My ClickUp" --token <token> --list-id <id>` works end-to-end
+4. TUI `:connect` wizard shows ClickUp as selectable
+
+**Estimated Time:** 30 minutes
+
+**Dependencies:** Story 66.1
+
+---
+
+### Story 66.3: Provider Spec Parity & Validation
+
+**As a** user connecting any supported provider via CLI,
+**I want** required flags to be validated,
+**so that** I get clear error messages instead of silently incomplete configurations.
+
+**Acceptance Criteria:**
+1. `knownProviderSpecs` has entries for all 9 registered providers
+2. Required flags enforced per provider
+3. Parity test verifies `registerBuiltinAdapters()`, `knownProviderSpecs`, `ValidArgs`, and `DefaultProviderSpecs()` are in sync
+4. Connect command help text lists all supported providers
+
+**Estimated Time:** 60-90 minutes
+
+**Dependencies:** Story 66.2
+
 ---

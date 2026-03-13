@@ -1136,4 +1136,20 @@ These non-functional requirements establish code quality gates that all contribu
 
 **NFR-TC3:** All subcommands (config, mood, health, stats, plan, version, task, sources, connect, extract) shall have dedicated test coverage
 
+## CLI/TUI Adapter Wiring Parity Requirements
+
+> Requirements for ensuring all registered adapters are accessible through both CLI and TUI entry points.
+
+**FR152:** The adapter registry (`core.DefaultRegistry()`) shall be populated with all built-in adapters before any code path — CLI or TUI — that depends on it. Adapter registration must not be gated behind the TUI-only code path.
+
+**FR153:** Every adapter registered in `registerBuiltinAdapters()` shall have a corresponding entry in the CLI connect command's `knownProviderSpecs` map with correct token key, required flags, and flag-to-settings mapping.
+
+**FR154:** The CLI connect command's `ValidArgs` list shall exactly match the set of provider names in `knownProviderSpecs`. No provider shall be accepted as a valid argument without corresponding flag validation.
+
+**FR155:** The CLI connect command shall enforce required flags per provider — running `threedoors connect <provider> --label <name>` without provider-specific required flags (e.g., `--path` for obsidian, `--repos` for github) shall return a clear validation error listing the missing flags.
+
+**FR156:** Every adapter registered in `registerBuiltinAdapters()` shall be listed in the TUI connect wizard's `DefaultProviderSpecs()` so users can connect to it via the `:connect` command.
+
+**NFR24:** A parity test shall verify at build time that the set of adapter names in `registerBuiltinAdapters()`, CLI `knownProviderSpecs`, CLI `ValidArgs`, and TUI `DefaultProviderSpecs()` are identical. Drift between these lists shall cause test failure.
+
 ---
