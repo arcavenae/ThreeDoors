@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcaven/ThreeDoors/internal/adapters/clickup"
 	"github.com/arcaven/ThreeDoors/internal/adapters/github"
 	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
 	"github.com/arcaven/ThreeDoors/internal/adapters/linear"
@@ -36,6 +38,17 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Println(dist.FormatVersionWithChannel(version, channel))
 		os.Exit(0)
+	}
+
+	// Wire up the connect wizard factory so the CLI can launch the interactive
+	// wizard without importing the tui package directly (avoids import cycle).
+	cli.NewConnectWizardRunner = func(
+		provider string,
+		svc *connection.ConnectionService,
+		manager *connection.ConnectionManager,
+	) (tea.Model, func(io.Writer), func() error) {
+		runner := tui.NewConnectWizardRunner(provider, svc, manager)
+		return runner, runner.PrintResult, runner.Err
 	}
 
 	// Route to CLI if the first arg is a known subcommand (except "plan" which uses TUI)
@@ -326,6 +339,9 @@ func registerBuiltinAdapters(reg *core.Registry) {
 
 	// Linear provider: reads issues from Linear via GraphQL API (read-only).
 	_ = reg.Register("linear", linear.Factory)
+
+	// ClickUp provider: bidirectional sync with ClickUp tasks via REST API.
+	_ = reg.Register("clickup", clickup.Factory)
 }
 
 // isSubcommand checks whether arg is a known CLI subcommand name.

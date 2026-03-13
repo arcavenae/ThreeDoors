@@ -25,6 +25,15 @@ var DefaultStatusMapping = map[string]core.TaskStatus{
 	"done":        core.StatusComplete,
 }
 
+// DefaultReverseStatusMapping maps ThreeDoors statuses back to ClickUp status strings
+// for bidirectional sync write-back operations.
+var DefaultReverseStatusMapping = map[core.TaskStatus]string{
+	core.StatusTodo:       "to do",
+	core.StatusInProgress: "in progress",
+	core.StatusComplete:   "complete",
+	core.StatusBlocked:    "blocked",
+}
+
 // ClickUpConfig holds parsed and validated ClickUp integration settings.
 type ClickUpConfig struct {
 	APIToken      string                     `yaml:"-"`
@@ -34,6 +43,8 @@ type ClickUpConfig struct {
 	Assignee      string                     `yaml:"assignee"`
 	PollInterval  time.Duration              `yaml:"poll_interval"`
 	StatusMapping map[string]core.TaskStatus `yaml:"status_mapping"`
+	DoneStatus    string                     `yaml:"done_status"`    // ClickUp status name for "done" write-back
+	BlockedStatus string                     `yaml:"blocked_status"` // ClickUp status name for "blocked" write-back
 }
 
 // ParseConfig creates a ClickUpConfig from a settings map with environment variable
@@ -76,6 +87,14 @@ func ParseConfig(settings map[string]string) (*ClickUpConfig, error) {
 	// Environment variable takes precedence over config file
 	if v := os.Getenv("CLICKUP_API_TOKEN"); v != "" {
 		cfg.APIToken = v
+	}
+
+	// Parse done/blocked status overrides
+	if v := settings["done_status"]; v != "" {
+		cfg.DoneStatus = v
+	}
+	if v := settings["blocked_status"]; v != "" {
+		cfg.BlockedStatus = v
 	}
 
 	// Validate required fields
