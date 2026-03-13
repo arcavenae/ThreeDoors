@@ -1,0 +1,49 @@
+[
+  {
+    "id": "cu-task-001",
+    "text": "Implement user authentication",
+    "context": "Add OAuth2 flow for user login | backend, security",
+    "status": "in-progress",
+    "effort": "deep-work",
+    "source_provider": "clickup:https://app.clickup.com/t/cu-task-001",
+    "source_refs": [
+      {
+        "provider": "clickup",
+        "native_id": "cu-task-001:list-100"
+      }
+    ],
+    "has_defer_until": true,
+    "defer_until": "2025-01-01T00:00:00Z"
+  },
+  {
+    "id": "cu-task-002",
+    "text": "Write unit tests",
+    "context": "testing",
+    "status": "todo",
+    "effort": "medium",
+    "source_provider": "clickup:https://app.clickup.com/t/cu-task-002",
+    "source_refs": [
+      {
+        "provider": "clickup",
+        "native_id": "cu-task-002:list-100"
+      }
+    ],
+    "has_defer_until": false
+  },
+  {
+    "id": "cu-task-003",
+    "text": "Deploy to staging",
+    "context": "Push latest build to staging environment",
+    "status": "complete",
+    "effort": "quick-win",
+    "source_provider": "clickup:https://app.clickup.com/t/cu-task-003",
+    "source_refs": [
+      {
+        "provider": "clickup",
+        "native_id": "cu-task-003:list-100"
+      }
+    ],
+    "has_defer_until": true,
+    "defer_until": "2025-01-02T00:00:00Z"
+  }
+]
