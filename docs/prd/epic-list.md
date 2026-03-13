@@ -389,7 +389,7 @@
 **Epic 31: Expand/Fork Key Implementations** (P2)
 - **Goal:** Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9
 - **Prerequisites:** None
-- **Status:** In Progress (3/5 done — PRs #698, #701, #708)
+- **Status:** In Progress (4/5 done — PRs #698, #701, #708, #714)
 - **Stories:** 31.1-31.5 (5 stories)
 
 **Epic 32: Undo Task Completion** (P1)
@@ -816,7 +816,7 @@
 **Epic 64: Cross-Computer Sync** (P2)
 - **Goal:** Enable task data synchronization across multiple computers, with research spike to determine architecture
 - **Prerequisites:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
-- **Status:** Not Started
+- **Status:** In Progress (1/6 done — PR #715)
 - **Deliverables:**
   - ADR documenting chosen sync architecture (transport, conflict resolution, identity)
   - Device identity and registration system
@@ -870,7 +870,7 @@
 | Epic 28: Snooze/Defer | 4 | Complete |
 | Epic 29: Task Dependencies | 4 | In Progress (3/4) |
 | Epic 30: Linear Integration | 4 | In Progress (3/4 done) |
-| Epic 31: Expand/Fork Key | 5 | In Progress (3/5 done) |
+| Epic 31: Expand/Fork Key | 5 | In Progress (4/5 done) |
 | Epic 32: Undo Task Completion | 3 | Complete |
 | Epic 33: Seasonal Theme Variants | 4 | Complete |
 | Epic 34: SOUL.md + Custom Dev Skills | 4 | Complete |
@@ -903,6 +903,6 @@
 | Epic 61: GitHub Pages User Guide | 4 | Complete (4/4 done) |
 | Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
 | Epic 63: ClickUp Integration | 4 | In Progress (1/4 done) |
-| Epic 64: Cross-Computer Sync | 6 | Not Started |
+| Epic 64: Cross-Computer Sync | 6 | In Progress (1/6 done) |
 | **Total** | **335** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---

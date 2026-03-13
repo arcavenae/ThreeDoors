@@ -152,7 +152,7 @@ Linear as task source via GraphQL API. Best task model alignment of all evaluate
 | 30.3 | Bidirectional Sync & WAL Integration | Not Started | P2 | 30.2 |
 | 30.4 | Contract Tests & Integration Testing | Done (PR #705) | P2 | 30.2 |
 
-### Epic 31: Expand/Fork Key Implementations (P2) — 3/5 stories done
+### Epic 31: Expand/Fork Key Implementations (P2) — 4/5 stories done
 
 Complete Expand (manual sub-task creation) and Fork (variant creation) TUI features per Design Decision H9.
 
@@ -160,7 +160,7 @@ Complete Expand (manual sub-task creation) and Fork (variant creation) TUI featu
 |-------|-------|--------|----------|------------|
 | 31.1 | Task Model ParentID Extension | Done (PR #698) | P2 | None |
 | 31.2 | Enhanced Expand — Sequential Subtask Creation | Done (PR #708) | P2 | 31.1 |
-| 31.3 | Subtask List Rendering in Detail View | Not Started | P2 | 31.1, 31.2 |
+| 31.3 | Subtask List Rendering in Detail View | Done (PR #714) | P2 | 31.1, 31.2 |
 | 31.4 | Enhanced Fork — Variant Creation with ForkTask Factory | Done (PR #701) | P2 | None |
 | 31.5 | Design Decision H9 Status Update | Not Started | P2 | 31.1-31.4 |
 
@@ -261,7 +261,7 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 3 | Enhanced Interaction | 7/7 |
 | 3.5 | Platform Readiness & Tech Debt | 8/8 |
 | 4 | Learning & Intelligent Door Selection | 6/6 |
-| 5 | macOS Distribution & Packaging | 1/2 (Story 5.3 added) |
+| 5 | macOS Distribution & Packaging | 2/2 (COMPLETE) |
 | 6 | Data Layer & Enrichment | 2/2 |
 | 7 | Plugin/Adapter SDK & Registry | 3/3 |
 | 8 | Obsidian Integration | 4/4 |
@@ -490,13 +490,13 @@ ClickUp as task source via REST API v2. Follows the established 4-story integrat
 
 **Dependency graph:** Stories 63.3 & 63.4 can parallelize after 63.2 completes.
 
-### Epic 64: Cross-Computer Sync (P2) — 0/6 stories done
+### Epic 64: Cross-Computer Sync (P2) — 1/6 stories done
 
 Task data synchronization across multiple computers. Architecturally distinct from provider sync. Requires research spike before implementation.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 64.1 | Architecture Research Spike | Not Started | P2 | None |
+| 64.1 | Architecture Research Spike | Done (PR #715) | P2 | None |
 | 64.2 | Device Identity & Registration | Not Started | P2 | 64.1 |
 | 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
 | 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
@@ -507,7 +507,7 @@ Task data synchronization across multiple computers. Architecturally distinct fr
 
 ### Story 5.3: DMG/pkg Installer for macOS (P2)
 
-**Status:** Not Started.
+**Status:** Done (PR #707).
 
 Single story under Epic 5 (macOS Distribution). CI generates signed, notarized .pkg installer uploaded to GitHub Releases alongside binaries. Reopens Epic 5 from COMPLETE to 1/2.
 
