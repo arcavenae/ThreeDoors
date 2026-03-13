@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "mal-001",
+      "name": "",
+      "status": {
+        "status": "to do"
+      }
+    },
+    {
+      "id": "mal-002",
+      "name": "Valid task among malformed",
+      "status": {
+        "status": "open"
+      },
+      "list": {
+        "id": "list-300"
+      }
+    },
+    {
+      "id": "",
+      "name": "Task with empty ID",
+      "status": {
+        "status": "to do"
+      }
+    }
+  ]
+}
