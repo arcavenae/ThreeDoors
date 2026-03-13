@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-11
+> Last updated: 2026-03-13
 
 ## Priority Legend
 
@@ -203,7 +203,7 @@ Non-interactive CLI commands for data source management: `threedoors connect`, `
 | 45.4 | `threedoors sources log` Command | Done (PR #565) | P1 | 43.5 |
 | 45.5 | JSON Output Support for All Sources Commands | Done (PR #589) | P1 | 45.1-45.4 |
 
-### Epic 46: OAuth Device Code Flow (P2) — 1/4 stories done
+### Epic 46: OAuth Device Code Flow (P2) — 2/4 stories done
 
 Generic OAuth device code flow client for browser-based authentication. Provider-specific integrations for GitHub and Linear. Silent token refresh with explicit re-auth on expiry.
 
@@ -211,7 +211,7 @@ Generic OAuth device code flow client for browser-based authentication. Provider
 |-------|-------|--------|----------|------------|
 | 46.1 | Generic Device Code Flow Client | Done (PR #443) | P2 | None |
 | 46.2 | GitHub OAuth Integration | Not Started | P2 | 46.1 |
-| 46.3 | Linear OAuth Integration | Not Started | P2 | 46.1 |
+| 46.3 | Linear OAuth Integration | Done (PR #671) | P2 | 46.1 |
 | 46.4 | Token Refresh Lifecycle | Not Started | P2 | 46.1 |
 
 ### Epic 47: Sync Lifecycle & Advanced Features (P2) — 0/4 stories done
@@ -298,6 +298,9 @@ In-app `:bug` command for frictionless bug reporting without leaving the TUI. Br
 | 43 | Connection Manager Infrastructure | 6/6 |
 | 49 | ThreeDoors Doctor | 10/10 |
 | 52 | Envoy Three-Layer Firewall | 4/4 |
+| 55 | CI Optimization Phase 1 | 3/3 |
+| 56 | Door Visual Redesign — Three-Layer Depth System | 5/5 |
+| 62 | Retrospector Agent Reliability | 3/3 |
 
 ### Epic 53: Remote Collaboration — multiclaude Cross-Machine Access (P2) — 0/5 stories done
 
@@ -419,17 +422,31 @@ Polish the README with centered badge clusters, table of contents, foldable refe
 
 **Dependency graph:** Stories 60.1-60.4 can parallelize. Story 60.5 depends on 60.4.
 
-### Epic 62: Retrospector Agent Reliability — Messaging, BOARD.md Access, and Context Resilience (P1) — 0/3 stories done
+### Epic 62: Retrospector Agent Reliability — Messaging, BOARD.md Access, and Context Resilience (P1) — 3/3 stories done — COMPLETE
 
 Fix three infrastructure reliability issues preventing the retrospector agent (SLAES) from operating as designed: broken messaging identity registration, inability to persist BOARD.md recommendations, and context exhaustion with state loss. All changes are to agent definitions and operational files — no application code.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 62.1 | Messaging Identity Verification + File-Based Fallback | Not Started | P1 | None |
-| 62.2 | Recommendation Queue File + BOARD.md Batch Pipeline | Not Started | P1 | None |
-| 62.3 | Structured Checkpointing + Context Budget Optimization | Not Started | P1 | None |
+| 62.1 | Messaging Identity Verification + File-Based Fallback | Done (PR #675) | P1 | None |
+| 62.2 | Recommendation Queue File + BOARD.md Batch Pipeline | Done (PR #676) | P1 | None |
+| 62.3 | Structured Checkpointing + Context Budget Optimization | Done (PR #677) | P1 | None |
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
+
+### Epic 56: Door Visual Redesign — Three-Layer Depth System (P1) — 5/5 stories done — COMPLETE
+
+Transform door rendering from imperceptible wireframe shadows into solid, 3D-feeling surfaces using a three-layer approach: background fill for visual mass, bevel lighting for raised-surface perception, and gradient shadow for spatial depth.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 56.1 | ThemeColors Extension + Background Fill | Done (PR #653) | P1 | None |
+| 56.2 | Bevel Lighting (3D Raised-Surface Borders) | Done (PR #678) | P1 | None |
+| 56.3 | Shadow Overhaul (Gradient Multi-Column) | Done (PR #668) | P1 | 56.1 |
+| 56.4 | Panel Zone Shading | Done (PR #666) | P1 | 56.1 |
+| 56.5 | Width-Adaptive Shadow Tuning | Done (PR #673) | P1 | 56.3 |
+
+**Dependency graph:** 56.1 & 56.2 can parallelize. 56.3 & 56.4 depend on 56.1. 56.5 depends on 56.3.
 
 ## Icebox (Deferred Indefinitely)
 

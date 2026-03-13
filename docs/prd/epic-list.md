@@ -857,7 +857,7 @@
 | Epic 43: Connection Manager Infrastructure | 6 | Complete (6/6 done) |
 | Epic 44: Sources TUI | 7 | In Progress (6/7 done) |
 | Epic 45: Sources CLI | 5 | Complete (5/5 done) |
-| Epic 46: OAuth Device Code Flow | 4 | In Progress (1/4 done) |
+| Epic 46: OAuth Device Code Flow | 4 | In Progress (2/4 done) |
 | Epic 47: Sync Lifecycle & Advanced Features | 4 | Not Started |
 | Epic 48: Door-Like Doors | 4 | Complete (4/4 done) |
 | Epic 49: ThreeDoors Doctor | 10 | Complete (10/10 done) |
@@ -867,12 +867,12 @@
 | Epic 53: Remote Collaboration | 5 | Not Started |
 | Epic 54: Gemini Research Supervisor | 5 | In Progress (2/5 done) |
 | Epic 55: CI Optimization Phase 1 | 3 | Complete (3/3 done) |
-| Epic 56: Door Visual Redesign | 5 | Not Started |
+| Epic 56: Door Visual Redesign | 5 | Complete (5/5 done) |
 | Epic 57: LLM CLI Services | 8 | Not Started |
 | Epic 58: Supervisor Shift Handover | 7 | Not Started |
 | Epic 59: Full-Terminal Vertical Layout | 2 | Not Started |
 | Epic 60: README Overhaul | 5 | In Progress (1/5 done) |
 | Epic 61: GitHub Pages User Guide | 4 | Not Started |
-| Epic 62: Retrospector Agent Reliability | 3 | Not Started |
+| Epic 62: Retrospector Agent Reliability | 3 | Complete (3/3 done) |
 | **Total** | **324** | **152 complete, 9 epics in progress, 164 not started** |
 ---
