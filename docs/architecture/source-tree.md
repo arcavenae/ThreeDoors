@@ -254,6 +254,8 @@ ThreeDoors/
 │   │       ├── form_spec.go         # FormSpec/FormField — provider config form definitions
 │   │       ├── sync_event.go        # SyncEventLog — per-connection JSONL audit log
 │   │       ├── health_warnings.go   # Proactive health notifications (Epic 47)
+│   │       ├── token_refresh.go    # OAuth token refresh logic
+│   │       ├── detect.go           # Provider detection utilities
 │   │       └── oauth/               # OAuth device code flow
 │   │           ├── devicecode.go    # Device code grant implementation
 │   │           └── browser.go       # Cross-platform browser launcher
@@ -287,6 +289,9 @@ ThreeDoors/
 │   │   │   ├── github_provider.go  # GitHub TaskProvider implementation
 │   │   │   └── oauth.go            # GitHub OAuth device code flow integration
 │   │   ├── linear/                  # Linear adapter (Epic 46)
+│   │   │   ├── client.go           # Linear GraphQL API client
+│   │   │   ├── config.go           # Linear adapter configuration
+│   │   │   ├── types.go            # GraphQL query/response types
 │   │   │   └── oauth.go            # Linear OAuth integration
 │   │   └── obsidian/                # Obsidian vault adapter (Epic 8)
 │   │       ├── adapter.go          # ObsidianAdapter
