@@ -942,14 +942,13 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case ExpandTaskMsg:
 		newTask := core.NewTask(msg.NewTaskText)
+		parentID := msg.ParentTask.ID
+		newTask.ParentID = &parentID
 		m.pool.AddTask(newTask)
 		if err := m.saveTasks(); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
 		}
 		m.flash = "Subtask added"
-		m.detailView = nil
-		m.doorsView.RefreshDoors()
-		m.setViewMode(ViewDoors)
 		return m, ClearFlashCmd()
 
 	case TaskForkedMsg:
