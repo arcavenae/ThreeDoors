@@ -11,6 +11,7 @@ import (
 
 	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
 	"github.com/arcaven/ThreeDoors/internal/adapters/jira"
+	"github.com/arcaven/ThreeDoors/internal/adapters/linear"
 	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
 	"github.com/arcaven/ThreeDoors/internal/adapters/reminders"
 	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
@@ -134,4 +135,6 @@ func registerBuiltinAdapters(reg *core.Registry) {
 	_ = reg.Register("reminders", reminders.NewFactory())
 
 	_ = reg.Register("todoist", todoist.Factory)
+
+	_ = reg.Register("linear", linear.Factory)
 }
