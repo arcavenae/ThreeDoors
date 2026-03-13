@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-63 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 64 (2/6) IN PROGRESS. Epic 65 (0/3) NOT STARTED. 730+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53, 55-63 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 54 (3/5) IN PROGRESS. Epic 64 (3/6) IN PROGRESS. Epic 65 (1/3) IN PROGRESS. 738+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -6241,7 +6241,7 @@ Stories 63.3 and 63.4 can parallelize after 63.2 completes.
 ## Epic 64: Cross-Computer Sync
 
 **Priority:** P2
-**Status:** In Progress (2/6 stories done — PRs #715, #721)
+**Status:** In Progress (3/6 stories done — PRs #715, #721, #731)
 **Dependencies:** Epic 21 (Sync Hardening — complete), Epic 43 (Connection Manager — complete), Epic 47 (Sync Lifecycle — complete)
 
 ### Epic Goal
@@ -6260,7 +6260,7 @@ technical-assumptions.md: "Cross-computer sync is deferred post-MVP; single-comp
 | 64.1 | Architecture Research Spike | Done (PR #715) | P2 | None |
 | 64.2 | Device Identity & Registration | Done (PR #721) | P2 | 64.1 |
 | 64.3 | Sync Transport Layer | Not Started | P2 | 64.1, 64.2 |
-| 64.4 | Cross-Machine Conflict Resolution | Not Started | P2 | 64.1, 64.2 |
+| 64.4 | Cross-Machine Conflict Resolution | Done (PR #731) | P2 | 64.1, 64.2 |
 | 64.5 | Offline Queue & Reconciliation | Not Started | P2 | 64.3, 64.4 |
 | 64.6 | Cross-Computer Sync E2E Tests | Not Started | P2 | 64.3, 64.4, 64.5 |
 
@@ -6305,7 +6305,7 @@ Increase `internal/cli` package test coverage from 34.8% to ≥70%, addressing t
 |-------|-------|--------|----------|------------|
 | 65.1 | Core CLI Path Tests — Bootstrap, Root, Doors, TaskPool Loading | Not Started | P0 | None |
 | 65.2 | Subcommand Test Coverage — Config, Mood, Health, Stats, Plan | Not Started | P0 | None |
-| 65.3 | Remaining Command Coverage — Task, Sources, Connect, Extract | Not Started | P1 | None |
+| 65.3 | Remaining Command Coverage — Task, Sources, Connect, Extract | Done (PR #736) | P1 | None |
 
 ### Dependency Graph
 
