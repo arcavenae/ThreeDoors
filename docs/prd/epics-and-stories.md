@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-66 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 67 (0/1) NOT STARTED. 753+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-67 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. 757+ merged PRs total. Last audit: 2026-03-13.
 
 ## Requirements Inventory
 
@@ -6422,12 +6422,13 @@ So that I get clear error messages instead of silently incomplete configurations
 - **AC4:** Connect command help text lists all supported providers
 - **AC5:** `ValidArgs` matches `knownProviderSpecs` keys exactly
 
-## Epic 67: Retrospector Operational Data Pipeline (P1)
+## Epic 67: Retrospector Operational Data Pipeline (P1) — COMPLETE
 
 **Goal:** Automate periodic sync of retrospector operational data (`docs/operations/`) to git via cron-triggered project-watchdog pipeline, so worker agents in isolated worktrees have access to current operational data.
 
 **Priority:** P1
 **Prerequisites:** Epic 62 (Retrospector Agent Reliability) — COMPLETE
+**Status:** COMPLETE (1/1 stories done — PR #757)
 **NFRs:** NFR-ODP1 through NFR-ODP5
 **Triggered by:** Party mode research: `_bmad-output/planning-artifacts/retrospector-data-pipeline-party-mode.md`
 
@@ -6437,7 +6438,7 @@ As a multiclaude operator,
 I want retrospector operational data to be automatically committed to git every 3 hours,
 So that worker agents in isolated worktrees can access current operational data and the data is durable in version control.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #757) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** Supervisor startup checklist includes `CronCreate("0 */3 * * *", "multiclaude message send project-watchdog SYNC_OPERATIONAL_DATA")` entry

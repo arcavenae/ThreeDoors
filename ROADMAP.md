@@ -475,13 +475,13 @@ Fix three infrastructure reliability issues preventing the retrospector agent (S
 
 **Dependency graph:** All three stories are fully independent and can be implemented in parallel.
 
-### Epic 67: Retrospector Operational Data Pipeline (P1) — 0/1 stories — NOT STARTED
+### Epic 67: Retrospector Operational Data Pipeline (P1) — 1/1 stories done — COMPLETE
 
 Automate periodic sync of retrospector operational data (`docs/operations/`) to git via cron-triggered project-watchdog pipeline. Workers in isolated worktrees currently cannot see retrospector data. The project-watchdog handler already exists (Epic 62); this epic adds the cron trigger and supervisor verification.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 67.1 | Cron-Triggered Operational Data Sync Pipeline | Not Started | P1 | Epic 62 (done) |
+| 67.1 | Cron-Triggered Operational Data Sync Pipeline | Done (PR #757) | P1 | Epic 62 (done) |
 
 ### Epic 61: GitHub Pages User Guide (P2) — 4/4 stories done — COMPLETE
 

@@ -842,7 +842,7 @@
 **Epic 67: Retrospector Operational Data Pipeline** (P1)
 - **Goal:** Automate periodic sync of retrospector operational data (`docs/operations/`) to git via cron-triggered project-watchdog pipeline, so worker agents in isolated worktrees have access to current operational data
 - **Prerequisites:** Epic 62 (Retrospector Agent Reliability) — COMPLETE
-- **Status:** Not Started (0/1 done)
+- **Status:** COMPLETE (1/1 done — PR #757)
 - **Deliverables:**
   - CronCreate entry for `SYNC_OPERATIONAL_DATA` in supervisor startup checklist
   - Supervisor standing order for staleness verification
@@ -928,6 +928,6 @@
 | Epic 64: Cross-Computer Sync | 6 | Complete (6/6 done) |
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
 | Epic 66: CLI/TUI Adapter Wiring Parity | 3 | Complete (3/3 done) |
-| Epic 67: Retrospector Operational Data Pipeline | 1 | Not Started (0/1 done) |
+| Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
 | **Total** | **343** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
 ---
