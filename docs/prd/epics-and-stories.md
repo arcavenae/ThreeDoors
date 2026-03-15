@@ -6518,7 +6518,7 @@ So that worker agents in isolated worktrees can access current operational data 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 2/4 stories done
+**Status:** 3/4 stories done
 
 ### Story 69.1: Extract View Transition & Navigation Logic
 
@@ -6534,7 +6534,7 @@ As a developer,
 I want source and sync view controller logic extracted from main_model.go,
 So that provider connection and sync flows are maintainable independently.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #786) | **Priority:** P1
 **Depends On:** 69.1
 
 ### Story 69.3: Extract Planning & Task Management View Controllers
