@@ -18,12 +18,14 @@
 | ID | Topic | Date | Owner | Link |
 |----|-------|------|-------|------|
 | R-001 | State of Testing Audit — comprehensive test health assessment with gap analysis and prioritized recommendations | 2026-03-09 | TEA Agent | [Report](../../_bmad-output/planning-artifacts/state-of-testing-report.md) — **Resolved:** Validation (2026-03-11) found P0/P1 items already addressed (CLI 69.8%, all contract tests exist, t.Helper() at 70 files). Three P2 stories created (0.51-0.53) for remaining gaps. |
+| R-002 | PRD Post-Reconstruction Quality Audit — 3 HIGH issues, 4 MEDIUM issues identified in formal BMAD validation | 2026-03-15 | PM Validation | [Report](../../_bmad-output/planning-artifacts/prd-validation-report-2026-03-15.md) — **Open.** HIGH: stale next-steps.md, chaotic phase numbering in product-scope.md, missing v2.0 change log entry. MEDIUM: stale BOARD.md epic registry, incomplete user journeys, no YAML frontmatter, stale checklist-results-report.md. |
 
 ## Pending Recommendations
 
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|
 | P-006 | In-app bug reporting via `:bug` command — browser URL primary, PAT upgrade, file fallback | 2026-03-09 | Party mode (4 rounds: PM, Architect, UX, Dev) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md), [Research](../../_bmad-output/planning-artifacts/in-app-bug-reporting-research.md) | **Done** — Epic 50 created (3 stories) |
+| P-007 | PRD post-reconstruction cleanup: update next-steps.md, consolidate phase numbering, add v2.0 change log, sync BOARD.md epic registry, add user journeys | 2026-03-15 | PRD Validation (R-002) | [Validation Report](../../_bmad-output/planning-artifacts/prd-validation-report-2026-03-15.md) | Story creation — 3 HIGH + 4 MEDIUM findings. Recommend single cleanup story covering items 1-4 (next-steps, phases, changelog, registry); separate story for user journey expansion. |
 | P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off |
 | P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Plan](../../_bmad-output/planning-artifacts/envoy-three-layer-firewall-plan.md), [Party Mode](../../_bmad-output/planning-artifacts/envoy-rules-of-behavior-party-mode.md) | **Done** — Epic 52 created (4 stories). Original artifact missing; plan reconstructed from available sources. Epic number provisional. |
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | **Done** — Story 0.46 (triage flow docs) |
