@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (36/37 complete) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (38/38 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements and test coverage hardening from TEA audit (R-001).
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 36 of 37 stories complete.
+**Status:** 38 of 38 stories complete.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements and test coverage hardening from the TEA audit (R-001).
 
-**Status:** 36 of 37 stories complete.
+**Status:** 38 of 38 stories complete.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -958,9 +958,7 @@ As a ThreeDoors developer,
 I want to use Justfile instead of Makefile for project commands,
 So that I get better error messages, simpler syntax, and cross-platform support.
 
-**Status:** Not Started | **Priority:** P2
-
-**Blocked on:** P-001 owner sign-off in BOARD.md.
+**Status:** Done (PR #768) | **Priority:** P2
 
 **Acceptance Criteria:**
 - **AC1:** A `justfile` exists with equivalent recipes for all Makefile targets
@@ -970,6 +968,14 @@ So that I get better error messages, simpler syntax, and cross-platform support.
 - **AC5:** Old Makefile removed
 - **AC6:** Agent definition files updated
 - **AC7:** README.md build instructions updated
+
+### Story 0.60: PRD Forensic Reconstruction — Complete Coverage
+
+As a project maintainer,
+I want the PRD planning docs to have complete coverage of all epics and stories,
+So that the source-of-truth chain is accurate and reliable.
+
+**Status:** Done (PR #771) | **Priority:** P1
 
 ---
 
