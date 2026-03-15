@@ -12,7 +12,7 @@
 
 **Build Process:**
 ```bash
-make build    # Compiles to bin/threedoors
+just build    # Compiles to bin/threedoors
 ```
 
 **Installation:**
@@ -21,7 +21,7 @@ make build    # Compiles to bin/threedoors
 cp bin/threedoors /usr/local/bin/
 
 # Option 2: Run from project directory
-make run
+just run
 
 # Option 3 (Future): Homebrew tap
 brew install arcaven/tap/threedoors
