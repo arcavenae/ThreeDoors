@@ -348,6 +348,12 @@ func (m *MainModel) Init() tea.Cmd {
 
 // Update implements tea.Model.
 func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Handle task management view messages (Planning, AddTask, Breakdown,
+	// Extract, Import, Snooze, Deferred).
+	if model, cmd, handled := m.handleTaskViewMessage(msg); handled {
+		return model, cmd
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.breadcrumbs.Record(m.viewMode.String(), fmt.Sprintf("resize:%dx%d", msg.Width, msg.Height))
@@ -376,10 +382,7 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.insightsView.SetWidth(msg.Width)
 			m.insightsView.SetHeight(contentH)
 		}
-		if m.addTaskView != nil {
-			m.addTaskView.SetWidth(msg.Width)
-			m.addTaskView.SetHeight(contentH)
-		}
+		m.resizeTaskViews(msg.Width, msg.Height, contentH)
 		if m.valuesView != nil {
 			m.valuesView.SetWidth(msg.Width)
 			m.valuesView.SetHeight(contentH)
@@ -424,18 +427,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.helpView.SetWidth(msg.Width)
 			m.helpView.SetHeight(msg.Height)
 		}
-		if m.deferredListView != nil {
-			m.deferredListView.SetWidth(msg.Width)
-			m.deferredListView.SetHeight(contentH)
-		}
-		if m.snoozeView != nil {
-			m.snoozeView.SetWidth(msg.Width)
-			m.snoozeView.SetHeight(contentH)
-		}
-		if m.planningView != nil {
-			m.planningView.SetWidth(msg.Width)
-			m.planningView.SetHeight(msg.Height)
-		}
 		if m.sourceDetailView != nil {
 			m.sourceDetailView.SetWidth(msg.Width)
 			m.sourceDetailView.SetHeight(msg.Height)
@@ -455,17 +446,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.syncLogDetailView != nil {
 			m.syncLogDetailView.SetWidth(msg.Width)
 			m.syncLogDetailView.SetHeight(msg.Height)
-		}
-		if m.extractView != nil {
-			m.extractView.SetWidth(msg.Width)
-		}
-		if m.breakdownView != nil {
-			m.breakdownView.SetWidth(msg.Width)
-			m.breakdownView.SetHeight(contentH)
-		}
-		if m.importView != nil {
-			m.importView.SetWidth(msg.Width)
-			m.importView.SetHeight(contentH)
 		}
 		return m, nil
 
@@ -829,27 +809,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setViewMode(ViewDetail)
 		return m, nil
 
-	case AddTaskPromptMsg:
-		m.addTaskView = NewAddTaskView()
-		m.addTaskView.SetWidth(m.width)
-		m.addTaskView.SetInlineHints(m.resolveHints())
-		m.previousView = m.viewMode
-		m.setViewMode(ViewAddTask)
-		return m, nil
-
-	case AddTaskWithContextPromptMsg:
-		m.addTaskView = NewAddTaskWithContextView()
-		m.addTaskView.SetWidth(m.width)
-		m.addTaskView.SetInlineHints(m.resolveHints())
-		if msg.PrefilledText != "" {
-			m.addTaskView.capturedText = msg.PrefilledText
-			m.addTaskView.step = stepContext
-			m.addTaskView.textInput.Placeholder = "Why does this matter? (Enter to skip)"
-		}
-		m.previousView = m.viewMode
-		m.setViewMode(ViewAddTask)
-		return m, nil
-
 	case ExpandTaskMsg:
 		newTask := core.NewTask(msg.NewTaskText)
 		parentID := msg.ParentTask.ID
@@ -881,27 +840,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.detailView = nil
 		m.doorsView.RefreshDoors()
 		m.setViewMode(ViewDoors)
-		return m, ClearFlashCmd()
-
-	case TaskAddedMsg:
-		m.pool.AddTask(msg.Task)
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
-		}
-		m.flash = taskAddedMessages[rand.IntN(len(taskAddedMessages))]
-		m.addTaskView = nil
-		// Return to previous view if it was search, otherwise show next steps
-		if m.previousView == ViewSearch {
-			m.searchView = m.newSearchView()
-			m.searchView.SetWidth(m.width)
-			m.setViewMode(ViewSearch)
-			m.previousView = ViewDoors
-		} else {
-			m.doorsView.RefreshDoors()
-			m.nextStepsView = NewNextStepsView("added", m.pool, m.completionCounter)
-			m.nextStepsView.SetWidth(m.width)
-			m.setViewMode(ViewNextSteps)
-		}
 		return m, ClearFlashCmd()
 
 	case TaskCompletedMsg:
@@ -1123,42 +1061,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case ShowSnoozeMsg:
-		m.snoozeView = NewSnoozeView(msg.Task)
-		m.snoozeView.SetWidth(m.width)
-		m.previousView = m.viewMode
-		m.setViewMode(ViewSnooze)
-		return m, nil
-
-	case TaskSnoozedMsg:
-		m.snoozeView = nil
-		msg.Task.DeferUntil = msg.DeferDate
-		if err := msg.Task.UpdateStatus(core.StatusDeferred); err != nil {
-			m.goBack()
-			m.flash = "Cannot snooze: " + err.Error()
-			return m, ClearFlashCmd()
-		}
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after snooze: %v\n", err)
-		}
-		if m.previousView == ViewDeferred {
-			if m.deferredListView != nil {
-				m.deferredListView.Refresh()
-			}
-			m.setViewMode(ViewDeferred)
-			m.flash = "Snooze date updated"
-		} else {
-			m.setViewMode(ViewDoors)
-			m.doorsView.RefreshDoors()
-			m.flash = "Task snoozed"
-		}
-		return m, ClearFlashCmd()
-
-	case SnoozeCancelledMsg:
-		m.snoozeView = nil
-		m.goBack()
-		return m, nil
-
 	case OnboardingCompletedMsg:
 		m.onboardingView = nil
 		m.setViewMode(ViewDoors)
@@ -1243,103 +1145,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.flash = fmt.Sprintf("Decomposed into %d stories", len(msg.Result.Stories))
 		return m, ClearFlashCmd()
-
-	case BreakdownStartMsg:
-		if m.breakdownService == nil {
-			m.flash = "LLM not configured for breakdown"
-			return m, ClearFlashCmd()
-		}
-		bv := NewBreakdownViewLoading(msg.Task)
-		bv.SetWidth(m.width)
-		m.breakdownView = bv
-		m.previousView = m.viewMode
-		m.setViewMode(ViewBreakdown)
-		return m, m.runBreakdown(msg.Task)
-
-	case BreakdownResultMsg:
-		if m.breakdownView == nil {
-			return m, nil
-		}
-		if msg.Err != nil {
-			m.breakdownView.SetError(msg.Err.Error())
-			return m, nil
-		}
-		m.breakdownView.SetResult(msg.Result)
-		return m, nil
-
-	case BreakdownImportMsg:
-		var tasks []*core.Task
-		for _, st := range msg.Subtasks {
-			t := core.NewTask(st.Text)
-			tasks = append(tasks, t)
-		}
-		for _, t := range tasks {
-			m.pool.AddTask(t)
-		}
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
-		}
-		m.breakdownView = nil
-		m.setViewMode(ViewDoors)
-		m.doorsView.RefreshDoors()
-		m.flash = fmt.Sprintf("Imported %d subtasks", len(tasks))
-		return m, ClearFlashCmd()
-
-	case BreakdownCancelMsg:
-		m.breakdownView = nil
-		m.goBack()
-		return m, nil
-
-	case ShowExtractMsg:
-		ev := NewExtractView()
-		ev.SetWidth(m.width)
-		m.extractView = ev
-		m.previousView = m.viewMode
-		m.setViewMode(ViewExtract)
-		return m, nil
-
-	case ExtractStartMsg:
-		if m.extractor == nil {
-			if m.extractView != nil {
-				m.extractView.SetError("LLM service unavailable — configure an LLM backend to use :extract")
-			}
-			return m, nil
-		}
-		return m, m.runExtraction(msg.Source, msg.Input)
-
-	case ExtractResultMsg:
-		if m.extractView == nil {
-			return m, nil
-		}
-		if msg.Err != nil {
-			m.extractView.SetError(msg.Err.Error())
-			return m, nil
-		}
-		if len(msg.Tasks) == 0 {
-			m.extractView.SetResult(nil, msg.BackendName)
-			return m, nil
-		}
-		m.extractView.SetResult(msg.Tasks, msg.BackendName)
-		return m, nil
-
-	case ExtractImportMsg:
-		for _, et := range msg.Tasks {
-			t := core.NewTask(et.Text)
-			m.pool.AddTask(t)
-		}
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after extract import: %v\n", err)
-		}
-		m.extractView = nil
-		m.flash = fmt.Sprintf("Imported %d tasks from %s", len(msg.Tasks), msg.Source)
-		m.doorsView.RefreshDoors()
-		m.setViewMode(ViewDoors)
-		return m, ClearFlashCmd()
-
-	case ExtractCancelMsg:
-		m.extractView = nil
-		m.goBack()
-		return m, nil
 
 	case EnrichStartMsg:
 		if m.enriching {
@@ -1583,45 +1388,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.doorsView.SetPendingProposals(PendingProposalCount(m.proposalStore))
 		return m, ClearFlashCmd()
 
-	case ShowPlanningMsg:
-		pv := NewPlanningView(m.pool, m.provider)
-		pv.SetWidth(m.width)
-		pv.SetHeight(m.height)
-		m.planningView = pv
-		m.previousView = m.viewMode
-		m.setViewMode(ViewPlanning)
-		return m, pv.Init()
-
-	case PlanningCompleteMsg:
-		m.planningTimestamp = &msg.Timestamp
-		m.doorsView.SetPlanningTimestamp(&msg.Timestamp)
-		// Re-check seasonal theme on planning session start (handles overnight
-		// sessions crossing season boundaries — AC7 of Story 33.3).
-		m.doorsView.ResolveSeasonalTheme(time.Now().UTC())
-		m.doorsView.RefreshDoors()
-		m.doorsView.RotateFooterMessage()
-		if m.planningMode {
-			// CLI plan mode: exit after planning
-			return m, tea.Quit
-		}
-		m.setViewMode(ViewDoors)
-		m.planningView = nil
-		focusCount := len(msg.FocusTasks)
-		if focusCount > 0 {
-			m.flash = fmt.Sprintf("Planning complete! %d focus task(s) set.", focusCount)
-		} else {
-			m.flash = "Planning complete!"
-		}
-		return m, ClearFlashCmd()
-
-	case PlanningCancelledMsg:
-		if m.planningMode {
-			return m, tea.Quit
-		}
-		m.setViewMode(ViewDoors)
-		m.planningView = nil
-		return m, nil
-
 	case ShowHelpMsg:
 		hv := NewHelpView()
 		hv.SetWidth(m.width)
@@ -1630,27 +1396,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.previousView = m.viewMode
 		m.setViewMode(ViewHelp)
 		return m, nil
-
-	case ShowImportMsg:
-		iv := NewImportView(msg.PrefilledPath)
-		iv.SetWidth(m.width)
-		m.importView = iv
-		m.previousView = m.viewMode
-		m.setViewMode(ViewImport)
-		return m, nil
-
-	case ImportConfirmedMsg:
-		for _, t := range msg.Tasks {
-			m.pool.AddTask(t)
-		}
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks after import: %v\n", err)
-		}
-		m.importView = nil
-		m.flash = fmt.Sprintf("Imported %d tasks from %s", len(msg.Tasks), msg.Source)
-		m.doorsView.RefreshDoors()
-		m.setViewMode(ViewDoors)
-		return m, ClearFlashCmd()
 
 	case ShowBugReportMsg:
 		themeName := ""
@@ -1671,35 +1416,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.bugReportView = bv
 		m.previousView = m.viewMode
 		m.setViewMode(ViewBugReport)
-		return m, nil
-
-	case ShowDeferredListMsg:
-		m.deferredListView = NewDeferredListView(m.pool)
-		m.deferredListView.SetWidth(m.width)
-		m.previousView = m.viewMode
-		m.setViewMode(ViewDeferred)
-		return m, nil
-
-	case UnsnoozeTaskMsg:
-		if err := msg.Task.UpdateStatus(core.StatusTodo); err != nil {
-			m.flash = fmt.Sprintf("Cannot un-snooze: %v", err)
-			return m, ClearFlashCmd()
-		}
-		msg.Task.DeferUntil = nil
-		if err := m.saveTasks(); err != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to save tasks: %v\n", err)
-		}
-		m.flash = "Task un-snoozed — returned to todo"
-		if m.deferredListView != nil {
-			m.deferredListView.Refresh()
-		}
-		return m, ClearFlashCmd()
-
-	case EditDeferDateMsg:
-		m.snoozeView = NewSnoozeView(msg.Task)
-		m.snoozeView.SetWidth(m.width)
-		m.previousView = m.viewMode
-		m.setViewMode(ViewSnooze)
 		return m, nil
 
 	case ShowDevQueueMsg:
@@ -1899,30 +1615,6 @@ func (m *MainModel) saveKeyHintsCmd(show bool) tea.Cmd {
 	}
 }
 
-func (m *MainModel) updateImport(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.importView == nil {
-		return m, nil
-	}
-	cmd := m.importView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateDeferred(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.deferredListView == nil {
-		return m, nil
-	}
-	cmd := m.deferredListView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateSnooze(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.snoozeView == nil {
-		return m, nil
-	}
-	cmd := m.snoozeView.Update(msg)
-	return m, cmd
-}
-
 func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case animationFrameMsg:
@@ -2110,35 +1802,11 @@ func (m *MainModel) updateBugReport(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *MainModel) updateBreakdown(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.breakdownView == nil {
-		return m, nil
-	}
-	cmd := m.breakdownView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateExtract(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.extractView == nil {
-		return m, nil
-	}
-	cmd := m.extractView.Update(msg)
-	return m, cmd
-}
-
 func (m *MainModel) updateSearch(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.searchView == nil {
 		return m, nil
 	}
 	cmd := m.searchView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateAddTask(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.addTaskView == nil {
-		return m, nil
-	}
-	cmd := m.addTaskView.Update(msg)
 	return m, cmd
 }
 
@@ -2198,14 +1866,6 @@ func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *MainModel) updatePlanning(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.planningView == nil {
-		return m, nil
-	}
-	cmd := m.planningView.Update(msg)
-	return m, cmd
-}
-
 func (m *MainModel) updateHelp(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.helpView == nil {
 		return m, nil
@@ -2258,21 +1918,15 @@ func (m *MainModel) buildBarContext() BarContext {
 // isTextInputActive returns true when the current view has an active text input
 // field where 'q' should be treated as text, not as a quit command.
 func (m *MainModel) isTextInputActive() bool {
+	if m.isTaskTextInputActive() {
+		return true
+	}
 	switch m.viewMode {
 	case ViewSearch:
-		return true
-	case ViewAddTask:
 		return true
 	case ViewOnboarding:
 		// Onboarding has text input during the values step
 		return true
-	case ViewImport:
-		return m.importView != nil && m.importView.step == importStepPath
-	case ViewExtract:
-		return m.extractView != nil &&
-			(m.extractView.step == extractStepFileInput ||
-				m.extractView.step == extractStepPasteInput ||
-				m.extractView.step == extractStepEditing)
 	case ViewBugReport:
 		return m.bugReportView != nil && m.bugReportView.state == bugReportInput
 	case ViewFeedback:

@@ -156,6 +156,9 @@ func (m *MainModel) contentHeight() int {
 
 // currentViewContent returns the rendered content for the currently active view.
 func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
+	if v, svf, handled := m.taskViewContent(); handled {
+		return v, svf
+	}
 	switch m.viewMode {
 	case ViewDetail:
 		if m.detailView != nil {
@@ -211,17 +214,9 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 		if m.reauthDialog != nil {
 			view = m.reauthDialog.View()
 		}
-	case ViewImport:
-		if m.importView != nil {
-			view = m.importView.View()
-		}
 	case ViewBugReport:
 		if m.bugReportView != nil {
 			view = m.bugReportView.View()
-		}
-	case ViewAddTask:
-		if m.addTaskView != nil {
-			view = m.addTaskView.View()
 		}
 	case ViewValuesGoals:
 		if m.valuesView != nil {
@@ -267,26 +262,6 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 	case ViewHelp:
 		if m.helpView != nil {
 			view = m.helpView.View()
-		}
-	case ViewDeferred:
-		if m.deferredListView != nil {
-			view = m.deferredListView.View()
-		}
-	case ViewSnooze:
-		if m.snoozeView != nil {
-			view = m.snoozeView.View()
-		}
-	case ViewPlanning:
-		if m.planningView != nil {
-			view = m.planningView.View()
-		}
-	case ViewBreakdown:
-		if m.breakdownView != nil {
-			view = m.breakdownView.View()
-		}
-	case ViewExtract:
-		if m.extractView != nil {
-			view = m.extractView.View()
 		}
 	default:
 		view = m.doorsView.View()
