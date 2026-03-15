@@ -6488,7 +6488,7 @@ So that worker agents in isolated worktrees can access current operational data 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 0/4 stories done
+**Status:** 1/4 stories done
 
 ### Story 69.1: Extract View Transition & Navigation Logic
 
@@ -6496,7 +6496,7 @@ As a developer,
 I want view transition and navigation logic extracted from main_model.go into a focused file,
 So that the main model is smaller and navigation changes are isolated.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #767) | **Priority:** P1
 
 ### Story 69.2: Extract Source/Sync View Controllers
 
@@ -6531,7 +6531,7 @@ So that the decomposition is complete and main_model.go is a thin orchestrator.
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 0/3 stories done
+**Status:** 1/3 stories done
 
 ### Story 70.1: Completion Data Reader & Aggregator
 
@@ -6539,7 +6539,7 @@ As a user,
 I want my completion history aggregated from session logs,
 So that I can see patterns in my completed work.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #766) | **Priority:** P1
 
 ### Story 70.2: History TUI View (`:history`)
 
