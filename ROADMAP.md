@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-13
+> Last updated: 2026-03-15
 
 ## Priority Legend
 
@@ -133,6 +133,18 @@ Audit and expand Docker E2E test scenarios to cover all primary user workflows (
 **Status:** Done (PR #737).
 
 Add `t.Helper()` to all test helper functions across the codebase. Currently only 23% of test files use it. Low effort, high payoff for debugging test failures. Driven by TEA audit R-001.
+
+### Story 0.58: Fix govulncheck Vulnerabilities (P0)
+
+**Status:** Done (PR #761).
+
+Bump Go toolchain to 1.26.1 to resolve stdlib vulnerabilities (GO-2026-4599 through GO-2026-4602) reported by `govulncheck ./...`. Resolves issue #592.
+
+### Story 0.59: Migrate from Makefile to Justfile (P2)
+
+**Status:** Not Started. Blocked on P-001 owner sign-off.
+
+Replace Makefile with Justfile for better error messages, simpler syntax, and cross-platform support. Requires updating CLAUDE.md, CI workflows, agent definitions, and README.
 
 ## Active Epics
 
@@ -549,6 +561,31 @@ Task data synchronization across multiple computers. Architecturally distinct fr
 **Status:** Done (PR #707).
 
 Single story under Epic 5 (macOS Distribution). CI generates signed, notarized .pkg installer uploaded to GitHub Releases alongside binaries. Reopens Epic 5 from COMPLETE to 1/2.
+
+### Epic 69: TUI MainModel Decomposition (P1) — 0/4 stories done
+
+Refactor `internal/tui/main_model.go` (2991 lines) into focused files. Extract view transition/navigation logic, source/sync view controllers, planning/task management view controllers, and auxiliary view controllers into separate files.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 69.1 | Extract View Transition & Navigation Logic | Not Started | P1 | None |
+| 69.2 | Extract Source/Sync View Controllers | Not Started | P1 | 69.1 |
+| 69.3 | Extract Planning & Task Management View Controllers | Not Started | P1 | 69.1 |
+| 69.4 | Extract Auxiliary View Controllers & Command Dispatch | Not Started | P1 | 69.2, 69.3 |
+
+**Dependency graph:** 69.1 first, then 69.2 & 69.3 can parallelize, then 69.4 last.
+
+### Epic 70: Completion History & Progress View (P1) — 0/3 stories done
+
+New `:history` TUI view and `threedoors history` CLI command for browsing completed tasks with aggregated stats.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 70.1 | Completion Data Reader & Aggregator | Not Started | P1 | None |
+| 70.2 | History TUI View (`:history`) | Not Started | P1 | 70.1 |
+| 70.3 | History CLI Command (`threedoors history`) | Not Started | P1 | 70.1 |
+
+**Dependency graph:** 70.1 first, then 70.2 & 70.3 can parallelize.
 
 ## Out of Scope
 
