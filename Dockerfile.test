@@ -2,7 +2,7 @@
 # Story 18.4: Builds a test runner image with Go toolchain and linting tools.
 # Source code is mounted at runtime via docker-compose, not copied into the image.
 
-FROM golang:1.25-bookworm
+FROM golang:1.26-bookworm
 
 # Pin tool versions to match CI (.github/workflows/ci.yml)
 ARG GOFUMPT_VERSION=v0.7.0
