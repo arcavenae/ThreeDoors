@@ -1152,6 +1152,62 @@ These non-functional requirements establish code quality gates that all contribu
 
 ---
 
+## Gemini Research Supervisor (Epic 54, Accepted)
+
+> Requirements for persistent research agent infrastructure.
+
+**NFR-AG1:** The research-supervisor agent shall invoke the Gemini CLI (`@google/gemini-cli`) via OAuth authentication (free tier), not paid API keys, with cached tokens and automatic refresh
+
+**NFR-AG2:** Research queries shall be grounded with project-specific context using 8 curated bundles within a 60KB budget, with keyword auto-detection for bundle selection and priority shedding for oversized contexts
+
+**NFR-AG3:** Research results shall be delivered in a three-layer shielding architecture: executive summary (context-window-safe), detailed report (stored on disk), and raw JSON — ensuring requesting agents are not overwhelmed by lengthy output
+
+**NFR-AG4:** The research-supervisor shall enforce dual-tier rate limits: 50 Pro queries/day (deep analysis) and 1,000 Flash queries/day (quick lookups), with priority queue, deduplication, and reserve capacity after 6pm UTC
+
+---
+
+## Cross-Computer Sync (Epic 64, Accepted)
+
+> Requirements for multi-machine task synchronization.
+
+**FR228:** The system shall assign each device a stable UUID v5 identity seeded from machine ID and install path, with automatic registration on first run and `threedoors device` CLI commands for listing and managing known devices
+
+**FR229:** The system shall synchronize task data across multiple computers using a Git-based transport, with configurable sync repository and setup wizard for initial configuration
+
+**FR230:** The system shall detect cross-machine conflicts using timestamp or vector clock comparison and resolve them according to the strategy documented in ADR-0034
+
+**FR231:** The system shall queue changes made while offline and reconcile them with the remote state when connectivity is restored, merging independent offline changes without data loss
+
+**NFR-XS1:** The sync transport layer shall support fully encrypted data at rest and in transit, with device-to-device authentication
+
+**NFR-XS2:** Sync scope shall be explicitly defined — task lists and configuration sync across devices; session logs and analytics do not sync by default
+
+---
+
+## TUI MainModel Decomposition (Epic 69, Accepted)
+
+> Requirements for TUI codebase maintainability.
+
+**NFR-TD1:** The `internal/tui/main_model.go` file shall be decomposed into focused files using Go's same-receiver-different-file pattern, reducing the monolithic file from 2991 lines to under 1000 lines per file
+
+**NFR-TD2:** The decomposition shall produce zero user-visible behavior changes — golden snapshot tests must produce identical output before and after refactoring
+
+**NFR-TD3:** All TUI decomposition changes shall pass `go test -race ./internal/tui/...` to verify no concurrency regressions are introduced
+
+---
+
+## Completion History & Progress View (Epic 70, Accepted)
+
+> Requirements for browsing completed task history.
+
+**FR232:** The system shall provide a `:history` TUI command that displays a scrollable view of completed tasks with per-entry source attribution, filterable by timeframe (today, this week, all time)
+
+**FR233:** The system shall aggregate completion statistics including total completions, current streak, daily average, and per-source breakdown, displayed in the history view
+
+**FR234:** The system shall provide a `threedoors history` CLI command with `--json` output, `--days N` timeframe filtering, and stats summary in both human-readable and JSON output modes
+
+---
+
 ## CLI/TUI Adapter Wiring Parity Requirements
 
 > Requirements for ensuring all registered adapters are accessible through both CLI and TUI entry points.

@@ -242,6 +242,18 @@
 
 ---
 
+## Phase 5.5+: TUI Refactoring & User Progress (Epics 69-70)
+
+**In Scope:**
+- TUI MainModel Decomposition: extract view navigation, source/sync controllers, planning controllers, auxiliary views from monolithic main_model.go (Epic 69)
+- Completion History & Progress View: `:history` TUI view, `threedoors history` CLI command, completion data aggregator, streak/stats display (Epic 70)
+
+**Out of Scope for this Phase:**
+- Recursive decomposition of individual view files
+- Historical data migration from legacy formats
+
+---
+
 ## Phase 6: Developer Experience & Tooling (Epics 34, 42, 49-50, 55, 65)
 
 **In Scope:**

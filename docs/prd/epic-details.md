@@ -1340,6 +1340,59 @@
 
 ---
 
+## Epic 18: Docker E2E & Headless TUI Testing Infrastructure ✅ COMPLETE
+
+**Epic Goal:** Establish reproducible, automated E2E testing using Docker containers and Bubbletea's `teatest` package for headless TUI interaction testing with golden file snapshots.
+
+**Scope:** Headless TUI test harness via `teatest`, golden file snapshot tests for visual regression, workflow replay tests, Docker-based reproducible test environment, and CI integration.
+
+**Status:** COMPLETE — All 5 stories implemented and merged
+
+---
+
+### Story 18.1: Headless TUI Test Harness with teatest
+
+**As a** developer,
+**I want** a headless TUI test harness using `teatest`,
+**so that** I can write automated tests that interact with the full TUI without a real terminal.
+
+**Acceptance Criteria:**
+1. `teatest` package added to `go.mod`
+2. Tests can create a `teatest.NewTestModel` with the root TUI model
+3. Tests can send key messages to simulate user input
+4. Test helper `NewTestApp` provided with options for term size, task file, provider
+5. At least 3 smoke tests: app launch, door display, quit
+6. ASCII color profile for deterministic output
+
+---
+
+### Story 18.2: Golden File Snapshot Tests
+
+**Acceptance Criteria:**
+1. Golden file infrastructure for comparing rendered TUI output against stored references
+2. `--update` flag for regenerating golden files
+3. Tests at multiple terminal widths
+
+### Story 18.3: Workflow Replay Tests
+
+**Acceptance Criteria:**
+1. Multi-step interaction tests (navigate, select, complete)
+2. Full user workflow coverage
+
+### Story 18.4: Docker Environment
+
+**Acceptance Criteria:**
+1. `Dockerfile.test` + `docker-compose.test.yml` for reproducible test environment
+2. Consistent test results across machines
+
+### Story 18.5: CI Integration
+
+**Acceptance Criteria:**
+1. Docker E2E tests integrated into CI pipeline
+2. Golden file drift detection
+
+---
+
 ## Epic 19: Jira Integration
 
 **Epic Goal:** Integrate Jira as a task source, enabling developers to see their Jira issues as ThreeDoors tasks. Phase 1 is read-only; Phase 2 adds bidirectional sync via the transitions API.
@@ -2424,6 +2477,59 @@ Five stories: 53.1 (SSH tunnel setup and documentation), 53.2 (tmux session mana
 
 ---
 
+## Epic 54: Gemini Research Supervisor — Deep Research Agent Infrastructure
+
+**Epic Goal:** Deploy a persistent research-supervisor agent that wraps the official Gemini CLI (`@google/gemini-cli`) with OAuth authentication, providing web-grounded research with context packaging, result shielding, and dual-tier budget management.
+
+**Scope:** Research-supervisor agent definition, Gemini CLI installation and OAuth setup, `scripts/gemini-research.sh` wrapper, `GEMINI.md` project context file, context packaging system (8 curated bundles, 60KB budget), three-layer result shielding, dual-tier rate limiting (50 Pro/day + 1,000 Flash/day).
+
+**Status:** COMPLETE — All 5 stories done (PRs #537, #538, #664, #689, #690)
+
+---
+
+### Story 54.1: Research-Supervisor Agent Definition
+
+**Acceptance Criteria:**
+1. Agent definition file at `agents/research-supervisor.md` in Responsibility+WHY format
+2. Polling loop with message bus integration
+3. Request protocol for inter-agent research dispatch
+4. Authority matrix defining research scope boundaries
+
+### Story 54.2: Gemini CLI Installation, OAuth Setup & Wrapper Script
+
+**Acceptance Criteria:**
+1. `@google/gemini-cli` installed via npm
+2. OAuth authentication flow documented
+3. `scripts/gemini-research.sh` wrapper with structured JSON output
+4. No API key required — OAuth tokens cached and auto-refreshed
+
+### Story 54.3: Context Packaging & Prompt Engineering
+
+**Acceptance Criteria:**
+1. 8 curated context bundles (architecture, PRD, stories, etc.) within 60KB budget
+2. Keyword auto-detection for bundle selection
+3. `--include-directories` integration for Gemini CLI file context
+4. Priority shedding order for oversized contexts
+
+### Story 54.4: Result Shielding & Artifact Storage
+
+**Acceptance Criteria:**
+1. Three-layer shielding: executive summary → detailed report → raw JSON
+2. Executive summary fits in agent context window
+3. Full reports stored on disk at `_bmad-output/research-results/`
+4. JSON response parsing from `gemini --output-format json`
+
+### Story 54.5: Rate Limiting, Budget Management & Model Selection
+
+**Acceptance Criteria:**
+1. Daily query count tracking per model tier (budget.json)
+2. Pro vs Flash model selection (deep analysis vs quick lookups)
+3. Priority queue with deduplication of similar queries
+4. Reserve 5 Pro queries after 6pm UTC
+5. Batch optimization for related queries
+
+---
+
 ## Epic 55: CI Optimization Phase 1
 
 **Epic Goal:** Reduce PR CI wall clock time from 3m33s to ~2m08s through CI configuration changes only — no test code modifications.
@@ -2700,5 +2806,147 @@ Follows the standard 4-story integration pattern: 63.1 (REST API v2 client with 
 **Estimated Time:** 60-90 minutes
 
 **Dependencies:** Story 66.2
+
+---
+
+## Epic 64: Cross-Computer Sync
+
+**Epic Goal:** Enable task data synchronization across multiple computers using a Git-based sync transport with device identity, conflict resolution, and offline queue reconciliation.
+
+**Scope:** Architecture research spike (ADR), device identity and registration system, Git-based sync transport, cross-machine conflict resolution (last-writer-wins with vector clocks), offline queue and reconciliation, E2E test suite.
+
+**Status:** COMPLETE — All 6 stories done (PRs #715, #721, #731, #734, #743, #748)
+
+---
+
+### Story 64.1: Architecture Research Spike
+
+**Acceptance Criteria:**
+1. ADR document evaluating 3+ sync approaches with pros/cons/rejected rationale
+2. Transport mechanism chosen (git-based sync, cloud intermediary, P2P, or hybrid)
+3. Conflict resolution strategy chosen
+4. Device identity mechanism designed
+5. Sync scope defined (which data syncs, which doesn't)
+6. Security model documented
+7. Party mode artifact saved
+
+### Story 64.2: Device Identity & Registration
+
+**Acceptance Criteria:**
+1. UUID v5 device identity seeded from machine ID + install path
+2. `DeviceRegistry` interface with `LocalDeviceRegistry` implementation
+3. CLI `threedoors device` commands for listing and managing devices
+4. Auto-registration on first run
+
+### Story 64.3: Sync Transport Layer
+
+**Acceptance Criteria:**
+1. Git-based sync transport implementation
+2. `GitDeviceRegistry` extending local registry to sync repo
+3. Sync setup wizard for initial configuration
+
+### Story 64.4: Conflict Resolution
+
+**Acceptance Criteria:**
+1. Vector clock or timestamp-based conflict detection
+2. Resolution strategy per ADR (field-level or document-level)
+3. Conflict visualization for manual resolution
+
+### Story 64.5: Offline Queue & Reconciliation
+
+**Acceptance Criteria:**
+1. Offline change queue with replay on reconnection
+2. Reconciliation of divergent state
+3. Merge of independent offline changes
+
+### Story 64.6: E2E Test Suite
+
+**Acceptance Criteria:**
+1. Multi-device sync simulation tests
+2. Conflict scenario coverage
+3. Offline/online transition tests
+
+---
+
+## Epic 69: TUI MainModel Decomposition
+
+**Epic Goal:** Refactor `internal/tui/main_model.go` (2991 lines, 32 ViewModes) from a monolithic god object into focused files using Go's same-receiver-different-file pattern, reducing merge conflict surface and improving maintainability.
+
+**Scope:** Four-phase extraction: view transition/navigation logic, source/sync view controllers, planning/task management controllers, auxiliary views and command dispatch.
+
+**Status:** In Progress (1/4 done)
+
+---
+
+### Story 69.1: Extract View Transition & Navigation Logic
+
+**As a** ThreeDoors developer,
+**I want** view transition and navigation logic extracted into `view_navigation.go`,
+**so that** navigation behavior is isolated, testable, and reduces merge conflicts.
+
+**Acceptance Criteria:**
+1. New file `internal/tui/view_navigation.go` with `setViewMode()`, `goBack()`, and view stack management
+2. `main_model.go` reduced by ~200-300 lines
+3. All existing tests pass unchanged
+4. `go test -race ./internal/tui/...` passes
+5. No user-visible behavior changes
+
+### Story 69.2: Extract Source/Sync View Controllers
+
+**Acceptance Criteria:**
+1. Source dashboard, source detail, sync log view methods extracted
+2. Related Update/View dispatch cases moved to new file
+
+### Story 69.3: Extract Planning & Task Management Controllers
+
+**Acceptance Criteria:**
+1. Planning mode, deferred view, dependency management methods extracted
+2. Related Update/View dispatch cases moved
+
+### Story 69.4: Extract Auxiliary Views & Command Dispatch
+
+**Acceptance Criteria:**
+1. Help, bug report, settings, command palette handlers extracted
+2. Command dispatch logic consolidated
+
+---
+
+## Epic 70: Completion History & Progress View
+
+**Epic Goal:** New `:history` TUI view and `threedoors history` CLI command for browsing completed tasks with aggregated statistics, celebrating user progress per SOUL.md's "Progress Over Perfection" principle.
+
+**Scope:** Completion data reader/aggregator, TUI history view with filtering and stats, CLI history command with JSON output.
+
+**Status:** In Progress (1/3 done)
+
+---
+
+### Story 70.1: Completion Data Reader & Aggregator
+
+**As a** ThreeDoors user,
+**I want** a data layer that reads and aggregates my completed tasks,
+**so that** the history view can display what I've accomplished.
+
+**Acceptance Criteria:**
+1. `CompletionRecord` type with Title, CompletedAt, Source, TaskID fields
+2. `CompletionReader` with `Read()`, `Today()`, `ThisWeek()` methods
+3. Reads from `completed.txt` append-only log
+4. `CompletionStats` aggregation (totals, streaks, averages)
+
+### Story 70.2: History TUI View
+
+**Acceptance Criteria:**
+1. `:history` command opens scrollable completion history
+2. Filter by timeframe (today, this week, all time)
+3. Aggregated stats display (total, streak, per-day average)
+4. Source attribution per entry
+
+### Story 70.3: History CLI Command
+
+**Acceptance Criteria:**
+1. `threedoors history` command with `--json` output
+2. `--days N` flag for timeframe filtering
+3. Human-readable and JSON output modes
+4. Stats summary included in output
 
 ---
