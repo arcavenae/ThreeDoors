@@ -6494,7 +6494,7 @@ So that worker agents in isolated worktrees can access current operational data 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 1/4 stories done
+**Status:** 2/4 stories done
 
 ### Story 69.1: Extract View Transition & Navigation Logic
 
@@ -6519,7 +6519,7 @@ As a developer,
 I want planning and task management view controller logic extracted from main_model.go,
 So that task workflow logic is isolated and testable.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #779) | **Priority:** P1
 **Depends On:** 69.1
 
 ### Story 69.4: Extract Auxiliary View Controllers & Command Dispatch
@@ -6537,7 +6537,7 @@ So that the decomposition is complete and main_model.go is a thin orchestrator.
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 1/3 stories done
+**Status:** COMPLETE (3/3 stories done)
 
 ### Story 70.1: Completion Data Reader & Aggregator
 
@@ -6553,7 +6553,7 @@ As a user,
 I want a `:history` view in the TUI showing my completed tasks,
 So that I can browse my completion history without leaving the app.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #780) | **Priority:** P1
 **Depends On:** 70.1
 
 ### Story 70.3: History CLI Command (`threedoors history`)
@@ -6562,5 +6562,5 @@ As a user,
 I want a `threedoors history` CLI command,
 So that I can view my completion history from the terminal without launching the TUI.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #777) | **Priority:** P1
 **Depends On:** 70.1
