@@ -869,6 +869,19 @@
   - History CLI command (`threedoors history`)
 - **Stories:** 70.1, 70.2, 70.3 (3 stories)
 
+**Epic 68: BOARD.md Redesign** (P2)
+- **Goal:** Split BOARD.md into a focused active dashboard (<120 lines) and a complete decision archive, extract Epic Number Registry to its own file, fix duplicate IDs, and update all supporting docs and agent definitions
+- **Prerequisites:** None
+- **Status:** Not Started
+- **Deliverables:**
+  - ARCHIVE.md with complete historical record (181+ decided, 118+ rejected entries)
+  - EPIC_REGISTRY.md extracted as standalone coordination mutex file
+  - Restructured BOARD.md with action-oriented sections (Needs Decision, Under Investigation, Recently Decided/Rejected)
+  - Duplicate ID deconfliction across decided and rejected entries
+  - Updated README.md, SWEEP.md, and 5 agent definitions for new structure
+- **Stories:** 68.1-68.3 (3 stories)
+- **Research:** See `_bmad-output/planning-artifacts/board-redesign-research.md` (PR #762)
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -950,5 +963,6 @@
 | Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
 | Epic 69: TUI MainModel Decomposition | 4 | In Progress (2/4 done) |
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
-| **Total** | **350** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
+| Epic 68: BOARD.md Redesign | 3 | Not Started |
+| **Total** | **353** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
 ---
