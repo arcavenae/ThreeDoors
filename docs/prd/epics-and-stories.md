@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-67 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epics 69, 70 planned (Not Started). 764+ merged PRs total. Last audit: 2026-03-15.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-67 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epics 68, 69, 70 planned (Not Started). 764+ merged PRs total. Last audit: 2026-03-15.
 
 ## Requirements Inventory
 
@@ -6564,3 +6564,38 @@ So that I can view my completion history from the terminal without launching the
 
 **Status:** Done (PR #777) | **Priority:** P1
 **Depends On:** 70.1
+
+## Epic 68: BOARD.md Redesign (P2)
+
+**Goal:** Split BOARD.md into a focused active dashboard (<120 lines) and a complete decision archive, extract Epic Number Registry to its own file, fix duplicate IDs, and update all supporting docs and agent definitions.
+
+**Priority:** P2
+**Prerequisites:** None
+**Status:** Not Started (0/3 stories done)
+**Research:** `_bmad-output/planning-artifacts/board-redesign-research.md` (PR #762)
+
+### Story 68.1: Create Decision Archive and Extract Epic Registry
+
+As a project contributor,
+I want historical decisions moved to a separate archive file and the Epic Number Registry extracted to its own file,
+So that BOARD.md remains a focused active dashboard and the registry is independently maintainable.
+
+**Status:** Not Started | **Priority:** P2
+
+### Story 68.2: Restructure Active BOARD.md
+
+As a project decision-maker,
+I want BOARD.md restructured with action-oriented sections showing only items needing attention,
+So that I can scan the board in seconds and see what needs my input without wading through historical entries.
+
+**Status:** Not Started | **Priority:** P2
+**Depends On:** 68.1
+
+### Story 68.3: Update Supporting Documentation for Board Redesign
+
+As a project contributor or agent,
+I want all documentation and agent definitions updated to reflect the new BOARD.md structure,
+So that the board guide, sweep process, and agent behaviors are consistent with the two-file split.
+
+**Status:** Not Started | **Priority:** P2
+**Depends On:** 68.1, 68.2
