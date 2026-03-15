@@ -57,6 +57,8 @@ type MainModel struct {
 	breakdownView       *BreakdownView
 	extractView         *ExtractView
 	orphanedView        *OrphanedView
+	historyView         *HistoryView
+	completionReader    *core.CompletionReader
 	breakdownService    *services.BreakdownService
 	extractor           *services.TaskExtractor
 	planningMode        bool // CLI --plan: exit after planning instead of showing doors
@@ -121,10 +123,12 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 
 	// Initialize completion counter for daily tracking
 	cc := core.NewCompletionCounter()
+	var cr *core.CompletionReader
 	if configPath, err := core.GetConfigDirPath(); err == nil {
 		if loadErr := cc.LoadFromFile(filepath.Join(configPath, "completed.txt")); loadErr != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to load completion history: %v\n", loadErr)
 		}
+		cr = core.NewCompletionReader(configPath)
 	}
 
 	// Initialize pattern analyzer: load both cached report and session history
@@ -216,6 +220,7 @@ func NewMainModel(pool *core.TaskPool, tracker *core.SessionTracker, provider co
 		duplicatePairs:    duplicatePairs,
 		syncSpinner:       NewSyncSpinner(),
 		milestoneChecker:  mc,
+		completionReader:  cr,
 		planningTimestamp: planningTs,
 		promptedTasks:     make(map[string]bool),
 		showKeyHints:      true, // default: hints visible (D-092)
@@ -531,6 +536,21 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		milestoneCmd := m.insightsView.CheckAndShowMilestone(totalTasks, currentStreak, sessionCount)
 		cmd := tea.Batch(animCmd, milestoneCmd)
 		return m, cmd
+
+	case ShowHistoryMsg:
+		if m.completionReader != nil {
+			records, err := m.completionReader.Read(context.Background())
+			if err != nil {
+				m.flash = "Failed to load history"
+				return m, ClearFlashCmd()
+			}
+			m.historyView = NewHistoryView(records, nil)
+			m.historyView.SetWidth(m.width)
+			m.historyView.SetHeight(m.contentHeight())
+			m.previousView = m.viewMode
+			m.setViewMode(ViewHistory)
+		}
+		return m, nil
 
 	case ShowOrphanedMsg:
 		m.orphanedView = NewOrphanedView(m.pool)
@@ -1831,6 +1851,8 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updatePlanning(msg)
 	case ViewOrphaned:
 		return m.updateOrphaned(msg)
+	case ViewHistory:
+		return m.updateHistory(msg)
 	case ViewSources:
 		return m.updateSources(msg)
 	case ViewSourceDetail:
@@ -1962,6 +1984,8 @@ func (m *MainModel) updateDoors(msg tea.Msg) (tea.Model, tea.Cmd) {
 				task := m.doorsView.currentDoors[m.doorsView.selectedDoorIndex]
 				return m, func() tea.Msg { return ShowFeedbackMsg{Task: task} }
 			}
+		case "H":
+			return m, func() tea.Msg { return ShowHistoryMsg{} }
 		case "S":
 			return m, func() tea.Msg { return ShowProposalsMsg{} }
 		case "m", "M":
@@ -2019,6 +2043,14 @@ func (m *MainModel) updateOrphaned(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.orphanedView.Update(msg)
+	return m, cmd
+}
+
+func (m *MainModel) updateHistory(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.historyView == nil {
+		return m, nil
+	}
+	cmd := m.historyView.Update(msg)
 	return m, cmd
 }
 

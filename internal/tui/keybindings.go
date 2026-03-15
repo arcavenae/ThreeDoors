@@ -84,6 +84,8 @@ func viewKeyBindings(mode ViewMode, doorSelected bool) []KeyBindingGroup {
 		return syncLogDetailBindings()
 	case ViewBugReport:
 		return bugReportBindings()
+	case ViewHistory:
+		return historyBindings()
 	default:
 		return nil
 	}
@@ -188,6 +190,7 @@ func allKeyBindingGroups() []KeyBindingGroup {
 		{ViewSources, false},
 		{ViewSyncLogDetail, false},
 		{ViewBugReport, false},
+		{ViewHistory, false},
 	}
 
 	for _, m := range allModes {
@@ -218,6 +221,7 @@ func doorsBindings() []KeyBindingGroup {
 			{Key: ":", Description: "command", Priority: PriorityAlways},
 			{Key: "/", Description: "search", Priority: PriorityIfSpace},
 			{Key: "m", Description: "mood", Priority: PriorityIfSpace},
+			{Key: "H", Description: "history", Priority: PriorityOverlay},
 			{Key: "S", Description: "proposals", Priority: PriorityOverlay},
 		}},
 		{Name: "Display", Bindings: []KeyBinding{
@@ -565,6 +569,19 @@ func sourcesBindings() []KeyBindingGroup {
 	}
 }
 
+func historyBindings() []KeyBindingGroup {
+	return []KeyBindingGroup{
+		{Name: "Navigation", Bindings: []KeyBinding{
+			{Key: "↑↓", Description: "scroll", Priority: PriorityAlways},
+			{Key: "q", Description: "back", Priority: PriorityAlways},
+			{Key: "pgdn/pgup", Description: "page", Priority: PriorityIfSpace},
+		}},
+		{Name: "Display", Bindings: []KeyBinding{
+			{Key: "?", Description: "help", Priority: PriorityAlways},
+		}},
+	}
+}
+
 func snoozeBindings() []KeyBindingGroup {
 	return []KeyBindingGroup{
 		{Name: "Navigation", Bindings: []KeyBinding{
@@ -639,6 +656,7 @@ func commandBindingGroup() KeyBindingGroup {
 			{Key: ":connect", Description: "connect data source", Priority: PriorityOverlay},
 			{Key: ":sources", Description: "connected sources", Priority: PriorityOverlay},
 			{Key: ":help", Description: "help view", Priority: PriorityOverlay},
+			{Key: ":history", Description: "completion history", Priority: PriorityOverlay},
 			{Key: ":quit", Description: "exit app", Priority: PriorityOverlay},
 		},
 	}
@@ -646,7 +664,7 @@ func commandBindingGroup() KeyBindingGroup {
 
 // Audit notes — intentionally omitted bindings:
 // - ctrl+c: handled by Bubbletea framework as universal quit, not view-specific
-// - h: global bar toggle, not a view action — toggling the bar from within the bar
-//   would be circular; users discover 'h' from the overlay or documentation
+// - h: global bar toggle, not a view action — users discover 'h' from the overlay
+// - H: history view shortcut in doors view (Shift+h)
 // - backspace: standard text editing key in input modes, not a keybinding per se
 // - single-character typing in input modes: not keybindings, just text entry

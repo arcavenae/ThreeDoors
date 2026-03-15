@@ -32,6 +32,7 @@ var commandRegistry = []commandDef{
 	{"goals", "View or edit values/goals"},
 	{"health", "Run health check"},
 	{"help", "Show help screen"},
+	{"history", "View completed tasks"},
 	{"import", "Import tasks from a file"},
 	{"llm-status", "Show LLM backend status"},
 	{"insights", "Show pattern insights"},
@@ -323,6 +324,11 @@ func (sv *SearchView) executeCommand() tea.Cmd {
 	case "help":
 		return func() tea.Msg {
 			return ShowHelpMsg{}
+		}
+
+	case "history":
+		return func() tea.Msg {
+			return ShowHistoryMsg{}
 		}
 
 	case "plan":
