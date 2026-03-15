@@ -593,6 +593,18 @@ New `:history` TUI view and `threedoors history` CLI command for browsing comple
 
 **Dependency graph:** 70.1 first, then 70.2 & 70.3 can parallelize.
 
+### Epic 68: BOARD.md Redesign (P2) — 0/3 stories done
+
+Split BOARD.md into a focused active dashboard (<120 lines) and a complete decision archive, extract Epic Number Registry to its own file, fix duplicate IDs, and update all supporting docs and agent definitions.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 68.1 | Create Decision Archive and Extract Epic Registry | Not Started | P2 | None |
+| 68.2 | Restructure Active BOARD.md | Not Started | P2 | 68.1 |
+| 68.3 | Update Supporting Documentation for Board Redesign | Not Started | P2 | 68.2 |
+
+**Dependency graph:** Linear chain: 68.1 → 68.2 → 68.3.
+
 ## Out of Scope
 
 Work not listed above is out of scope. Merge-queue should reject PRs that introduce features or epics not on this roadmap without human approval.
