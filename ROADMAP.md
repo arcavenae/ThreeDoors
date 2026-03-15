@@ -142,9 +142,15 @@ Bump Go toolchain to 1.26.1 to resolve stdlib vulnerabilities (GO-2026-4599 thro
 
 ### Story 0.59: Migrate from Makefile to Justfile (P2)
 
-**Status:** Not Started. Blocked on P-001 owner sign-off.
+**Status:** Done (PR #768).
 
-Replace Makefile with Justfile for better error messages, simpler syntax, and cross-platform support. Requires updating CLAUDE.md, CI workflows, agent definitions, and README.
+Replace Makefile with Justfile for better error messages, simpler syntax, and cross-platform support. Updated CLAUDE.md, CI workflows, agent definitions, and README.
+
+### Story 0.60: PRD Forensic Reconstruction — Complete Coverage (P1)
+
+**Status:** Done (PR #771).
+
+Complete PRD forensic reconstruction to ensure full epic and story coverage across planning docs.
 
 ## Active Epics
 
