@@ -298,6 +298,30 @@ func (m *MainModel) updateConnectWizard(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// resizeSourceViews updates dimensions for source/sync views on window resize.
+func (m *MainModel) resizeSourceViews(width, height int) {
+	if m.sourcesView != nil {
+		m.sourcesView.SetWidth(width)
+		m.sourcesView.SetHeight(height)
+	}
+	if m.sourceDetailView != nil {
+		m.sourceDetailView.SetWidth(width)
+		m.sourceDetailView.SetHeight(height)
+	}
+	if m.disconnectDialog != nil {
+		m.disconnectDialog.SetWidth(width)
+		m.disconnectDialog.SetHeight(height)
+	}
+	if m.reauthDialog != nil {
+		m.reauthDialog.SetWidth(width)
+		m.reauthDialog.SetHeight(height)
+	}
+	if m.syncLogDetailView != nil {
+		m.syncLogDetailView.SetWidth(width)
+		m.syncLogDetailView.SetHeight(height)
+	}
+}
+
 func (m *MainModel) updateDisconnect(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.disconnectDialog == nil {
 		return m, nil

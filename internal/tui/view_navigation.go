@@ -162,82 +162,20 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 	if v, svf, handled := m.sourceViewContent(); handled {
 		return v, svf
 	}
+	if v, svf, handled := m.auxiliaryViewContent(); handled {
+		return v, svf
+	}
 	switch m.viewMode {
 	case ViewDetail:
 		if m.detailView != nil {
 			view = m.detailView.View()
 		}
 		showValuesFooter = true
-	case ViewMood:
-		if m.moodView != nil {
-			view = m.moodView.View()
-		}
 	case ViewSearch:
 		if m.searchView != nil {
 			view = m.searchView.View()
 		}
 		showValuesFooter = true
-	case ViewHealth:
-		if m.healthView != nil {
-			view = m.healthView.View()
-		}
-	case ViewInsights:
-		if m.insightsView != nil {
-			view = m.insightsView.View()
-		}
-	case ViewOrphaned:
-		if m.orphanedView != nil {
-			view = m.orphanedView.View()
-		}
-	case ViewHistory:
-		if m.historyView != nil {
-			view = m.historyView.View()
-		}
-	case ViewBugReport:
-		if m.bugReportView != nil {
-			view = m.bugReportView.View()
-		}
-	case ViewValuesGoals:
-		if m.valuesView != nil {
-			view = m.valuesView.View()
-		}
-	case ViewFeedback:
-		if m.feedbackView != nil {
-			view = m.feedbackView.View()
-		}
-	case ViewNextSteps:
-		if m.nextStepsView != nil {
-			view = m.nextStepsView.View()
-		}
-		showValuesFooter = true
-	case ViewAvoidancePrompt:
-		if m.avoidancePromptView != nil {
-			view = m.avoidancePromptView.View()
-		}
-	case ViewOnboarding:
-		if m.onboardingView != nil {
-			view = m.onboardingView.View()
-		}
-	case ViewConflict:
-		if m.conflictView != nil {
-			view = m.conflictView.View()
-		}
-	case ViewThemePicker:
-		if m.themePickerView != nil {
-			view = m.themePickerView.View()
-		}
-	case ViewDevQueue:
-		if m.devQueueView != nil {
-			view = m.devQueueView.View()
-		}
-	case ViewProposals:
-		if m.proposalsView != nil {
-			view = m.proposalsView.View()
-		}
-	case ViewHelp:
-		if m.helpView != nil {
-			view = m.helpView.View()
-		}
 	default:
 		view = m.doorsView.View()
 		showValuesFooter = true
