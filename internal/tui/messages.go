@@ -443,6 +443,9 @@ type ExtractImportMsg struct {
 // ExtractCancelMsg is sent when the user cancels the extraction flow.
 type ExtractCancelMsg struct{}
 
+// ShowHistoryMsg is sent to open the completion history view.
+type ShowHistoryMsg struct{}
+
 // ShowOrphanedMsg is sent to open the orphaned tasks view.
 type ShowOrphanedMsg struct{}
 

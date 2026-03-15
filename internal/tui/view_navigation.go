@@ -37,6 +37,7 @@ const (
 	ViewBreakdown
 	ViewExtract
 	ViewOrphaned
+	ViewHistory
 	ViewReauth
 )
 
@@ -105,6 +106,8 @@ func (v ViewMode) String() string {
 		return "Extract"
 	case ViewOrphaned:
 		return "Orphaned"
+	case ViewHistory:
+		return "History"
 	case ViewReauth:
 		return "Reauth"
 	default:
@@ -179,6 +182,10 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 	case ViewOrphaned:
 		if m.orphanedView != nil {
 			view = m.orphanedView.View()
+		}
+	case ViewHistory:
+		if m.historyView != nil {
+			view = m.historyView.View()
 		}
 	case ViewSources:
 		if m.sourcesView != nil {

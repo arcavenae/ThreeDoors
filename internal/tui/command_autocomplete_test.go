@@ -40,9 +40,9 @@ func TestFilterCommands_PrefixFiltering(t *testing.T) {
 			wantCmds: nil,
 		},
 		{
-			name:     "h prefix matches health help",
+			name:     "h prefix matches health help history",
 			prefix:   "h",
-			wantCmds: []string{"health", "help"},
+			wantCmds: []string{"health", "help", "history"},
 		},
 		{
 			name:     "exact match for quit",
