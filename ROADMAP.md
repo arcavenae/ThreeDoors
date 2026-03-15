@@ -152,6 +152,24 @@ Replace Makefile with Justfile for better error messages, simpler syntax, and cr
 
 Complete PRD forensic reconstruction to ensure full epic and story coverage across planning docs.
 
+### Story 0.61: PRD Cleanup — Stale Content & Structural Fixes (P1)
+
+**Status:** Not Started.
+
+Remove stale content and fix structural issues in PRD shards identified by forensic reconstruction.
+
+### Story 0.62: Phase Numbering Consolidation in product-scope.md (P1)
+
+**Status:** Not Started.
+
+Consolidate inconsistent phase numbering in product-scope.md.
+
+### Story 0.63: User Journey Expansion for Post-Phase-2 Features (P2)
+
+**Status:** Not Started.
+
+Expand user journey documentation to cover features implemented after Phase 2.
+
 ## Active Epics
 
 ### Epic 66: CLI/TUI Adapter Wiring Parity (P0) — 3/3 stories done — COMPLETE

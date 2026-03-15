@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (38/38 complete) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (38/41 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements and test coverage hardening from TEA audit (R-001).
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 38 of 38 stories complete.
+**Status:** 38 of 41 stories complete.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements and test coverage hardening from the TEA audit (R-001).
 
-**Status:** 38 of 38 stories complete.
+**Status:** 38 of 41 stories complete.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -976,6 +976,30 @@ I want the PRD planning docs to have complete coverage of all epics and stories,
 So that the source-of-truth chain is accurate and reliable.
 
 **Status:** Done (PR #771) | **Priority:** P1
+
+### Story 0.61: PRD Cleanup — Stale Content & Structural Fixes
+
+As a project maintainer,
+I want stale content and structural issues in PRD shards removed,
+So that the PRD accurately reflects the current state of the project.
+
+**Status:** Not Started | **Priority:** P1
+
+### Story 0.62: Phase Numbering Consolidation in product-scope.md
+
+As a project maintainer,
+I want consistent phase numbering in product-scope.md,
+So that the PRD roadmap phases are clear and unambiguous.
+
+**Status:** Not Started | **Priority:** P1
+
+### Story 0.63: User Journey Expansion for Post-Phase-2 Features
+
+As a project maintainer,
+I want user journey documentation expanded for post-Phase-2 features,
+So that the PRD covers the full user experience of implemented features.
+
+**Status:** Not Started | **Priority:** P2
 
 ---
 
