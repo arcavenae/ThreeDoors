@@ -852,7 +852,7 @@
 
 **Epic 69: TUI MainModel Decomposition** (P1)
 - **Goal:** Refactor `internal/tui/main_model.go` (2991 lines) into focused files for improved maintainability
-- **Status:** Not Started (0/4 done)
+- **Status:** In Progress (1/4 done — PR #767)
 - **Deliverables:**
   - View transition & navigation logic extracted
   - Source/sync view controllers extracted
@@ -862,7 +862,7 @@
 
 **Epic 70: Completion History & Progress View** (P1)
 - **Goal:** New `:history` TUI view and `threedoors history` CLI command for browsing completed tasks with aggregated stats
-- **Status:** Not Started (0/3 done)
+- **Status:** In Progress (1/3 done — PR #766)
 - **Deliverables:**
   - Completion data reader & aggregator
   - History TUI view (`:history`)
@@ -948,7 +948,7 @@
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
 | Epic 66: CLI/TUI Adapter Wiring Parity | 3 | Complete (3/3 done) |
 | Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
-| Epic 69: TUI MainModel Decomposition | 4 | Not Started (0/4 done) |
-| Epic 70: Completion History & Progress View | 3 | Not Started (0/3 done) |
+| Epic 69: TUI MainModel Decomposition | 4 | In Progress (1/4 done) |
+| Epic 70: Completion History & Progress View | 3 | In Progress (1/3 done) |
 | **Total** | **350** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
 ---

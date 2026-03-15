@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-15
+> Last updated: 2026-03-15 (batch-767)
 
 ## Priority Legend
 
@@ -562,26 +562,26 @@ Task data synchronization across multiple computers. Architecturally distinct fr
 
 Single story under Epic 5 (macOS Distribution). CI generates signed, notarized .pkg installer uploaded to GitHub Releases alongside binaries. Reopens Epic 5 from COMPLETE to 1/2.
 
-### Epic 69: TUI MainModel Decomposition (P1) — 0/4 stories done
+### Epic 69: TUI MainModel Decomposition (P1) — 1/4 stories done
 
 Refactor `internal/tui/main_model.go` (2991 lines) into focused files. Extract view transition/navigation logic, source/sync view controllers, planning/task management view controllers, and auxiliary view controllers into separate files.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 69.1 | Extract View Transition & Navigation Logic | Not Started | P1 | None |
+| 69.1 | Extract View Transition & Navigation Logic | Done (PR #767) | P1 | None |
 | 69.2 | Extract Source/Sync View Controllers | Not Started | P1 | 69.1 |
 | 69.3 | Extract Planning & Task Management View Controllers | Not Started | P1 | 69.1 |
 | 69.4 | Extract Auxiliary View Controllers & Command Dispatch | Not Started | P1 | 69.2, 69.3 |
 
 **Dependency graph:** 69.1 first, then 69.2 & 69.3 can parallelize, then 69.4 last.
 
-### Epic 70: Completion History & Progress View (P1) — 0/3 stories done
+### Epic 70: Completion History & Progress View (P1) — 1/3 stories done
 
 New `:history` TUI view and `threedoors history` CLI command for browsing completed tasks with aggregated stats.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 70.1 | Completion Data Reader & Aggregator | Not Started | P1 | None |
+| 70.1 | Completion Data Reader & Aggregator | Done (PR #766) | P1 | None |
 | 70.2 | History TUI View (`:history`) | Not Started | P1 | 70.1 |
 | 70.3 | History CLI Command (`threedoors history`) | Not Started | P1 | 70.1 |
 
