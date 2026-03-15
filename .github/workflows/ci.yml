@@ -30,7 +30,7 @@ jobs:
               - '**.go'
               - 'go.mod'
               - 'go.sum'
-              - 'Makefile'
+              - 'justfile'
               - '.golangci.yml'
               - '.github/workflows/**'
             docker:

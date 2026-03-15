@@ -6,7 +6,7 @@
 |---|---|---|
 | Go | 1.25.4+ | `asdf install golang 1.25.4` or [golang.org](https://golang.org/doc/install) |
 | Git | 2.40+ | System package manager |
-| Make | System default | Pre-installed on macOS |
+| just | Latest | `brew install just` or [just.systems](https://just.systems/) |
 | gofumpt | 0.7.0 | `go install mvdan.cc/gofumpt@latest` |
 | golangci-lint | 1.61.0 | `brew install golangci-lint` or [docs](https://golangci-lint.run/usage/install/) |
 
@@ -31,12 +31,12 @@
 
 | Command | Description |
 |---|---|
-| `make build` | Compile to `bin/threedoors` |
-| `make run` | Build and run |
-| `make test` | Run all tests (`go test -v ./...`) |
-| `make lint` | Run golangci-lint |
-| `make fmt` | Format code with gofumpt |
-| `make clean` | Remove build artifacts (`bin/`) |
+| `just build` | Compile to `bin/threedoors` |
+| `just run` | Build and run |
+| `just test` | Run all tests (`go test -v ./...`) |
+| `just lint` | Run golangci-lint |
+| `just fmt` | Format code with gofumpt |
+| `just clean` | Remove build artifacts (`bin/`) |
 
 ## Coding Standards
 

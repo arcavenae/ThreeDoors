@@ -83,7 +83,7 @@ Empty marker file created after completing the onboarding wizard. Delete this fi
 
 Session data is stored in `sessions.jsonl` within the data directory. ThreeDoors does not write separate log files — diagnostic output goes to stderr when needed.
 
-Run `make analyze` from the project source to execute analysis scripts against your session data, or use `:stats` in the TUI for a quick overview.
+Run `just analyze` from the project source to execute analysis scripts against your session data, or use `:stats` in the TUI for a quick overview.
 
 ---
 

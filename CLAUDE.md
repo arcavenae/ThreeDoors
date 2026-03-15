@@ -7,7 +7,7 @@ ThreeDoors is a Go TUI application that reduces task management decision frictio
 - **Language:** Go 1.25.4+
 - **TUI Framework:** Bubbletea + Lipgloss + Bubbles
 - **Data:** YAML task files, JSONL session logs
-- **Build:** `make build` · `make test` · `make lint` · `make fmt`
+- **Build:** `just build` · `just test` · `just lint` · `just fmt`
 
 ## Project Structure
 
@@ -24,9 +24,9 @@ Key interfaces: `TaskProvider` (internal/tasks/provider.go) — implement for ne
 ## Development Workflow
 
 ```bash
-make fmt              # gofumpt formatting (run before every commit)
-make lint             # golangci-lint — must pass with zero warnings
-make test             # go test ./... -v
+just fmt              # gofumpt formatting (run before every commit)
+just lint             # golangci-lint — must pass with zero warnings
+just test             # go test ./... -v
 go test -race ./...   # Race detector — run before pushing
 ```
 
@@ -239,7 +239,7 @@ time.Now().UTC()
 
 ### Formatting & Linting
 
-- **Formatter:** `gofumpt` (stricter than `gofmt`) — run via `make fmt`
+- **Formatter:** `gofumpt` (stricter than `gofmt`) — run via `just fmt`
 - **Linter:** `golangci-lint run ./...` — must pass with zero warnings
 - **Vet:** `go vet ./...` — runs as part of `golangci-lint`
 - Never disable linter rules with `//nolint` without a justifying comment

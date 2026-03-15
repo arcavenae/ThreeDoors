@@ -11,7 +11,7 @@ The minimum steps to get a remote Claude Code session connected to multiclaude:
 1. Build the bridge binary on the multiclaude host:
    ```bash
    cd /path/to/ThreeDoors
-   make build-mcp-bridge
+   just build-mcp-bridge
    sudo cp bin/multiclaude-mcp-bridge /usr/local/bin/
    ```
 
@@ -51,7 +51,7 @@ On the multiclaude host:
 
 ```bash
 cd /path/to/ThreeDoors
-make build-mcp-bridge
+just build-mcp-bridge
 ```
 
 This produces `bin/multiclaude-mcp-bridge`. Install it somewhere in PATH:

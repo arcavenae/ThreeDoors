@@ -38,7 +38,7 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 
     ```bash
     git clone https://github.com/arcaven/ThreeDoors.git
-    cd ThreeDoors && make build
+    cd ThreeDoors && just build
     ```
 
 ## Get Started

@@ -147,12 +147,12 @@ go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
 
 ### Option 5: Build from Source
 
-**Prerequisites:** Go 1.25.4+, Git, Make (optional)
+**Prerequisites:** Go 1.25.4+, Git, [just](https://github.com/casey/just) (optional)
 
 ```bash
 git clone https://github.com/arcaven/ThreeDoors.git
 cd ThreeDoors
-make build
+just build
 # Binary at bin/threedoors
 ```
 
@@ -776,7 +776,7 @@ All data is stored locally in `~/.threedoors/`:
 ## 🛠️ Development
 
 <details>
-<summary>Tech stack, project structure, and make targets</summary>
+<summary>Tech stack, project structure, and just recipes</summary>
 
 ### Tech Stack
 
@@ -784,7 +784,7 @@ All data is stored locally in `~/.threedoors/`:
 - **TUI Framework:** [Bubbletea](https://github.com/charmbracelet/bubbletea) + [Lipgloss](https://github.com/charmbracelet/lipgloss)
 - **Database:** [modernc.org/sqlite](https://pkg.go.dev/modernc.org/sqlite) (pure Go, no CGO)
 - **Architecture:** Model-View-Update (MVU) with provider pattern
-- **Build System:** Make
+- **Build System:** [just](https://github.com/casey/just)
 - **CI/CD:** GitHub Actions (lint, test, build, sign, notarize, release, Homebrew update)
 
 ### Project Structure
@@ -817,21 +817,26 @@ ThreeDoors/
 ├── Formula/                     # Homebrew formula
 ├── scripts/                     # Analysis & build scripts
 ├── docs/                        # PRD, architecture, stories, research
-└── Makefile
+└── justfile
 ```
 
-### Make Targets
+### Just Recipes
+
+Run `just --list` to see all available recipes. Key recipes:
 
 ```bash
-make build          # Build the application (TUI + MCP)
-make run            # Build and run
-make test           # Run tests
-make lint           # Run golangci-lint
-make fmt            # Format with gofumpt
-make clean          # Remove build artifacts
-make sign           # Code-sign binary (requires APPLE_SIGNING_IDENTITY)
-make pkg            # Build macOS .pkg installer
-make release-local  # Build + sign + pkg
+just build          # Build the TUI binary
+just build-mcp      # Build the MCP server binary
+just run            # Build and run
+just test           # Run all tests
+just test-fast      # Run tests in short mode
+just lint           # Run golangci-lint
+just fmt            # Format with gofumpt
+just clean          # Remove build artifacts
+just bench          # Run benchmarks
+just sign           # Code-sign binary (requires APPLE_SIGNING_IDENTITY)
+just pkg            # Build macOS .pkg installer
+just release-local  # Build + sign + pkg
 ```
 
 ### Code Style
@@ -839,8 +844,8 @@ make release-local  # Build + sign + pkg
 We use `gofumpt` (stricter than `gofmt`) and `golangci-lint`. See [CLAUDE.md](CLAUDE.md) for full coding standards.
 
 ```bash
-make fmt    # Format code
-make lint   # Run linter (must pass with zero warnings)
+just fmt    # Format code
+just lint   # Run linter (must pass with zero warnings)
 ```
 
 </details>
@@ -859,7 +864,7 @@ make lint   # Run linter (must pass with zero warnings)
 **To contribute:**
 1. Fork the project
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Follow coding standards (`make lint && make fmt`)
+3. Follow coding standards (`just lint && just fmt`)
 4. Write tests for new functionality
 5. Commit your changes
 6. Push and open a Pull Request

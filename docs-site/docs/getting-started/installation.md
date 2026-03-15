@@ -47,11 +47,11 @@
     ```bash
     git clone https://github.com/arcaven/ThreeDoors.git
     cd ThreeDoors
-    make build
+    just build
     # Binary at bin/threedoors
     ```
 
-    Requires Go 1.25.4+ and `make`.
+    Requires Go 1.25.4+ and [`just`](https://github.com/casey/just).
 
 ## Verify Installation
 

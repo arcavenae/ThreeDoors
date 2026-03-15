@@ -1,6 +1,6 @@
 # docker-compose.test.yml — Docker test environment for reproducible E2E testing
 # Story 18.4: Defines the test service with source mount and results output.
-# Usage: make test-docker (or: docker compose -f docker-compose.test.yml run --rm test)
+# Usage: just test-docker (or: docker compose -f docker-compose.test.yml run --rm test)
 
 services:
   test:

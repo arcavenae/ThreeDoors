@@ -142,7 +142,7 @@ else
     if ! $found; then
         fail "Binary not found in default locations"
         echo "       Searched: ./bin/multiclaude-mcp-bridge, PATH, /usr/local/bin/"
-        echo "       Fix: make build-mcp-bridge"
+        echo "       Fix: just build-mcp-bridge"
     fi
 fi
 

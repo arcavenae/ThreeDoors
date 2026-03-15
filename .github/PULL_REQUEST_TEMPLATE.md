@@ -15,9 +15,9 @@
 - [ ] Story file exists and acceptance criteria are met
 - [ ] Story file updated with `Status: Done (PR #NNN)`
 - [ ] Tests added/updated (table-driven, stdlib `testing`)
-- [ ] `make fmt` — code is formatted with gofumpt
-- [ ] `make lint` — zero warnings from golangci-lint
-- [ ] `make test` — all tests pass
+- [ ] `just fmt` — code is formatted with gofumpt
+- [ ] `just lint` — zero warnings from golangci-lint
+- [ ] `just test` — all tests pass
 - [ ] `go test -race ./...` — no race conditions (required for `internal/tui/` and `internal/cli/` changes)
 - [ ] No `//nolint` directives without justifying comments
 - [ ] Commit messages follow format: `feat|fix|docs: description (Story X.Y)`

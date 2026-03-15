@@ -74,4 +74,4 @@ Session data is stored in `~/.threedoors/`:
 
 ## Analysis Scripts
 
-Run `make analyze` to execute the analysis scripts in `scripts/` against your session data.
+Run `just analyze` to execute the analysis scripts in `scripts/` against your session data.

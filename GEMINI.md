@@ -21,7 +21,7 @@ When invoked via `scripts/gemini-research.sh`, you are performing research on be
 - **Language:** Go 1.25+
 - **TUI Framework:** Bubbletea (charmbracelet/bubbletea) + Lipgloss + Bubbles
 - **Data:** YAML task files, JSONL session logs
-- **Build:** Make-based (make build, make test, make lint)
+- **Build:** just-based (just build, just test, just lint)
 - **Architecture docs:** `docs/architecture/`
 - **Product requirements:** `docs/prd/`
 - **Design decisions:** `docs/decisions/BOARD.md`
