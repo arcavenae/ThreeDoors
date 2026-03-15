@@ -354,6 +354,12 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return model, cmd
 	}
 
+	// Handle source/sync view messages (Sources, SourceDetail, SyncLog,
+	// SyncLogDetail, ConnectWizard, Disconnect, Reauth).
+	if model, cmd, handled := m.handleSourceViewMessage(msg); handled {
+		return model, cmd
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.breadcrumbs.Record(m.viewMode.String(), fmt.Sprintf("resize:%dx%d", msg.Width, msg.Height))
@@ -582,204 +588,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return FlashMsg{Text: fmt.Sprintf("Deleted '%s'.", text)}
 				}
 			}
-		}
-		return m, nil
-
-	case ShowSourcesMsg:
-		if m.connMgr != nil {
-			m.sourcesView = NewSourcesView(m.connMgr)
-			m.sourcesView.SetWidth(m.width)
-			m.sourcesView.SetHeight(m.height)
-			m.previousView = m.viewMode
-			m.setViewMode(ViewSources)
-		}
-		return m, nil
-
-	case ShowSourceDetailMsg:
-		if m.connMgr != nil {
-			conn, err := m.connMgr.Get(msg.ConnectionID)
-			if err == nil {
-				m.sourceDetailView = NewSourceDetailView(conn, m.connMgr)
-				m.sourceDetailView.SetWidth(m.width)
-				m.sourceDetailView.SetHeight(m.height)
-				m.previousView = m.viewMode
-				m.setViewMode(ViewSourceDetail)
-			}
-		}
-		return m, nil
-
-	case ShowSyncLogDetailMsg:
-		if m.syncEventLog != nil {
-			events, err := m.syncEventLog.SyncLog(msg.ConnectionID, 0)
-			if err != nil {
-				events = nil
-			}
-			m.syncLogDetailView = NewSyncLogDetailView(msg.ConnectionID, events)
-			m.syncLogDetailView.SetWidth(m.width)
-			m.syncLogDetailView.SetHeight(m.height)
-			m.previousView = m.viewMode
-			m.setViewMode(ViewSyncLogDetail)
-		}
-		return m, nil
-
-	case SourceActionMsg:
-		if msg.Action == "sync_log" && m.syncEventLog != nil {
-			events, err := m.syncEventLog.SyncLog(msg.ConnectionID, 0)
-			if err != nil {
-				events = nil
-			}
-			m.syncLogDetailView = NewSyncLogDetailView(msg.ConnectionID, events)
-			m.syncLogDetailView.SetWidth(m.width)
-			m.syncLogDetailView.SetHeight(m.height)
-			m.previousView = m.viewMode
-			m.setViewMode(ViewSyncLogDetail)
-		}
-		if msg.Action == "reauth" && m.connMgr != nil {
-			conn, err := m.connMgr.Get(msg.ConnectionID)
-			if err == nil {
-				if conn.State != connection.StateAuthExpired {
-					return m, func() tea.Msg {
-						return FlashMsg{Text: "Re-authentication only available for expired connections"}
-					}
-				}
-				// Look up auth type from provider specs.
-				authType := AuthNone
-				tokenHelp := ""
-				for _, spec := range DefaultProviderSpecs() {
-					if spec.Name == conn.ProviderName {
-						authType = spec.AuthType
-						tokenHelp = spec.TokenHelp
-						break
-					}
-				}
-				if authType == AuthOAuth {
-					return m, func() tea.Msg {
-						return FlashMsg{Text: "OAuth re-authentication not yet supported — disconnect and reconnect"}
-					}
-				}
-				m.reauthDialog = NewReauthDialog(conn, tokenHelp)
-				m.reauthDialog.SetWidth(m.width)
-				m.reauthDialog.SetHeight(m.height)
-				m.previousView = m.viewMode
-				m.setViewMode(ViewReauth)
-				return m, m.reauthDialog.Init()
-			}
-		}
-		if msg.Action == "disconnect" && m.connMgr != nil {
-			conn, err := m.connMgr.Get(msg.ConnectionID)
-			if err == nil {
-				m.disconnectDialog = NewDisconnectDialog(conn)
-				m.disconnectDialog.SetWidth(m.width)
-				m.disconnectDialog.SetHeight(m.height)
-				m.previousView = m.viewMode
-				m.setViewMode(ViewDisconnect)
-				return m, m.disconnectDialog.Init()
-			}
-		}
-		return m, nil
-
-	case ShowConnectWizardMsg:
-		if m.connMgr != nil {
-			m.connectWizard = NewConnectWizard(DefaultProviderSpecs(), m.connMgr)
-			m.connectWizard.SetWidth(m.width)
-			m.connectWizard.SetHeight(m.height)
-			m.previousView = m.viewMode
-			m.setViewMode(ViewConnectWizard)
-			return m, m.connectWizard.Init()
-		}
-		return m, nil
-
-	case ConnectWizardCompleteMsg:
-		if m.connMgr != nil {
-			conn, err := m.connMgr.Add(msg.ProviderName, msg.Label, msg.Settings)
-			if err == nil {
-				conn.SyncMode = msg.SyncMode
-				conn.PollInterval = msg.PollInterval
-				_ = m.connMgr.Transition(conn.ID, connection.StateConnected)
-			}
-		}
-		m.connectWizard = nil
-		m.setViewMode(ViewSources)
-		return m, nil
-
-	case ConnectWizardCancelMsg:
-		m.connectWizard = nil
-		if m.previousView == ViewSources {
-			m.setViewMode(ViewSources)
-		} else {
-			m.setViewMode(ViewDoors)
-		}
-		return m, nil
-
-	case ShowDisconnectDialogMsg:
-		if m.connMgr != nil {
-			conn, err := m.connMgr.Get(msg.ConnectionID)
-			if err == nil {
-				m.disconnectDialog = NewDisconnectDialog(conn)
-				m.disconnectDialog.SetWidth(m.width)
-				m.disconnectDialog.SetHeight(m.height)
-				m.previousView = m.viewMode
-				m.setViewMode(ViewDisconnect)
-				return m, m.disconnectDialog.Init()
-			}
-		}
-		return m, nil
-
-	case DisconnectConfirmedMsg:
-		if m.connMgr != nil {
-			err := m.connMgr.Disconnect(msg.ConnectionID, msg.KeepTasks)
-			if err == nil {
-				flashText := "Connection disconnected — tasks kept locally"
-				if !msg.KeepTasks {
-					flashText = "Connection disconnected — synced tasks removed"
-				}
-				m.disconnectDialog = nil
-				m.setViewMode(ViewSources)
-				m.sourcesView = NewSourcesView(m.connMgr)
-				m.sourcesView.SetWidth(m.width)
-				m.sourcesView.SetHeight(m.height)
-				return m, func() tea.Msg { return FlashMsg{Text: flashText} }
-			}
-		}
-		m.disconnectDialog = nil
-		m.setViewMode(ViewSources)
-		return m, nil
-
-	case DisconnectCancelledMsg:
-		m.disconnectDialog = nil
-		if m.previousView == ViewSourceDetail {
-			m.setViewMode(ViewSourceDetail)
-		} else {
-			m.setViewMode(ViewSources)
-		}
-		return m, nil
-
-	case ReauthCompleteMsg:
-		if m.connSvc != nil {
-			err := m.connSvc.ReAuthenticate(msg.ConnectionID, msg.NewToken)
-			if err == nil {
-				m.reauthDialog = nil
-				m.setViewMode(ViewSourceDetail)
-				return m, func() tea.Msg {
-					return FlashMsg{Text: "Re-authenticated successfully"}
-				}
-			}
-			m.reauthDialog = nil
-			m.setViewMode(ViewSourceDetail)
-			return m, func() tea.Msg {
-				return FlashMsg{Text: "Re-authentication failed: " + err.Error()}
-			}
-		}
-		m.reauthDialog = nil
-		m.setViewMode(ViewSourceDetail)
-		return m, nil
-
-	case ReauthCancelledMsg:
-		m.reauthDialog = nil
-		if m.previousView == ViewSourceDetail {
-			m.setViewMode(ViewSourceDetail)
-		} else {
-			m.setViewMode(ViewSources)
 		}
 		return m, nil
 
@@ -1236,14 +1044,6 @@ func (m *MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.flash = fmt.Sprintf("%d conflict(s) resolved", len(resolutions))
 		return m, ClearFlashCmd()
 
-	case ShowSyncLogMsg:
-		sv := NewSyncLogView(msg.Entries)
-		sv.SetWidth(m.width)
-		sv.SetHeight(m.height)
-		m.syncLogView = sv
-		m.previousView = m.viewMode
-		m.setViewMode(ViewSyncLog)
-		return m, nil
 	case DuplicateDismissedMsg:
 		m.refreshDuplicates()
 		m.flash = "Duplicate flag dismissed"
@@ -1746,54 +1546,6 @@ func (m *MainModel) updateHistory(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m *MainModel) updateSources(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.sourcesView == nil {
-		return m, nil
-	}
-	cmd := m.sourcesView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateSourceDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.sourceDetailView == nil {
-		return m, nil
-	}
-	cmd := m.sourceDetailView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateSyncLogDetail(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.syncLogDetailView == nil {
-		return m, nil
-	}
-	cmd := m.syncLogDetailView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateConnectWizard(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.connectWizard == nil {
-		return m, nil
-	}
-	cmd := m.connectWizard.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateDisconnect(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.disconnectDialog == nil {
-		return m, nil
-	}
-	cmd := m.disconnectDialog.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateReauth(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.reauthDialog == nil {
-		return m, nil
-	}
-	cmd := m.reauthDialog.Update(msg)
-	return m, cmd
-}
-
 func (m *MainModel) updateBugReport(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.bugReportView == nil {
 		return m, nil
@@ -1855,14 +1607,6 @@ func (m *MainModel) updateThemePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	cmd := m.themePickerView.Update(msg)
-	return m, cmd
-}
-
-func (m *MainModel) updateSyncLog(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.syncLogView == nil {
-		return m, nil
-	}
-	cmd := m.syncLogView.Update(msg)
 	return m, cmd
 }
 

@@ -159,6 +159,9 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 	if v, svf, handled := m.taskViewContent(); handled {
 		return v, svf
 	}
+	if v, svf, handled := m.sourceViewContent(); handled {
+		return v, svf
+	}
 	switch m.viewMode {
 	case ViewDetail:
 		if m.detailView != nil {
@@ -190,30 +193,6 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 		if m.historyView != nil {
 			view = m.historyView.View()
 		}
-	case ViewSources:
-		if m.sourcesView != nil {
-			view = m.sourcesView.View()
-		}
-	case ViewSourceDetail:
-		if m.sourceDetailView != nil {
-			view = m.sourceDetailView.View()
-		}
-	case ViewSyncLogDetail:
-		if m.syncLogDetailView != nil {
-			view = m.syncLogDetailView.View()
-		}
-	case ViewConnectWizard:
-		if m.connectWizard != nil {
-			view = m.connectWizard.View()
-		}
-	case ViewDisconnect:
-		if m.disconnectDialog != nil {
-			view = m.disconnectDialog.View()
-		}
-	case ViewReauth:
-		if m.reauthDialog != nil {
-			view = m.reauthDialog.View()
-		}
 	case ViewBugReport:
 		if m.bugReportView != nil {
 			view = m.bugReportView.View()
@@ -242,10 +221,6 @@ func (m *MainModel) currentViewContent() (view string, showValuesFooter bool) {
 	case ViewConflict:
 		if m.conflictView != nil {
 			view = m.conflictView.View()
-		}
-	case ViewSyncLog:
-		if m.syncLogView != nil {
-			view = m.syncLogView.View()
 		}
 	case ViewThemePicker:
 		if m.themePickerView != nil {
