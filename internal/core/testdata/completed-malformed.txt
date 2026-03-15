@@ -1,0 +1,6 @@
+[2026-03-15 14:30:00] abc-123 | Valid line
+this is not a valid line
+[invalid-date 10:00:00] xyz | Bad date
+[2026-03-15 09:00:00] def-456 | Another valid line
+
+[2026-03-14 16:45:00] ghi-789 | Yesterday valid
