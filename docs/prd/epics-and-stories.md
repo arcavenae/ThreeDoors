@@ -6518,7 +6518,7 @@ So that worker agents in isolated worktrees can access current operational data 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 3/4 stories done
+**Status:** COMPLETE (4/4 stories done)
 
 ### Story 69.1: Extract View Transition & Navigation Logic
 
@@ -6552,7 +6552,7 @@ As a developer,
 I want auxiliary view controllers and command dispatch logic extracted from main_model.go,
 So that the decomposition is complete and main_model.go is a thin orchestrator.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #789) | **Priority:** P1
 **Depends On:** 69.2, 69.3
 
 ## Epic 70: Completion History & Progress View (P1)
