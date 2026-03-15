@@ -852,7 +852,7 @@
 
 **Epic 69: TUI MainModel Decomposition** (P1)
 - **Goal:** Refactor `internal/tui/main_model.go` (2991 lines) into focused files for improved maintainability
-- **Status:** In Progress (3/4 done — PRs #767, #779, #786)
+- **Status:** COMPLETE (4/4 done — PRs #767, #779, #786, #789)
 - **Deliverables:**
   - View transition & navigation logic extracted
   - Source/sync view controllers extracted
@@ -961,7 +961,7 @@
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
 | Epic 66: CLI/TUI Adapter Wiring Parity | 3 | Complete (3/3 done) |
 | Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
-| Epic 69: TUI MainModel Decomposition | 4 | In Progress (3/4 done) |
+| Epic 69: TUI MainModel Decomposition | 4 | Complete (4/4 done) |
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
 | Epic 68: BOARD.md Redesign | 3 | Not Started |
 | **Total** | **353** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
