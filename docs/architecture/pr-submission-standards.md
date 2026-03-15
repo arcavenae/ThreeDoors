@@ -122,8 +122,8 @@ Some stories require additional checks beyond the standard checklist:
 
 These standards are intended to be enforced both manually (via the checklist) and automatically (via CI):
 
-- **gofumpt** and **golangci-lint** are run by the `make fmt` and `make lint` Makefile targets
-- **Tests** are run by `make test`
+- **gofumpt** and **golangci-lint** are run by the `just fmt` and `just lint` targets
+- **Tests** are run by `just test`
 - **CI pipeline** (GitHub Actions, Story 1.7) runs these checks on every push
 - The manual checklist catches issues _before_ pushing, avoiding the CI round-trip delay
 
