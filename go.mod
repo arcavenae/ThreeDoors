@@ -1,6 +1,6 @@
 module github.com/arcaven/ThreeDoors
 
-go 1.25.8
+go 1.26.1
 
 require (
 	github.com/99designs/keyring v1.2.2
