@@ -850,6 +850,25 @@
 - **Stories:** 67.1 (1 story)
 - **Research:** `_bmad-output/planning-artifacts/retrospector-data-pipeline-party-mode.md`
 
+**Epic 69: TUI MainModel Decomposition** (P1)
+- **Goal:** Refactor `internal/tui/main_model.go` (2991 lines) into focused files for improved maintainability
+- **Status:** Not Started (0/4 done)
+- **Deliverables:**
+  - View transition & navigation logic extracted
+  - Source/sync view controllers extracted
+  - Planning & task management view controllers extracted
+  - Auxiliary view controllers & command dispatch extracted
+- **Stories:** 69.1, 69.2, 69.3, 69.4 (4 stories)
+
+**Epic 70: Completion History & Progress View** (P1)
+- **Goal:** New `:history` TUI view and `threedoors history` CLI command for browsing completed tasks with aggregated stats
+- **Status:** Not Started (0/3 done)
+- **Deliverables:**
+  - Completion data reader & aggregator
+  - History TUI view (`:history`)
+  - History CLI command (`threedoors history`)
+- **Stories:** 70.1, 70.2, 70.3 (3 stories)
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -929,5 +948,7 @@
 | Epic 65: CLI Test Coverage Hardening | 3 | Complete (3/3 done) |
 | Epic 66: CLI/TUI Adapter Wiring Parity | 3 | Complete (3/3 done) |
 | Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
-| **Total** | **343** | **Audit 2026-03-13: see epics-and-stories.md for authoritative status** |
+| Epic 69: TUI MainModel Decomposition | 4 | Not Started (0/4 done) |
+| Epic 70: Completion History & Progress View | 3 | Not Started (0/3 done) |
+| **Total** | **350** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
 ---

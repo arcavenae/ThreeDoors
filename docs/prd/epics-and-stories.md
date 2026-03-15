@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-67 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. 757+ merged PRs total. Last audit: 2026-03-13.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-67 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epics 69, 70 planned (Not Started). 764+ merged PRs total. Last audit: 2026-03-15.
 
 ## Requirements Inventory
 
@@ -197,7 +197,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 
 | Requirement | Epic | Description |
 |------------|------|-------------|
-| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (12/19 complete) |
+| (cross-cutting) | Epic 0 | Infrastructure & Process Backfill (36/37 complete) |
 | TD1-TD9 | Epic 1 ✅ | Three Doors Technical Demo (COMPLETE) |
 | FR2, FR4, FR5, FR12, FR15 | Epic 2 ✅ | Apple Notes Integration (COMPLETE) |
 | FR3, FR6-FR10, FR16, FR18, FR19 | Epic 3 ✅ | Enhanced Interaction (COMPLETE) |
@@ -236,7 +236,7 @@ This document provides the complete epic and story breakdown for ThreeDoors, dec
 ### Epic 0: Infrastructure & Process (Backfill)
 Retroactive stories covering CI, documentation, tooling, quality standards, and research work from 29 unstory'd PRs. Now also includes forward-looking infrastructure improvements and test coverage hardening from TEA audit (R-001).
 **FRs covered:** None (cross-cutting infrastructure)
-**Status:** 35 of 35 stories complete.
+**Status:** 36 of 37 stories complete.
 
 ### Epic 1: Three Doors Technical Demo ✅ COMPLETE
 Build and validate the Three Doors interface with minimal viable functionality to prove the UX concept.
@@ -407,7 +407,7 @@ Time-based seasonal theme variants that auto-switch based on the current date, e
 
 **Epic Goal:** Retroactively track infrastructure, documentation, tooling, and process work that was performed outside of story-level planning. These backfill stories capture work from 29 merged PRs that had no backing story. Now also includes forward-looking infrastructure improvements and test coverage hardening from the TEA audit (R-001).
 
-**Status:** 35 of 35 stories complete.
+**Status:** 36 of 37 stories complete.
 
 **Origin:** PR-Story Gap Analysis (2026-03-03), see `../../_bmad-output/planning-artifacts/pr-story-gap-analysis.md`
 
@@ -936,6 +936,40 @@ So that test failure messages report the caller's line number instead of the hel
 - **AC3:** No functional test behavior changes
 - **AC4:** All tests pass with `go test ./... -race`
 - **AC5:** `make lint` passes with zero warnings
+
+### Story 0.58: Fix govulncheck Vulnerabilities
+
+As a developer,
+I want all vulnerabilities reported by `govulncheck ./...` resolved,
+So that the project has no known security vulnerabilities in its dependency chain.
+
+**Status:** Done (PR #761) | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** `govulncheck ./...` reports zero vulnerabilities
+- **AC2:** `go.mod` specifies `go 1.26.1` (or later)
+- **AC3:** `make lint` passes with zero warnings
+- **AC4:** `make test` passes
+- **AC5:** CI workflow continues to use `go-version-file: 'go.mod'`
+
+### Story 0.59: Migrate from Makefile to Justfile
+
+As a ThreeDoors developer,
+I want to use Justfile instead of Makefile for project commands,
+So that I get better error messages, simpler syntax, and cross-platform support.
+
+**Status:** Not Started | **Priority:** P2
+
+**Blocked on:** P-001 owner sign-off in BOARD.md.
+
+**Acceptance Criteria:**
+- **AC1:** A `justfile` exists with equivalent recipes for all Makefile targets
+- **AC2:** All CLAUDE.md references to `make X` are updated
+- **AC3:** CI workflows updated to use `just`
+- **AC4:** `just --list` shows all available commands
+- **AC5:** Old Makefile removed
+- **AC6:** Agent definition files updated
+- **AC7:** README.md build instructions updated
 
 ---
 
@@ -6447,3 +6481,80 @@ So that worker agents in isolated worktrees can access current operational data 
 - **AC4:** Supervisor has standing order to verify data freshness: `git log --oneline docs/operations/ --since="8 hours ago"` — investigate if no commits and retrospector is active
 - **AC5:** All changes go through PR workflow (branch protection compliance)
 - **AC6:** Data sync PRs use `data-sync/<timestamp>` branch naming convention
+
+## Epic 69: TUI MainModel Decomposition (P1)
+
+**Goal:** Refactor `internal/tui/main_model.go` from 2991 lines into focused files, improving maintainability and enabling parallel work on different TUI concerns.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** 0/4 stories done
+
+### Story 69.1: Extract View Transition & Navigation Logic
+
+As a developer,
+I want view transition and navigation logic extracted from main_model.go into a focused file,
+So that the main model is smaller and navigation changes are isolated.
+
+**Status:** Not Started | **Priority:** P1
+
+### Story 69.2: Extract Source/Sync View Controllers
+
+As a developer,
+I want source and sync view controller logic extracted from main_model.go,
+So that provider connection and sync flows are maintainable independently.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 69.1
+
+### Story 69.3: Extract Planning & Task Management View Controllers
+
+As a developer,
+I want planning and task management view controller logic extracted from main_model.go,
+So that task workflow logic is isolated and testable.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 69.1
+
+### Story 69.4: Extract Auxiliary View Controllers & Command Dispatch
+
+As a developer,
+I want auxiliary view controllers and command dispatch logic extracted from main_model.go,
+So that the decomposition is complete and main_model.go is a thin orchestrator.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 69.2, 69.3
+
+## Epic 70: Completion History & Progress View (P1)
+
+**Goal:** Add a new `:history` TUI view and `threedoors history` CLI command for browsing completed tasks with aggregated statistics.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** 0/3 stories done
+
+### Story 70.1: Completion Data Reader & Aggregator
+
+As a user,
+I want my completion history aggregated from session logs,
+So that I can see patterns in my completed work.
+
+**Status:** Not Started | **Priority:** P1
+
+### Story 70.2: History TUI View (`:history`)
+
+As a user,
+I want a `:history` view in the TUI showing my completed tasks,
+So that I can browse my completion history without leaving the app.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 70.1
+
+### Story 70.3: History CLI Command (`threedoors history`)
+
+As a user,
+I want a `threedoors history` CLI command,
+So that I can view my completion history from the terminal without launching the TUI.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 70.1
