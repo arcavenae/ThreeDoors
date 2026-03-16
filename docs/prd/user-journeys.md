@@ -154,3 +154,105 @@
 **Success Criteria:** Theme change applies instantly to all three doors; config.yaml reflects selection after restart; narrow terminal triggers Classic fallback without error.
 
 ---
+
+## Journey 10: First-Run Onboarding
+
+**User State:** User has just installed ThreeDoors and launches it for the first time with no existing configuration or tasks.
+
+**Flow:**
+1. User runs `threedoors` in terminal for the first time
+2. ThreeDoors detects no config file and enters the onboarding flow
+3. Empty state view explains the Three Doors concept and prompts the user to add their first tasks
+4. User adds 3-5 tasks via guided inline prompts
+5. Adapter registry presents available task providers (local text file, Apple Reminders, Jira, etc.)
+6. User selects a provider and configures it; config is written to `~/.threedoors/config.yaml`
+7. Horizontal theme preview appears — user browses and selects a door theme
+8. First set of three doors appears with the user's tasks rendered in the chosen theme
+9. User selects a door and completes their first task
+
+**Supported By:** FR31, FR32, FR33, FR55, FR56, FR57, FR58, FR59
+
+**Success Criteria:** New user goes from install to first task completion in under 3 minutes; config.yaml is created with valid provider and theme settings; no errors or blank screens during the flow.
+
+---
+
+## Journey 11: Task Source Connection & Multi-Source Usage
+
+**User State:** User has been using ThreeDoors with local tasks and wants to connect an external task source (e.g., Jira, Todoist, GitHub Issues) to pull in work tasks alongside personal ones.
+
+**Flow:**
+1. User decides to connect their Jira board and runs the setup wizard via `:connect` command
+2. Wizard prompts for provider type, server URL, and authentication credentials
+3. User enters API token; ThreeDoors validates the connection and confirms sync access
+4. Initial sync pulls issues from the configured JQL filter into the local task pool
+5. Three doors now show a mix of local tasks and Jira issues, each with source attribution
+6. User selects a door showing a Jira issue and marks it complete
+7. Completion syncs back to Jira — the issue transitions to "Done" in the remote system
+8. User checks sync status indicator in the TUI to confirm bidirectional sync is healthy
+
+**Supported By:** FR63, FR64, FR65, FR66, FR46, FR48, FR70, FR71, FR72
+
+**Success Criteria:** External tasks appear in doors within one sync cycle; source attribution is visible on each task; completing a task in ThreeDoors reflects in the remote system; sync status indicator shows healthy state.
+
+---
+
+## Journey 12: Daily Planning Mode
+
+**User State:** User starts their workday and wants to review yesterday's progress and set today's focus before diving into tasks.
+
+**Flow:**
+1. User runs `threedoors plan` or types `:plan` in the TUI to enter planning mode
+2. Step 1 (Review): Yesterday's incomplete tasks are presented one by one — user triages each as continue, skip, or snooze
+3. Snoozed tasks open the SnoozeView for date selection and are deferred out of the active pool
+4. Step 2 (Select): Full task pool is displayed with energy-aware sorting — system infers energy level from time of day (morning = high) and suggests matching tasks
+5. User overrides energy level to "medium" and selects 3 tasks as today's focus
+6. Step 3 (Confirm): Summary shows focus tasks tagged with `+focus`; user confirms the plan
+7. Planning session metrics are logged (duration, tasks reviewed, focus count)
+8. User returns to three doors view — focus-tagged tasks appear more frequently as doors throughout the day
+
+**Supported By:** FR97, FR98, FR99, FR100, FR101, FR102, FR103
+
+**Success Criteria:** Planning session completes in under 5 minutes; focus tasks appear at elevated frequency in door selection; planning metrics are recorded in session log; energy override persists for the session.
+
+---
+
+## Journey 13: Snooze & Defer Workflow
+
+**User State:** User encounters a task in the doors that isn't actionable right now but will be relevant next week.
+
+**Flow:**
+1. User sees a task in the three doors view and selects it
+2. User presses `Z` to open the snooze action
+3. Snooze options appear: Tomorrow, Next Week, Pick Date, Someday
+4. User selects "Next Week" — task is deferred until next Monday 9:00 AM
+5. Task immediately disappears from door selection; doors refresh with a new task in its place
+6. Snooze event is logged in the JSONL session metrics
+7. On Monday morning, the deferred task automatically returns to `todo` status
+8. Task reappears in door selection; user completes it
+9. User types `:deferred` to review all currently snoozed tasks, un-snoozes one early
+
+**Supported By:** FR104, FR105, FR106, FR107, FR108, FR109
+
+**Success Criteria:** Snoozed task is removed from doors within the same session; task auto-returns on the scheduled date; `:deferred` view shows all snoozed tasks sorted by return date; snooze events appear in session log.
+
+---
+
+## Journey 14: CLI Task Management
+
+**User State:** Power user wants to manage tasks non-interactively from the command line or integrate ThreeDoors into shell scripts.
+
+**Flow:**
+1. User runs `threedoors task list` to see all current tasks in a formatted table
+2. User pipes `threedoors task list --json` into `jq` to filter tasks by tag
+3. User adds a new task: `threedoors task add "Review quarterly OKRs"`
+4. User checks current doors: `threedoors doors` shows the three active doors
+5. User picks a door without entering the TUI: `threedoors doors pick 2`
+6. User completes the task: `threedoors task complete <id>`
+7. User reviews session stats: `threedoors stats` shows completions and session metrics
+8. User generates shell completions: `threedoors completion zsh >> ~/.zshrc`
+
+**Supported By:** FR81, FR82, FR83, FR84, FR85
+
+**Success Criteria:** All commands return valid output in both human-readable and `--json` modes; shell completions work without errors; commands are composable in shell pipelines.
+
+---
