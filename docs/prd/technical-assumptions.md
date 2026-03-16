@@ -1,3 +1,9 @@
+---
+title: Technical Assumptions
+section: Technical Guidance
+lastUpdated: '2026-03-06'
+---
+
 # Technical Assumptions
 
 ## Technical Demo Phase Architecture

@@ -1,3 +1,9 @@
+---
+title: User Journeys
+section: User Experience
+lastUpdated: '2026-03-06'
+---
+
 # User Journeys
 
 ## Journey 1: Daily Task Selection (Tech Demo)
