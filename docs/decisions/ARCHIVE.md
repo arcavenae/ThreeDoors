@@ -346,6 +346,17 @@
 |----|-------|------|-------|------|
 | R-001 | State of Testing Audit — comprehensive test health assessment with gap analysis and prioritized recommendations | 2026-03-09 | TEA Agent | [Report](../../_bmad-output/planning-artifacts/state-of-testing-report.md) — **Resolved:** Validation (2026-03-11) found P0/P1 items already addressed (CLI 69.8%, all contract tests exist, t.Helper() at 70 files). Three P2 stories created (0.51-0.53) for remaining gaps. |
 
+## Completed Recommendations
+
+| ID | Recommendation | Date | Source | Link | Outcome |
+|----|----------------|------|--------|------|---------|
+| P-002 | Envoy three-layer firewall implementation | 2026-03-08 | Party mode (8 sessions) | [Plan](../../_bmad-output/planning-artifacts/envoy-three-layer-firewall-plan.md) | **Done** — Epic 52 created (4 stories) |
+| P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | **Done** — Story 0.46 (triage flow docs) |
+| P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | **Done** — fork references removed during Story 51.2 (PR #460) |
+| P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md) | **Done** — Stories 0.44, 0.45, 0.46 |
+| P-006 | In-app bug reporting via `:bug` command | 2026-03-09 | Party mode (4 rounds) | [Party Mode](../../_bmad-output/planning-artifacts/in-app-bug-reporting-party-mode.md) | **Done** — Epic 50 created (3 stories) |
+| P-007 | PRD post-reconstruction cleanup | 2026-03-15 | PRD Validation (R-002) + Party mode | [Validation Report](../../_bmad-output/planning-artifacts/prd-validation-report-2026-03-15.md) | **Done** — Stories 0.61, 0.62, 0.63 |
+
 ## Superseded
 
 | ID | Original Decision | Date | Superseded By | Link |
