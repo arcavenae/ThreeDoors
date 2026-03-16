@@ -1,3 +1,9 @@
+---
+title: ThreeDoors PRD Index
+section: Table of Contents
+lastUpdated: '2026-03-15'
+---
+
 # ThreeDoors Product Requirements Document (PRD)
 
 ## Table of Contents

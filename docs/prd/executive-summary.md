@@ -1,3 +1,9 @@
+---
+title: Executive Summary
+section: Executive Summary
+lastUpdated: '2026-03-06'
+---
+
 # Executive Summary
 
 ## Vision

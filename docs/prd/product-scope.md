@@ -1,3 +1,9 @@
+---
+title: Product Scope
+section: Scope & Phasing
+lastUpdated: '2026-03-06'
+---
+
 # Product Scope
 
 ## Phase 1: Foundation (Epics 1-2)
