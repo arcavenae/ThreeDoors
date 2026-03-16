@@ -154,19 +154,19 @@ Complete PRD forensic reconstruction to ensure full epic and story coverage acro
 
 ### Story 0.61: PRD Cleanup — Stale Content & Structural Fixes (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #794).
 
 Remove stale content and fix structural issues in PRD shards identified by forensic reconstruction.
 
 ### Story 0.62: Phase Numbering Consolidation in product-scope.md (P1)
 
-**Status:** Not Started.
+**Status:** Done (PR #792).
 
 Consolidate inconsistent phase numbering in product-scope.md.
 
 ### Story 0.63: User Journey Expansion for Post-Phase-2 Features (P2)
 
-**Status:** Not Started.
+**Status:** Done (PR #791).
 
 Expand user journey documentation to cover features implemented after Phase 2.
 
@@ -611,13 +611,13 @@ New `:history` TUI view and `threedoors history` CLI command for browsing comple
 
 **Dependency graph:** 70.1 first, then 70.2 & 70.3 can parallelize.
 
-### Epic 68: BOARD.md Redesign (P2) — 0/3 stories done
+### Epic 68: BOARD.md Redesign (P2) — 1/3 stories done
 
 Split BOARD.md into a focused active dashboard (<120 lines) and a complete decision archive, extract Epic Number Registry to its own file, fix duplicate IDs, and update all supporting docs and agent definitions.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 68.1 | Create Decision Archive and Extract Epic Registry | Not Started | P2 | None |
+| 68.1 | Create Decision Archive and Extract Epic Registry | Done (PR #793) | P2 | None |
 | 68.2 | Restructure Active BOARD.md | Not Started | P2 | 68.1 |
 | 68.3 | Update Supporting Documentation for Board Redesign | Not Started | P2 | 68.2 |
 
