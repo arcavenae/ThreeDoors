@@ -1,48 +1,57 @@
+---
+title: Next Steps
+section: Roadmap & Priorities
+lastUpdated: '2026-03-15'
+---
+
 # Next Steps
 
-## Current Focus: Complete In-Progress Epics
+## Current Focus
 
-**Objective:** Finish partially complete work before starting new epics.
+**Objective:** All primary epics (1-67, 69-70) are complete. Focus is on remaining planned epics and future-phase work.
 
-**In Progress:**
-- **Epic 17: Door Theme System** -- Stories 17.1-17.6 being implemented. Adds user-selectable themed door frames with ASCII/ANSI art.
-
-**Partially Complete (need remaining stories):**
-- **Epic 9: Testing Strategy & Quality Gates** -- 2/5 stories done (PRs #83, #89). Stories 9.3-9.5 pending: performance benchmarks, functional E2E tests, CI coverage gates.
-- **Epic 13: Multi-Source Task Aggregation** -- 1/2 stories done (PR #84). Story 13.2 (duplicate detection) pending.
+**Ready to Start:**
+- **Epic 68: BOARD.md Redesign** (P2) -- Split BOARD.md into focused active dashboard and complete decision archive, extract Epic Number Registry to its own file, fix duplicate IDs, update agent definitions.
 
 ---
 
 ## Next Epics in Priority Order
 
-**After current in-progress work:**
+**Not-started epics from the current backlog:**
 
-1. **Epic 19: Jira Integration** -- Read-only adapter with JQL search, then bidirectional sync. Prerequisites met (Epic 7, 11, 13).
-2. **Epic 20: Apple Reminders Integration** -- Full CRUD via JXA scripts. Prerequisites met (Epic 7).
-3. **Epic 21: Sync Protocol Hardening** -- Per-provider sync scheduler, circuit breaker, canonical ID mapping. Prerequisites met (Epic 11, 13).
+1. **Epic 68: BOARD.md Redesign** (P2) -- Decision management infrastructure improvement. No prerequisites.
+2. **Epic 33: Seasonal Door Theme Variants** (P2) -- Time-based seasonal auto-switching themes. Prerequisites met (Epic 17 complete).
+3. **Epic 16: iPhone Mobile App** (P3) -- SwiftUI app with Apple Notes sync, Three Doors card carousel, TestFlight distribution. Prerequisites met (Epic 2, 3.5 complete).
+4. **Epic 22: Self-Driving Development Pipeline** (P3) -- Dispatch multiclaude workers from TUI. Prerequisites met (Epic 14 complete).
 
-**Longer-term (prerequisites may not yet be met):**
+**Future-phase epics (prerequisites may need validation):**
 
-4. **Epic 16: iPhone Mobile App** -- SwiftUI app with Apple Notes sync, Three Doors card carousel, TestFlight distribution.
-5. **Epic 22: Self-Driving Development Pipeline** -- Dispatch multiclaude workers from TUI. Depends on Epic 14 (complete).
+5. **Epic 4: Mood-Aware Adaptive Door Selection** -- Learning algorithm for context-aware task presentation.
+6. **Epic 8: Web-Based Configuration Dashboard** -- Browser-based settings and analytics.
+7. **Epic 15: Psychology Research Integration** -- Evidence-based task selection refinement.
 
 ---
 
 ## Decision Points
 
-**Epic 9 scope review:** Assess whether remaining stories (9.3-9.5) are still needed given Epic 18 (Docker E2E testing) is complete. May overlap.
+**Epic 68 scope:** BOARD.md is 400+ lines. Determine whether to split in a single story or phased approach.
 
-**Epic 16 timing:** iPhone app depends on stable Apple Notes integration. Evaluate whether current integration is mature enough before starting.
+**Phase 4+ prioritization:** With 67+ epics complete, evaluate which future-phase epics deliver the most user value. Mobile (Epic 16), mood-awareness (Epic 4), and web dashboard (Epic 8) are all candidates.
 
-**Epic 22 feasibility:** Self-driving pipeline depends on multiclaude stability. Evaluate CLI availability before committing resources.
+**Integration maintenance:** 8 data source adapters are live. Monitor for API changes, deprecations, or new provider requests from users.
 
 ---
 
 ## Completed Milestones
 
-- Phase 1 (Technical Demo): COMPLETE -- Concept validated through daily use
-- Phase 2 (Post-Validation): COMPLETE -- Apple Notes, enhanced interaction, platform readiness, learning, macOS distribution, data layer all shipped
-- Phase 3 (Platform Expansion): MOSTLY COMPLETE -- Plugin SDK, Obsidian, onboarding, sync, calendar, LLM decomposition, psychology research, Docker E2E all shipped
+- **Phase 1** (Technical Demo): COMPLETE -- Concept validated through daily use
+- **Phase 2** (Post-Validation): COMPLETE -- Apple Notes, enhanced interaction, platform readiness, learning, macOS distribution, data layer all shipped
+- **Phase 3** (Platform Expansion): COMPLETE -- Plugin SDK, Obsidian, onboarding, sync, calendar, LLM decomposition, psychology research, Docker E2E all shipped
+- **Phase 4** (Data Source Ecosystem): COMPLETE -- Connection manager, sources TUI/CLI, OAuth, Todoist, Linear, GitHub, Jira, ClickUp integrations all shipped
+- **Phase 5** (Polish & Infrastructure): COMPLETE -- Door visual redesign, LLM CLI services, full-terminal layout, CI optimization, README overhaul, GitHub Pages, security hardening, doctor command, bug reporting, SLAES, retrospector, cross-computer sync all shipped
+- **Phase 6** (TUI Decomposition & History): COMPLETE -- MainModel decomposition (Epic 69), completion history & progress view (Epic 70)
+
+**Total: 67+ epics complete, 764+ PRs merged, 353 stories across 70 epics.**
 
 ---
 

@@ -1,3 +1,9 @@
+---
+title: Story Optimization Summary
+section: Appendix
+lastUpdated: '2025-11-07'
+---
+
 # Appendix: Story Optimization Summary
 
 ## Changes Made in Version 1.2
