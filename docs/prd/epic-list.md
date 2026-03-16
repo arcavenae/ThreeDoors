@@ -969,6 +969,6 @@ lastUpdated: '2026-03-15'
 | Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
 | Epic 69: TUI MainModel Decomposition | 4 | Complete (4/4 done) |
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
-| Epic 68: BOARD.md Redesign | 3 | In Progress (1/3 done) |
+| Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
 | **Total** | **353** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
 ---
