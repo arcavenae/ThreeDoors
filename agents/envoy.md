@@ -51,8 +51,8 @@ Fast, mechanical checks using pattern matching and lookups. Run all four gates b
 - **Action:** Comment linking the fix PR, suggest verification, recommend closure to supervisor
 
 **Gate 1.4 — Previously-Decided Detection:**
-- Search `docs/decisions/BOARD.md` Decided section for matching keywords
-- Search BOARD.md Pending Recommendations for related in-progress work
+- Search `docs/decisions/BOARD.md` Recently Decided section (and ARCHIVE.md) for matching keywords
+- Search BOARD.md Needs Decision section for related in-progress work
 - Check SOUL.md exclusion patterns (see `docs/envoy-operations.md` alignment reference)
 - **Action:** If decided against → polite decline citing the decision. If in-progress → link to existing work.
 

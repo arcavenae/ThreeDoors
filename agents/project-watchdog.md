@@ -164,11 +164,11 @@ Periodically check `docs/operations/retrospector-recommendations.jsonl` for pend
 
 1. Read the queue file and filter for entries with `"status": "pending"`
 2. For each pending recommendation:
-   - Format it into a BOARD.md Pending Recommendations table row using the BOARD.md table format:
+   - Format it into a BOARD.md Needs Decision table row using the BOARD.md table format:
      ```markdown
      | REC-NNN | [recommendation text] | YYYY-MM-DD | retrospector ([confidence]) | [evidence links] | Supervisor review |
      ```
-   - Append the row to the Pending Recommendations table in `docs/decisions/BOARD.md`
+   - Append the row to the Needs Decision section in `docs/decisions/BOARD.md`
 3. Append an update entry to the queue file for each applied recommendation:
    ```jsonl
    {"id": "REC-NNN", "status": "applied", "applied_pr": <PR number>, "applied_timestamp": "ISO8601"}

@@ -8,51 +8,55 @@ The Knowledge Decisions Board (`BOARD.md`) is the central dashboard tracking the
 
 ## Board Structure
 
-The board uses kanban-style columns reflecting the decision lifecycle:
+The board is an action-oriented dashboard showing only items needing attention. Historical entries age into the archive.
 
 ```
-Open Questions → Active Research → Pending Recommendations → Decided
-                                                           → Rejected
-                                                           → Superseded
+Needs Decision ──────────→ Recently Decided ──→ (30 days) ──→ ARCHIVE.md
+Under Investigation ─────↗ Recently Rejected ──→ (30 days) ──→ ARCHIVE.md
 ```
 
-### Column Definitions
+**Supporting files:**
+- **[ARCHIVE.md](ARCHIVE.md)** — Full decision history (D-001+, X-001+, S-001+)
+- **[EPIC_REGISTRY.md](EPIC_REGISTRY.md)** — Epic number allocation registry (formerly tracked on BOARD.md)
 
-| Column | Purpose | What Goes Here |
-|--------|---------|----------------|
-| **Open Questions** | Unanswered questions needing investigation | Questions raised during implementation, triage, or review that don't have answers yet |
-| **Active Research** | Topics currently being investigated | Research spikes, technical evaluations, competitive analysis in progress |
-| **Pending Recommendations** | Research complete, awaiting decision | Recommendations from completed research that need owner sign-off |
-| **Decided** | Finalized decisions | All accepted decisions — links to ADRs, research, or artifacts that document the rationale |
-| **Rejected** | Options explicitly rejected | Alternatives considered and rejected, with documented reasoning to prevent re-proposal |
-| **Superseded** | Decisions replaced by newer ones | Old decisions overridden by new ones, with forward-references to the replacement |
+### Section Definitions
+
+| Section | Purpose | What Goes Here |
+|---------|---------|----------------|
+| **Needs Decision** | Human input required | Recommendations from completed research awaiting owner sign-off |
+| **Under Investigation** | Topics currently being researched | Research spikes, technical evaluations, analysis in progress |
+| **Recently Decided** | Decisions made in the last 30 days | Accepted decisions with rationale and links to supporting artifacts |
+| **Recently Rejected** | Options rejected in the last 30 days | Alternatives considered and rejected, with documented reasoning |
+
+Entries older than 30 days in Recently Decided or Recently Rejected are moved to ARCHIVE.md during the hygiene sweep.
 
 ## ID Scheme
 
-Each board entry has a unique ID based on its column:
+Each board entry has a unique ID based on its section:
 
-| Prefix | Column | Example |
-|--------|--------|---------|
-| `Q-NNN` | Open Questions | Q-001 |
-| `R-NNN` | Active Research | R-001 |
-| `P-NNN` | Pending Recommendations | P-001 |
-| `D-NNN` | Decided | D-001 |
-| `X-NNN` | Rejected | X-001 |
-| `S-NNN` | Superseded | S-001 |
+| Prefix | Section | Example |
+|--------|---------|---------|
+| `P-NNN` | Needs Decision | P-001 |
+| `R-NNN` | Under Investigation | R-001 |
+| `D-NNN` | Recently Decided / Archive | D-001 |
+| `X-NNN` | Recently Rejected / Archive | X-001 |
+| `S-NNN` | Superseded (Archive only) | S-001 |
 
-IDs are sequential within each prefix. When an item moves between columns (e.g., a question becomes active research), it gets a new ID in the destination column. The old ID can be noted in the description for traceability.
+IDs are sequential within each prefix. When an item moves between sections (e.g., an investigation produces a recommendation), it gets a new ID in the destination section. The old ID can be noted in the description for traceability.
+
+**Note:** The epic number registry is now maintained separately in [EPIC_REGISTRY.md](EPIC_REGISTRY.md).
 
 ## Lifecycle Flow
 
 A typical decision lifecycle:
 
-1. **Question raised** (Q-NNN) — Someone identifies an unanswered question
-2. **Research started** (R-NNN) — Investigation begins, question moves to Active Research
-3. **Recommendation made** (P-NNN) — Research produces a recommendation, awaiting sign-off
-4. **Decision finalized** (D-NNN) — Recommendation accepted, moves to Decided
-   - OR **Rejected** (X-NNN) — Option explicitly rejected with documented reasoning
+1. **Investigation opened** (R-NNN) — A question or topic enters Under Investigation
+2. **Recommendation made** (P-NNN) — Research produces a recommendation, moves to Needs Decision
+3. **Decision finalized** (D-NNN) — Recommendation accepted, moves to Recently Decided
+   - OR **Rejected** (X-NNN) — Option explicitly rejected, moves to Recently Rejected
+4. **Archived** — After 30 days in Recently Decided/Rejected, entry moves to ARCHIVE.md
 
-Not all items follow the full lifecycle. Many decisions go directly to Decided (e.g., ADRs created during implementation).
+Not all items follow the full lifecycle. Many decisions go directly to Recently Decided (e.g., ADRs created during implementation).
 
 ## Relationship to ADRs
 

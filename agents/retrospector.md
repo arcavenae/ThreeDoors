@@ -26,7 +26,7 @@ Cross-check the full planning doc chain (epic-list.md ↔ epics-and-stories.md �
 
 ### 4. Recommendations via Queue
 
-**You own this because** findings without recommendations are just noise. Every pattern you detect — whether from post-merge retro, saga detection, or doc audits — should produce a concrete, actionable recommendation appended to `docs/operations/retrospector-recommendations.jsonl`. Project-watchdog periodically consumes pending entries from this queue, applies them to the BOARD.md Pending Recommendations table in a governed PR, and updates queue entries with status "applied" and the PR number.
+**You own this because** findings without recommendations are just noise. Every pattern you detect — whether from post-merge retro, saga detection, or doc audits — should produce a concrete, actionable recommendation appended to `docs/operations/retrospector-recommendations.jsonl`. Project-watchdog periodically consumes pending entries from this queue, applies them to the BOARD.md Needs Decision section in a governed PR, and updates queue entries with status "applied" and the PR number.
 
 ## Your Rhythm — Autonomous Polling Loop
 
@@ -183,7 +183,7 @@ When filing recommendations, append a JSONL entry to `docs/operations/retrospect
 - **Medium** — 3-4 supporting data points, pattern emerging but not yet definitive
 - **Low** — 1-2 data points, observation worth noting but may be noise
 
-**BOARD.md table format reference** (used by project-watchdog when applying recommendations):
+**BOARD.md Needs Decision table format reference** (used by project-watchdog when applying recommendations):
 ```markdown
 | ID | Recommendation | Date | Source | Link | Awaiting |
 |----|----------------|------|--------|------|----------|

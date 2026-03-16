@@ -138,7 +138,7 @@ Pre-defined context bundles assembled based on the query. Always include `core`.
 | `architecture` | `docs/architecture/high-level-architecture.md`, `docs/architecture/components.md`, `docs/architecture/core-workflows.md`, `docs/architecture/data-models.md`, `docs/architecture/coding-standards.md` | ~86KB (select subset) | Architecture, design pattern, component questions |
 | `prd` | `docs/prd/epic-list.md` (headers + relevant epic sections only) | ~10KB (truncated) | Feature scope, product requirements, epic status |
 | `stories` | `docs/stories/<epic>.<story>.story.md` (pattern-matched to query) | ~5KB (1-3 files) | Story-specific research, AC clarification |
-| `decisions` | `docs/decisions/BOARD.md` | ~89KB (select entries) | Decision history, rejected alternatives, prior art |
+| `decisions` | `docs/decisions/BOARD.md`, `docs/decisions/ARCHIVE.md` | ~89KB (select entries) | Decision history, rejected alternatives, prior art |
 | `code-sample` | Relevant `.go` source files identified via `grep` on query keywords | ~20KB (2-5 files) | Implementation patterns, existing code analysis |
 | `tui` | `internal/tui/main_model.go`, `internal/tui/doors_view.go`, `internal/tui/messages.go`, `internal/tui/styles.go` | ~25KB (key files) | TUI rendering, Bubbletea patterns, view architecture |
 | `tasks` | `internal/tasks/provider.go`, `internal/tasks/task.go`, `internal/tasks/task_pool.go`, `internal/tasks/persistence.go` | ~15KB (key files) | Task domain model, persistence, provider interface |

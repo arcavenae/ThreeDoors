@@ -20,7 +20,7 @@
 
 ## Recently Decided (Last 30 Days)
 
-> Entries from ~March 2026. For the complete decided history (D-001–D-181), see [ARCHIVE.md](ARCHIVE.md).
+> Entries from ~March 2026. For the complete decided history (D-001–D-182), see [ARCHIVE.md](ARCHIVE.md).
 
 | ID | Decision | Date | Rationale | Link |
 |----|----------|------|-----------|------|
@@ -47,10 +47,11 @@
 | D-179 | PRD coverage gap formalization — Epics 63, 64, Story 5.3 | 2026-03-13 | Three PRD features lacked corresponding epics/stories; all P2/Phase 5 | [Analysis](../../_bmad-output/planning-artifacts/prd-coverage-gap-analysis.md) |
 | D-180 | Standalone tea.Program wrapping ConnectWizard for CLI (Story 45.6) | 2026-03-13 | Wizard already implements tea.Model; thin wrapper avoids logic duplication | [Research](../../_bmad-output/planning-artifacts/connect-wizard-gap-research.md) |
 | D-181 | Move adapter registration before CLI/TUI routing branch (Epic 66) | 2026-03-13 | Registration only ran in TUI path; CLI had empty registry | [Audit](../../_bmad-output/planning-artifacts/unwired-features-audit.md) |
+| D-182 | BOARD.md redesign: action-oriented sections, two-file split with ARCHIVE.md + EPIC_REGISTRY.md (Epic 68) | 2026-03-15 | Reduces dashboard noise; 150+ historical entries moved to archive; epic registry separated for cleaner allocation | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
 
 ## Recently Rejected (Last 30 Days)
 
-> Entries from ~March 10–15, 2026. For the complete rejected history (X-001–X-118), see [ARCHIVE.md](ARCHIVE.md).
+> Entries from ~March 10–15, 2026. For the complete rejected history (X-001–X-123), see [ARCHIVE.md](ARCHIVE.md).
 
 | ID | Option | Date | Why Rejected | Link |
 |----|--------|------|--------------|------|
@@ -79,3 +80,8 @@
 | X-116 | GitHub Wiki for docs (Epic 61) | 2026-03-11 | Not version-controlled with repo; limited formatting | [Planning](../../_bmad-output/planning-artifacts/gh-pages-user-guide-plan.md) |
 | X-117 | Mix user-facing docs into existing `docs/` directory (Epic 61) | 2026-03-11 | 262 story files would create confusion and bloat nav | [Planning](../../_bmad-output/planning-artifacts/gh-pages-user-guide-plan.md) |
 | X-118 | Standalone interactive prompts (huh forms) in CLI for connect wizard (Story 45.6) | 2026-03-13 | Duplicates logic in connect_wizard.go; double maintenance burden | [Research](../../_bmad-output/planning-artifacts/connect-wizard-gap-research.md) |
+| X-119 | Status tags on single BOARD.md file (Epic 68) | 2026-03-15 | Doesn't reduce file size; tags add maintenance without structural improvement | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
+| X-120 | Database-backed board with YAML/JSON + generated markdown (Epic 68) | 2026-03-15 | Over-engineering; violates SOUL.md; D-029 chose zero infrastructure | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
+| X-121 | Per-epic decision files (Epic 68) | 2026-03-15 | Scatters decisions; cross-cutting decisions hard to find; 65+ small files | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
+| X-122 | Aggressive archival — delete entries older than 90 days (Epic 68) | 2026-03-15 | Git history is worst way to find past decisions; archive preserves searchability | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
+| X-123 | Three-tier system: Active + Reference + Archive (Epic 68) | 2026-03-15 | "Still relevant" distinction is subjective; reference tier would re-bloat | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
