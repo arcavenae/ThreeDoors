@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 in progress (1/3 done). 797+ merged PRs total. Last audit: 2026-03-15.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). 800+ merged PRs total. Last audit: 2026-03-16.
 
 ## Requirements Inventory
 
@@ -6595,7 +6595,7 @@ So that I can view my completion history from the terminal without launching the
 
 **Priority:** P2
 **Prerequisites:** None
-**Status:** 1/3 stories done
+**Status:** COMPLETE (3/3 stories done)
 **Research:** `_bmad-output/planning-artifacts/board-redesign-research.md` (PR #762)
 
 ### Story 68.1: Create Decision Archive and Extract Epic Registry
@@ -6612,7 +6612,7 @@ As a project decision-maker,
 I want BOARD.md restructured with action-oriented sections showing only items needing attention,
 So that I can scan the board in seconds and see what needs my input without wading through historical entries.
 
-**Status:** Not Started | **Priority:** P2
+**Status:** Done (PR #799) | **Priority:** P2
 **Depends On:** 68.1
 
 ### Story 68.3: Update Supporting Documentation for Board Redesign
@@ -6621,5 +6621,5 @@ As a project contributor or agent,
 I want all documentation and agent definitions updated to reflect the new BOARD.md structure,
 So that the board guide, sweep process, and agent behaviors are consistent with the two-file split.
 
-**Status:** Not Started | **Priority:** P2
+**Status:** Done (PR #800) | **Priority:** P2
 **Depends On:** 68.1, 68.2
