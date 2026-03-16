@@ -878,7 +878,7 @@ lastUpdated: '2026-03-15'
 **Epic 68: BOARD.md Redesign** (P2)
 - **Goal:** Split BOARD.md into a focused active dashboard (<120 lines) and a complete decision archive, extract Epic Number Registry to its own file, fix duplicate IDs, and update all supporting docs and agent definitions
 - **Prerequisites:** None
-- **Status:** Not Started
+- **Status:** In Progress (1/3 done — PR #793)
 - **Deliverables:**
   - ARCHIVE.md with complete historical record (181+ decided, 118+ rejected entries)
   - EPIC_REGISTRY.md extracted as standalone coordination mutex file
@@ -969,6 +969,6 @@ lastUpdated: '2026-03-15'
 | Epic 67: Retrospector Operational Data Pipeline | 1 | Complete (1/1 done) |
 | Epic 69: TUI MainModel Decomposition | 4 | Complete (4/4 done) |
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
-| Epic 68: BOARD.md Redesign | 3 | Not Started |
+| Epic 68: BOARD.md Redesign | 3 | In Progress (1/3 done) |
 | **Total** | **353** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
 ---
