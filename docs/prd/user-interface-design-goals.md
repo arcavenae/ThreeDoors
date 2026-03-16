@@ -1,3 +1,9 @@
+---
+title: User Interface Design Goals
+section: UX Design
+lastUpdated: '2026-03-03'
+---
+
 # User Interface Design Goals
 
 ## Overall UX Vision

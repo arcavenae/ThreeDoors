@@ -1,3 +1,9 @@
+---
+title: Epic Details
+section: Epic Specifications
+lastUpdated: '2026-03-06'
+---
+
 # Epic Details
 
 ## Epic 1: Three Doors Technical Demo

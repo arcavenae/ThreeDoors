@@ -1,3 +1,9 @@
+---
+title: Requirements
+section: Functional & Non-Functional Requirements
+lastUpdated: '2026-03-06'
+---
+
 # Requirements
 
 ## Technical Demo & Validation Phase Requirements

@@ -1,3 +1,9 @@
+---
+title: Epic List
+section: Epic Registry & Status
+lastUpdated: '2026-03-15'
+---
+
 # Epic List
 
 ## Phase 1: Technical Demo & Validation COMPLETE
