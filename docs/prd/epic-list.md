@@ -899,6 +899,18 @@ lastUpdated: '2026-03-15'
 - **Stories:** 71.1-71.3 (3 stories)
 - **Reference:** Issue #803
 
+**Epic 72: Operationalize GitHub Label Usage** NOT STARTED
+- **Goal:** Wire GitHub label application into agent workflows so PRs are routinely labeled, issue labeling is resilient to envoy downtime, and mutual exclusivity is enforced
+- **Prerequisites:** None
+- **Status:** Not Started (0/4 stories)
+- **Deliverables:**
+  - Add routine PR labeling to merge-queue agent definition (title-prefix inference)
+  - Add startup catch-up, context exhaustion warning, and mutual exclusivity enforcement to envoy
+  - Add supervisor label discipline instructions
+  - Create missing `resolution.wontfix` label and retroactive cleanup of unlabeled/mislabeled issues
+- **Stories:** 72.1-72.4 (4 stories)
+- **Reference:** PR #806 (gap analysis)
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -982,5 +994,6 @@ lastUpdated: '2026-03-15'
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
 | Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
 | Epic 71: Drop Apple Intel Builds | 3 | Not Started (0/3) |
-| **Total** | **356** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
+| Epic 72: Operationalize GitHub Label Usage | 4 | Not Started (0/4) |
+| **Total** | **360** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---

@@ -32,7 +32,15 @@
 | 62 | Retrospector Agent Reliability | 2026-03-12 | Not Started (0/3) |
 | 63 | ClickUp Integration | 2026-03-13 | Not Started (0/4) |
 | 64 | Cross-Computer Sync | 2026-03-13 | Not Started (0/6) |
-| 65 | *(next available)* | — | — |
+| 65 | CLI Test Coverage Hardening | 2026-03-13 | Complete (3/3) |
+| 66 | CLI/TUI Adapter Wiring Parity | 2026-03-13 | Complete (3/3) |
+| 67 | Retrospector Operational Data Pipeline | 2026-03-13 | Complete (1/1) |
+| 68 | BOARD.md Redesign | 2026-03-15 | Complete (3/3) |
+| 69 | TUI MainModel Decomposition | 2026-03-15 | Complete (4/4) |
+| 70 | Completion History & Progress View | 2026-03-15 | Complete (3/3) |
+| 71 | Drop Apple Intel (darwin/amd64) Builds | 2026-03-18 | Not Started (0/3) |
+| 72 | Operationalize GitHub Label Usage | 2026-03-18 | Not Started (0/4) |
+| 73 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number

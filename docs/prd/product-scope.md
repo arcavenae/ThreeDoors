@@ -255,6 +255,7 @@ lastUpdated: '2026-03-06'
 - README Overhaul: badges, table of contents, foldable sections, feature audit, visual demo
 - GitHub Pages User Guide: MkDocs + Material, CI deployment, guides for all features and integrations
 - BOARD.md Redesign: split into active dashboard + decision archive, extract Epic Number Registry, fix duplicate IDs
+- GitHub Label Operationalization: wire label application into agent workflows (merge-queue PR labeling, envoy startup catch-up, supervisor label discipline, mutual exclusivity enforcement)
 
 **Out of Scope for Phase 6:**
 - Tech Writer persistent agent

@@ -1231,3 +1231,21 @@ These non-functional requirements establish code quality gates that all contribu
 **NFR24:** A parity test shall verify at build time that the set of adapter names in `registerBuiltinAdapters()`, CLI `knownProviderSpecs`, CLI `ValidArgs`, and TUI `DefaultProviderSpecs()` are identical. Drift between these lists shall cause test failure.
 
 ---
+
+## GitHub Label Operationalization (Epic 72, Accepted)
+
+> Requirements for consistent, automated GitHub label application across agent workflows.
+
+**FR-GOV1:** The merge-queue agent shall apply appropriate `type.*` labels to PRs during merge validation by inferring type from the PR title prefix (`feat:` → `type.feature`, `fix:` → `type.bug`, `docs:` → `type.docs`, `chore:`/`refactor:` → `type.infra`). If no prefix matches, no type label shall be applied.
+
+**FR-GOV2:** The merge-queue agent shall apply `scope.in-scope` to PRs whose title references a story (e.g., "Story X.Y") and `agent.worker` to PRs from `work/*` branches.
+
+**FR-GOV3:** The envoy agent shall apply `triage.new` and `type.*` labels to issues on detection during the triage lifecycle, maintaining label state transitions as documented in the label authority matrix.
+
+**FR-GOV4:** Agents shall enforce mutual exclusivity for scoped labels (`type.*`, `priority.*`, `triage.*`, `scope.*`, `resolution.*`) by removing the existing label in the scope before applying a new one.
+
+**NFR-GOV1:** On startup or restart, the envoy agent shall scan all open issues for missing labels and apply `triage.new` + `type.*` to any unlabeled issue, ensuring issues created during agent downtime are retroactively labeled within one polling cycle.
+
+**NFR-GOV2:** All 27 labels defined in the scoped label taxonomy (D-107) shall exist on GitHub, including `resolution.wontfix`.
+
+---

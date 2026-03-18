@@ -47,6 +47,8 @@
 | D-180 | Standalone tea.Program wrapping ConnectWizard for CLI (Story 45.6) | 2026-03-13 | Wizard already implements tea.Model; thin wrapper avoids logic duplication | [Research](../../_bmad-output/planning-artifacts/connect-wizard-gap-research.md) |
 | D-181 | Move adapter registration before CLI/TUI routing branch (Epic 66) | 2026-03-13 | Registration only ran in TUI path; CLI had empty registry | [Audit](../../_bmad-output/planning-artifacts/unwired-features-audit.md) |
 | D-182 | BOARD.md redesign: action-oriented sections, two-file split with ARCHIVE.md + EPIC_REGISTRY.md (Epic 68) | 2026-03-15 | Reduces dashboard noise; 150+ historical entries moved to archive; epic registry separated for cleaner allocation | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
+| D-184 | Merge-queue owns routine PR labeling via title-prefix inference (Epic 72) | 2026-03-18 | Natural extension of merge validation; deterministic mapping; no role confusion | [Party Mode](../../_bmad-output/planning-artifacts/label-operationalization-party-mode.md) |
+| D-185 | Envoy adds startup catch-up scan for unlabeled issues (Epic 72) | 2026-03-18 | Fills the gap when envoy is down; retroactive labeling within one polling cycle | [Party Mode](../../_bmad-output/planning-artifacts/label-operationalization-party-mode.md) |
 
 ## Recently Rejected (Last 30 Days)
 
@@ -84,3 +86,5 @@
 | X-121 | Per-epic decision files (Epic 68) | 2026-03-15 | Scatters decisions; cross-cutting decisions hard to find; 65+ small files | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
 | X-122 | Aggressive archival — delete entries older than 90 days (Epic 68) | 2026-03-15 | Git history is worst way to find past decisions; archive preserves searchability | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
 | X-123 | Three-tier system: Active + Reference + Archive (Epic 68) | 2026-03-15 | "Still relevant" distinction is subjective; reference tier would re-bloat | [Research](../../_bmad-output/planning-artifacts/board-redesign-research.md) |
+| X-124 | PR-shepherd applies PR labels (Epic 72) | 2026-03-18 | Blurs pr-shepherd's focused "branch health" role | [Party Mode](../../_bmad-output/planning-artifacts/label-operationalization-party-mode.md) |
+| X-125 | Dedicated label-enforcement agent (Epic 72) | 2026-03-18 | Over-engineering; 5-10 lines in existing agents suffice | [Party Mode](../../_bmad-output/planning-artifacts/label-operationalization-party-mode.md) |

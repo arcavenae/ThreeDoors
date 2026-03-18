@@ -2956,3 +2956,70 @@ Follows the standard 4-story integration pattern: 63.1 (REST API v2 client with 
 4. Stats summary included in output
 
 ---
+
+## Epic 72: Operationalize GitHub Label Usage
+
+**Epic Goal:** Wire GitHub label application into agent workflows so that PRs are routinely labeled, issue labeling is resilient to envoy downtime, and mutual exclusivity is enforced. Closes the gap between label infrastructure (27-label taxonomy, authority matrix) and actual label usage (zero PR labels, inconsistent issue labels).
+
+**Scope:** Agent definition text changes (`agents/merge-queue.md`, `agents/envoy.md`), operational doc updates (`docs/operations/label-authority.md`), supervisor memory updates, one GitHub API label creation, and one-time retroactive cleanup of existing issues.
+
+**Status:** Not Started (0/4 stories)
+
+**Reference:** PR #806 (gap analysis), D-184, D-185
+
+---
+
+### Story 72.1: Merge-Queue PR Labeling
+
+**As a** project maintainer,
+**I want** the merge-queue agent to automatically apply type, scope, and agent labels to PRs during merge validation,
+**so that** all merged PRs are consistently classified for filtering and dashboard queries.
+
+**Acceptance Criteria:**
+1. PR labeling section added to `agents/merge-queue.md` with title-prefix inference mapping
+2. `scope.in-scope` applied for PRs referencing stories
+3. `agent.worker` applied for PRs from `work/*` branches
+4. Label authority matrix updated for merge-queue
+5. Merge-queue Labels table updated with new entries
+
+---
+
+### Story 72.2: Envoy Label Resilience
+
+**As a** project maintainer,
+**I want** the envoy agent to catch up on missed labels after restart, warn about context exhaustion, and enforce label mutual exclusivity,
+**so that** issue labeling is reliable regardless of envoy downtime.
+
+**Acceptance Criteria:**
+1. Startup catch-up scan added to envoy "Your rhythm" section
+2. Context Exhaustion Risk section added (matching merge-queue/pr-shepherd format)
+3. Mutual exclusivity enforcement instructions added
+
+---
+
+### Story 72.3: Supervisor Label Discipline & Missing Label Creation
+
+**As a** project maintainer,
+**I want** the supervisor to apply labels on dispatch/scope/closure and the missing `resolution.wontfix` label to be created,
+**so that** the full 27-label taxonomy is operational.
+
+**Acceptance Criteria:**
+1. Supervisor label discipline documented (agent.worker on dispatch, scope.* on decisions, resolution.* on closure)
+2. `resolution.wontfix` label created on GitHub with correct color and description
+3. Label authority summary table updated
+
+---
+
+### Story 72.4: Retroactive Label Cleanup
+
+**As a** project maintainer,
+**I want** all currently unlabeled open issues to receive appropriate labels and mutual exclusivity violations fixed,
+**so that** the GitHub issue dashboard is clean and accurate.
+
+**Acceptance Criteria:**
+1. All open issues have at minimum `triage.*` and `type.*` labels
+2. Issue #330 mutual exclusivity violation fixed (remove `triage.in-progress`)
+3. Issue #296 mutual exclusivity violation fixed (remove `type.bug`)
+4. No remaining mutual exclusivity violations across open issues
+
+---
