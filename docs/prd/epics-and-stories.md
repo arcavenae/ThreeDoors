@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). 800+ merged PRs total. Last audit: 2026-03-16.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 NOT STARTED (0/3). 800+ merged PRs total. Last audit: 2026-03-18.
 
 ## Requirements Inventory
 
@@ -6623,3 +6623,62 @@ So that the board guide, sweep process, and agent behaviors are consistent with 
 
 **Status:** Done (PR #800) | **Priority:** P2
 **Depends On:** 68.1, 68.2
+
+---
+
+## Epic 71: Drop Apple Intel (darwin/amd64) Builds (P1)
+
+**Goal:** Remove darwin/amd64 build targets from CI workflows, release builds, Homebrew formula, and all installer/packaging to save CI runner minutes and focus on Apple Silicon.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** Not Started (0/3 stories)
+**Reference:** Issue #803
+
+### Story 71.1: Remove darwin/amd64 from CI Build and Alpha Release Pipeline
+
+As a project maintainer,
+I want to remove darwin/amd64 build targets from the CI pipeline and alpha release flow,
+So that CI runner minutes are saved and the project focuses exclusively on Apple Silicon (darwin/arm64) for macOS.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `.goreleaser.yml` excludes darwin/amd64 via ignore list
+- **AC2:** `justfile` build-all recipe drops darwin/amd64 build line
+- **AC3:** `ci.yml` build-binaries job removes amd64 darwin binary builds
+- **AC4:** `ci.yml` sign-and-notarize job removes all amd64 signing, verification, app bundle, DMG, pkg, and notarization
+- **AC5:** `ci.yml` release job removes Intel references from release notes and alpha Homebrew formula
+- **AC6:** CI quality-gate passes with zero warnings
+
+### Story 71.2: Remove darwin/amd64 from Stable Release Workflow
+
+As a project maintainer,
+I want to remove darwin/amd64 from the stable release signing and packaging pipeline,
+So that tagged releases no longer produce Intel Mac artifacts and macOS runner time is halved.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 71.1
+
+**Acceptance Criteria:**
+- **AC1:** `release.yml` stops downloading darwin_amd64 archive
+- **AC2:** Sign, notarize, and pkg loops exclude amd64 (only process arm64)
+- **AC3:** Checksums and re-upload exclude amd64 artifacts
+- **AC4:** Workflow succeeds without referencing amd64 artifacts
+
+### Story 71.3: Update Docs, Tests, and Agent Definitions for Intel Removal
+
+As a project maintainer,
+I want documentation, tests, and agent definitions to reflect that darwin/amd64 is no longer built,
+So that users and agents have accurate information about supported platforms.
+
+**Status:** Not Started | **Priority:** P1
+**Depends On:** 71.1, 71.2
+
+**Acceptance Criteria:**
+- **AC1:** README.md installation tables drop Intel entries
+- **AC2:** docs-site installation page updated to remove Intel references
+- **AC3:** Architecture doc updated to remove darwin/amd64 from cross-compile target lists
+- **AC4:** Test table entries in `codesign_test.go` and `pkg_builder_test.go` remove amd64 cases
+- **AC5:** `agents/release-manager.md` updated to remove darwin-amd64 from cross-compile list
+- **AC6:** All checks pass (`just fmt`, `just lint`, `just test`)

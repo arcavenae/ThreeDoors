@@ -888,6 +888,17 @@ lastUpdated: '2026-03-15'
 - **Stories:** 68.1-68.3 (3 stories)
 - **Research:** See `_bmad-output/planning-artifacts/board-redesign-research.md` (PR #762)
 
+**Epic 71: Drop Apple Intel (darwin/amd64) Builds** NOT STARTED
+- **Goal:** Remove darwin/amd64 build targets from CI workflows, release builds, Homebrew formula, and all installer/packaging to save CI runner minutes and focus on Apple Silicon
+- **Prerequisites:** None
+- **Status:** Not Started (0/3 stories)
+- **Deliverables:**
+  - Remove darwin/amd64 from GoReleaser config, justfile, CI workflow builds/signing/notarization
+  - Remove darwin/amd64 from stable release workflow signing and packaging
+  - Update docs, tests, and agent definitions to reflect Apple Silicon-only macOS support
+- **Stories:** 71.1-71.3 (3 stories)
+- **Reference:** Issue #803
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -970,5 +981,6 @@ lastUpdated: '2026-03-15'
 | Epic 69: TUI MainModel Decomposition | 4 | Complete (4/4 done) |
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
 | Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
-| **Total** | **353** | **Audit 2026-03-15: see epics-and-stories.md for authoritative status** |
+| Epic 71: Drop Apple Intel Builds | 3 | Not Started (0/3) |
+| **Total** | **356** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---
