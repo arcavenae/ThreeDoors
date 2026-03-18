@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 NOT STARTED (0/3). 800+ merged PRs total. Last audit: 2026-03-18.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 NOT STARTED (0/3). Epic 72 IN PROGRESS (2/4 done). 800+ merged PRs total. Last audit: 2026-03-18.
 
 ## Requirements Inventory
 
@@ -6689,7 +6689,7 @@ So that users and agents have accurate information about supported platforms.
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** Not Started (0/4 stories)
+**Status:** In Progress (2/4 stories done)
 **Reference:** PR #806 (gap analysis), D-184, D-185
 
 ### Story 72.1: Merge-Queue PR Labeling
@@ -6698,7 +6698,7 @@ As a project maintainer,
 I want the merge-queue agent to automatically apply type, scope, and agent labels to PRs during merge validation,
 So that all merged PRs are consistently classified for filtering and dashboard queries.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #809) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** PR labeling section added to `agents/merge-queue.md` with title-prefix inference mapping (`feat:` → `type.feature`, `fix:` → `type.bug`, `docs:` → `type.docs`, `chore:`/`refactor:`/`ci:`/`test:` → `type.infra`)
@@ -6713,7 +6713,7 @@ As a project maintainer,
 I want the envoy agent to catch up on missed labels after restart, warn about context exhaustion, and enforce label mutual exclusivity,
 So that issue labeling is reliable regardless of envoy downtime.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #808) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** Startup catch-up scan added to envoy "Your rhythm" section — scan open issues for missing labels, apply `triage.new` + `type.*`

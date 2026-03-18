@@ -635,14 +635,14 @@ Remove darwin/amd64 build targets from CI workflows, release builds, Homebrew fo
 
 **Dependency graph:** Linear chain: 71.1 → 71.2 → 71.3. Story 71.1 is the foundation (CI + GoReleaser). Story 71.2 handles the tag-triggered release workflow. Story 71.3 cleans up docs and tests.
 
-### Epic 72: Operationalize GitHub Label Usage (P1) — 0/4 stories done — NOT STARTED
+### Epic 72: Operationalize GitHub Label Usage (P1) — 2/4 stories done — IN PROGRESS
 
 Wire GitHub label application into agent workflows so that PRs are routinely labeled, issue labeling is resilient to envoy downtime, and mutual exclusivity is enforced. Agent definition and operational doc changes only — no application code. Based on label usage gap analysis (PR #806).
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 72.1 | Merge-Queue PR Labeling | Not Started | P1 | None |
-| 72.2 | Envoy Label Resilience | Not Started | P1 | None |
+| 72.1 | Merge-Queue PR Labeling | Done (PR #809) | P1 | None |
+| 72.2 | Envoy Label Resilience | Done (PR #808) | P1 | None |
 | 72.3 | Supervisor Label Discipline & Missing Label | Not Started | P1 | None |
 | 72.4 | Retroactive Label Cleanup | Not Started | P2 | 72.3 |
 

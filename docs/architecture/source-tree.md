@@ -83,6 +83,10 @@ ThreeDoors/
 ├── internal/                          # Private application code
 │   ├── tui/                          # TUI Layer - Bubbletea components
 │   │   ├── main_model.go            # Root model, view routing
+│   │   ├── command_dispatch.go      # Command dispatch helpers extracted from main_model (Epic 69)
+│   │   ├── view_auxiliary_controller.go  # Auxiliary view message handling (Epic 69)
+│   │   ├── view_sources_controller.go    # Source view resize/update handling (Epic 69)
+│   │   ├── view_navigation.go       # View navigation and transition logic (Epic 69)
 │   │   ├── doors_view.go            # Three Doors display + source badges
 │   │   ├── task_detail_view.go      # Task detail and options
 │   │   ├── status_menu.go           # Status update menu
