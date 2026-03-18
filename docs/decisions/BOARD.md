@@ -8,15 +8,13 @@
 
 ## Needs Decision (Human Input Required)
 
-| ID | Recommendation | Date | Source | Link | Awaiting |
-|----|----------------|------|--------|------|----------|
-| P-001 | Migrate from Makefile to Justfile | 2026-03-04 | Research spike | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) | Owner sign-off — *Implementation completed via Story 0.59 (PR #768)* |
+*No items awaiting decision.*
 
 ## Under Investigation
 
 | ID | Topic | Date | Owner | Link |
 |----|-------|------|-------|------|
-| R-002 | PRD Post-Reconstruction Quality Audit — 3 HIGH, 4 MEDIUM issues | 2026-03-15 | PM Validation | [Report](../../_bmad-output/planning-artifacts/prd-validation-report-2026-03-15.md) — **Open.** HIGH: stale next-steps.md, chaotic phase numbering in product-scope.md, missing v2.0 change log entry. MEDIUM: stale BOARD.md epic registry, incomplete user journeys, no YAML frontmatter, stale checklist-results-report.md. |
+| R-002 | PRD Post-Reconstruction Quality Audit — 1 MEDIUM residual | 2026-03-18 | PM Validation | [Report](../../_bmad-output/planning-artifacts/prd-validation-report-2026-03-15.md) — **Mostly resolved.** 3 HIGH fixed (Stories 0.61, 0.62). 3/4 MEDIUM fixed (Stories 0.61, 0.63). **Residual:** EPIC_REGISTRY.md stale (Story 0.64), next-steps.md organic drift (Story 0.65). |
 
 ## Recently Decided (Last 30 Days)
 
@@ -24,6 +22,7 @@
 
 | ID | Decision | Date | Rationale | Link |
 |----|----------|------|-----------|------|
+| D-183 | Migrate from Makefile to Justfile (Story 0.59) | 2026-03-18 | Better error messages, simpler syntax, cross-platform support; implemented via PR #768 | [Analysis](../../_bmad-output/planning-artifacts/makefile-vs-justfile-analysis.md) |
 | D-160 | Shell script for CI metrics, not GitHub Action (Story 0.37) | 2026-03-10 | No external deps beyond `gh`; immediately runnable by retrospector agent | [Research](../../_bmad-output/planning-artifacts/ci-churn-reduction-research.md) |
 | D-161 | Project-watchdog batches governance sync PRs (resolves Q-003) | 2026-03-10 | One-per-story creates PR fatigue; batching reduces churn and conflicts | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
 | D-162 | Workers update ONLY story files; project-watchdog owns all planning docs (resolves Q-004) | 2026-03-10 | Eliminates concurrent edit conflicts between workers and project-watchdog | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) |
