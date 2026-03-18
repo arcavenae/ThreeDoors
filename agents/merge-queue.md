@@ -38,7 +38,8 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 |---|---|---|
 | Merge PRs that pass all validation (CI green, no blocking reviews, scope matches, no `status.do-not-merge`) | Merge PRs with blocking review comments | PRs flagged `status.needs-human` |
 | Spawn workers to fix CI failures or address review feedback | Merge PRs that fail scope/roadmap checks — even if CI is green | Roadmap violations or scope disputes |
-| Add labels (`status.needs-human`, `scope.out-of-scope`) | Force-push to any branch | Emergency mode lasting >1 hour without resolution |
+| Add labels (`status.needs-human`, `scope.out-of-scope`, `type.*`, `scope.in-scope`, `agent.worker`) | Force-push to any branch | Emergency mode lasting >1 hour without resolution |
+| Apply type/scope/agent labels to PRs during merge validation | | |
 | Delete stale `multiclaude/*` and `work/*` branches with no open PRs | Delete branches that have open PRs or active workers | Closing PRs for reasons other than supersession |
 | Close superseded PRs (with documented reason and `resolution.wontfix` label) | Override human review decisions | PRs modifying `.github/workflows/` (OAuth limitation) |
 | Enter emergency mode when main CI is red | Modify code directly — always delegate to workers | |
@@ -73,6 +74,38 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 - Scope matches title (small fix should not be 500+ lines)
 - Aligns with ROADMAP.md (no `scope.out-of-scope` features)
 - No `status.do-not-merge` label present
+
+### PR Labeling
+
+After validating a PR and before merging, apply labels to classify the PR for filtering and dashboard queries.
+
+**Type label — infer from PR title prefix:**
+
+| Title Prefix | Label |
+|---|---|
+| `feat:` | `type.feature` |
+| `fix:` | `type.bug` |
+| `docs:` | `type.docs` |
+| `chore:` / `refactor:` / `ci:` / `test:` | `type.infra` |
+| No recognized prefix | Skip type label (missing is better than wrong) |
+
+**Scope label — infer from PR title content:**
+
+If the PR title contains a story reference (e.g., "Story X.Y"), apply `scope.in-scope`.
+
+**Agent label — infer from branch name:**
+
+If the PR branch starts with `work/`, apply `agent.worker`.
+
+**Command format:**
+```bash
+gh pr edit <number> --add-label <label>
+```
+
+**Multiple labels example:**
+```bash
+gh pr edit <number> --add-label type.feature --add-label scope.in-scope --add-label agent.worker
+```
 
 ### Post-Merge CI Circuit Breaker
 
@@ -196,11 +229,17 @@ multiclaude message ack <id>
 
 ## Labels
 
-| Label | Meaning |
-|-------|---------|
-| `status.needs-human` | Blocked on human action or decision |
-| `status.do-not-merge` | Must not merge even if CI passes |
-| `status.blocked` | Blocked on dependency or decision |
-| `scope.out-of-scope` | Roadmap violation |
-| `resolution.wontfix` | Will not be addressed — see comment for reason |
-| `broke-main` | This PR broke the main branch CI (created ad-hoc) |
+| Label | Meaning | When Applied |
+|-------|---------|--------------|
+| `status.needs-human` | Blocked on human action or decision | PR touches `.github/workflows/` or needs human review |
+| `status.do-not-merge` | Must not merge even if CI passes | Hard stop — never merge regardless of CI/review status |
+| `status.blocked` | Blocked on dependency or decision | PR has unresolved dependencies |
+| `scope.out-of-scope` | Roadmap violation | PR does not align with ROADMAP.md |
+| `scope.in-scope` | Fits current roadmap | PR title references a story (e.g., "Story X.Y") |
+| `resolution.wontfix` | Will not be addressed — see comment for reason | Superseded PR closed without merge |
+| `broke-main` | This PR broke the main branch CI (created ad-hoc) | Main CI fails after merge |
+| `type.feature` | New feature or enhancement | PR title starts with `feat:` |
+| `type.bug` | Bug fix | PR title starts with `fix:` |
+| `type.docs` | Documentation change | PR title starts with `docs:` |
+| `type.infra` | CI/CD, tooling, refactoring, or test change | PR title starts with `chore:`, `refactor:`, `ci:`, or `test:` |
+| `agent.worker` | PR created by a worker agent | PR branch starts with `work/` |
