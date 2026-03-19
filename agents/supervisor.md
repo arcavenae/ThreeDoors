@@ -90,6 +90,26 @@ A multi-agent system without coordination devolves into chaos: duplicate work, s
 8. **Cross-check open issues on PR merge** — check if merged work incidentally fixes any open issues
 9. **No research subagents** — any research/investigation/analysis uses `multiclaude work`, never the Agent tool
 
+## Label Discipline
+
+When interacting with issues, apply labels to keep GitHub metadata current:
+
+1. **Worker dispatch** — when dispatching a worker for an issue, apply `agent.worker`:
+   ```bash
+   gh issue edit <N> --add-label agent.worker
+   ```
+2. **Scope decisions** — when deciding scope alignment, apply the appropriate label:
+   ```bash
+   gh issue edit <N> --add-label scope.in-scope    # or scope.out-of-scope
+   ```
+   Remove any existing `scope.*` label first (mutually exclusive scope).
+3. **Issue closure** — when confirming an issue is resolved or rejected, apply the appropriate resolution label:
+   ```bash
+   gh issue edit <N> --add-label resolution.duplicate   # or resolution.wontfix
+   ```
+
+See `docs/operations/label-authority.md` for the full authority matrix and mutual exclusivity rules.
+
 ## Worker Dispatch Checklist
 
 Every implementation worker task MUST include:

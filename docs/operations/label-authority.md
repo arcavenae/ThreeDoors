@@ -319,7 +319,7 @@ Quick reference showing which agents interact with which label scopes.
 | Agent | Can Set | Can Remove | Notes |
 |-------|---------|------------|-------|
 | **Envoy** | type.*, priority.*, triage.*, agent.envoy, process.fast-track, contrib.*, status.stale, status.blocked, status.needs-human | type.*, triage.*, agent.envoy, process.fast-track, contrib.* | Primary label manager. Proposes scope.* and resolution.* but doesn't decide. |
-| **Supervisor** | scope.*, status.do-not-merge, agent.worker, contrib.* | scope.*, priority.* (override), status.do-not-merge, agent.worker, resolution.*, contrib.* | Final authority on scope, resolution, and priority overrides. |
+| **Supervisor** | scope.*, resolution.*, status.do-not-merge, agent.worker, contrib.* | scope.*, priority.* (override), status.do-not-merge, agent.worker, resolution.*, contrib.* | Final authority on scope, resolution, and priority overrides. |
 | **Merge-queue** | type.*, scope.in-scope, agent.worker | — | Applies type/scope/agent labels to PRs during merge validation. Reads `status.do-not-merge` as a hard stop. Also uses `broke-main` (outside the 27-label taxonomy). |
 | **PR-shepherd** | status.stale | — | Can flag stale PRs. |
 | **Workers** | — | agent.worker | Can remove their own agent label on completion. |
