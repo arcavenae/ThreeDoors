@@ -888,10 +888,10 @@ lastUpdated: '2026-03-15'
 - **Stories:** 68.1-68.3 (3 stories)
 - **Research:** See `_bmad-output/planning-artifacts/board-redesign-research.md` (PR #762)
 
-**Epic 71: Drop Apple Intel (darwin/amd64) Builds** NOT STARTED
+**Epic 71: Drop Apple Intel (darwin/amd64) Builds** IN PROGRESS
 - **Goal:** Remove darwin/amd64 build targets from CI workflows, release builds, Homebrew formula, and all installer/packaging to save CI runner minutes and focus on Apple Silicon
 - **Prerequisites:** None
-- **Status:** Not Started (0/3 stories)
+- **Status:** In Progress (1/3 stories done)
 - **Deliverables:**
   - Remove darwin/amd64 from GoReleaser config, justfile, CI workflow builds/signing/notarization
   - Remove darwin/amd64 from stable release workflow signing and packaging
@@ -902,7 +902,7 @@ lastUpdated: '2026-03-15'
 **Epic 72: Operationalize GitHub Label Usage** IN PROGRESS
 - **Goal:** Wire GitHub label application into agent workflows so PRs are routinely labeled, issue labeling is resilient to envoy downtime, and mutual exclusivity is enforced
 - **Prerequisites:** None
-- **Status:** In Progress (2/4 stories done)
+- **Status:** In Progress (3/4 stories done)
 - **Deliverables:**
   - Add routine PR labeling to merge-queue agent definition (title-prefix inference)
   - Add startup catch-up, context exhaustion warning, and mutual exclusivity enforcement to envoy
@@ -993,7 +993,7 @@ lastUpdated: '2026-03-15'
 | Epic 69: TUI MainModel Decomposition | 4 | Complete (4/4 done) |
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
 | Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
-| Epic 71: Drop Apple Intel Builds | 3 | Not Started (0/3) |
-| Epic 72: Operationalize GitHub Label Usage | 4 | In Progress (2/4 done) |
+| Epic 71: Drop Apple Intel Builds | 3 | In Progress (1/3 done) |
+| Epic 72: Operationalize GitHub Label Usage | 4 | In Progress (3/4 done) |
 | **Total** | **360** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---
