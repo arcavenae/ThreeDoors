@@ -11,7 +11,7 @@ ThreeDoors releases via GoReleaser to a **shared** Homebrew tap (`arcaven/homebr
 ```
 1. Developer pushes semver tag (git tag v1.0.0 && git push origin v1.0.0)
 2. GoReleaser workflow triggers (.github/workflows/release.yml)
-3. GoReleaser cross-compiles: darwin-arm64, darwin-amd64, linux-amd64
+3. GoReleaser cross-compiles: darwin-arm64, linux-amd64
 4. GoReleaser creates GitHub Release with archives + checksums
 5. GoReleaser pushes formula update to arcaven/homebrew-tap (Formula/threedoors.rb)
 6. Tap CI runs (matrix: per-formula audit, style, install, test)

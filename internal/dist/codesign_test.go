@@ -136,7 +136,6 @@ func TestCodeSigner_SignMultipleBinaries(t *testing.T) {
 		binary string
 	}{
 		{name: "arm64", binary: "threedoors-darwin-arm64"},
-		{name: "amd64", binary: "threedoors-darwin-amd64"},
 	}
 
 	for _, tt := range tests {

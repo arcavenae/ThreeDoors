@@ -27,7 +27,7 @@
 
 === "Pre-built Binary"
 
-    Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries are available for macOS (Apple Silicon, Intel) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
+    Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries are available for macOS (Apple Silicon) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
 
     ```bash
     chmod +x threedoors-*
