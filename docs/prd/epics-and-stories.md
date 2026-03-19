@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 NOT STARTED (0/3). Epic 72 IN PROGRESS (2/4 done). 800+ merged PRs total. Last audit: 2026-03-18.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 IN PROGRESS (1/3 done). Epic 72 COMPLETE (4/4 done). 810+ merged PRs total. Last audit: 2026-03-19.
 
 ## Requirements Inventory
 
@@ -6689,7 +6689,7 @@ So that users and agents have accurate information about supported platforms.
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** In Progress (3/4 stories done)
+**Status:** Complete (4/4 stories done)
 **Reference:** PR #806 (gap analysis), D-184, D-185
 
 ### Story 72.1: Merge-Queue PR Labeling
@@ -6739,7 +6739,7 @@ As a project maintainer,
 I want all currently unlabeled open issues to receive appropriate labels and mutual exclusivity violations fixed,
 So that the GitHub issue dashboard is clean and accurate.
 
-**Status:** Not Started | **Priority:** P2
+**Status:** Done (PR #814) | **Priority:** P2
 **Depends On:** 72.3
 
 **Acceptance Criteria:**

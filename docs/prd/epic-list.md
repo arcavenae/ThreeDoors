@@ -899,10 +899,10 @@ lastUpdated: '2026-03-15'
 - **Stories:** 71.1-71.3 (3 stories)
 - **Reference:** Issue #803
 
-**Epic 72: Operationalize GitHub Label Usage** IN PROGRESS
+**Epic 72: Operationalize GitHub Label Usage** COMPLETE
 - **Goal:** Wire GitHub label application into agent workflows so PRs are routinely labeled, issue labeling is resilient to envoy downtime, and mutual exclusivity is enforced
 - **Prerequisites:** None
-- **Status:** In Progress (3/4 stories done)
+- **Status:** Complete (4/4 stories done)
 - **Deliverables:**
   - Add routine PR labeling to merge-queue agent definition (title-prefix inference)
   - Add startup catch-up, context exhaustion warning, and mutual exclusivity enforcement to envoy
@@ -994,6 +994,6 @@ lastUpdated: '2026-03-15'
 | Epic 70: Completion History & Progress View | 3 | Complete (3/3 done) |
 | Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
 | Epic 71: Drop Apple Intel Builds | 3 | In Progress (1/3 done) |
-| Epic 72: Operationalize GitHub Label Usage | 4 | In Progress (3/4 done) |
+| Epic 72: Operationalize GitHub Label Usage | 4 | Complete (4/4 done) |
 | **Total** | **360** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---
