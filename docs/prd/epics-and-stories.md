@@ -6632,7 +6632,7 @@ So that the board guide, sweep process, and agent behaviors are consistent with 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** Not Started (0/3 stories)
+**Status:** In Progress (1/3 stories done)
 **Reference:** Issue #803
 
 ### Story 71.1: Remove darwin/amd64 from CI Build and Alpha Release Pipeline
@@ -6641,7 +6641,7 @@ As a project maintainer,
 I want to remove darwin/amd64 build targets from the CI pipeline and alpha release flow,
 So that CI runner minutes are saved and the project focuses exclusively on Apple Silicon (darwin/arm64) for macOS.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #810) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** `.goreleaser.yml` excludes darwin/amd64 via ignore list
@@ -6689,7 +6689,7 @@ So that users and agents have accurate information about supported platforms.
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** In Progress (2/4 stories done)
+**Status:** In Progress (3/4 stories done)
 **Reference:** PR #806 (gap analysis), D-184, D-185
 
 ### Story 72.1: Merge-Queue PR Labeling
@@ -6726,7 +6726,7 @@ As a project maintainer,
 I want the supervisor to apply labels on dispatch/scope/closure and the missing resolution.wontfix label to be created,
 So that the full 27-label taxonomy is operational.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #813) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** Supervisor label discipline documented (agent.worker on dispatch, scope.* on decisions, resolution.* on closure)
