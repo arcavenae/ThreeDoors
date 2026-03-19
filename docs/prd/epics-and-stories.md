@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 IN PROGRESS (1/3 done). Epic 72 COMPLETE (4/4 done). 810+ merged PRs total. Last audit: 2026-03-19.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 COMPLETE (3/3 done). Epic 72 COMPLETE (4/4 done). 810+ merged PRs total. Last audit: 2026-03-19.
 
 ## Requirements Inventory
 
@@ -6657,7 +6657,7 @@ As a project maintainer,
 I want to remove darwin/amd64 from the stable release signing and packaging pipeline,
 So that tagged releases no longer produce Intel Mac artifacts and macOS runner time is halved.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #815) | **Priority:** P1
 **Depends On:** 71.1
 
 **Acceptance Criteria:**

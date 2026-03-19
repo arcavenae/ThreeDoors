@@ -623,14 +623,14 @@ Split BOARD.md into a focused active dashboard (<120 lines) and a complete decis
 
 **Dependency graph:** Linear chain: 68.1 → 68.2 → 68.3.
 
-### Epic 71: Drop Apple Intel (darwin/amd64) Builds (P1) — 2/3 stories done — IN PROGRESS
+### Epic 71: Drop Apple Intel (darwin/amd64) Builds (P1) — 3/3 stories done — COMPLETE
 
 Remove darwin/amd64 build targets from CI workflows, release builds, Homebrew formula, and installer/packaging to save CI runner minutes and focus on Apple Silicon (darwin/arm64). Reference: Issue #803.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 71.1 | Remove darwin/amd64 from CI Build and Alpha Release Pipeline | Done (PR #810) | P1 | None |
-| 71.2 | Remove darwin/amd64 from Stable Release Workflow | Not Started | P1 | 71.1 |
+| 71.2 | Remove darwin/amd64 from Stable Release Workflow | Done (PR #815) | P1 | 71.1 |
 | 71.3 | Update Docs, Tests, and Agent Definitions for Intel Removal | Done (PR #817) | P1 | 71.1, 71.2 |
 
 **Dependency graph:** Linear chain: 71.1 → 71.2 → 71.3. Story 71.1 is the foundation (CI + GoReleaser). Story 71.2 handles the tag-triggered release workflow. Story 71.3 cleans up docs and tests.
