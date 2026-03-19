@@ -25,10 +25,12 @@ builds:
       - -X github.com/arcaven/ThreeDoors/internal/cli.Version={{.Version}}
       - -X github.com/arcaven/ThreeDoors/internal/cli.Commit={{.Commit}}
       - -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate={{.Date}}
-    # Exclude linux/arm64 for now (no CI testing for it)
+    # Exclude unsupported cross-compile targets
     ignore:
       - goos: linux
         goarch: arm64
+      - goos: darwin
+        goarch: amd64
 
 archives:
   - id: default
