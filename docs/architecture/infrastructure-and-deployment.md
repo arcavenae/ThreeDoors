@@ -37,7 +37,7 @@ brew install arcaven/tap/threedoors
 - `go build` build validation
 
 **Alpha Release** (runs on `push` to `main`, i.e., PR merge):
-- Cross-compiles binaries for darwin/arm64, darwin/amd64, linux/amd64
+- Cross-compiles binaries for darwin/arm64, linux/amd64
 - Uploads as GitHub Actions workflow artifacts (14-day retention)
 
 **Recommended:** Enable branch protection on `main` requiring the quality-gate job to pass before merge.
@@ -85,7 +85,7 @@ brew install arcaven/tap/threedoors
 - Apple Developer certificate for binary signing
 - Apple notarization service for Gatekeeper approval
 - Automated in CI pipeline (GitHub Actions)
-- Cross-compiled for darwin/arm64, darwin/amd64, linux/amd64
+- Cross-compiled for darwin/arm64, linux/amd64
 
 **Runtime Dependencies (Post-MVP):**
 - No new external service dependencies at runtime

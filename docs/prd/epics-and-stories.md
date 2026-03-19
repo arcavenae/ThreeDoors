@@ -14,7 +14,7 @@ regeneratedFrom: "PRD v2.0 + Architecture v2.0 (post-party-mode-recommendations)
 
 This document provides the complete epic and story breakdown for ThreeDoors, decomposing the requirements from the PRD v2.0, UX Design, and Architecture v2.0 into implementable stories. This is a regeneration reflecting the 9 party mode recommendations integrated into the PRD and architecture.
 
-**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 NOT STARTED (0/3). Epic 72 IN PROGRESS (2/4 done). 800+ merged PRs total. Last audit: 2026-03-18.
+**Implementation Status:** Epics 0-15, 3.5, 17-32, 34-51, 53-70 are COMPLETE. Epic 5 reopened (2/2, Story 5.3 done). Epic 16 is ICEBOX. Epic 68 COMPLETE (3/3 done). Epic 71 IN PROGRESS (1/3 done). Epic 72 COMPLETE (4/4 done). 810+ merged PRs total. Last audit: 2026-03-19.
 
 ## Requirements Inventory
 
@@ -6632,7 +6632,7 @@ So that the board guide, sweep process, and agent behaviors are consistent with 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** Not Started (0/3 stories)
+**Status:** In Progress (2/3 stories done)
 **Reference:** Issue #803
 
 ### Story 71.1: Remove darwin/amd64 from CI Build and Alpha Release Pipeline
@@ -6641,7 +6641,7 @@ As a project maintainer,
 I want to remove darwin/amd64 build targets from the CI pipeline and alpha release flow,
 So that CI runner minutes are saved and the project focuses exclusively on Apple Silicon (darwin/arm64) for macOS.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #810) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** `.goreleaser.yml` excludes darwin/amd64 via ignore list
@@ -6672,7 +6672,7 @@ As a project maintainer,
 I want documentation, tests, and agent definitions to reflect that darwin/amd64 is no longer built,
 So that users and agents have accurate information about supported platforms.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #817) | **Priority:** P1
 **Depends On:** 71.1, 71.2
 
 **Acceptance Criteria:**
@@ -6689,7 +6689,7 @@ So that users and agents have accurate information about supported platforms.
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** In Progress (2/4 stories done)
+**Status:** Complete (4/4 stories done)
 **Reference:** PR #806 (gap analysis), D-184, D-185
 
 ### Story 72.1: Merge-Queue PR Labeling
@@ -6726,7 +6726,7 @@ As a project maintainer,
 I want the supervisor to apply labels on dispatch/scope/closure and the missing resolution.wontfix label to be created,
 So that the full 27-label taxonomy is operational.
 
-**Status:** Not Started | **Priority:** P1
+**Status:** Done (PR #813) | **Priority:** P1
 
 **Acceptance Criteria:**
 - **AC1:** Supervisor label discipline documented (agent.worker on dispatch, scope.* on decisions, resolution.* on closure)
@@ -6739,7 +6739,7 @@ As a project maintainer,
 I want all currently unlabeled open issues to receive appropriate labels and mutual exclusivity violations fixed,
 So that the GitHub issue dashboard is clean and accurate.
 
-**Status:** Not Started | **Priority:** P2
+**Status:** Done (PR #814) | **Priority:** P2
 **Depends On:** 72.3
 
 **Acceptance Criteria:**

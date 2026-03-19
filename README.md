@@ -116,7 +116,6 @@ Download the `.pkg` installer from [GitHub Releases](https://github.com/arcaven/
 | Platform | Installer |
 |----------|-----------|
 | macOS (Apple Silicon) | `threedoors_*_darwin_arm64.pkg` |
-| macOS (Intel) | `threedoors_*_darwin_amd64.pkg` |
 
 The `.pkg` installer is **code-signed and Apple-notarized**.
 
@@ -129,7 +128,6 @@ Download the latest release from [GitHub Releases](https://github.com/arcaven/Th
 | Platform | Binary |
 |----------|--------|
 | macOS (Apple Silicon) | `threedoors-darwin-arm64` |
-| macOS (Intel) | `threedoors-darwin-amd64` |
 | Linux (x86_64) | `threedoors-linux-amd64` |
 
 ```bash
@@ -283,7 +281,7 @@ threedoors stats --daily
 ### Distribution
 - 🍺 **Homebrew** — Install via `brew install arcaven/tap/threedoors`
 - 🔏 **Signed & Notarized** — macOS binaries are code-signed and Apple-notarized
-- 💻 **Cross-Platform Binaries** — Pre-built for macOS (ARM & Intel) and Linux (x86_64)
+- 💻 **Cross-Platform Binaries** — Pre-built for macOS (Apple Silicon) and Linux (x86_64)
 - 🚀 **GitHub Releases** — Automatic releases on every merge to main
 
 [↑ Back to top](#threedoors-)

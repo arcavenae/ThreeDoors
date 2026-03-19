@@ -148,7 +148,6 @@ func TestPkgBuilder_Build_PerArchitecture(t *testing.T) {
 		pkgName    string
 	}{
 		{name: "arm64", binaryName: "threedoors-darwin-arm64", pkgName: "threedoors-arm64.pkg"},
-		{name: "amd64", binaryName: "threedoors-darwin-amd64", pkgName: "threedoors-amd64.pkg"},
 	}
 
 	for _, tt := range tests {
