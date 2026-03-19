@@ -146,7 +146,6 @@ docs-serve:
 # Build for all release targets
 build-all:
     GOOS=darwin GOARCH=arm64 go build -ldflags "{{ldflags}}" -o bin/threedoors-darwin-arm64 ./cmd/threedoors
-    GOOS=darwin GOARCH=amd64 go build -ldflags "{{ldflags}}" -o bin/threedoors-darwin-amd64 ./cmd/threedoors
     GOOS=linux GOARCH=amd64 go build -ldflags "{{ldflags}}" -o bin/threedoors-linux-amd64 ./cmd/threedoors
 
 # ─── Signing & packaging ─────────────────────────────────────────
