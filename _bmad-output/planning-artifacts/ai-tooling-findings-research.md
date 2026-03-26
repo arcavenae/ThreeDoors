@@ -53,7 +53,7 @@ No `CLAUDE.md` exists. The `.claude/` directory contains only BMad slash command
 ### Imports — always in this order, separated by blank lines
 1. Standard library
 2. External packages (`github.com/charmbracelet/...`)
-3. Internal packages (`github.com/arcaven/ThreeDoors/internal/...`)
+3. Internal packages (`github.com/arcavenae/ThreeDoors/internal/...`)
 
 ### Error Handling
 - Always wrap errors with context: `fmt.Errorf("operation: %w", err)`

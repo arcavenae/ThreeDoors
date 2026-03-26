@@ -1,6 +1,6 @@
 # PR #438 Failure Analysis — Story 42.5 CI Supply Chain Hardening
 
-**PR:** https://github.com/arcaven/ThreeDoors/pull/438
+**PR:** https://github.com/arcavenae/ThreeDoors/pull/438
 **Branch:** `work/kind-rabbit`
 **Date:** 2026-03-10
 **Analyst:** lively-eagle (worker)
@@ -51,13 +51,13 @@ When run in parallel, goroutines write to `testHomeDir` concurrently → DATA RA
 ```
 WARNING: DATA RACE
 Write at 0x000000df5360 by goroutine 96:
-  github.com/arcaven/ThreeDoors/internal/core.SetHomeDir()
+  github.com/arcavenae/ThreeDoors/internal/core.SetHomeDir()
       config_paths.go:19 +0xb2
   TestEnsureConfigDir_MigratesPermissiveDirectory()
       config_paths_test.go:36 +0x55
 
 Previous write at 0x000000df5360 by goroutine 97:
-  github.com/arcaven/ThreeDoors/internal/core.SetHomeDir()
+  github.com/arcavenae/ThreeDoors/internal/core.SetHomeDir()
       config_paths.go:19 +0x78
   TestEnsureConfigDir_NoChangeWhenAlreadyRestrictive.func1()
       config_paths_test.go:80 +0x12

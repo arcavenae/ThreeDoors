@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/adapters/linear"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/linear"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // linearMockClient implements linear.GraphQLClient for contract tests.

@@ -11,9 +11,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
-	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // fixturesDir returns the absolute path to testdata/applenotes fixtures.

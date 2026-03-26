@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // RemindersProvider implements core.TaskProvider for Apple Reminders,

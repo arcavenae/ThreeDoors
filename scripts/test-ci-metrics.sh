@@ -84,7 +84,7 @@ fi
 
 # Test 6: Human-readable output contains all required sections
 echo "Test: human-readable output has required sections"
-OUTPUT="$("$SCRIPT" --days 7 --repo arcaven/ThreeDoors 2>&1)" || {
+OUTPUT="$("$SCRIPT" --days 7 --repo arcavenae/ThreeDoors 2>&1)" || {
     fail "script execution failed"
     echo "$OUTPUT" >&2
 }
@@ -109,7 +109,7 @@ fi
 
 # Test 8: JSON output is valid JSON
 echo "Test: --json produces valid JSON"
-JSON_OUT="$("$SCRIPT" --days 7 --json --repo arcaven/ThreeDoors 2>&1)" || {
+JSON_OUT="$("$SCRIPT" --days 7 --json --repo arcavenae/ThreeDoors 2>&1)" || {
     fail "script --json execution failed"
     echo "$JSON_OUT" >&2
 }
@@ -156,7 +156,7 @@ fi
 
 # Test 11: Custom --days parameter works
 echo "Test: --days 1 produces valid output"
-SHORT_OUT="$("$SCRIPT" --days 1 --json --repo arcaven/ThreeDoors 2>&1)" || true
+SHORT_OUT="$("$SCRIPT" --days 1 --json --repo arcavenae/ThreeDoors 2>&1)" || true
 if echo "$SHORT_OUT" | jq -e '.period_days == 1' >/dev/null 2>&1; then
     pass "--days 1 reflected in JSON output"
 else

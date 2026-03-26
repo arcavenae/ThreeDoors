@@ -27,7 +27,7 @@ cp "$BINARY_PATH" "$STAGING_DIR/usr/local/bin/threedoors"
 chmod +x "$STAGING_DIR/usr/local/bin/threedoors"
 
 pkgbuild --root "$STAGING_DIR" \
-  --identifier com.arcaven.threedoors \
+  --identifier com.arcavenae.threedoors \
   --version "$VERSION" \
   --install-location / \
   --sign "$SIGNING_IDENTITY" \

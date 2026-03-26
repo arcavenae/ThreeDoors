@@ -1,7 +1,7 @@
 # Issue #334 Triage: Search Results Jumping Due to Unstable Map Iteration
 
 **Date:** 2026-03-09
-**Issue:** [#334](https://github.com/arcaven/ThreeDoors/issues/334)
+**Issue:** [#334](https://github.com/arcavenae/ThreeDoors/issues/334)
 **Participants:** Winston (Architect), Amelia (Dev), Sally (UX Designer)
 **Rounds:** 1 (consensus reached immediately)
 

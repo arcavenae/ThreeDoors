@@ -3,7 +3,7 @@ package tui
 import (
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/dispatch"
+	"github.com/arcavenae/ThreeDoors/internal/dispatch"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

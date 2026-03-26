@@ -10,7 +10,7 @@
 
 **GitHub Community Health Score: 42%**
 
-Source: `gh api repos/arcaven/ThreeDoors/community/profile`
+Source: `gh api repos/arcavenae/ThreeDoors/community/profile`
 
 ### What Exists
 
@@ -259,7 +259,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before requesting a feature, please read [SOUL.md](https://github.com/arcaven/ThreeDoors/blob/main/SOUL.md) to understand ThreeDoors' design philosophy. Features that increase complexity or conflict with "three doors, not three hundred" will likely be declined.
+        Before requesting a feature, please read [SOUL.md](https://github.com/arcavenae/ThreeDoors/blob/main/SOUL.md) to understand ThreeDoors' design philosophy. Features that increase complexity or conflict with "three doors, not three hundred" will likely be declined.
   - type: textarea
     id: problem
     attributes:
@@ -319,7 +319,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have a question? Check the [README](https://github.com/arcaven/ThreeDoors/blob/main/README.md) and [docs/](https://github.com/arcaven/ThreeDoors/tree/main/docs) first.
+        Have a question? Check the [README](https://github.com/arcavenae/ThreeDoors/blob/main/README.md) and [docs/](https://github.com/arcavenae/ThreeDoors/tree/main/docs) first.
   - type: textarea
     id: question
     attributes:
@@ -350,7 +350,7 @@ Disables blank issue creation, directing users to templates:
 blank_issues_enabled: false
 contact_links:
   - name: Documentation
-    url: https://github.com/arcaven/ThreeDoors/tree/main/docs
+    url: https://github.com/arcavenae/ThreeDoors/tree/main/docs
     about: Check the docs before opening an issue
 ```
 
@@ -414,16 +414,16 @@ contact_links:
 
 ## Asking Questions
 
-- Open a [Question issue](https://github.com/arcaven/ThreeDoors/issues/new?template=question.yml) on GitHub
+- Open a [Question issue](https://github.com/arcavenae/ThreeDoors/issues/new?template=question.yml) on GitHub
 
 ## Reporting Bugs
 
-- Open a [Bug Report](https://github.com/arcaven/ThreeDoors/issues/new?template=bug-report.yml) on GitHub
+- Open a [Bug Report](https://github.com/arcavenae/ThreeDoors/issues/new?template=bug-report.yml) on GitHub
 - See [SECURITY.md](SECURITY.md) for security vulnerabilities (do NOT use public issues)
 
 ## Feature Requests
 
-- Open a [Feature Request](https://github.com/arcaven/ThreeDoors/issues/new?template=feature-request.yml) on GitHub
+- Open a [Feature Request](https://github.com/arcavenae/ThreeDoors/issues/new?template=feature-request.yml) on GitHub
 - Please read [SOUL.md](SOUL.md) first — ThreeDoors is opinionated by design
 ```
 

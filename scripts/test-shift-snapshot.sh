@@ -104,7 +104,7 @@ MOCK_EOF
 #!/usr/bin/env bash
 case "$1" in
     remote)
-        echo "https://github.com/arcaven/ThreeDoors.git"
+        echo "https://github.com/arcavenae/ThreeDoors.git"
         ;;
 esac
 MOCK_EOF

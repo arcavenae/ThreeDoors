@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // loadContractTestdata loads a JSON file from testdata/ for contract tests.

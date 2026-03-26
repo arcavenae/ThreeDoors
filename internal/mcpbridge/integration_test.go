@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/mcp"
+	"github.com/arcavenae/ThreeDoors/internal/mcp"
 )
 
 // TestIntegration_FullSession simulates a complete MCP session: initialize,

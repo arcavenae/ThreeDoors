@@ -273,9 +273,9 @@ func TestCreatePR(t *testing.T) {
 		runner.responses["git add CLAUDE.md"] = nil
 		runner.responses["git commit -S -m slaes: P-007\n\nRecommendation: Strengthen lint rules\nConfidence: High"] = nil
 		runner.responses["git push -u origin slaes/P-007"] = nil
-		runner.responses["gh pr create --title slaes: P-007 — Strengthen lint rules --body test body"] = []byte("https://github.com/arcaven/ThreeDoors/pull/500\n")
+		runner.responses["gh pr create --title slaes: P-007 — Strengthen lint rules --body test body"] = []byte("https://github.com/arcavenae/ThreeDoors/pull/500\n")
 
-		pc := NewPRCreatorWithRunner(runner, "arcaven/ThreeDoors")
+		pc := NewPRCreatorWithRunner(runner, "arcavenae/ThreeDoors")
 		proposal := PRProposal{
 			RecommendationID: "P-007",
 			Confidence:       ConfidenceHigh,
@@ -290,7 +290,7 @@ func TestCreatePR(t *testing.T) {
 		if err != nil {
 			t.Fatalf("CreatePR() unexpected error: %v", err)
 		}
-		if url != "https://github.com/arcaven/ThreeDoors/pull/500" {
+		if url != "https://github.com/arcavenae/ThreeDoors/pull/500" {
 			t.Errorf("URL = %q, want PR URL", url)
 		}
 
@@ -321,7 +321,7 @@ func TestCreatePR(t *testing.T) {
 		runner := newMockRunner()
 		runner.errors["git checkout -b slaes/P-007"] = fmt.Errorf("branch exists")
 
-		pc := NewPRCreatorWithRunner(runner, "arcaven/ThreeDoors")
+		pc := NewPRCreatorWithRunner(runner, "arcavenae/ThreeDoors")
 		_, err := pc.CreatePR(PRProposal{
 			Branch:       "slaes/P-007",
 			FilesChanged: []string{"CLAUDE.md"},

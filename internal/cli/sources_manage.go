@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
 	"github.com/spf13/cobra"
 )
 

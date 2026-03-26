@@ -767,9 +767,9 @@ So that users can install ThreeDoors with a single `brew install` command.
 
 **Acceptance Criteria:**
 - **AC1:** MIT LICENSE file added and GoReleaser config created (Phase 1)
-- **AC2:** `arcaven/homebrew-threedoors` tap repository created (Phase 1)
+- **AC2:** `arcavenae/homebrew-threedoors` tap repository created (Phase 1)
 - **AC3:** GoReleaser GitHub Actions workflow triggers on semver tags (Phase 1)
-- **AC4:** `brew tap arcaven/threedoors && brew install threedoors` works (Phase 1)
+- **AC4:** `brew tap arcavenae/threedoors && brew install threedoors` works (Phase 1)
 - **AC5:** CI runs `brew audit`, `brew install --build-from-source`, `brew test` (Phase 2)
 - **AC6:** Cosign signing and SLSA provenance enabled for releases (Phase 2)
 - **AC7:** Source-build formula submitted and accepted to homebrew-core (Phase 3)
@@ -3092,7 +3092,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 - **Priority:** P1
 - **Estimate:** S (1-2 hours)
 - **Depends on:** 38.1
-- **Issue:** [#296](https://github.com/arcaven/ThreeDoors/issues/296)
+- **Issue:** [#296](https://github.com/arcavenae/ThreeDoors/issues/296)
 - **ACs:** Alpha formula template uses `if OS.mac? && Hardware::CPU.arm?` pattern, no `on_arm`/`on_intel`/`on_linux` with `url`/`sha256`, formula passes `brew audit --strict`, homebrew-tap CI green
 
 ---
@@ -3248,7 +3248,7 @@ So that I can objectively assess persistent agent value and adjust accordingly.
 
 ## Appendix: PR-Analysis-Derived Quality Acceptance Criteria
 
-> **Source:** Systematic analysis of all 49 PRs (#1–#49) in arcaven/ThreeDoors, examining every delta between initial PR submission and final merge. These ACs are derived from recurring defect patterns and MUST be included in all future stories.
+> **Source:** Systematic analysis of all 49 PRs (#1–#49) in arcavenae/ThreeDoors, examining every delta between initial PR submission and final merge. These ACs are derived from recurring defect patterns and MUST be included in all future stories.
 
 ### Issue Categorization Summary
 
@@ -5172,7 +5172,7 @@ Three tiered submission methods from the preview screen: (1) Browser URL — ope
 - D-113: Ring buffer breadcrumbs (50 entries, count-bounded)
 - D-114: Allowlist-only privacy for bug reports (capture-level filtering)
 - D-115: Mandatory preview before bug report submission
-- D-116: Bug report target repo hardcoded to arcaven/ThreeDoors
+- D-116: Bug report target repo hardcoded to arcavenae/ThreeDoors
 - X-059: Rejected OAuth device flow for bug report auth
 - X-060: Rejected gh CLI for bug report submission
 - X-061: Rejected time-bounded breadcrumb buffer

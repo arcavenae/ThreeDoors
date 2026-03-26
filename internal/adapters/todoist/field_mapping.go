@@ -1,6 +1,6 @@
 package todoist
 
-import "github.com/arcaven/ThreeDoors/internal/core"
+import "github.com/arcavenae/ThreeDoors/internal/core"
 
 // MapPriorityToEffort converts a Todoist priority (0-4) to a ThreeDoors TaskEffort.
 // Todoist uses an inverted scale: 1 is normal, 4 is urgent.

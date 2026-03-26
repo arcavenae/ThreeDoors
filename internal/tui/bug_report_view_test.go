@@ -360,7 +360,7 @@ func TestBugReportView_SuccessMsg_APIShowsURL(t *testing.T) {
 	v := newTestBugReportView()
 	enterPreviewState(t, v)
 
-	v.Update(BugReportSubmittedMsg{Method: "api", Details: "https://github.com/arcaven/ThreeDoors/issues/42"})
+	v.Update(BugReportSubmittedMsg{Method: "api", Details: "https://github.com/arcavenae/ThreeDoors/issues/42"})
 
 	if v.state != bugReportSuccess {
 		t.Errorf("state = %d, want bugReportSuccess", v.state)

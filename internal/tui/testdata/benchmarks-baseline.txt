@@ -17,9 +17,9 @@ BenchmarkDetailView-8            	   62106	     91864 ns/op	   43039 B/op	     4
 BenchmarkDetailView-8            	   77749	     80585 ns/op	   43013 B/op	     472 allocs/op
 BenchmarkDetailView-8            	   50376	    101943 ns/op	   42946 B/op	     472 allocs/op
 PASS
-ok  	github.com/arcaven/ThreeDoors/internal/tui	250.957s
+ok  	github.com/arcavenae/ThreeDoors/internal/tui	250.957s
 BenchmarkResolveSeason-8   	398864398	        13.21 ns/op
 BenchmarkResolveSeason-8   	476839854	        12.57 ns/op
 BenchmarkResolveSeason-8   	477372066	        12.59 ns/op
 PASS
-ok  	github.com/arcaven/ThreeDoors/internal/tui/themes	17.805s
+ok  	github.com/arcavenae/ThreeDoors/internal/tui/themes	17.805s

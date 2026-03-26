@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have a question? Check the [README](https://github.com/arcaven/ThreeDoors/blob/main/README.md) and [docs/](https://github.com/arcaven/ThreeDoors/tree/main/docs) first.
+        Have a question? Check the [README](https://github.com/arcavenae/ThreeDoors/blob/main/README.md) and [docs/](https://github.com/arcavenae/ThreeDoors/tree/main/docs) first.
   - type: textarea
     id: question
     attributes:

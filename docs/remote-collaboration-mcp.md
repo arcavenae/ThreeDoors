@@ -63,7 +63,7 @@ sudo cp bin/multiclaude-mcp-bridge /usr/local/bin/
 Or install directly via Go:
 
 ```bash
-go install github.com/arcaven/ThreeDoors/cmd/multiclaude-mcp-bridge@latest
+go install github.com/arcavenae/ThreeDoors/cmd/multiclaude-mcp-bridge@latest
 ```
 
 ### 2. Verify SSH Key Auth Works

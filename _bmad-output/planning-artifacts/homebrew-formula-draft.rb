@@ -12,11 +12,11 @@
 
 class Threedoors < Formula
   desc "TUI task manager that reduces decision friction by showing only three tasks"
-  homepage "https://github.com/arcaven/ThreeDoors"
-  url "https://github.com/arcaven/ThreeDoors/archive/refs/tags/v1.0.0.tar.gz"
+  homepage "https://github.com/arcavenae/ThreeDoors"
+  url "https://github.com/arcavenae/ThreeDoors/archive/refs/tags/v1.0.0.tar.gz"
   sha256 "REPLACE_WITH_ACTUAL_SHA256"
   license "MIT"
-  head "https://github.com/arcaven/ThreeDoors.git", branch: "main"
+  head "https://github.com/arcavenae/ThreeDoors.git", branch: "main"
 
   depends_on "go" => :build
 
@@ -24,9 +24,9 @@ class Threedoors < Formula
     ldflags = %W[
       -s -w
       -X main.version=#{version}
-      -X github.com/arcaven/ThreeDoors/internal/cli.Version=#{version}
-      -X github.com/arcaven/ThreeDoors/internal/cli.Commit=HEAD
-      -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=#{time.iso8601}
+      -X github.com/arcavenae/ThreeDoors/internal/cli.Version=#{version}
+      -X github.com/arcavenae/ThreeDoors/internal/cli.Commit=HEAD
+      -X github.com/arcavenae/ThreeDoors/internal/cli.BuildDate=#{time.iso8601}
     ]
     system "go", "build", *std_go_args(ldflags:), "./cmd/threedoors"
   end

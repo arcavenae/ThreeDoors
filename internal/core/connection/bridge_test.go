@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // stubTaskProvider is a minimal TaskProvider for bridge tests.

@@ -33,9 +33,9 @@ builds:
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
-      - -X github.com/arcaven/ThreeDoors/internal/cli.Version={{.Version}}
-      - -X github.com/arcaven/ThreeDoors/internal/cli.Commit={{.Commit}}
-      - -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate={{.Date}}
+      - -X github.com/arcavenae/ThreeDoors/internal/cli.Version={{.Version}}
+      - -X github.com/arcavenae/ThreeDoors/internal/cli.Commit={{.Commit}}
+      - -X github.com/arcavenae/ThreeDoors/internal/cli.BuildDate={{.Date}}
     # Exclude linux/arm64 for now (no CI testing for it)
     ignore:
       - goos: linux
@@ -91,7 +91,7 @@ changelog:
 
 release:
   github:
-    owner: arcaven
+    owner: arcavenae
     name: ThreeDoors
   draft: false
   prerelease: auto
@@ -101,27 +101,27 @@ release:
 
     TUI task manager that reduces decision friction by showing only three tasks at a time.
   footer: |
-    **Full Changelog**: https://github.com/arcaven/ThreeDoors/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/arcavenae/ThreeDoors/compare/{{ .PreviousTag }}...{{ .Tag }}
 
     ### Installation
 
     ```bash
-    brew tap arcaven/threedoors
+    brew tap arcavenae/threedoors
     brew install threedoors
     ```
 
 # Homebrew tap formula generation
 brews:
   - repository:
-      owner: arcaven
-      name: homebrew-tap  # Shared tap for all arcaven projects
+      owner: arcavenae
+      name: homebrew-tap  # Shared tap for all arcavenae projects
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
     commit_msg_template: "chore(formula): update threedoors to {{ .Tag }}"
     directory: Formula
-    homepage: "https://github.com/arcaven/ThreeDoors"
+    homepage: "https://github.com/arcavenae/ThreeDoors"
     description: "TUI task manager that reduces decision friction by showing only three tasks"
     license: "MIT"
     install: |

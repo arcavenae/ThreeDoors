@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
 )
 
 func TestWarnCredentialExposure_WorldReadableWithTokens(t *testing.T) {

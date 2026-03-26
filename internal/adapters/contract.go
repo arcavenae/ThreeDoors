@@ -18,7 +18,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // skipIfReadOnly calls t.Skipf if err is ErrReadOnly, otherwise calls t.Fatalf.

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before requesting a feature, please read [SOUL.md](https://github.com/arcaven/ThreeDoors/blob/main/SOUL.md) to understand ThreeDoors' design philosophy. Features that increase complexity or conflict with "three doors, not three hundred" will likely be declined.
+        Before requesting a feature, please read [SOUL.md](https://github.com/arcavenae/ThreeDoors/blob/main/SOUL.md) to understand ThreeDoors' design philosophy. Features that increase complexity or conflict with "three doors, not three hundred" will likely be declined.
   - type: textarea
     id: problem
     attributes:

@@ -41,26 +41,26 @@ ThreeDoors is a terminal-based task manager that reduces decision friction by sh
 **Homebrew (recommended):**
 
 ```bash
-brew install arcaven/tap/threedoors
+brew install arcavenae/tap/threedoors
 ```
 
 **Alpha channel** — latest development builds from `main`:
 
 ```bash
-brew install arcaven/tap/threedoors-a
+brew install arcavenae/tap/threedoors-a
 ```
 
 Both can be installed side-by-side. Stable runs as `threedoors`, alpha runs as `threedoors-a`.
 
 **macOS installer (.pkg):**
 
-Download the `.pkg` installer from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Double-click to install `threedoors` to `/usr/local/bin/`. The installer is code-signed and Apple-notarized. Available for both Apple Silicon (`arm64`) and Intel (`amd64`).
+Download the `.pkg` installer from [GitHub Releases](https://github.com/arcavenae/ThreeDoors/releases). Double-click to install `threedoors` to `/usr/local/bin/`. The installer is code-signed and Apple-notarized. Available for both Apple Silicon (`arm64`) and Intel (`amd64`).
 
 To uninstall: `sudo rm /usr/local/bin/threedoors`
 
 **Pre-built binaries:**
 
-Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries available for macOS (Apple Silicon, Intel) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
+Download from [GitHub Releases](https://github.com/arcavenae/ThreeDoors/releases). Binaries available for macOS (Apple Silicon, Intel) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
 
 ```bash
 chmod +x threedoors-*
@@ -70,13 +70,13 @@ mv threedoors-darwin-arm64 /usr/local/bin/threedoors   # adjust for your platfor
 **Go install:**
 
 ```bash
-go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
+go install github.com/arcavenae/ThreeDoors/cmd/threedoors@latest
 ```
 
 **Build from source (Go 1.25.4+):**
 
 ```bash
-git clone https://github.com/arcaven/ThreeDoors.git
+git clone https://github.com/arcavenae/ThreeDoors.git
 cd ThreeDoors
 make build
 # Binary at bin/threedoors

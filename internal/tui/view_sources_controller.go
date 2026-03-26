@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

@@ -3,7 +3,7 @@ package reminders
 import (
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // RemindersConfig holds parsed configuration for the Reminders adapter.

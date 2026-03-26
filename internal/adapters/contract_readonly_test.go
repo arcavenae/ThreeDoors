@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // readOnlyProvider is a minimal TaskProvider that returns ErrReadOnly on all

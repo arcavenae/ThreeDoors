@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/enrichment"
 
 	_ "modernc.org/sqlite"
 )

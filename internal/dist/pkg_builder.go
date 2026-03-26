@@ -18,7 +18,7 @@ func NewPkgBuilder(runner CommandRunner, signingIdentity string) *PkgBuilder {
 	return &PkgBuilder{
 		Runner:          runner,
 		SigningIdentity: signingIdentity,
-		Identifier:      "com.arcaven.threedoors",
+		Identifier:      "com.arcavenae.threedoors",
 	}
 }
 

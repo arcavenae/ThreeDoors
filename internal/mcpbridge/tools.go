@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/mcp"
+	"github.com/arcavenae/ThreeDoors/internal/mcp"
 )
 
 // commandTimeout is the maximum time allowed for a multiclaude CLI command.

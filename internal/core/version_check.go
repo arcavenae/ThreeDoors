@@ -22,7 +22,7 @@ const (
 	versionCheckTimeout = 5 * time.Second
 
 	// githubReleasesURL is the GitHub Releases API endpoint.
-	githubReleasesURL = "https://api.github.com/repos/arcaven/ThreeDoors/releases"
+	githubReleasesURL = "https://api.github.com/repos/arcavenae/ThreeDoors/releases"
 )
 
 // ciEnvVars are environment variables that indicate a CI environment.
@@ -278,7 +278,7 @@ func (vc *VersionChecker) buildResults(latest map[string]string) []CheckResult {
 	if latestInChannel, ok := latest[currentChannel]; ok {
 		latestBase := baseSemver(latestInChannel)
 		if CompareSemver(latestBase, currentBase) > 0 {
-			suggestion := "Visit https://github.com/arcaven/ThreeDoors/releases"
+			suggestion := "Visit https://github.com/arcavenae/ThreeDoors/releases"
 			if currentChannel == "stable" {
 				suggestion = "brew upgrade threedoors"
 			}

@@ -9,7 +9,7 @@ import (
 	// Pure Go SQLite driver — no CGO required.
 	_ "modernc.org/sqlite"
 
-	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcavenae/ThreeDoors/internal/enrichment"
 )
 
 // checkDatabase runs the Database category checks for enrichment.db.

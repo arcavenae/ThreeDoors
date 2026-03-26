@@ -13,7 +13,7 @@ set -euo pipefail
 # Or directly via cron:
 #   0 */4 * * * cd /path/to/ThreeDoors && ./scripts/sm-sprint-health.sh
 
-REPO="${REPO:-arcaven/ThreeDoors}"
+REPO="${REPO:-arcavenae/ThreeDoors}"
 STALE_HOURS="${STALE_HOURS:-24}"
 STORIES_DIR="${STORIES_DIR:-docs/stories}"
 REPORT_TO_SUPERVISOR="${REPORT_TO_SUPERVISOR:-false}"
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: sm-sprint-health.sh [--repo OWNER/REPO] [--stale-hours N] [--stories-dir DIR] [--report]"
             echo ""
             echo "Options:"
-            echo "  --repo          GitHub repo (default: arcaven/ThreeDoors)"
+            echo "  --repo          GitHub repo (default: arcavenae/ThreeDoors)"
             echo "  --stale-hours   Hours without activity before PR is stale (default: 24)"
             echo "  --stories-dir   Path to story files (default: docs/stories)"
             echo "  --report        Send report to supervisor via multiclaude message send"

@@ -2,13 +2,13 @@
 
 **Date:** 2026-03-08
 **Participants:** PM (John), Architect (Winston), Dev (Amelia), QA (Quinn/Murat), SM (Bob)
-**Topic:** Cross-repo CI awareness between ThreeDoors and the shared `arcaven/homebrew-tap` repo
+**Topic:** Cross-repo CI awareness between ThreeDoors and the shared `arcavenae/homebrew-tap` repo
 
 ---
 
 ## Context
 
-- **Shared tap repo:** `arcaven/homebrew-tap` (already exists, public)
+- **Shared tap repo:** `arcavenae/homebrew-tap` (already exists, public)
 - **Current formulas:** `threedoors.rb`, `switchboard.rb` (and potentially more in future)
 - **Current CI:** Audits and style-checks ALL formulas on push/PR to main
 - **Release flow:** GoReleaser pushes formula update commit to shared tap → tap CI runs
@@ -36,7 +36,7 @@ I recommend approach 1 (formula-level CI) because it benefits ALL projects using
 💻 **Amelia (Dev):** Current tap CI loops over all formulas in a single job:
 ```yaml
 for f in Formula/*.rb; do
-  brew audit --strict "arcaven/tap/$name"
+  brew audit --strict "arcavenae/tap/$name"
 done
 ```
 If *any* formula fails, the whole workflow fails. We can't tell which formula broke. Fix: use a **matrix strategy** — one job per formula. Each formula gets its own pass/fail status. GoReleaser's commit to the tap triggers CI, and we check only the threedoors matrix job.
@@ -49,7 +49,7 @@ jobs:
       matrix:
         formula: [threedoors, switchboard]
     steps:
-      - brew audit --strict "arcaven/tap/${{ matrix.formula }}"
+      - brew audit --strict "arcavenae/tap/${{ matrix.formula }}"
 ```
 
 This way, `threedoors` can pass even if `switchboard` fails.
@@ -80,7 +80,7 @@ If it pushes directly:
 **Option A: `release-verify.yml` workflow in ThreeDoors** (recommended)
 - Triggers on `release: published`
 - Waits for GoReleaser to push to tap (GoReleaser runs in the same release workflow, so the tap commit happens before this workflow triggers — use `workflow_run` trigger instead)
-- Polls `gh run list --repo arcaven/homebrew-tap --branch main --limit 1` to find the CI run triggered by GoReleaser's commit
+- Polls `gh run list --repo arcavenae/homebrew-tap --branch main --limit 1` to find the CI run triggered by GoReleaser's commit
 - Checks result, posts commit status to release tag
 - On failure: opens GitHub issue with details
 
@@ -102,12 +102,12 @@ I'd recommend **Option A for automation + Option C as future consideration**. Op
 
 ```bash
 # Find the GoReleaser commit in tap repo
-gh api repos/arcaven/homebrew-tap/commits \
+gh api repos/arcavenae/homebrew-tap/commits \
   --jq '.[0] | select(.commit.message | startswith("chore(formula): update threedoors"))' \
   | jq -r '.sha'
 
 # Find CI run for that commit
-gh run list --repo arcaven/homebrew-tap --commit $SHA --json status,conclusion
+gh run list --repo arcavenae/homebrew-tap --commit $SHA --json status,conclusion
 ```
 
 ### Failure Recovery
@@ -149,7 +149,7 @@ Recovery is always: fix the root cause in ThreeDoors, tag a patch release (e.g.,
 
 ## Adopted Approach
 
-### 1. Tap CI Enhancement (in `arcaven/homebrew-tap`)
+### 1. Tap CI Enhancement (in `arcavenae/homebrew-tap`)
 - Convert CI to **matrix strategy** — one job per formula for isolated pass/fail
 - Add `brew install` and `brew test` steps (currently only audit/style)
 - This benefits ALL arcaven projects, not just ThreeDoors
@@ -170,7 +170,7 @@ Recovery is always: fix the root cause in ThreeDoors, tag a patch release (e.g.,
 - Document release knowledge in a **spawnable agent prompt** (`agents/release-manager.md`) for when workers need release-specific context
 
 ### 4. GoReleaser Config Update
-- Target shared repo: `arcaven/homebrew-tap` (not `arcaven/homebrew-threedoors`)
+- Target shared repo: `arcavenae/homebrew-tap` (not `arcavenae/homebrew-threedoors`)
 - Formula path: `Formula/threedoors.rb`
 - Commit message pattern: `chore(formula): update threedoors to {{ .Tag }}`
 - Token: existing `HOMEBREW_TAP_TOKEN` secret
@@ -182,8 +182,8 @@ The shared tap means formula-level CI isolation is critical. A persistent releas
 
 ## Rejected Options
 
-### Option A: Dedicated `arcaven/homebrew-threedoors` Tap Repo
-**Rejected because:** The shared tap `arcaven/homebrew-tap` already exists with ThreeDoors and switchboard formulas. Creating a separate tap would fragment the distribution. Users would need multiple `brew tap` commands for different arcaven tools. The shared tap is the standard pattern for organizations with multiple CLI tools.
+### Option A: Dedicated `arcavenae/homebrew-threedoors` Tap Repo
+**Rejected because:** The shared tap `arcavenae/homebrew-tap` already exists with ThreeDoors and switchboard formulas. Creating a separate tap would fragment the distribution. Users would need multiple `brew tap` commands for different arcaven tools. The shared tap is the standard pattern for organizations with multiple CLI tools.
 
 ### Option B: pr-shepherd Owns Cross-Repo Monitoring
 **Rejected because:** pr-shepherd's domain is branch hygiene and PR health. Release lifecycle is a different concern with different failure modes, different recovery patterns, and different cadence. Overloading pr-shepherd dilutes its responsibility. The shared tap adds complexity (multi-formula, multi-project) that's outside pr-shepherd's scope.

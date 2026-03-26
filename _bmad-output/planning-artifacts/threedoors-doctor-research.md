@@ -197,7 +197,7 @@ But if stable is `1.1.0` and user is on alpha `1.2.0-alpha...`, don't suggest "d
 
 ```go
 // Lightweight — no go-github dependency needed
-// GET https://api.github.com/repos/arcaven/ThreeDoors/releases
+// GET https://api.github.com/repos/arcavenae/ThreeDoors/releases
 // Filter by channel:
 //   stable: tag has no pre-release suffix
 //   beta:   tag contains "-beta"

@@ -3,7 +3,7 @@ package testkit
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // RequireTaskCount fails the test immediately if the task count doesn't match.

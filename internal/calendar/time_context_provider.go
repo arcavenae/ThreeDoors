@@ -5,7 +5,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // CalendarTimeContextProvider implements core.TimeContextProvider using a CalendarReader.

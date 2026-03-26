@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
 	"gopkg.in/yaml.v3"
 )
 

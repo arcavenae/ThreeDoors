@@ -1,9 +1,9 @@
 # ThreeDoors 🚪🚪🚪
 
 <p align="center">
-  <a href="https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml"><img src="https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-  <a href="https://github.com/arcaven/ThreeDoors/releases/latest"><img src="https://img.shields.io/github/v/release/arcaven/ThreeDoors?style=flat&label=release&color=green" alt="Latest Release"></a>
-  <a href="https://goreportcard.com/report/github.com/arcaven/ThreeDoors"><img src="https://goreportcard.com/badge/github.com/arcaven/ThreeDoors" alt="Go Report Card"></a>
+  <a href="https://github.com/arcavenae/ThreeDoors/actions/workflows/ci.yml"><img src="https://github.com/arcavenae/ThreeDoors/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/arcavenae/ThreeDoors/releases/latest"><img src="https://img.shields.io/github/v/release/arcaven/ThreeDoors?style=flat&label=release&color=green" alt="Latest Release"></a>
+  <a href="https://goreportcard.com/report/github.com/arcavenae/ThreeDoors"><img src="https://goreportcard.com/badge/github.com/arcavenae/ThreeDoors" alt="Go Report Card"></a>
   <a href="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey"><img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey" alt="Platform"></a>
   <a href="https://golang.org/doc/devel/release.html"><img src="https://img.shields.io/badge/Go-1.25.4+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go Version"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
@@ -98,20 +98,20 @@ Screenshots and GIFs will be stored in [`docs/assets/`](docs/assets/).
 ### Option 1: Homebrew (recommended)
 
 ```bash
-brew install arcaven/tap/threedoors
+brew install arcavenae/tap/threedoors
 ```
 
 **Alpha channel** — latest development builds from `main`:
 
 ```bash
-brew install arcaven/tap/threedoors-a
+brew install arcavenae/tap/threedoors-a
 ```
 
 Both can be installed side-by-side. Stable runs as `threedoors`, alpha as `threedoors-a`.
 
 ### Option 2: macOS Installer (.pkg)
 
-Download the `.pkg` installer from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Double-click to launch the standard macOS installer, which places `threedoors` in `/usr/local/bin/`.
+Download the `.pkg` installer from [GitHub Releases](https://github.com/arcavenae/ThreeDoors/releases). Double-click to launch the standard macOS installer, which places `threedoors` in `/usr/local/bin/`.
 
 | Platform | Installer |
 |----------|-----------|
@@ -123,7 +123,7 @@ To uninstall: `sudo rm /usr/local/bin/threedoors`
 
 ### Option 3: Download Pre-built Binary
 
-Download the latest release from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries are available for:
+Download the latest release from [GitHub Releases](https://github.com/arcavenae/ThreeDoors/releases). Binaries are available for:
 
 | Platform | Binary |
 |----------|--------|
@@ -140,7 +140,7 @@ All macOS binaries are **code-signed and Apple-notarized**.
 ### Option 4: Install with `go install`
 
 ```bash
-go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
+go install github.com/arcavenae/ThreeDoors/cmd/threedoors@latest
 ```
 
 ### Option 5: Build from Source
@@ -148,7 +148,7 @@ go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
 **Prerequisites:** Go 1.25.4+, Git, [just](https://github.com/casey/just) (optional)
 
 ```bash
-git clone https://github.com/arcaven/ThreeDoors.git
+git clone https://github.com/arcavenae/ThreeDoors.git
 cd ThreeDoors
 just build
 # Binary at bin/threedoors
@@ -279,7 +279,7 @@ threedoors stats --daily
 - 🛠️ **15 MCP Tools** — Query, search, analyze tasks, traverse dependency graphs, assess burnout risk, and more (see [MCP section](#mcp-server))
 
 ### Distribution
-- 🍺 **Homebrew** — Install via `brew install arcaven/tap/threedoors`
+- 🍺 **Homebrew** — Install via `brew install arcavenae/tap/threedoors`
 - 🔏 **Signed & Notarized** — macOS binaries are code-signed and Apple-notarized
 - 💻 **Cross-Platform Binaries** — Pre-built for macOS (Apple Silicon) and Linux (x86_64)
 - 🚀 **GitHub Releases** — Automatic releases on every merge to main
@@ -898,9 +898,9 @@ Built with the [Charm](https://charm.sh/) ecosystem:
 
 ## Links
 
-- **Repository:** [github.com/arcaven/ThreeDoors](https://github.com/arcaven/ThreeDoors)
-- **Issues:** [github.com/arcaven/ThreeDoors/issues](https://github.com/arcaven/ThreeDoors/issues)
-- **Releases:** [github.com/arcaven/ThreeDoors/releases](https://github.com/arcaven/ThreeDoors/releases)
+- **Repository:** [github.com/arcavenae/ThreeDoors](https://github.com/arcavenae/ThreeDoors)
+- **Issues:** [github.com/arcavenae/ThreeDoors/issues](https://github.com/arcavenae/ThreeDoors/issues)
+- **Releases:** [github.com/arcavenae/ThreeDoors/releases](https://github.com/arcavenae/ThreeDoors/releases)
 
 ---
 

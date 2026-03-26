@@ -42,7 +42,7 @@ Branch protection is **not currently configured** on `main`. The API returned 40
 Using GitHub CLI:
 
 ```bash
-gh api repos/arcaven/ThreeDoors/branches/main/protection \
+gh api repos/arcavenae/ThreeDoors/branches/main/protection \
   --method PUT \
   --field required_status_checks='{"strict":true,"contexts":["Quality Gate"]}' \
   --field enforce_admins=true \
@@ -56,7 +56,7 @@ gh api repos/arcaven/ThreeDoors/branches/main/protection \
 ## How to Verify (Admin)
 
 ```bash
-gh api repos/arcaven/ThreeDoors/branches/main/protection --jq '{
+gh api repos/arcavenae/ThreeDoors/branches/main/protection --jq '{
   status_checks: .required_status_checks.contexts,
   reviews_required: .required_pull_request_reviews.required_approving_review_count,
   enforce_admins: .enforce_admins.enabled,

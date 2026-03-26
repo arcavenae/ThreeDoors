@@ -7,17 +7,17 @@
 
 ## Executive Summary
 
-ThreeDoors needs two parallel Homebrew distribution channels: a **stable** channel (`threedoors`) updated on semantic version tags via GoReleaser, and an **alpha** channel (`threedoors-a`) updated on every push to main. The recommended approach uses different binary names to avoid all Homebrew conflicts, with both formulae hosted in the existing `arcaven/homebrew-tap` repository.
+ThreeDoors needs two parallel Homebrew distribution channels: a **stable** channel (`threedoors`) updated on semantic version tags via GoReleaser, and an **alpha** channel (`threedoors-a`) updated on every push to main. The recommended approach uses different binary names to avoid all Homebrew conflicts, with both formulae hosted in the existing `arcavenae/homebrew-tap` repository.
 
 ---
 
 ## 1. Problem Statement
 
-PR #262 introduced GoReleaser for tagged `v*` releases, producing stable builds distributed via `brew install arcaven/tap/threedoors`. The existing CI also builds alpha releases on every push to main (`0.1.0-alpha.YYYYMMDD.SHA7`). These alpha builds are available as GitHub releases but not via Homebrew.
+PR #262 introduced GoReleaser for tagged `v*` releases, producing stable builds distributed via `brew install arcavenae/tap/threedoors`. The existing CI also builds alpha releases on every push to main (`0.1.0-alpha.YYYYMMDD.SHA7`). These alpha builds are available as GitHub releases but not via Homebrew.
 
 Users should be able to:
-- Install the stable release: `brew install arcaven/tap/threedoors`
-- Install the alpha release: `brew install arcaven/tap/threedoors-a`
+- Install the stable release: `brew install arcavenae/tap/threedoors`
+- Install the alpha release: `brew install arcavenae/tap/threedoors-a`
 - Install both simultaneously without conflicts
 - Upgrade each independently via `brew upgrade`
 
@@ -70,10 +70,10 @@ The pattern that most closely matches our use case is GoReleaser's own approach:
 
 ### Does the Binary Name Need to Match the Formula Name?
 
-**No.** Apple code signing uses a **bundle identifier** (e.g., `com.arcaven.threedoors-a`), not the filename. The `codesign` command accepts an `--identifier` flag:
+**No.** Apple code signing uses a **bundle identifier** (e.g., `com.arcavenae.threedoors-a`), not the filename. The `codesign` command accepts an `--identifier` flag:
 
 ```bash
-codesign --force --options runtime --sign "$IDENTITY" --identifier "com.arcaven.threedoors-a" --timestamp threedoors-a-darwin-arm64
+codesign --force --options runtime --sign "$IDENTITY" --identifier "com.arcavenae.threedoors-a" --timestamp threedoors-a-darwin-arm64
 ```
 
 Notarization verifies the signature, hardened runtime, and team ID — not the binary name. Our existing CI already signs binaries with names like `threedoors-darwin-arm64` that don't match the installed binary name `threedoors`. No changes needed to the signing pipeline beyond adding the new binary names.
@@ -82,8 +82,8 @@ Notarization verifies the signature, hardened runtime, and team ID — not the b
 
 | Binary | Identifier | Formula |
 |--------|-----------|---------|
-| `threedoors` | `com.arcaven.threedoors` | `threedoors.rb` |
-| `threedoors-a` | `com.arcaven.threedoors-a` | `threedoors-a.rb` |
+| `threedoors` | `com.arcavenae.threedoors` | `threedoors.rb` |
+| `threedoors-a` | `com.arcavenae.threedoors-a` | `threedoors-a.rb` |
 
 ---
 
@@ -92,7 +92,7 @@ Notarization verifies the signature, hardened runtime, and team ID — not the b
 ### Tap Structure
 
 ```
-arcaven/homebrew-tap/
+arcavenae/homebrew-tap/
 ├── Formula/
 │   ├── threedoors.rb          # Stable — GoReleaser auto-updates on v* tags
 │   └── threedoors-a.rb        # Alpha — CI auto-updates on every main push
@@ -108,22 +108,22 @@ Already managed by GoReleaser. No changes needed. Updated automatically when a `
 ```ruby
 class ThreedoorsA < Formula
   desc "TUI task manager — alpha channel (updated on every main push)"
-  homepage "https://github.com/arcaven/ThreeDoors"
+  homepage "https://github.com/arcavenae/ThreeDoors"
   version "0.1.0-alpha.20260308.abc1234"  # Updated by CI
   license "MIT"
 
   on_arm do
-    url "https://github.com/arcaven/ThreeDoors/releases/download/alpha-20260308-abc1234/threedoors-a-darwin-arm64"
+    url "https://github.com/arcavenae/ThreeDoors/releases/download/alpha-20260308-abc1234/threedoors-a-darwin-arm64"
     sha256 "PLACEHOLDER"
   end
 
   on_intel do
-    url "https://github.com/arcaven/ThreeDoors/releases/download/alpha-20260308-abc1234/threedoors-a-darwin-amd64"
+    url "https://github.com/arcavenae/ThreeDoors/releases/download/alpha-20260308-abc1234/threedoors-a-darwin-amd64"
     sha256 "PLACEHOLDER"
   end
 
   on_linux do
-    url "https://github.com/arcaven/ThreeDoors/releases/download/alpha-20260308-abc1234/threedoors-a-linux-amd64"
+    url "https://github.com/arcavenae/ThreeDoors/releases/download/alpha-20260308-abc1234/threedoors-a-linux-amd64"
     sha256 "PLACEHOLDER"
   end
 
@@ -204,7 +204,7 @@ After the alpha release is created, a new CI step pushes the updated formula to 
     cat > threedoors-a.rb <<FORMULA
     class ThreedoorsA < Formula
       desc "TUI task manager — alpha channel"
-      homepage "https://github.com/arcaven/ThreeDoors"
+      homepage "https://github.com/arcavenae/ThreeDoors"
       version "$VERSION"
       license "MIT"
       # ... (full formula with correct URLs and checksums)
@@ -241,7 +241,7 @@ Zero conflicts in any combination.
 - [ ] Add CI step to generate and push `threedoors-a.rb` to tap repo
 - [ ] Add `main.channel` ldflag support to `cmd/threedoors`
 - [ ] Add `ruby -c` validation before pushing formula
-- [ ] Verify `brew install arcaven/tap/threedoors-a` works end-to-end
+- [ ] Verify `brew install arcavenae/tap/threedoors-a` works end-to-end
 
 ### Phase 2: Polish
 

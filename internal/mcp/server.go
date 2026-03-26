@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/metrics"
-	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/metrics"
+	"github.com/arcavenae/ThreeDoors/internal/enrichment"
 )
 
 // Handler processes an MCP JSON-RPC request and returns a response.

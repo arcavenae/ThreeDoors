@@ -3,7 +3,7 @@ package sync_test
 import (
 	"testing"
 
-	gosync "github.com/arcaven/ThreeDoors/internal/sync"
+	gosync "github.com/arcavenae/ThreeDoors/internal/sync"
 )
 
 func TestSyncOp_String(t *testing.T) {

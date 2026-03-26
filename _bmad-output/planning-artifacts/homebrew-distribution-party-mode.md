@@ -10,7 +10,7 @@
 
 ### Strategy: Custom Tap First, Then Graduate
 
-📋 **John (PM):** The data is clear — homebrew-core requires 75+ stars for third-party submissions, or 225+ for self-submissions. We have ~0 stars today. Custom tap is the only viable path right now, and it's the right one. Ship via `brew tap arcaven/threedoors && brew install threedoors` immediately. Graduate to homebrew-core when we hit notability thresholds. This is the standard pattern — even major tools like `goreleaser` started with custom taps.
+📋 **John (PM):** The data is clear — homebrew-core requires 75+ stars for third-party submissions, or 225+ for self-submissions. We have ~0 stars today. Custom tap is the only viable path right now, and it's the right one. Ship via `brew tap arcavenae/threedoors && brew install threedoors` immediately. Graduate to homebrew-core when we hit notability thresholds. This is the standard pattern — even major tools like `goreleaser` started with custom taps.
 
 🏗️ **Winston (Architect):** Agreed. The custom tap approach aligns with our existing CI. We already have a `Formula/threedoors.rb` template and a `update-homebrew` CI job. The gap is that our current formula distributes **prebuilt binaries** — homebrew-core requires **build-from-source**. We need two formula variants: one for our tap (binary distribution, faster installs) and one designed for homebrew-core submission (source build with `depends_on "go" => :build`). GoReleaser bridges this gap cleanly.
 
@@ -44,7 +44,7 @@
 
 📋 **John (PM):** The cadence question is critical. I'd recommend: alpha auto-releases continue for internal testing. Stable releases (semver tags) happen when meaningful user-facing changes land — roughly per-epic completion. This gives us both fast iteration and stable distribution.
 
-🏗️ **Winston (Architect):** Process-wise, the tap repository (`arcaven/homebrew-threedoors`) needs to exist. GoReleaser pushes formula updates there on each tagged release. We need a `HOMEBREW_TAP_TOKEN` (personal access token with repo write access to the tap repo) — we already have this secret configured in CI.
+🏗️ **Winston (Architect):** Process-wise, the tap repository (`arcavenae/homebrew-threedoors`) needs to exist. GoReleaser pushes formula updates there on each tagged release. We need a `HOMEBREW_TAP_TOKEN` (personal access token with repo write access to the tap repo) — we already have this secret configured in CI.
 
 ### Risks
 
@@ -78,11 +78,11 @@
 
 **Phase 1: Custom Tap with GoReleaser (Immediate)**
 - Add LICENSE file (MIT)
-- Create `arcaven/homebrew-threedoors` tap repository
+- Create `arcavenae/homebrew-threedoors` tap repository
 - Add `.goreleaser.yml` configuration
 - Add GoReleaser GitHub Actions workflow (triggered on semver tags)
 - Tag first stable release (v0.1.0 or v1.0.0)
-- Verify `brew tap arcaven/threedoors && brew install threedoors` works
+- Verify `brew tap arcavenae/threedoors && brew install threedoors` works
 
 **Phase 2: CI Hardening (Before homebrew-core submission)**
 - Add `brew audit` to CI

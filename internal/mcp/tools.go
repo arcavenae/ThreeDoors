@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // ToolCallParams is the client request for tools/call.

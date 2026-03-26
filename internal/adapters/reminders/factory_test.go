@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestNewFactory_ReturnsNonNil(t *testing.T) {

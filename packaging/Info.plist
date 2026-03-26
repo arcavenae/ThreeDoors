@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.arcaven.threedoors</string>
+	<string>com.arcavenae.threedoors</string>
 	<key>CFBundleName</key>
 	<string>ThreeDoors</string>
 	<key>CFBundleDisplayName</key>

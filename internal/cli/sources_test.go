@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
 )
 
 // newTestManager creates a ConnectionManager with test connections.

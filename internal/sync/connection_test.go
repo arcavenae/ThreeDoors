@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
-	gosync "github.com/arcaven/ThreeDoors/internal/sync"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
+	gosync "github.com/arcavenae/ThreeDoors/internal/sync"
 )
 
 func TestGitSyncConnection_Register(t *testing.T) {

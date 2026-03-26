@@ -20,7 +20,7 @@ You don't need to use AI agents to contribute — just follow this guide and sub
 ## Getting Started
 
 ```bash
-git clone https://github.com/arcaven/ThreeDoors.git
+git clone https://github.com/arcavenae/ThreeDoors.git
 cd ThreeDoors
 make build    # Build the binary
 make test     # Run tests
@@ -32,7 +32,7 @@ make fmt      # Format code with gofumpt
 
 ### Reporting Bugs
 
-Open a [Bug Report](https://github.com/arcaven/ThreeDoors/issues/new?template=bug-report.yml) and include:
+Open a [Bug Report](https://github.com/arcavenae/ThreeDoors/issues/new?template=bug-report.yml) and include:
 
 - ThreeDoors version (`threedoors --version`)
 - Operating system
@@ -41,7 +41,7 @@ Open a [Bug Report](https://github.com/arcaven/ThreeDoors/issues/new?template=bu
 
 ### Suggesting Features
 
-Open a [Feature Request](https://github.com/arcaven/ThreeDoors/issues/new?template=feature-request.yml).
+Open a [Feature Request](https://github.com/arcavenae/ThreeDoors/issues/new?template=feature-request.yml).
 
 **Please read [SOUL.md](SOUL.md) first.** ThreeDoors is opinionated by design — "three doors, not three hundred." Features that add complexity need strong justification. Features that conflict with the project philosophy will be declined.
 

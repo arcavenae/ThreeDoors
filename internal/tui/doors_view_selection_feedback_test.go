@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/tui/themes"
+	"github.com/arcavenae/ThreeDoors/internal/tui/themes"
 )
 
 // --- Story 36.1: Enhanced Door Selection Visual Feedback ---

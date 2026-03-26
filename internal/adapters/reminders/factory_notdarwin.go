@@ -5,7 +5,7 @@ package reminders
 import (
 	"fmt"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // NewFactory returns an AdapterFactory that always returns an error on

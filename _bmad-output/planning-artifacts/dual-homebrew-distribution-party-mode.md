@@ -10,7 +10,7 @@
 
 ### The Core Question: Binary Naming and Formula Strategy
 
-📋 **John (PM):** The user requirement is clear: two parallel Homebrew distribution channels. `brew install arcaven/tap/threedoors` gets you stable releases. `brew install arcaven/tap/threedoors-a` gets you bleeding-edge alpha builds updated on every push to main. The critical design question is: should the alpha binary itself be named `threedoors-a` or `threedoors`? If both install a binary called `threedoors`, they conflict. If the alpha binary is `threedoors-a`, users get both installed simultaneously with zero friction.
+📋 **John (PM):** The user requirement is clear: two parallel Homebrew distribution channels. `brew install arcavenae/tap/threedoors` gets you stable releases. `brew install arcavenae/tap/threedoors-a` gets you bleeding-edge alpha builds updated on every push to main. The critical design question is: should the alpha binary itself be named `threedoors-a` or `threedoors`? If both install a binary called `threedoors`, they conflict. If the alpha binary is `threedoors-a`, users get both installed simultaneously with zero friction.
 
 🏗️ **Winston (Architect):** The binary MUST be named differently. Here's why:
 
@@ -34,10 +34,10 @@ One refinement: the alpha formula should use `version` explicitly rather than in
 
 ### Tap Structure
 
-🏗️ **Winston (Architect):** The tap repo is `arcaven/homebrew-tap`. Structure:
+🏗️ **Winston (Architect):** The tap repo is `arcavenae/homebrew-tap`. Structure:
 
 ```
-arcaven/homebrew-tap/
+arcavenae/homebrew-tap/
 ├── Formula/
 │   ├── threedoors.rb          # Stable: GoReleaser auto-updates on v* tags
 │   └── threedoors-a.rb        # Alpha: CI auto-updates on every main push
@@ -46,8 +46,8 @@ arcaven/homebrew-tap/
 
 Both formulae in the same tap. Users install with:
 ```bash
-brew install arcaven/tap/threedoors      # stable
-brew install arcaven/tap/threedoors-a    # alpha
+brew install arcavenae/tap/threedoors      # stable
+brew install arcavenae/tap/threedoors-a    # alpha
 ```
 
 No `conflicts_with` needed because the binaries have different names. Both can be installed simultaneously. `brew upgrade` works independently for each.
@@ -77,12 +77,12 @@ Changes needed:
    GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-a-linux-amd64 ./cmd/threedoors
    ```
 
-2. **sign-and-notarize job:** Sign the `threedoors-a-*` binaries with a distinct identifier (e.g., `com.arcaven.threedoors-a`).
+2. **sign-and-notarize job:** Sign the `threedoors-a-*` binaries with a distinct identifier (e.g., `com.arcavenae.threedoors-a`).
 
 3. **release job:** After creating the GitHub release, update `threedoors-a.rb` in the tap:
    - Compute SHA256 for each binary
    - Generate formula with correct URLs, versions, and checksums
-   - Push to `arcaven/homebrew-tap`
+   - Push to `arcavenae/homebrew-tap`
 
 🧪 **Murat (Test Architect):** The formula update step needs to be atomic and idempotent. If CI fails mid-update, the tap should not be left in a broken state. Recommendation: generate the full formula file, then push as a single commit. If the push fails, the old formula remains valid.
 
@@ -136,7 +136,7 @@ The different binary name approach (`threedoors-a`) is strictly superior for our
 | ID | Decision | Rationale |
 |----|----------|-----------|
 | DD-1 | Alpha binary named `threedoors-a` (not `threedoors`) | Prevents Homebrew conflicts; allows simultaneous installation; clear channel identity |
-| DD-2 | Alpha formula named `threedoors-a.rb` in same tap | Single tap (`arcaven/homebrew-tap`); consistent install UX |
+| DD-2 | Alpha formula named `threedoors-a.rb` in same tap | Single tap (`arcavenae/homebrew-tap`); consistent install UX |
 | DD-3 | Alpha version scheme: `0.1.0-alpha.YYYYMMDD.SHA7` | Already implemented; monotonic; traceable to commit |
 | DD-4 | CI updates tap formula on every push to main | Extends existing release job; uses HOMEBREW_TAP_TOKEN |
 | DD-5 | No `conflicts_with` or `keg_only` needed | Different binary names = zero conflicts |
@@ -151,7 +151,7 @@ The different binary name approach (`threedoors-a`) is strictly superior for our
 ### Option B: `threedoors@alpha` Formula Naming
 **Rejected because:** `@` is Homebrew's versioned-formula convention; implies specific version, not rolling channel; triggers `keg_only :versioned_formula` expectations.
 
-### Option C: Separate Tap for Alpha (`arcaven/homebrew-tap-alpha`)
+### Option C: Separate Tap for Alpha (`arcavenae/homebrew-tap-alpha`)
 **Rejected because:** Unnecessary complexity; a single tap with two formulae is standard practice; extra `brew tap` command for users.
 
 ### Option D: Alpha via `brew install --HEAD`

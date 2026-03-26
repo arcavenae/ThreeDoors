@@ -552,7 +552,7 @@ connections:
     provider: github
     label: "OSS GitHub Issues"
     settings:
-      repos: "arcaven/ThreeDoors,arcaven/other-repo"
+      repos: "arcavenae/ThreeDoors,arcavenae/other-repo"
       labels: "bug,feature"
       poll_interval: 300s
       sync_mode: readonly

@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/arcaven/ThreeDoors/internal/docaudit"
+	"github.com/arcavenae/ThreeDoors/internal/docaudit"
 	"github.com/spf13/cobra"
 )
 

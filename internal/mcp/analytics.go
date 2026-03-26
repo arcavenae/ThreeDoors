@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/metrics"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/metrics"
 )
 
 // MoodCorrelationEntry maps a mood rating to aggregated session stats.

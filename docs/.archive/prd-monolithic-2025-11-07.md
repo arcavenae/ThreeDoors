@@ -2,7 +2,7 @@
 
 **Document Version:** 1.2 (Technical Demo - Optimized Sequence)
 **Last Updated:** 2025-11-07
-**Project Repository:** github.com/arcaven/ThreeDoors.git
+**Project Repository:** github.com/arcavenae/ThreeDoors.git
 
 ---
 
@@ -625,7 +625,7 @@ ThreeDoors/
 **so that** I have a foundation for building the Three Doors TUI.
 
 **Acceptance Criteria:**
-1. Go module initialized with `go mod init github.com/arcaven/ThreeDoors`
+1. Go module initialized with `go mod init github.com/arcavenae/ThreeDoors`
 2. Bubbletea and Lipgloss dependencies added
 3. Basic TUI application renders "ThreeDoors - Technical Demo" header
 4. Application responds to 'q' keypress to quit
@@ -962,7 +962,7 @@ The PRD is comprehensive, properly structured, and ready for immediate implement
 cd ~/work/simple-todo
 
 # Initialize Go module (if not already done)
-go mod init github.com/arcaven/ThreeDoors
+go mod init github.com/arcavenae/ThreeDoors
 
 # Add Bubbletea and Lipgloss dependencies
 go get github.com/charmbracelet/bubbletea@latest

@@ -1,4 +1,4 @@
-module github.com/arcaven/ThreeDoors
+module github.com/arcavenae/ThreeDoors
 
 go 1.26.1
 

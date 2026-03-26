@@ -45,7 +45,7 @@ func TestPkgBuilder_Build_CorrectArguments(t *testing.T) {
 	for i, arg := range argsStr {
 		switch arg {
 		case "--identifier":
-			if i+1 < len(argsStr) && argsStr[i+1] == "com.arcaven.threedoors" {
+			if i+1 < len(argsStr) && argsStr[i+1] == "com.arcavenae.threedoors" {
 				foundIdentifier = true
 			}
 		case "--version":
@@ -64,7 +64,7 @@ func TestPkgBuilder_Build_CorrectArguments(t *testing.T) {
 	}
 
 	if !foundIdentifier {
-		t.Error("pkgbuild missing --identifier com.arcaven.threedoors")
+		t.Error("pkgbuild missing --identifier com.arcavenae.threedoors")
 	}
 	if !foundVersion {
 		t.Error("pkgbuild missing --version 0.1.0")
@@ -136,8 +136,8 @@ func TestPkgBuilder_Build_MissingBinaryErrors(t *testing.T) {
 
 func TestPkgBuilder_DefaultIdentifier(t *testing.T) {
 	pb := NewPkgBuilder(NewStubRunner(), "identity")
-	if pb.Identifier != "com.arcaven.threedoors" {
-		t.Errorf("Identifier = %q, want %q", pb.Identifier, "com.arcaven.threedoors")
+	if pb.Identifier != "com.arcavenae.threedoors" {
+		t.Errorf("Identifier = %q, want %q", pb.Identifier, "com.arcavenae.threedoors")
 	}
 }
 

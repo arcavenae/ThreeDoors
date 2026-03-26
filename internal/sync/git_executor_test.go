@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	gosync "github.com/arcaven/ThreeDoors/internal/sync"
+	gosync "github.com/arcavenae/ThreeDoors/internal/sync"
 )
 
 func TestExecGitExecutor_Run(t *testing.T) {

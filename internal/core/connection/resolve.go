@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // ResolvedConnections holds the result of resolving config connections into

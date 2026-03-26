@@ -16,7 +16,7 @@ ThreeDoors is a terminal-based task management application that reduces decision
 | **Framework** | Bubbletea (Charm ecosystem) |
 | **Architecture** | Monolith, Model-View-Update (MVU) |
 | **License** | MIT |
-| **Repository** | github.com/arcaven/ThreeDoors |
+| **Repository** | github.com/arcavenae/ThreeDoors |
 | **Data** | Local-only (`~/.threedoors/`) |
 | **Platform** | macOS 14+ (Sonoma) |
 

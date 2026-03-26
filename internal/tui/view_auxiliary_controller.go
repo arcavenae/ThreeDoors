@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/dispatch"
-	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
-	"github.com/arcaven/ThreeDoors/internal/tui/themes"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/dispatch"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/services"
+	"github.com/arcavenae/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )

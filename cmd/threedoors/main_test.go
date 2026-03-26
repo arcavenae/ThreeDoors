@@ -3,10 +3,10 @@ package main
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/textfile"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/tui"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

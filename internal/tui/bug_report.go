@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/github"
-	"github.com/arcaven/ThreeDoors/internal/cli"
-	"github.com/arcaven/ThreeDoors/internal/core/connection/oauth"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/github"
+	"github.com/arcavenae/ThreeDoors/internal/cli"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection/oauth"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -112,7 +112,7 @@ func ScrubHomePath(s string) string {
 }
 
 // bugReportTarget is the hardcoded repository for bug reports (D-116).
-const bugReportTarget = "arcaven/ThreeDoors"
+const bugReportTarget = "arcavenae/ThreeDoors"
 
 // maxIssueURLLen is the conservative browser URL length limit.
 const maxIssueURLLen = 7500

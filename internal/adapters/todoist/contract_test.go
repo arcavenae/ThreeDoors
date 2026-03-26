@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // httpMockHandler serves canned Todoist API responses for contract tests.

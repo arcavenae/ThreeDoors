@@ -4,10 +4,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/textfile"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/textfile"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // TestTextFileProviderContract runs the full contract test suite

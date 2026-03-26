@@ -12,10 +12,10 @@ CHANNEL := env("CHANNEL", "")
 
 ldflags := "-X main.version=" + VERSION + \
            " -X main.channel=" + CHANNEL + \
-           " -X github.com/arcaven/ThreeDoors/internal/cli.Version=" + VERSION + \
-           " -X github.com/arcaven/ThreeDoors/internal/cli.Channel=" + CHANNEL + \
-           " -X github.com/arcaven/ThreeDoors/internal/cli.Commit=" + COMMIT + \
-           " -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=" + BUILD_DATE
+           " -X github.com/arcavenae/ThreeDoors/internal/cli.Version=" + VERSION + \
+           " -X github.com/arcavenae/ThreeDoors/internal/cli.Channel=" + CHANNEL + \
+           " -X github.com/arcavenae/ThreeDoors/internal/cli.Commit=" + COMMIT + \
+           " -X github.com/arcavenae/ThreeDoors/internal/cli.BuildDate=" + BUILD_DATE
 
 # ─── Core recipes ─────────────────────────────────────────────────
 

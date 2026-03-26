@@ -9,7 +9,7 @@
 ## Context
 
 ThreeDoors has two Homebrew distribution channels:
-- **Stable:** GoReleaser on `v*` tags → pushes `Formula/threedoors.rb` to `arcaven/homebrew-tap`. Runs on `ubuntu-latest`. **NOT signed.**
+- **Stable:** GoReleaser on `v*` tags → pushes `Formula/threedoors.rb` to `arcavenae/homebrew-tap`. Runs on `ubuntu-latest`. **NOT signed.**
 - **Alpha:** Every push to main → creates GitHub pre-release. PR #273 (open) adds `threedoors-a` alpha formula publishing. Alpha binaries ARE signed when `vars.SIGNING_ENABLED == 'true'` (runs on `macos-latest`).
 
 **Ironic gap:** Alpha is MORE secure than stable (signed vs unsigned). This course correction addresses signing parity and five related infrastructure questions.
@@ -24,7 +24,7 @@ GoReleaser builds on `ubuntu-latest` as today, uploads unsigned binaries. A subs
 
 **Key details:**
 - GoReleaser creates tar.gz archives, not bare binaries. The signing job must extract binaries, sign, re-archive, update checksums, and re-upload.
-- Same Apple Developer ID certificate signs both channels. The `--identifier` flag differentiates (`com.arcaven.threedoors` vs `com.arcaven.threedoors-a`).
+- Same Apple Developer ID certificate signs both channels. The `--identifier` flag differentiates (`com.arcavenae.threedoors` vs `com.arcavenae.threedoors-a`).
 - Gated by `vars.SIGNING_ENABLED == 'true'` (same toggle as alpha signing).
 - **Fail-open:** If signing fails, unsigned binaries remain (current baseline, not a regression).
 

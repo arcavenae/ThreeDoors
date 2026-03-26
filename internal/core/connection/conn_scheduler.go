@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // ConnSchedulerResult extends SchedulerResult with the connection ID.

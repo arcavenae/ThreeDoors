@@ -3,10 +3,10 @@ package adapters_test
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/obsidian"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/obsidian"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // TestObsidianAdapterContract runs the full contract test suite

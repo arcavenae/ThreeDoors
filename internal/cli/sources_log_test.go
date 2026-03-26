@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
 )
 
 // newTestLogManager creates a ConnectionManager and SyncEventLog with test data.

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/dispatch"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/dispatch"
 )
 
 func TestMapHistoryStatus(t *testing.T) {

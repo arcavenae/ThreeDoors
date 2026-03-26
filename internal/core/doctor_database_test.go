@@ -8,7 +8,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"github.com/arcaven/ThreeDoors/internal/enrichment"
+	"github.com/arcavenae/ThreeDoors/internal/enrichment"
 )
 
 func TestDoctorChecker_DatabaseMissing(t *testing.T) {

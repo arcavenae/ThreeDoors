@@ -10,18 +10,18 @@
 
 | Issue # + Title | Status | Linked Story | Linked PR(s) | Reporter | Date Reported | Last Envoy Update | Current State |
 |-----------------|--------|--------------|---------------|----------|---------------|-------------------|---------------|
-| [#219 Door selection lacks tactile feedback and intuitive interaction patterns](https://github.com/arcaven/ThreeDoors/issues/219) | triaged | `docs/stories/36.1.story.md` | #221 (triage) | arcaven | 2026-03-08 | 2026-03-08 | Triage complete. UX design stories created (Epic 36). Implementation not started. |
-| [#244 Move signing secrets to a protected GitHub environment](https://github.com/arcaven/ThreeDoors/issues/244) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
-| [#245 Replace softprops/action-gh-release with gh CLI](https://github.com/arcaven/ThreeDoors/issues/245) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
-| [#246 Pass secrets via env vars instead of ${{ }} interpolation in run blocks](https://github.com/arcaven/ThreeDoors/issues/246) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
-| [#248 Pin golangci-lint version in CI](https://github.com/arcaven/ThreeDoors/issues/248) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
-| [#252 Reconcile planning docs: epic-list.md, epics-and-stories.md, ROADMAP.md are out of sync](https://github.com/arcaven/ThreeDoors/issues/252) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Planning doc drift detected by analyst audit. No triage started. |
+| [#219 Door selection lacks tactile feedback and intuitive interaction patterns](https://github.com/arcavenae/ThreeDoors/issues/219) | triaged | `docs/stories/36.1.story.md` | #221 (triage) | arcaven | 2026-03-08 | 2026-03-08 | Triage complete. UX design stories created (Epic 36). Implementation not started. |
+| [#244 Move signing secrets to a protected GitHub environment](https://github.com/arcavenae/ThreeDoors/issues/244) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
+| [#245 Replace softprops/action-gh-release with gh CLI](https://github.com/arcavenae/ThreeDoors/issues/245) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
+| [#246 Pass secrets via env vars instead of ${{ }} interpolation in run blocks](https://github.com/arcavenae/ThreeDoors/issues/246) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
+| [#248 Pin golangci-lint version in CI](https://github.com/arcavenae/ThreeDoors/issues/248) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Security audit finding. No triage started. |
+| [#252 Reconcile planning docs: epic-list.md, epics-and-stories.md, ROADMAP.md are out of sync](https://github.com/arcavenae/ThreeDoors/issues/252) | open | — | — | arcaven | 2026-03-08 | 2026-03-08 | Planning doc drift detected by analyst audit. No triage started. |
 
 ## Recently Resolved
 
 | Issue # + Title | Status | Linked Story | Linked PR(s) | Reporter | Date Reported | Date Resolved | Resolution |
 |-----------------|--------|--------------|---------------|----------|---------------|---------------|------------|
-| [#218 Panic: nil pointer dereference when textfile provider not registered](https://github.com/arcaven/ThreeDoors/issues/218) | resolved | `docs/stories/23.11.story.md` | #220 (triage), #225 (fix) | arcaven | 2026-03-08 | 2026-03-08 | Fixed via nil provider guard in CLI and MCP server. |
+| [#218 Panic: nil pointer dereference when textfile provider not registered](https://github.com/arcavenae/ThreeDoors/issues/218) | resolved | `docs/stories/23.11.story.md` | #220 (triage), #225 (fix) | arcaven | 2026-03-08 | 2026-03-08 | Fixed via nil provider guard in CLI and MCP server. |
 
 ## SOUL.md Alignment Reference
 

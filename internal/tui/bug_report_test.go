@@ -259,7 +259,7 @@ func TestBuildIssueURL_ContainsRequiredParts(t *testing.T) {
 		name   string
 		substr string
 	}{
-		{"github base", "https://github.com/arcaven/ThreeDoors/issues/new"},
+		{"github base", "https://github.com/arcavenae/ThreeDoors/issues/new"},
 		{"title param", "title="},
 		{"body param", "body="},
 		{"label param", "labels=type.bug"},
@@ -477,7 +477,7 @@ func TestHasGitHubToken_Empty(t *testing.T) {
 func TestBugReportTarget(t *testing.T) {
 	t.Parallel()
 
-	if bugReportTarget != "arcaven/ThreeDoors" {
-		t.Errorf("bugReportTarget = %q, want %q", bugReportTarget, "arcaven/ThreeDoors")
+	if bugReportTarget != "arcavenae/ThreeDoors" {
+		t.Errorf("bugReportTarget = %q, want %q", bugReportTarget, "arcavenae/ThreeDoors")
 	}
 }

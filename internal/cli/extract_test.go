@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
-	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/services"
 	"github.com/spf13/cobra"
 )
 

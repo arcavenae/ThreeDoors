@@ -85,7 +85,7 @@
 ## Getting Started
 
 1. Ensure Go 1.25.4+ is installed (`go version`)
-2. Clone: `git clone https://github.com/arcaven/ThreeDoors.git`
+2. Clone: `git clone https://github.com/arcavenae/ThreeDoors.git`
 3. Build: `make build` (once source code is committed)
 4. Run: `make run` or `./bin/threedoors`
 5. Read the [Development Guide](./development-guide.md) for coding standards and testing

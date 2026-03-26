@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func newTestTask(id, text string, status core.TaskStatus) *core.Task {

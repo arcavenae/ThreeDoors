@@ -189,7 +189,7 @@
 cd /Users/michael.pursifull/work/simple-todo
 
 # Initialize module
-go mod init github.com/arcaven/ThreeDoors
+go mod init github.com/arcavenae/ThreeDoors
 
 # Add dependencies
 go get github.com/charmbracelet/bubbletea@latest

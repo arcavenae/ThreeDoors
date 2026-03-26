@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // helperHistoryReader creates a CompletionReader with fixture data in a temp dir.

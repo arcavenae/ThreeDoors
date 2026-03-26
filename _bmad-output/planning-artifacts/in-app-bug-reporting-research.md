@@ -98,7 +98,7 @@ MainModel.Update()
 
 **Tier 1 — Browser URL (default, zero-config):**
 ```
-https://github.com/arcaven/ThreeDoors/issues/new?
+https://github.com/arcavenae/ThreeDoors/issues/new?
   title=Bug%3A+<user-title>&
   body=<url-encoded-markdown>&
   labels=type.bug
@@ -323,7 +323,7 @@ A `:bug-submit` command could scan `~/.threedoors/bug-reports/` for unsent repor
 | BUG-4 | Breadcrumb storage | Ring buffer, 50 entries | Time-bounded, unbounded, persistent | Fixed memory; sufficient context; privacy-safe |
 | BUG-5 | Privacy approach | Strict allowlist at capture level | Blocklist at report level | Defense in depth; can't leak what wasn't captured |
 | BUG-6 | Preview requirement | Mandatory before any submission | Optional | SOUL.md trust alignment |
-| BUG-7 | Target repo | Hardcoded `arcaven/ThreeDoors` | Configurable | Single-product reporter; YAGNI |
+| BUG-7 | Target repo | Hardcoded `arcavenae/ThreeDoors` | Configurable | Single-product reporter; YAGNI |
 | BUG-8 | Feature priority | P2 | P1 | Valuable but no blocking issues or user requests |
 | BUG-9 | Story count | 3 stories | 1 (too large), 5 (too granular) | Clean dependency chain; each independently testable |
 | BUG-10 | Report format | GitHub-flavored markdown | JSON, plain text | Renders on GitHub; works across all submission paths |
