@@ -127,7 +127,7 @@ docs-site/
 - [ ] `docs-site/docs/index.md` landing page with project branding, feature highlights, install quick-reference, and "Get Started" link
 - [ ] `docs-site/docs/philosophy.md` extracted from SOUL.md
 - [ ] GitHub Actions workflow `.github/workflows/docs.yml` that builds and deploys on push to `main` (path-filtered to `docs-site/**` and `mkdocs.yml` changes only)
-- [ ] Site deploys successfully to `https://arcaven.github.io/ThreeDoors/`
+- [ ] Site deploys successfully to `https://arcavenae.github.io/ThreeDoors/`
 - [ ] Dark/light mode toggle works
 - [ ] Client-side search works (even with minimal content)
 - [ ] `make docs` and `make docs-serve` targets added to Makefile for local preview
@@ -279,10 +279,10 @@ N.1 is the prerequisite. N.2, N.3, and N.4 can be parallelized after N.1 merges 
 
 ```yaml
 site_name: ThreeDoors
-site_url: https://arcaven.github.io/ThreeDoors/
+site_url: https://arcavenae.github.io/ThreeDoors/
 site_description: Task management with radical simplicity — three doors, one choice
-repo_url: https://github.com/arcaven/ThreeDoors
-repo_name: arcaven/ThreeDoors
+repo_url: https://github.com/arcavenae/ThreeDoors
+repo_name: arcavenae/ThreeDoors
 
 theme:
   name: material
@@ -372,7 +372,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/arcaven/ThreeDoors
+      link: https://github.com/arcavenae/ThreeDoors
 ```
 
 ---
@@ -452,7 +452,7 @@ These are noted for future consideration but NOT part of this epic:
 
 ## Open Questions for Decision
 
-1. **Custom domain:** Start with `arcaven.github.io/ThreeDoors` (free, zero config) or register a domain upfront?
+1. **Custom domain:** Start with `arcavenae.github.io/ThreeDoors` (free, zero config) or register a domain upfront?
 2. **Versioning timeline:** Add mike versioning now or defer until stable releases begin?
 3. **Delete monolithic guide?** After N.4, remove `docs/user-guide.md` or keep as single-page alternative?
 4. **Screenshots scope:** Include a follow-up story for VHS terminal recordings, or defer indefinitely?

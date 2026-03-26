@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/services"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

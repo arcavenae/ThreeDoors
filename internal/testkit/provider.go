@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // MockProvider is a configurable in-memory TaskProvider for testing.

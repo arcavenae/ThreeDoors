@@ -7,9 +7,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters/applenotes"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/applenotes"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // noteStore provides an in-memory Apple Notes simulation for contract testing.

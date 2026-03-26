@@ -247,7 +247,7 @@ Format: GitHub-compatible markdown so users can copy-paste into an issue later, 
 
 3. **Report format: GitHub-flavored markdown** — renders correctly in browser URL, API submission, and local file save. Single format for all paths.
 
-4. **Target repo: hardcoded `arcaven/ThreeDoors`** — this is ThreeDoors' own bug reporter. No configuration needed. If someone forks and wants to report to their own repo, they can change it in code.
+4. **Target repo: hardcoded `arcavenae/ThreeDoors`** — this is ThreeDoors' own bug reporter. No configuration needed. If someone forks and wants to report to their own repo, they can change it in code.
 
 ### Dev
 **Effort estimate:**
@@ -309,7 +309,7 @@ Then preview screen shows the full markdown, with options:
 | PM-1 | Submission method | Browser URL (primary), API (upgrade), file (fallback) | OAuth device flow (too complex), gh CLI (external dependency), email (poor formatting) | Zero-config primary path; progressive enhancement for power users |
 | PM-2 | Feature priority | P2 | P1 | Valuable but not blocking; no user requests yet |
 | ARCH-1 | Breadcrumb storage | Ring buffer, 50 entries, count-bounded | Time-bounded (harder to reason about), unbounded (memory risk) | Fixed memory, sufficient context, zero allocations |
-| ARCH-2 | Target repo | Hardcoded `arcaven/ThreeDoors` | Configurable (YAGNI) | Single-product reporter; forks can change in code |
+| ARCH-2 | Target repo | Hardcoded `arcavenae/ThreeDoors` | Configurable (YAGNI) | Single-product reporter; forks can change in code |
 | ARCH-3 | Report format | GitHub-flavored markdown | JSON (not human-readable), plain text (poor formatting) | Works across all submission paths; renders on GitHub |
 | ARCH-4 | Breadcrumb capture | Always-on ring buffer, read only on :bug | Opt-in toggle (complexity), persistent log (privacy) | Zero-cost memory-only buffer; no persistence without user action |
 | UX-1 | Preview requirement | Mandatory preview before any submission | Direct submit (trust violation) | SOUL.md alignment — user must see what's sent |

@@ -63,7 +63,7 @@ The CI workflow references these secrets:
 | `APPLE_NOTARIZATION_APPLE_ID` | Apple ID email used for notarization | Your Apple Developer account email |
 | `APPLE_NOTARIZATION_PASSWORD` | App-specific password for notarization | Generate at appleid.apple.com → App-Specific Passwords |
 | `APPLE_NOTARIZATION_TEAM_ID` | 10-character Apple Developer Team ID | Apple Developer portal → Membership |
-| `HOMEBREW_TAP_TOKEN` | GitHub PAT with repo scope for `arcaven/homebrew-tap` | GitHub Settings → Personal Access Tokens |
+| `HOMEBREW_TAP_TOKEN` | GitHub PAT with repo scope for `arcavenae/homebrew-tap` | GitHub Settings → Personal Access Tokens |
 
 ### 3. Apple Developer Program Enrollment
 
@@ -151,7 +151,7 @@ Create a local certificate authority and self-signed code signing cert:
    - `SIGNING_ENABLED` = `true`
 
 6. **Create Homebrew tap repository** (optional, for `update-homebrew` job):
-   - Create `arcaven/homebrew-tap` repository on GitHub
+   - Create `arcavenae/homebrew-tap` repository on GitHub
    - Generate a PAT with `repo` scope
    - Set as `HOMEBREW_TAP_TOKEN` secret
 

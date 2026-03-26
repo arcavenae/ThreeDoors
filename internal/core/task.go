@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/dispatch"
+	"github.com/arcavenae/ThreeDoors/internal/dispatch"
 	"github.com/google/uuid"
 )
 

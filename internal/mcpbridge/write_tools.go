@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/arcaven/ThreeDoors/internal/mcp"
+	"github.com/arcavenae/ThreeDoors/internal/mcp"
 )
 
 // registerWriteTools adds write tool handlers to the given map.

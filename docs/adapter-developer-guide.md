@@ -128,7 +128,7 @@ package tasks
 import (
     "testing"
 
-    "github.com/arcaven/ThreeDoors/internal/adapters"
+    "github.com/arcavenae/ThreeDoors/internal/adapters"
 )
 
 func TestMyAdapterContract(t *testing.T) {

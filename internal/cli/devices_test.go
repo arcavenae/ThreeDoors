@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/device"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/device"
 )
 
 func TestDevicesCmd_ListEmpty(t *testing.T) {

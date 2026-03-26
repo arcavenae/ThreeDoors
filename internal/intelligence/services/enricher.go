@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
 )
 
 // EnrichedTask holds the result of LLM task enrichment.

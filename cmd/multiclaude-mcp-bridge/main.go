@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/arcaven/ThreeDoors/internal/mcpbridge"
+	"github.com/arcavenae/ThreeDoors/internal/mcpbridge"
 )
 
 var version = "dev"

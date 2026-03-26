@@ -86,7 +86,7 @@ lastUpdated: '2026-03-06'
 
 **FR23:** The system shall be notarized with Apple's notarization service so that Gatekeeper allows execution without requiring users to bypass security warnings
 
-**FR24:** The system shall be installable via Homebrew using a custom tap (`brew install arcaven/tap/threedoors`), with the formula downloading the appropriate signed binary for the user's architecture
+**FR24:** The system shall be installable via Homebrew using a custom tap (`brew install arcavenae/tap/threedoors`), with the formula downloading the appropriate signed binary for the user's architecture
 
 **FR25:** The system shall provide a DMG or pkg installer as an alternative installation method for users who prefer graphical installation over Homebrew
 

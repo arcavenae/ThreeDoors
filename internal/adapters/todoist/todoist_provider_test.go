@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // mockTaskFetcher implements TaskFetcher for testing.

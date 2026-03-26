@@ -447,7 +447,7 @@ func TestCreateIssue(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Errorf("expected POST, got %s", r.Method)
 		}
-		if r.URL.Path != "/repos/arcaven/ThreeDoors/issues" {
+		if r.URL.Path != "/repos/arcavenae/ThreeDoors/issues" {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 
@@ -467,7 +467,7 @@ func TestCreateIssue(t *testing.T) {
 			"title":      req["title"],
 			"body":       req["body"],
 			"state":      "open",
-			"html_url":   "https://github.com/arcaven/ThreeDoors/issues/42",
+			"html_url":   "https://github.com/arcavenae/ThreeDoors/issues/42",
 			"created_at": "2026-03-12T10:00:00Z",
 			"updated_at": "2026-03-12T10:00:00Z",
 		}
@@ -480,7 +480,7 @@ func TestCreateIssue(t *testing.T) {
 	t.Cleanup(server.Close)
 
 	client := newTestClient(t, server.URL)
-	issue, err := client.CreateIssue(context.Background(), "arcaven", "ThreeDoors", "[Bug] App crashes", "## Bug Report\n\nDetails here")
+	issue, err := client.CreateIssue(context.Background(), "arcavenae", "ThreeDoors", "[Bug] App crashes", "## Bug Report\n\nDetails here")
 	if err != nil {
 		t.Fatalf("CreateIssue: %v", err)
 	}
@@ -488,11 +488,11 @@ func TestCreateIssue(t *testing.T) {
 	if issue.Number != 42 {
 		t.Errorf("number = %d, want 42", issue.Number)
 	}
-	if issue.HTMLURL != "https://github.com/arcaven/ThreeDoors/issues/42" {
+	if issue.HTMLURL != "https://github.com/arcavenae/ThreeDoors/issues/42" {
 		t.Errorf("html_url = %q", issue.HTMLURL)
 	}
-	if issue.Repo != "arcaven/ThreeDoors" {
-		t.Errorf("repo = %q, want %q", issue.Repo, "arcaven/ThreeDoors")
+	if issue.Repo != "arcavenae/ThreeDoors" {
+		t.Errorf("repo = %q, want %q", issue.Repo, "arcavenae/ThreeDoors")
 	}
 }
 

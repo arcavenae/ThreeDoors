@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )

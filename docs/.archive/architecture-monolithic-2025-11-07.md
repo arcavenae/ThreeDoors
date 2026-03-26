@@ -2,7 +2,7 @@
 
 **Document Version:** 1.1
 **Last Updated:** 2025-11-07
-**Project Repository:** github.com/arcaven/ThreeDoors.git
+**Project Repository:** github.com/arcavenae/ThreeDoors.git
 
 ---
 
@@ -297,7 +297,7 @@ Any state → complete (force complete)
 | **Storage** | YAML Files | N/A | Task persistence with metadata | `~/.threedoors/tasks.yaml` with status, notes, timestamps |
 | **Platform** | macOS | 14+ (Sonoma+) | Target OS | Developer's primary platform |
 | **Terminal** | iTerm2 / Terminal.app | Latest | Terminal emulator | 256-color support |
-| **Version Control** | Git | 2.40+ | Source control | github.com/arcaven/ThreeDoors.git |
+| **Version Control** | Git | 2.40+ | Source control | github.com/arcavenae/ThreeDoors.git |
 
 ### Makefile Targets
 
@@ -1222,7 +1222,7 @@ cp bin/threedoors /usr/local/bin/
 make run
 
 # Option 3 (Future): Homebrew tap
-brew install arcaven/tap/threedoors
+brew install arcavenae/tap/threedoors
 ```
 
 **CI/CD Platform:** None for Technical Demo (deferred to Epic 2)
@@ -1930,7 +1930,7 @@ Architecture is exceptionally well-designed and ready for Story 1.1 implementati
 cd /Users/michael.pursifull/work/simple-todo
 
 # Initialize module
-go mod init github.com/arcaven/ThreeDoors
+go mod init github.com/arcavenae/ThreeDoors
 
 # Add dependencies
 go get github.com/charmbracelet/bubbletea@latest

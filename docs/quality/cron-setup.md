@@ -48,7 +48,7 @@ Add the following entry (runs every 4 hours):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `REPO` | `arcaven/ThreeDoors` | GitHub repo for PR queries |
+| `REPO` | `arcavenae/ThreeDoors` | GitHub repo for PR queries |
 | `STALE_HOURS` | `24` | Hours without activity before a PR is stale |
 | `STORIES_DIR` | `docs/stories` | Path to story files |
 | `REPORT_TO_SUPERVISOR` | `false` | Send report via `multiclaude message send` |
@@ -118,7 +118,7 @@ The coverage baseline is stored at `docs/quality/coverage-baseline.json`. Format
 {
   "updated": "2026-03-08",
   "packages": {
-    "github.com/arcaven/ThreeDoors/internal/tasks": {
+    "github.com/arcavenae/ThreeDoors/internal/tasks": {
       "coverage": 78.5,
       "updated": "2026-03-08"
     }

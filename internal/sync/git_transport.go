@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/device"
+	"github.com/arcavenae/ThreeDoors/internal/device"
 )
 
 // GitSyncTransport implements SyncTransport using a local Git repository

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/tui/themes"
+	"github.com/arcavenae/ThreeDoors/internal/tui/themes"
 )
 
 // --- AC1: Seasonal resolution at construction time ---

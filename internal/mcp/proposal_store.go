@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // ErrProposalNotFound is returned when a proposal ID doesn't exist.

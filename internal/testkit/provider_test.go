@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestMockProvider_Name(t *testing.T) {

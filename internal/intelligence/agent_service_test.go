@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
 )
 
 // mockBackend implements llm.LLMBackend for testing.

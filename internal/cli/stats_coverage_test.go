@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // writeSessionsJSONL writes session metrics to a JSONL file for test use.

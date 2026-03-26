@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
 )
 
 func TestBuildConnectSettings(t *testing.T) {

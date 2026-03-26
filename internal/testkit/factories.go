@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // BaseTime is a fixed UTC timestamp for deterministic test data.

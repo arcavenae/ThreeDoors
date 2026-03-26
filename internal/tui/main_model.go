@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
-	"github.com/arcaven/ThreeDoors/internal/dispatch"
-	"github.com/arcaven/ThreeDoors/internal/enrichment"
-	"github.com/arcaven/ThreeDoors/internal/intelligence"
-	"github.com/arcaven/ThreeDoors/internal/intelligence/services"
-	"github.com/arcaven/ThreeDoors/internal/mcp"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/dispatch"
+	"github.com/arcavenae/ThreeDoors/internal/enrichment"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/services"
+	"github.com/arcavenae/ThreeDoors/internal/mcp"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

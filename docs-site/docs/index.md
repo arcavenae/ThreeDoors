@@ -25,19 +25,19 @@ Traditional task lists create **choice paralysis**. Staring at 50+ tasks makes i
 === "Homebrew (recommended)"
 
     ```bash
-    brew install arcaven/tap/threedoors
+    brew install arcavenae/tap/threedoors
     ```
 
 === "Go Install"
 
     ```bash
-    go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
+    go install github.com/arcavenae/ThreeDoors/cmd/threedoors@latest
     ```
 
 === "From Source"
 
     ```bash
-    git clone https://github.com/arcaven/ThreeDoors.git
+    git clone https://github.com/arcavenae/ThreeDoors.git
     cd ThreeDoors && just build
     ```
 
@@ -52,4 +52,4 @@ threedoors
 The onboarding wizard walks you through key bindings, values, and task import.
 
 [Get Started](getting-started/quickstart.md){ .md-button .md-button--primary }
-[View on GitHub](https://github.com/arcaven/ThreeDoors){ .md-button }
+[View on GitHub](https://github.com/arcavenae/ThreeDoors){ .md-button }

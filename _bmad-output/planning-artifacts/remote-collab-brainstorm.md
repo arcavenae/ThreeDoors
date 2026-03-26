@@ -229,7 +229,7 @@ Machine A: multiclaude work "Fix bug #123"
 **Concept:** Machine B sends repository dispatch events; Machine A's runner processes them.
 
 ```bash
-gh api repos/arcaven/ThreeDoors/dispatches \
+gh api repos/arcavenae/ThreeDoors/dispatches \
   -f event_type=multiclaude-command \
   -f client_payload='{"action":"dispatch","task":"Fix bug #123"}'
 ```

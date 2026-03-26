@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // TextFileProvider wraps the existing file_manager.go functions

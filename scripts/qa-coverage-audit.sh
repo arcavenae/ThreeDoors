@@ -65,7 +65,7 @@ add_to_report "## Running Coverage Tests"
 COVERAGE_OUTPUT="$(go test -cover ./... 2>&1)" || true
 
 # Parse coverage output into JSON
-# Format: "ok  github.com/arcaven/ThreeDoors/internal/tasks  1.234s  coverage: 78.5% of statements"
+# Format: "ok  github.com/arcavenae/ThreeDoors/internal/tasks  1.234s  coverage: 78.5% of statements"
 CURRENT_COVERAGE="{}"
 while IFS= read -r line; do
     if echo "$line" | grep -q "coverage:.*% of statements"; then

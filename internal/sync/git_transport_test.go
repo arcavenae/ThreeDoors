@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/device"
-	gosync "github.com/arcaven/ThreeDoors/internal/sync"
+	"github.com/arcavenae/ThreeDoors/internal/device"
+	gosync "github.com/arcavenae/ThreeDoors/internal/sync"
 )
 
 func newTestDeviceID(t *testing.T) device.DeviceID {

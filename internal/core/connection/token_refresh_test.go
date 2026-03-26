@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection/oauth"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection/oauth"
 )
 
 func newTestTokenRefresher(t *testing.T) (*TokenRefresher, *stubCredentialStore, *ConnectionManager, *SyncEventLog) {

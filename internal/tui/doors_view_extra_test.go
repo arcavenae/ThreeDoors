@@ -3,7 +3,7 @@ package tui
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestDoorsView_SetTimeContext(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
-	"github.com/arcaven/ThreeDoors/internal/tui/themes"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/tui/themes"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
 	"github.com/lucasb-eyer/go-colorful"

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/device"
-	gosync "github.com/arcaven/ThreeDoors/internal/sync"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/device"
+	gosync "github.com/arcavenae/ThreeDoors/internal/sync"
 )
 
 // simulatedDevice represents a single device in the E2E test environment.

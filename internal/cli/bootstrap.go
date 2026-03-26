@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/connection"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection"
 )
 
 // cliContext holds the initialized provider and task pool for CLI commands.

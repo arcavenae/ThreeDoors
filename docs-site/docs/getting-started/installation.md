@@ -10,7 +10,7 @@
 === "Homebrew (recommended)"
 
     ```bash
-    brew install arcaven/tap/threedoors
+    brew install arcavenae/tap/threedoors
     ```
 
     This installs the latest stable release. Runs as `threedoors`.
@@ -20,14 +20,14 @@
     Latest development builds from `main`:
 
     ```bash
-    brew install arcaven/tap/threedoors-a
+    brew install arcavenae/tap/threedoors-a
     ```
 
     Runs as `threedoors-a`. Both stable and alpha can be installed side-by-side.
 
 === "Pre-built Binary"
 
-    Download from [GitHub Releases](https://github.com/arcaven/ThreeDoors/releases). Binaries are available for macOS (Apple Silicon) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
+    Download from [GitHub Releases](https://github.com/arcavenae/ThreeDoors/releases). Binaries are available for macOS (Apple Silicon, Intel) and Linux (x86_64). macOS binaries are code-signed and Apple-notarized.
 
     ```bash
     chmod +x threedoors-*
@@ -37,7 +37,7 @@
 === "Go Install"
 
     ```bash
-    go install github.com/arcaven/ThreeDoors/cmd/threedoors@latest
+    go install github.com/arcavenae/ThreeDoors/cmd/threedoors@latest
     ```
 
     Requires Go 1.25.4 or later.
@@ -45,7 +45,7 @@
 === "Build from Source"
 
     ```bash
-    git clone https://github.com/arcaven/ThreeDoors.git
+    git clone https://github.com/arcavenae/ThreeDoors.git
     cd ThreeDoors
     just build
     # Binary at bin/threedoors

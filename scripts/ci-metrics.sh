@@ -10,7 +10,7 @@ set -euo pipefail
 # Options:
 #   --days N        Measurement window in days (default: 7)
 #   --json          Output machine-readable JSON line instead of human-readable summary
-#   --repo OWNER/REPO  GitHub repository (default: arcaven/ThreeDoors)
+#   --repo OWNER/REPO  GitHub repository (default: arcavenae/ThreeDoors)
 #   --help, -h      Show this help message
 #
 # Requirements: gh CLI, jq
@@ -23,7 +23,7 @@ set -euo pipefail
 #   - ADR re-entry gate: docs/ADRs/ADR-0030-ci-churn-reduction.md (Phase 3)
 #   - Story: docs/stories/0.37.story.md
 
-REPO="${REPO:-arcaven/ThreeDoors}"
+REPO="${REPO:-arcavenae/ThreeDoors}"
 DAYS=7
 JSON_OUTPUT=false
 

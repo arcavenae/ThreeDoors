@@ -14,7 +14,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/arcaven/ThreeDoors.git
+   git clone https://github.com/arcavenae/ThreeDoors.git
    cd ThreeDoors
    ```
 
@@ -94,7 +94,7 @@ go test -v ./...        # Verbose output
 - **Build:** `make build` compiles to `bin/threedoors`
 - **Install:** Copy binary to `/usr/local/bin/` or run via `make run`
 - **CI/CD:** None configured for Technical Demo phase (deferred to Epic 2)
-- **Future:** Homebrew tap planned (`brew install arcaven/tap/threedoors`)
+- **Future:** Homebrew tap planned (`brew install arcavenae/tap/threedoors`)
 
 ## Data Compatibility
 

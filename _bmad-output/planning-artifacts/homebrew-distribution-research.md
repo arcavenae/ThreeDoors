@@ -52,11 +52,11 @@ ThreeDoors already has partial Homebrew infrastructure: a formula template (`For
 
 ### Custom Tap (Self-Hosted)
 
-**What it is:** A third-party Homebrew repository hosted on GitHub (e.g., `arcaven/homebrew-threedoors`).
+**What it is:** A third-party Homebrew repository hosted on GitHub (e.g., `arcavenae/homebrew-threedoors`).
 
 **How users install:**
 ```bash
-brew tap arcaven/threedoors
+brew tap arcavenae/threedoors
 brew install threedoors
 ```
 
@@ -74,7 +74,7 @@ brew install threedoors
 
 **Tap repository structure:**
 ```
-arcaven/homebrew-threedoors/
+arcavenae/homebrew-threedoors/
 ├── Formula/
 │   └── threedoors.rb
 └── README.md
@@ -102,17 +102,17 @@ arcaven/homebrew-threedoors/
 ```ruby
 class Threedoors < Formula
   desc "TUI task manager showing only three tasks at a time"
-  homepage "https://github.com/arcaven/ThreeDoors"
+  homepage "https://github.com/arcavenae/ThreeDoors"
   version "1.0.0"
   license "MIT"
 
   on_arm do
-    url "https://github.com/arcaven/ThreeDoors/releases/download/v1.0.0/threedoors-darwin-arm64"
+    url "https://github.com/arcavenae/ThreeDoors/releases/download/v1.0.0/threedoors-darwin-arm64"
     sha256 "abc123..."
   end
 
   on_intel do
-    url "https://github.com/arcaven/ThreeDoors/releases/download/v1.0.0/threedoors-darwin-amd64"
+    url "https://github.com/arcavenae/ThreeDoors/releases/download/v1.0.0/threedoors-darwin-amd64"
     sha256 "def456..."
   end
 
@@ -131,8 +131,8 @@ end
 ```ruby
 class Threedoors < Formula
   desc "TUI task manager showing only three tasks at a time"
-  homepage "https://github.com/arcaven/ThreeDoors"
-  url "https://github.com/arcaven/ThreeDoors/archive/refs/tags/v1.0.0.tar.gz"
+  homepage "https://github.com/arcavenae/ThreeDoors"
+  url "https://github.com/arcavenae/ThreeDoors/archive/refs/tags/v1.0.0.tar.gz"
   sha256 "abc123..."
   license "MIT"
 
@@ -142,9 +142,9 @@ class Threedoors < Formula
     ldflags = %W[
       -s -w
       -X main.version=#{version}
-      -X github.com/arcaven/ThreeDoors/internal/cli.Version=#{version}
-      -X github.com/arcaven/ThreeDoors/internal/cli.Commit=#{tap.user}
-      -X github.com/arcaven/ThreeDoors/internal/cli.BuildDate=#{time.iso8601}
+      -X github.com/arcavenae/ThreeDoors/internal/cli.Version=#{version}
+      -X github.com/arcavenae/ThreeDoors/internal/cli.Commit=#{tap.user}
+      -X github.com/arcavenae/ThreeDoors/internal/cli.BuildDate=#{time.iso8601}
     ]
     system "go", "build", *std_go_args(ldflags:), "./cmd/threedoors"
   end
@@ -326,11 +326,11 @@ Users run: brew update && brew upgrade threedoors
 #### Phase 1: Immediate (Custom Tap)
 
 1. **Add LICENSE file** — MIT, copy from standard template. BLOCKER.
-2. **Create tap repository** — `arcaven/homebrew-threedoors` on GitHub
+2. **Create tap repository** — `arcavenae/homebrew-threedoors` on GitHub
 3. **Add GoReleaser config** — `.goreleaser.yml` with Homebrew integration
 4. **Add GoReleaser workflow** — `.github/workflows/release.yml`, triggered on `v*` tags
 5. **Tag first release** — `git tag v0.1.0 && git push origin v0.1.0`
-6. **Verify installation** — `brew tap arcaven/threedoors && brew install threedoors`
+6. **Verify installation** — `brew tap arcavenae/threedoors && brew install threedoors`
 7. **Update README** — Add installation instructions for Homebrew
 
 #### Phase 2: Quality Hardening
@@ -348,7 +348,7 @@ Users run: brew update && brew upgrade threedoors
    ```bash
    export HOMEBREW_NO_INSTALL_FROM_API=1
    brew tap --force homebrew/core
-   brew create https://github.com/arcaven/ThreeDoors/archive/refs/tags/vX.Y.Z.tar.gz --go
+   brew create https://github.com/arcavenae/ThreeDoors/archive/refs/tags/vX.Y.Z.tar.gz --go
    ```
 3. **Edit formula** — Add proper `install`, `test do`, metadata
 4. **Validate locally:**
@@ -395,7 +395,7 @@ See: `goreleaser-draft.yml` — complete GoReleaser configuration with Homebrew 
 | Add LICENSE | `LICENSE` (new) | MIT license file |
 | Add GoReleaser config | `.goreleaser.yml` (new) | Release automation |
 | Add release workflow | `.github/workflows/release.yml` (new) | Tag-triggered releases |
-| Create tap repo | `arcaven/homebrew-threedoors` (new repo) | Homebrew tap |
+| Create tap repo | `arcavenae/homebrew-threedoors` (new repo) | Homebrew tap |
 | Update README | `README.md` | Add Homebrew install instructions |
 | Add `make release-tag` | `Makefile` | Helper to create semver tags |
 

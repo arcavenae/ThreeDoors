@@ -3,7 +3,7 @@ package connection
 import (
 	"fmt"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // ConnectionService orchestrates CRUD operations across ConnectionManager,

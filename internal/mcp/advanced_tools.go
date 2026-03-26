@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // Factor is a single scoring factor in a priority suggestion.

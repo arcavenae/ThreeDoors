@@ -182,7 +182,7 @@ Example generated command:
 
 ```bash
 multiclaude worker create \
-  "Implement keyboard shortcut help overlay. Context: Users need to see available key bindings without leaving the TUI. Acceptance criteria: 1) Help overlay appears on '?' keypress 2) Shows all key bindings grouped by context. Scope: internal/tui/. IMPORTANT: Sign all commits (git commit -S). Do NOT add Co-Authored-By for AI. This is a fork workflow — PR targets upstream arcaven/ThreeDoors."
+  "Implement keyboard shortcut help overlay. Context: Users need to see available key bindings without leaving the TUI. Acceptance criteria: 1) Help overlay appears on '?' keypress 2) Shows all key bindings grouped by context. Scope: internal/tui/. IMPORTANT: Sign all commits (git commit -S). Do NOT add Co-Authored-By for AI. This is a fork workflow — PR targets upstream arcavenae/ThreeDoors."
 ```
 
 ### Story File Generation
@@ -642,7 +642,7 @@ task in door rotation
 
 4. **Should this feature be gated behind a config flag?** Yes. Add `dev_dispatch_enabled: true` to `~/.threedoors/config.yaml`. Disabled by default. This prevents accidental exposure and keeps the TUI clean for users who do not use multiclaude.
 
-5. **How should the feature handle the fork workflow?** The existing multiclaude fork configuration (`Fork of: arcaven/ThreeDoors`) means workers push to the fork and create PRs against upstream. The dispatch engine does not need to manage this -- multiclaude handles it. However, the task description suffix should include fork workflow instructions (as shown in the current worker history).
+5. **How should the feature handle the fork workflow?** The existing multiclaude fork configuration (`Fork of: arcavenae/ThreeDoors`) means workers push to the fork and create PRs against upstream. The dispatch engine does not need to manage this -- multiclaude handles it. However, the task description suffix should include fork workflow instructions (as shown in the current worker history).
 
 ---
 

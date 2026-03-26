@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/mcp"
+	"github.com/arcavenae/ThreeDoors/internal/mcp"
 )
 
 // mockRunner records commands and returns configured output.

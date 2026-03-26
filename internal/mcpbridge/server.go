@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/arcaven/ThreeDoors/internal/mcp"
+	"github.com/arcavenae/ThreeDoors/internal/mcp"
 )
 
 // BridgeServer implements an MCP server that wraps multiclaude CLI commands

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

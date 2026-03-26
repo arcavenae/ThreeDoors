@@ -1,6 +1,6 @@
 # Project Brief: ThreeDoors
 
-**Project Repository:** github.com/arcaven/ThreeDoors.git
+**Project Repository:** github.com/arcavenae/ThreeDoors.git
 **Document Version:** 1.0
 **Last Updated:** 2025-11-07
 **Source:** Brainstorming session results (docs/brainstorming-session-results.md)

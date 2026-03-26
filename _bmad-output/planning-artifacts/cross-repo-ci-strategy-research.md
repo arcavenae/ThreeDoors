@@ -8,11 +8,11 @@
 
 ## Problem Statement
 
-When a ThreeDoors release is cut via GoReleaser, it pushes a formula update to the **shared** tap repo `arcaven/homebrew-tap`. This tap serves multiple arcaven projects (currently ThreeDoors and switchboard). A release is not complete until the tap's CI passes for the ThreeDoors formula specifically. Today, there is no mechanism to detect or respond to tap CI failures from the ThreeDoors side.
+When a ThreeDoors release is cut via GoReleaser, it pushes a formula update to the **shared** tap repo `arcavenae/homebrew-tap`. This tap serves multiple arcaven projects (currently ThreeDoors and switchboard). A release is not complete until the tap's CI passes for the ThreeDoors formula specifically. Today, there is no mechanism to detect or respond to tap CI failures from the ThreeDoors side.
 
 ## Current State
 
-### Shared Tap: `arcaven/homebrew-tap`
+### Shared Tap: `arcavenae/homebrew-tap`
 
 | Aspect | Current State |
 |--------|--------------|
@@ -36,7 +36,7 @@ The "???" is the gap: no one monitors whether tap CI passes after a release.
 Tag push (ThreeDoors)
   → GoReleaser builds binaries + archives
   → GitHub Release created in ThreeDoors
-  → GoReleaser pushes formula update to arcaven/homebrew-tap
+  → GoReleaser pushes formula update to arcavenae/homebrew-tap
   → Tap CI runs (per-formula matrix)
   → release-verify workflow detects tap CI result
   → Commit status posted to ThreeDoors release tag
@@ -58,7 +58,7 @@ Tag push (ThreeDoors)
 
 ## Recommended Architecture
 
-### 1. Tap CI Enhancement (Changes to `arcaven/homebrew-tap`)
+### 1. Tap CI Enhancement (Changes to `arcavenae/homebrew-tap`)
 
 Convert the current single-job loop to a matrix strategy for formula-level isolation:
 
@@ -78,18 +78,18 @@ jobs:
       - name: Tap local checkout
         run: |
           mkdir -p "$(brew --repository)/Library/Taps/arcaven"
-          ln -sf "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/arcaven/homebrew-tap"
+          ln -sf "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/arcavenae/homebrew-tap"
       - name: Audit
-        run: brew audit --strict "arcaven/tap/${{ matrix.formula }}"
+        run: brew audit --strict "arcavenae/tap/${{ matrix.formula }}"
       - name: Style
-        run: brew style "arcaven/tap/${{ matrix.formula }}"
+        run: brew style "arcavenae/tap/${{ matrix.formula }}"
       - name: Install
-        run: brew install "arcaven/tap/${{ matrix.formula }}"
+        run: brew install "arcavenae/tap/${{ matrix.formula }}"
       - name: Test
-        run: brew test "arcaven/tap/${{ matrix.formula }}"
+        run: brew test "arcavenae/tap/${{ matrix.formula }}"
       - name: Cleanup
         if: always()
-        run: brew uninstall "arcaven/tap/${{ matrix.formula }}" || true
+        run: brew uninstall "arcavenae/tap/${{ matrix.formula }}" || true
 ```
 
 **Benefits:** Each formula gets independent pass/fail status. switchboard failures don't mask threedoors issues and vice versa. `fail-fast: false` ensures all formulas are tested even if one fails.
@@ -120,7 +120,7 @@ jobs:
         run: |
           # Wait for GoReleaser commit to appear in tap repo
           for i in $(seq 1 12); do
-            SHA=$(gh api repos/arcaven/homebrew-tap/commits \
+            SHA=$(gh api repos/arcavenae/homebrew-tap/commits \
               --jq 'map(select(.commit.message | startswith("chore(formula): update threedoors"))) | .[0].sha // empty' \
               2>/dev/null)
             if [ -n "$SHA" ]; then
@@ -140,7 +140,7 @@ jobs:
         run: |
           SHA="${{ steps.find-commit.outputs.sha }}"
           for i in $(seq 1 30); do
-            STATUS=$(gh api repos/arcaven/homebrew-tap/commits/$SHA/status \
+            STATUS=$(gh api repos/arcavenae/homebrew-tap/commits/$SHA/status \
               --jq '.state' 2>/dev/null)
             case "$STATUS" in
               success) echo "Tap CI passed"; exit 0 ;;
@@ -158,13 +158,13 @@ jobs:
         run: |
           gh issue create \
             --title "Release verification failed: tap CI" \
-            --body "The homebrew tap CI failed after the latest release. Check https://github.com/arcaven/homebrew-tap/actions for details." \
+            --body "The homebrew tap CI failed after the latest release. Check https://github.com/arcavenae/homebrew-tap/actions for details." \
             --label "bug,release"
 ```
 
 ### 3. GoReleaser Config Update
 
-The existing draft at `goreleaser-draft.yml` targets `arcaven/homebrew-threedoors`. Update for shared tap:
+The existing draft at `goreleaser-draft.yml` targets `arcavenae/homebrew-threedoors`. Update for shared tap:
 
 ```yaml
 brews:
@@ -177,7 +177,7 @@ brews:
       email: bot@goreleaser.com
     commit_msg_template: "chore(formula): update threedoors to {{ .Tag }}"
     directory: Formula
-    homepage: "https://github.com/arcaven/ThreeDoors"
+    homepage: "https://github.com/arcavenae/ThreeDoors"
     description: "TUI task manager that reduces decision friction by showing only three tasks"
     license: "MIT"
     install: |
@@ -207,11 +207,11 @@ When tap CI fails:
 
 ## Multi-Formula Considerations
 
-Since `arcaven/homebrew-tap` is shared:
+Since `arcavenae/homebrew-tap` is shared:
 
 1. **GoReleaser commit messages must be formula-specific** — `chore(formula): update threedoors to vX.Y.Z` (not generic). This allows filtering by formula in monitoring.
 2. **Tap CI matrix isolates failures** — switchboard failures don't affect ThreeDoors verification.
-3. **Token scope** — `HOMEBREW_TAP_TOKEN` needs write access to `arcaven/homebrew-tap`. This is the same token used by all arcaven projects that publish to the tap.
+3. **Token scope** — `HOMEBREW_TAP_TOKEN` needs write access to `arcavenae/homebrew-tap`. This is the same token used by all arcaven projects that publish to the tap.
 4. **Concurrent releases** — if ThreeDoors and switchboard release simultaneously, both push commits to the tap. CI runs for each. The release-verify workflow must find the correct commit by message pattern, not just "latest commit."
 5. **Formula naming** — each project manages its own formula template via GoReleaser. No coordination needed unless formulas conflict (they won't — different names).
 
@@ -224,7 +224,7 @@ Since `arcaven/homebrew-tap` is shared:
 
 ## References
 
-- [arcaven/homebrew-tap](https://github.com/arcaven/homebrew-tap) — shared tap repo
+- [arcavenae/homebrew-tap](https://github.com/arcavenae/homebrew-tap) — shared tap repo
 - [GoReleaser Homebrew Taps](https://goreleaser.com/customization/homebrew/)
 - [GitHub Actions workflow_run trigger](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_run)
 - [GitHub Commit Status API](https://docs.github.com/en/rest/commits/statuses)

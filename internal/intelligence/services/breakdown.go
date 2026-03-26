@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
 )
 
 // Subtask represents a proposed subtask from LLM breakdown.

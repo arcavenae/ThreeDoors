@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestNewWALProvider_NilBaseProviderPanics(t *testing.T) {

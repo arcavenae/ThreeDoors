@@ -34,33 +34,33 @@ Wrap in `<p align="center">` for centered display (like glow/lazygit):
 ```markdown
 <p align="center">
   <!-- Build & Quality -->
-  <a href="https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml"><img src="https://github.com/arcaven/ThreeDoors/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-  <a href="https://goreportcard.com/report/github.com/arcaven/ThreeDoors"><img src="https://goreportcard.com/badge/github.com/arcaven/ThreeDoors" alt="Go Report Card"></a>
-  <a href="https://pkg.go.dev/github.com/arcaven/ThreeDoors"><img src="https://pkg.go.dev/badge/github.com/arcaven/ThreeDoors.svg" alt="Go Reference"></a>
+  <a href="https://github.com/arcavenae/ThreeDoors/actions/workflows/ci.yml"><img src="https://github.com/arcavenae/ThreeDoors/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://goreportcard.com/report/github.com/arcavenae/ThreeDoors"><img src="https://goreportcard.com/badge/github.com/arcavenae/ThreeDoors" alt="Go Report Card"></a>
+  <a href="https://pkg.go.dev/github.com/arcavenae/ThreeDoors"><img src="https://pkg.go.dev/badge/github.com/arcavenae/ThreeDoors.svg" alt="Go Reference"></a>
 
   <!-- Version & Distribution -->
-  <a href="https://github.com/arcaven/ThreeDoors/releases/latest"><img src="https://img.shields.io/github/v/release/arcaven/ThreeDoors?style=flat&label=release&color=green" alt="Latest Release"></a>
-  <a href="https://github.com/arcaven/ThreeDoors/releases"><img src="https://img.shields.io/github/downloads/arcaven/ThreeDoors/total?style=flat&color=blue" alt="Downloads"></a>
+  <a href="https://github.com/arcavenae/ThreeDoors/releases/latest"><img src="https://img.shields.io/github/v/release/arcaven/ThreeDoors?style=flat&label=release&color=green" alt="Latest Release"></a>
+  <a href="https://github.com/arcavenae/ThreeDoors/releases"><img src="https://img.shields.io/github/downloads/arcaven/ThreeDoors/total?style=flat&color=blue" alt="Downloads"></a>
   <a href="https://formulae.brew.sh/formula/threedoors"><img src="https://img.shields.io/badge/homebrew-threedoors-FBB040?logo=homebrew&logoColor=white" alt="Homebrew"></a>
 
   <!-- Meta -->
   <a href="https://img.shields.io/badge/Go-1.25.4+-00ADD8?logo=go&logoColor=white"><img src="https://img.shields.io/badge/Go-1.25.4+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go Version"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
   <a href="https://github.com/charmbracelet/bubbletea"><img src="https://img.shields.io/badge/Built%20with-Bubbletea-purple?logo=data:image/svg+xml;base64,..." alt="Built with Bubbletea"></a>
-  <a href="https://github.com/arcaven/ThreeDoors/stargazers"><img src="https://img.shields.io/github/stars/arcaven/ThreeDoors?style=flat&color=yellow" alt="Stars"></a>
+  <a href="https://github.com/arcavenae/ThreeDoors/stargazers"><img src="https://img.shields.io/github/stars/arcaven/ThreeDoors?style=flat&color=yellow" alt="Stars"></a>
 </p>
 ```
 
 ### Badge Notes
-- **Go Report Card**: `goreportcard.com/report/github.com/arcaven/ThreeDoors` — auto-generated, no setup needed
+- **Go Report Card**: `goreportcard.com/report/github.com/arcavenae/ThreeDoors` — auto-generated, no setup needed
 - **GitHub Actions CI**: Uses the workflow file name `ci.yml` — confirmed exists
 - **pkg.go.dev**: Auto-indexes public Go modules
-- **Homebrew badge**: Static shield since it's a custom tap (`arcaven/tap/threedoors`), not formulae.brew.sh — adjust URL to point to tap repo
-- **Downloads**: `github.com/arcaven/ThreeDoors` total downloads from releases
+- **Homebrew badge**: Static shield since it's a custom tap (`arcavenae/tap/threedoors`), not formulae.brew.sh — adjust URL to point to tap repo
+- **Downloads**: `github.com/arcavenae/ThreeDoors` total downloads from releases
 - **Stars**: Social proof
 - **Test coverage**: Omitted for now — requires codecov/coveralls integration (could be a follow-up story). Add when available:
   ```
-  [![Coverage](https://codecov.io/gh/arcaven/ThreeDoors/branch/main/graph/badge.svg)](https://codecov.io/gh/arcaven/ThreeDoors)
+  [![Coverage](https://codecov.io/gh/arcavenae/ThreeDoors/branch/main/graph/badge.svg)](https://codecov.io/gh/arcavenae/ThreeDoors)
   ```
 
 ---

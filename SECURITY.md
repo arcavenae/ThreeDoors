@@ -16,7 +16,7 @@ Only the latest release on `main` is supported with security updates. Alpha rele
 
 Please use one of the following methods:
 
-1. **GitHub Private Vulnerability Reporting** (preferred): Go to the [Security tab](https://github.com/arcaven/ThreeDoors/security) and select "Report a vulnerability"
+1. **GitHub Private Vulnerability Reporting** (preferred): Go to the [Security tab](https://github.com/arcavenae/ThreeDoors/security) and select "Report a vulnerability"
 2. **GitHub Issue** (for non-sensitive security questions): Open an issue with the `security` label
 
 We will acknowledge your report within **7 days** and work with you to coordinate disclosure timing.

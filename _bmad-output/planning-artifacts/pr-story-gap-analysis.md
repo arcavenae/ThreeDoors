@@ -1,7 +1,7 @@
 # PR-Story Gap Analysis Report
 
 **Analysis Date:** 2026-03-03
-**Scope:** All 77 PRs (#1–#77) in arcaven/ThreeDoors
+**Scope:** All 77 PRs (#1–#77) in arcavenae/ThreeDoors
 **Method:** `gh pr view` on each PR, cross-referenced against `docs/prd/epics-and-stories.md`
 
 ---

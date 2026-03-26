@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
-	"github.com/arcaven/ThreeDoors/internal/core/metrics"
+	"github.com/arcavenae/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core/metrics"
 )
 
 // writeSessions creates a temp JSONL file with the given sessions and returns a Reader.

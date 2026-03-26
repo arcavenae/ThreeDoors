@@ -1,8 +1,8 @@
 site_name: ThreeDoors
-site_url: https://arcaven.github.io/ThreeDoors/
+site_url: https://arcavenae.github.io/ThreeDoors/
 site_description: Task management with radical simplicity — three doors, one choice
-repo_url: https://github.com/arcaven/ThreeDoors
-repo_name: arcaven/ThreeDoors
+repo_url: https://github.com/arcavenae/ThreeDoors
+repo_name: arcavenae/ThreeDoors
 
 theme:
   name: material
@@ -92,4 +92,4 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/arcaven/ThreeDoors
+      link: https://github.com/arcavenae/ThreeDoors

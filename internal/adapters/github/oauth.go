@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection/oauth"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection/oauth"
 )
 
 // GitHub OAuth device code flow endpoints per

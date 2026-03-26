@@ -32,7 +32,7 @@ fi
 
 # Test 2: Detects blocked stories from test fixtures
 echo "Test: detects blocked stories"
-OUTPUT="$("$SCRIPT_DIR/sm-sprint-health.sh" --stories-dir "$TESTDATA/test-stories" --repo arcaven/ThreeDoors 2>&1)" || true
+OUTPUT="$("$SCRIPT_DIR/sm-sprint-health.sh" --stories-dir "$TESTDATA/test-stories" --repo arcavenae/ThreeDoors 2>&1)" || true
 if echo "$OUTPUT" | grep -q "RISK.*1.2.*blocked"; then
     pass "detected blocked story 1.2"
 else
@@ -57,7 +57,7 @@ fi
 
 # Test 5: Invalid stories dir handled gracefully
 echo "Test: missing stories dir handled gracefully"
-OUTPUT2="$("$SCRIPT_DIR/sm-sprint-health.sh" --stories-dir "/nonexistent/dir" --repo arcaven/ThreeDoors 2>&1)" || true
+OUTPUT2="$("$SCRIPT_DIR/sm-sprint-health.sh" --stories-dir "/nonexistent/dir" --repo arcavenae/ThreeDoors 2>&1)" || true
 if echo "$OUTPUT2" | grep -q "Warning.*not found"; then
     pass "missing dir produces warning"
 else

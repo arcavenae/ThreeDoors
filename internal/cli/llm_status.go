@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/arcaven/ThreeDoors/internal/intelligence/llm"
+	"github.com/arcavenae/ThreeDoors/internal/intelligence/llm"
 	"github.com/spf13/cobra"
 )
 

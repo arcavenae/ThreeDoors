@@ -3,7 +3,7 @@ package core
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/dispatch"
+	"github.com/arcavenae/ThreeDoors/internal/dispatch"
 )
 
 func TestNewTask(t *testing.T) {

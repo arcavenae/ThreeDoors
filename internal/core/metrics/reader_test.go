@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // writeJSONL is a test helper that writes SessionMetrics as JSONL to a temp file.

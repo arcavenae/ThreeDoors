@@ -1,7 +1,7 @@
 # PR #447 Failure Analysis — Story 33.4: Seasonal Theme Picker
 
 **Date:** 2026-03-10
-**PR:** [#447](https://github.com/arcaven/ThreeDoors/pull/447) — `feat: Story 33.4 — Seasonal Theme Picker and :seasonal Command`
+**PR:** [#447](https://github.com/arcavenae/ThreeDoors/pull/447) — `feat: Story 33.4 — Seasonal Theme Picker and :seasonal Command`
 **Branch:** `work/proud-tiger`
 
 ## CI Status: ALL GREEN

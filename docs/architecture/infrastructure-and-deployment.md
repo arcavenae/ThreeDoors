@@ -24,7 +24,7 @@ cp bin/threedoors /usr/local/bin/
 just run
 
 # Option 3 (Future): Homebrew tap
-brew install arcaven/tap/threedoors
+brew install arcavenae/tap/threedoors
 ```
 
 **CI/CD Platform:** GitHub Actions (`.github/workflows/ci.yml`)
@@ -75,7 +75,7 @@ cp threedoors.old /usr/local/bin/threedoors
 
 ```bash
 # Homebrew tap (code-signed + notarized)
-brew install arcaven/tap/threedoors
+brew install arcavenae/tap/threedoors
 
 # DMG/pkg installer (alternative)
 # Download from GitHub Releases

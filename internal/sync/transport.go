@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/device"
+	"github.com/arcavenae/ThreeDoors/internal/device"
 )
 
 // SyncOp represents the type of file change in a sync operation.

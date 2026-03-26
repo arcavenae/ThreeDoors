@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func newTestPool(tasks ...*core.Task) *core.TaskPool {

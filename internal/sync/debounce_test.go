@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	gosync "github.com/arcaven/ThreeDoors/internal/sync"
+	gosync "github.com/arcavenae/ThreeDoors/internal/sync"
 )
 
 // fakeTimer is a test timer that can be fired manually.

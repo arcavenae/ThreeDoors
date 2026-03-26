@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/arcaven/ThreeDoors/internal/core/connection/oauth"
+	"github.com/arcavenae/ThreeDoors/internal/core/connection/oauth"
 )
 
 // ErrUnauthorized is returned when an API responds with 401, indicating

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/adapters"
-	"github.com/arcaven/ThreeDoors/internal/adapters/reminders"
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/adapters"
+	"github.com/arcavenae/ThreeDoors/internal/adapters/reminders"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // statefulExecutor simulates Apple Reminders state for contract tests.

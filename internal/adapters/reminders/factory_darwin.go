@@ -3,7 +3,7 @@
 package reminders
 
 import (
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 // NewFactory returns an AdapterFactory that creates a RemindersProvider

@@ -27,7 +27,7 @@ jobs:
           # GoReleaser pushes a formula update with a specific commit message
           # pattern after a successful release.
           for i in $(seq 1 12); do
-            SHA=$(gh api repos/arcaven/homebrew-tap/commits \
+            SHA=$(gh api repos/arcavenae/homebrew-tap/commits \
               --jq 'map(select(.commit.message | startswith("chore(formula): update threedoors"))) | .[0].sha // empty' \
               2>/dev/null)
             if [ -n "$SHA" ]; then
@@ -50,7 +50,7 @@ jobs:
           SHA="${{ steps.find-commit.outputs.sha }}"
           echo "Monitoring tap CI for commit $SHA"
           for i in $(seq 1 30); do
-            STATUS=$(gh api "repos/arcaven/homebrew-tap/commits/$SHA/status" \
+            STATUS=$(gh api "repos/arcavenae/homebrew-tap/commits/$SHA/status" \
               --jq '.state' 2>/dev/null)
             case "$STATUS" in
               success)
@@ -93,11 +93,11 @@ jobs:
 
           **Release workflow run:** $RELEASE_RUN_URL
           **Tap commit:** $TAP_SHA
-          **Tap CI:** https://github.com/arcaven/homebrew-tap/actions
+          **Tap CI:** https://github.com/arcavenae/homebrew-tap/actions
 
           ### Next Steps
 
-          1. Check the [tap CI logs](https://github.com/arcaven/homebrew-tap/actions) for the specific failure
+          1. Check the [tap CI logs](https://github.com/arcavenae/homebrew-tap/actions) for the specific failure
           2. Identify whether the failure is in \`brew audit\`, \`brew install\`, or \`brew test\`
           3. Fix the root cause in ThreeDoors (never manually edit the tap formula)
           4. Tag a patch release to regenerate the formula
@@ -143,7 +143,7 @@ jobs:
           # The CI workflow pushes a commit with the message pattern:
           # "chore(formula): update threedoors-a to <tag>"
           for i in $(seq 1 6); do
-            SHA=$(gh api repos/arcaven/homebrew-tap/commits \
+            SHA=$(gh api repos/arcavenae/homebrew-tap/commits \
               --jq 'map(select(.commit.message | startswith("chore(formula): update threedoors-a"))) | .[0].sha // empty' \
               2>/dev/null)
             if [ -n "$SHA" ]; then
@@ -168,7 +168,7 @@ jobs:
           SHA="${{ steps.find-commit.outputs.sha }}"
           echo "Monitoring alpha tap CI for commit $SHA"
           for i in $(seq 1 15); do
-            STATUS=$(gh api "repos/arcaven/homebrew-tap/commits/$SHA/status" \
+            STATUS=$(gh api "repos/arcavenae/homebrew-tap/commits/$SHA/status" \
               --jq '.state' 2>/dev/null)
             case "$STATUS" in
               success)
@@ -211,11 +211,11 @@ jobs:
 
           **CI workflow run:** $CI_RUN_URL
           **Tap commit:** $TAP_SHA
-          **Tap CI:** https://github.com/arcaven/homebrew-tap/actions
+          **Tap CI:** https://github.com/arcavenae/homebrew-tap/actions
 
           ### Next Steps
 
-          1. Check the [tap CI logs](https://github.com/arcaven/homebrew-tap/actions) for the specific failure
+          1. Check the [tap CI logs](https://github.com/arcavenae/homebrew-tap/actions) for the specific failure
           2. Identify whether the failure is in \`brew audit\`, \`brew install\`, or \`brew test\`
           3. Fix the root cause in ThreeDoors (the next push to main will regenerate the alpha formula)
 

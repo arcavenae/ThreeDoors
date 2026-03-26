@@ -271,7 +271,7 @@ Push to main
 ┌───────────────┐
 │update-homebrew│  ubuntu-latest
 │ Formula/      │
-│ arcaven/      │
+│ arcavenae/    │
 │ homebrew-tap  │
 └───────────────┘
 ```

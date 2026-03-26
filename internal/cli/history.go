@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 	"github.com/spf13/cobra"
 )
 

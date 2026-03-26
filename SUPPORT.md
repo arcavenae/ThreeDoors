@@ -9,15 +9,15 @@
 
 ## Asking Questions
 
-Open a [Question issue](https://github.com/arcaven/ThreeDoors/issues/new?template=question.yml) on GitHub.
+Open a [Question issue](https://github.com/arcavenae/ThreeDoors/issues/new?template=question.yml) on GitHub.
 
 ## Reporting Bugs
 
-Open a [Bug Report](https://github.com/arcaven/ThreeDoors/issues/new?template=bug-report.yml) on GitHub. Please include your ThreeDoors version, OS, and steps to reproduce.
+Open a [Bug Report](https://github.com/arcavenae/ThreeDoors/issues/new?template=bug-report.yml) on GitHub. Please include your ThreeDoors version, OS, and steps to reproduce.
 
 ## Requesting Features
 
-Open a [Feature Request](https://github.com/arcaven/ThreeDoors/issues/new?template=feature-request.yml) on GitHub. Please read [SOUL.md](SOUL.md) first — ThreeDoors is opinionated by design.
+Open a [Feature Request](https://github.com/arcavenae/ThreeDoors/issues/new?template=feature-request.yml) on GitHub. Please read [SOUL.md](SOUL.md) first — ThreeDoors is opinionated by design.
 
 ## Security Vulnerabilities
 

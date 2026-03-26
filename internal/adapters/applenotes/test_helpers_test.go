@@ -3,7 +3,7 @@ package applenotes
 import (
 	"time"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 var baseTime = time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC)

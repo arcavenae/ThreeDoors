@@ -1,91 +1,91 @@
 {
   "updated": "2026-03-08",
   "packages": {
-    "github.com/arcaven/ThreeDoors/cmd/threedoors": {
+    "github.com/arcavenae/ThreeDoors/cmd/threedoors": {
       "coverage": 0.0,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/cmd/threedoors-mcp": {
+    "github.com/arcavenae/ThreeDoors/cmd/threedoors-mcp": {
       "coverage": 0.0,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters": {
       "coverage": 76.1,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters/applenotes": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters/applenotes": {
       "coverage": 86.1,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters/github": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters/github": {
       "coverage": 85.3,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters/jira": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters/jira": {
       "coverage": 85.6,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters/obsidian": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters/obsidian": {
       "coverage": 82.7,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters/reminders": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters/reminders": {
       "coverage": 94.0,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/adapters/textfile": {
+    "github.com/arcavenae/ThreeDoors/internal/adapters/textfile": {
       "coverage": 81.1,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/calendar": {
+    "github.com/arcavenae/ThreeDoors/internal/calendar": {
       "coverage": 88.7,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/cli": {
+    "github.com/arcavenae/ThreeDoors/internal/cli": {
       "coverage": 34.8,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/core": {
+    "github.com/arcavenae/ThreeDoors/internal/core": {
       "coverage": 87.9,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/core/metrics": {
+    "github.com/arcavenae/ThreeDoors/internal/core/metrics": {
       "coverage": 91.2,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/dispatch": {
+    "github.com/arcavenae/ThreeDoors/internal/dispatch": {
       "coverage": 86.7,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/dist": {
+    "github.com/arcavenae/ThreeDoors/internal/dist": {
       "coverage": 87.8,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/enrichment": {
+    "github.com/arcavenae/ThreeDoors/internal/enrichment": {
       "coverage": 80.4,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/intelligence": {
+    "github.com/arcavenae/ThreeDoors/internal/intelligence": {
       "coverage": 93.1,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/intelligence/llm": {
+    "github.com/arcavenae/ThreeDoors/internal/intelligence/llm": {
       "coverage": 89.6,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/mcp": {
+    "github.com/arcavenae/ThreeDoors/internal/mcp": {
       "coverage": 82.8,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/testkit": {
+    "github.com/arcavenae/ThreeDoors/internal/testkit": {
       "coverage": 83.3,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/tui": {
+    "github.com/arcavenae/ThreeDoors/internal/tui": {
       "coverage": 80.0,
       "updated": "2026-03-08"
     },
-    "github.com/arcaven/ThreeDoors/internal/tui/themes": {
+    "github.com/arcavenae/ThreeDoors/internal/tui/themes": {
       "coverage": 91.5,
       "updated": "2026-03-08"
     }

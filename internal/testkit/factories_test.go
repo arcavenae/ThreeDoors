@@ -3,7 +3,7 @@ package testkit
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestNewTask_Defaults(t *testing.T) {

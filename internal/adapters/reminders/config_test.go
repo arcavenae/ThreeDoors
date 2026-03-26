@@ -3,7 +3,7 @@ package reminders
 import (
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestParseRemindersConfig(t *testing.T) {

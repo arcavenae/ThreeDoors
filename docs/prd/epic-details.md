@@ -23,7 +23,7 @@ lastUpdated: '2026-03-06'
 **so that** I have a foundation for building the Three Doors TUI.
 
 **Acceptance Criteria:**
-1. Go module initialized with `go mod init github.com/arcaven/ThreeDoors`
+1. Go module initialized with `go mod init github.com/arcavenae/ThreeDoors`
 2. Bubbletea and Lipgloss dependencies added
 3. Basic TUI application renders "ThreeDoors - Technical Demo" header
 4. Application responds to 'q' keypress to quit
@@ -499,15 +499,15 @@ lastUpdated: '2026-03-06'
 ### Story 5.2: Homebrew Tap Formula
 
 **As a** macOS user,
-**I want** to install ThreeDoors via `brew install arcaven/tap/threedoors`,
+**I want** to install ThreeDoors via `brew install arcavenae/tap/threedoors`,
 **so that** I get automatic updates and a standard macOS installation experience.
 
 **Acceptance Criteria:**
-1. A separate GitHub repository `arcaven/homebrew-tap` is created with a Homebrew formula
+1. A separate GitHub repository `arcavenae/homebrew-tap` is created with a Homebrew formula
 2. Formula downloads the correct signed binary for the user's architecture (arm64 or amd64)
 3. Formula includes SHA256 checksums for integrity verification
-4. `brew install arcaven/tap/threedoors` installs the binary to the Homebrew prefix
-5. `brew upgrade arcaven/tap/threedoors` upgrades to the latest version
+4. `brew install arcavenae/tap/threedoors` installs the binary to the Homebrew prefix
+5. `brew upgrade arcavenae/tap/threedoors` upgrades to the latest version
 6. CI pipeline automatically updates the Homebrew formula on new releases (SHA256 and version)
 
 **Implementation Guidance:**

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arcaven/ThreeDoors/internal/core"
+	"github.com/arcavenae/ThreeDoors/internal/core"
 )
 
 func TestObsidianAdapter_ImplementsTaskProvider(t *testing.T) {
