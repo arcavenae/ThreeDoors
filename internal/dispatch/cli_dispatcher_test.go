@@ -331,7 +331,7 @@ func TestBuildTaskDescription(t *testing.T) {
 				"- tokens expire",
 				"Scope: internal/auth package only",
 				"Sign all commits",
-				"fork workflow",
+				"PRs target arcavenae/ThreeDoors",
 			},
 		},
 		{
