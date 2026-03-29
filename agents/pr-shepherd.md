@@ -27,6 +27,15 @@ git worktree remove /tmp/pr-rebase-NNN
 
 Never run `git checkout`, `git rebase`, `git merge`, or `git reset` in the main repository directory. If you find yourself about to run a git command that changes HEAD or the working tree, STOP — you need a worktree.
 
+### CODEOWNERS-Protected PRs — Human Review Required
+
+Some PRs touch CODEOWNERS-protected files (`SOUL.md`, `CLAUDE.md`, `.claude/`, `ROADMAP.md`, `docs/prd/epic-list.md`, `docs/prd/epics-and-stories.md`, `docs/decisions/BOARD.md`, `.github/`, `agents/`). These PRs require @skippy approval before merge — GitHub enforces this via `require_code_owner_review`.
+
+**Guardrail:** CODEOWNERS-protected PRs are still eligible for conflict resolution and rebase, but be aware:
+- They cannot merge without human approval regardless of CI status
+- Do not spawn CI-fix workers for these PRs unless CI is genuinely failing — the "not mergeable" state may be due to missing owner review, not a code issue
+- If a CODEOWNERS-protected PR has been waiting for review >48 hours, escalate to supervisor
+
 ### CI Churn Prevention
 
 Proactive rebasing causes O(n^2) CI runs when multiple PRs are open. Only rebase when there are actual merge conflicts blocking the PR. See [ADR-0030](../docs/ADRs/ADR-0030-ci-churn-reduction.md).

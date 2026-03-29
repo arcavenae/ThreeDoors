@@ -30,6 +30,31 @@ just test             # go test ./... -v
 go test -race ./...   # Race detector — run before pushing
 ```
 
+## CODEOWNERS Protection — MANDATORY
+
+Governance-critical files are protected by `.github/CODEOWNERS` with `require_code_owner_review` enabled in the branch ruleset. PRs touching these files **require @skippy approval** before merge. PRs touching only unprotected files merge with CI-only gates (existing behavior).
+
+**Protected files (require human review):**
+- `SOUL.md` — project philosophy
+- `CLAUDE.md` — agent instructions
+- `.claude/` — agent rules, settings
+- `ROADMAP.md` — scope control
+- `docs/prd/epic-list.md` — epic definitions
+- `docs/prd/epics-and-stories.md` — story breakdown
+- `docs/decisions/BOARD.md` — architectural decisions
+- `.github/` — CI/CD, CODEOWNERS itself
+- `agents/` — agent behavior definitions
+
+**Unprotected (AI agents can self-merge via merge-queue):**
+- `internal/`, `cmd/`, `pkg/` — all application code
+- `docs/stories/` — workers must update story status freely
+- Test files, fixtures, scripts, build files
+
+**Rules for workers:**
+- Do NOT modify CODEOWNERS-protected files unless the story explicitly requires it
+- merge-queue will skip PRs that touch protected files and label them `status.needs-human`
+- If your story requires changes to protected files, the PR will need manual owner approval
+
 ## Story-Driven Development — MANDATORY
 
 **DO NOT conduct work without a story.** Every implementation task must have a corresponding `docs/stories/X.Y.story.md` file before work begins. If work needs to get done, find or create the appropriate story first.

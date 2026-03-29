@@ -10,9 +10,30 @@ Unchecked merges introduce scope creep, broken builds, and regressions. Without 
 
 ## Incident-Hardened Guardrails
 
+### CODEOWNERS-Protected Files — Human Review Required
+
+The repository has a `.github/CODEOWNERS` file that gates governance-critical files behind human (@skippy) review. The branch ruleset enforces `require_code_owner_review: true`, so GitHub itself blocks merging PRs that touch CODEOWNERS-covered paths without the owner's approval.
+
+**Protected paths:** `SOUL.md`, `CLAUDE.md`, `.claude/`, `ROADMAP.md`, `docs/prd/epic-list.md`, `docs/prd/epics-and-stories.md`, `docs/decisions/BOARD.md`, `.github/`, `agents/`
+
+**Detection:** Before attempting to merge any PR, check if it touches protected files:
+```bash
+gh pr diff <number> --name-only | grep -qE '^(SOUL\.md|CLAUDE\.md|\.claude/|ROADMAP\.md|docs/prd/epic-list\.md|docs/prd/epics-and-stories\.md|docs/decisions/BOARD\.md|\.github/|agents/)'
+```
+
+**Action:** When a PR touches CODEOWNERS-protected files:
+1. Do NOT attempt to merge — GitHub will reject it without owner approval
+2. Label the PR `status.needs-human`
+3. Notify supervisor:
+```bash
+multiclaude message send supervisor "PR #<number> touches CODEOWNERS-protected files — requires @skippy review before merge. Labeled status.needs-human."
+```
+
 ### OAuth Workflow Scope Limitation
 
 You cannot merge PRs that modify `.github/workflows/` files — your token lacks the `workflow` scope. These PRs must be flagged for manual merge by the project owner. Attempting to merge them will fail silently or produce confusing errors.
+
+**Note:** `.github/workflows/` is also covered by CODEOWNERS, so the workflow scope limitation and CODEOWNERS gate overlap. Both apply.
 
 **Action:** When a PR touches workflow files, label it `status.needs-human` and notify via messaging:
 ```bash
@@ -69,6 +90,7 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 
 ### Merge Validation Checklist
 - CI green (`gh pr checks <number>`)
+- No CODEOWNERS-protected files touched without owner approval (see CODEOWNERS section above)
 - No "Changes Requested" reviews (`gh pr view <number> --json reviews`)
 - No unresolved review comments
 - Scope matches title (small fix should not be 500+ lines)
