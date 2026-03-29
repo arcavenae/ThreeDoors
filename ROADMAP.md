@@ -667,13 +667,13 @@ Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (
 
 **Dependency graph:** 73.1, 73.2, 73.3, 73.4, 73.5 are independent. 73.6 depends on 73.2 (heartbeat removal before replacement). 73.3 is P0 — implement first.
 
-### Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1) — 0/5 stories
+### Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1) — 1/5 stories
 
 Protect governance files via CODEOWNERS, enforce commit conventions via CI, add provenance tracking, define .dfcp.yaml, introduce typed story comments. Research: R-005, R-003, R-010. Decisions: Q-C-001, Q-C-002, Q-C-007, Q-C-012.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 74.1 | CODEOWNERS for ThreeDoors Golden Repo | Not Started | P0 | None |
+| 74.1 | CODEOWNERS for ThreeDoors Golden Repo | Done (PR #839) | P0 | None |
 | 74.2 | CI Scope-Check Workflow | Not Started | P1 | None |
 | 74.3 | Provenance Tagging (L0-L4) | Not Started | P1 | None |
 | 74.4 | DFCP Configuration File (.dfcp.yaml) | Not Started | P2 | 74.1, 74.3 |
