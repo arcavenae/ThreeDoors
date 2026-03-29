@@ -67,8 +67,38 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 5. Update story file status — do NOT update ROADMAP.md, epic-list.md, or epics-and-stories.md (project-watchdog handles those per D-162):
    - **Implementation tasks** (`/implement-story`, feature work, bug fixes): Set status to `Done (PR #NNN)` after all acceptance criteria are met in code
    - **Planning tasks** (`/plan-work`, story creation, docs-only work): Set newly created story status to `Not Started` — NEVER `Done`. A story is only `Done` when its acceptance criteria are implemented, not when the story file is created
-6. Create a PR with a detailed summary
-7. Run `multiclaude agent complete`
+6. Add provenance tagging (see Provenance section below)
+7. Create a PR with a detailed summary
+8. Run `multiclaude agent complete`
+
+### Provenance Tagging (Q-C-007) — MANDATORY
+
+Every worker MUST tag its output with an autonomy level. See `docs/operations/provenance.md` for the full specification.
+
+**1. Story file:** After implementation, add a `## Provenance` section to the story file:
+```markdown
+## Provenance
+- **Autonomy Level:** L3 (AI-autonomous)
+- **Implementation Agent:** worker/<your-name>
+- **Review:** Human PR review required
+```
+
+**2. Commit messages:** Include a `Provenance:` trailer in every commit:
+```
+feat: implement feature X (Story N.M)
+
+Provenance: L3
+```
+
+**3. PR labels:** Apply the appropriate provenance label when creating the PR:
+```bash
+gh pr edit <number> --add-label provenance.L3
+```
+
+**Autonomy levels for workers:**
+- Most worker implementations are **L3** (AI-autonomous with human PR review)
+- `/plan-work` output is **L2** (AI-paired — human provides direction)
+- If a human is actively directing your work in real-time, use **L1**
 
 ### Branch
 Your branch: `work/<your-name>`. Push to it, create PR from it.
