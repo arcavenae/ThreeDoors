@@ -6747,3 +6747,218 @@ So that the GitHub issue dashboard is clean and accurate.
 - **AC2:** Issue #330 mutual exclusivity violation fixed (remove `triage.in-progress`)
 - **AC3:** Issue #296 mutual exclusivity violation fixed (remove `type.bug`)
 - **AC4:** No remaining mutual exclusivity violations across open issues
+
+---
+
+## Dark Factory Phase 1: Stabilize & Harden
+
+## Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1)
+
+**Goal:** Stabilize the multiclaude operator experience and agent lifecycle. Fix operator UX (workspace-as-primary), remove redundant heartbeats, add hook-enforced git safety, design session handoff for persistent agents, add quota monitoring, and design daemon-native heartbeats.
+
+**Priority:** P1
+**Prerequisites:** None — fixes the platform everything else runs on
+**Status:** Not Started (0/6 stories)
+**Reference:** R-007 (Operator UX), R-010 (Chainlink), R-004 (Quota), R-012 (Consolidation)
+**Decisions:** Q-C-005 (hooks replace prompts), Q-C-010 (daemon handoff), Q-C-011 (drop CronCreate)
+
+### Story 73.1: Workspace-as-Primary Operator Pattern
+
+As a multiclaude operator,
+I want clear documentation that the workspace window is the primary human interaction point,
+So that I stop working in the supervisor window and avoid prompt injection conflicts.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** CLAUDE.md updated with workspace-as-primary guidance
+- **AC2:** Supervisor memory startup checklist updated
+- **AC3:** agents/supervisor.md updated with operator interaction section
+
+### Story 73.2: Remove CronCreate Heartbeats from Startup Checklist
+
+As a multiclaude supervisor,
+I want CronCreate heartbeat crons removed from the startup checklist,
+So that the supervisor session is not double-injected by both daemon wake nudges and CronCreate prompts.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** CronCreate heartbeat section removed from supervisor memory
+- **AC2:** SYNC_OPERATIONAL_DATA cron retained or migrated
+- **AC3:** Standing orders updated
+
+### Story 73.3: Hook-Enforced Git Safety for Workers
+
+As a project owner,
+I want mechanical hook enforcement preventing workers from running dangerous git commands,
+So that INC-002-style worktree corruption is impossible regardless of prompt compliance.
+
+**Status:** Not Started | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** PreToolUse hook blocks dangerous git commands (fetch, pull, rebase, merge with remote refs)
+- **AC2:** Hook allows safe git operations (add, commit, push, status, log, diff, branch)
+- **AC3:** Hook prevents unsigned commits (--no-gpg-sign, -c commit.gpgsign=false)
+- **AC4:** Hook prevents direct push to main
+- **AC5:** Hook prevents Co-Authored-By trailers
+- **AC6:** Hook script is portable across worktrees (relative paths)
+- **AC7:** Hook configuration documented in CLAUDE.md
+
+### Story 73.4: Session Handoff Protocol for Persistent Agents
+
+As a persistent agent operator,
+I want agents to persist critical state before shutdown and restore it on restart,
+So that agent restarts don't lose accumulated context and in-progress work tracking.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Per-agent state directory structure defined
+- **AC2:** Agent definitions include handoff instructions
+- **AC3:** Handoff note format specified (In Progress, Recently Completed, Blocked, Key Decisions, Warnings)
+- **AC4:** Startup reads handoff notes and injects into initial prompt
+- **AC5:** Design document for daemon integration
+
+### Story 73.5: Passive Quota Monitoring
+
+As a multiclaude operator,
+I want to see current token consumption and estimated quota remaining,
+So that I can make informed decisions about spawning workers and agent activity levels.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Script reads JSONL session logs and calculates token consumption
+- **AC2:** Per-agent consumption breakdown
+- **AC3:** Window boundary detection (5-hour rolling window)
+- **AC4:** Color-coded warning levels (green/yellow/red)
+- **AC5:** Runnable from workspace window (`just quota`)
+
+### Story 73.6: Daemon-Native Heartbeats
+
+As a multiclaude platform maintainer,
+I want heartbeats to be a daemon-managed feature with configurable per-agent intervals,
+So that heartbeats survive session restarts, don't inject into the supervisor, and can be tuned per agent type.
+
+**Status:** Not Started | **Priority:** P2
+**Depends On:** 73.2
+
+**Acceptance Criteria:**
+- **AC1:** Design document for daemon-native heartbeats
+- **AC2:** Agent activity detection specified (skip actively working agents)
+- **AC3:** Configuration schema defined (per-agent intervals in multiclaude config)
+- **AC4:** Migration path from CronCreate documented
+- **AC5:** SYNC_OPERATIONAL_DATA handled
+
+## Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1)
+
+**Goal:** Protect governance-critical files via CODEOWNERS, enforce commit conventions via CI, add L0-L4 autonomy-level provenance tracking, define the .dfcp.yaml configuration format, and introduce typed story comments.
+
+**Priority:** P1
+**Prerequisites:** None (parallel with Epic 73)
+**Status:** Not Started (0/5 stories)
+**Reference:** R-005 (DFCP), R-003 (Dark Factory), R-010 (Chainlink)
+**Decisions:** Q-C-001 (CODEOWNERS now), Q-C-002 (gate agents/), Q-C-007 (provenance mandatory for AI), Q-C-012 (warn initially)
+
+### Story 74.1: CODEOWNERS for ThreeDoors Golden Repo
+
+As a project owner,
+I want CODEOWNERS protection on governance-critical files with require_code_owner_review enabled,
+So that AI agents cannot modify project philosophy, agent definitions, CI pipelines, or planning docs without human approval.
+
+**Status:** Not Started | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** `.github/CODEOWNERS` created protecting SOUL.md, CLAUDE.md, .claude/, ROADMAP.md, planning docs, .github/, agents/
+- **AC2:** Branch ruleset updated to require code owner review
+- **AC3:** merge-queue handles CODEOWNERS-blocked PRs (skip, label, notify)
+- **AC4:** Agent definitions updated for CODEOWNERS awareness
+- **AC5:** Documentation updated
+
+### Story 74.2: CI Scope-Check Workflow
+
+As a project maintainer,
+I want a CI workflow that validates story references in PR commits,
+So that all code changes are traceable to stories and commit message format is mechanically enforced.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** GitHub Actions workflow validates commit messages for story references
+- **AC2:** Workflow runs as warning (non-blocking, neutral status)
+- **AC3:** Allowed exceptions documented (merge, revert, bot commits)
+- **AC4:** Upgrade path to blocking documented
+- **AC5:** Optional story file existence check
+
+### Story 74.3: Provenance Tagging (L0-L4 Autonomy Levels)
+
+As a project maintainer,
+I want every AI-generated story, commit, and PR to carry an autonomy level tag,
+So that the provenance of all work is traceable for dark factory evaluation.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Story file provenance field defined (autonomy level, agent, review type)
+- **AC2:** PR labels for autonomy levels created (provenance.L0 through provenance.L4)
+- **AC3:** Commit message provenance trailer specified
+- **AC4:** Worker agent definition updated with provenance instructions
+- **AC5:** merge-queue provenance validation (warn if missing)
+- **AC6:** Provenance specification documented at `docs/operations/provenance.md`
+
+### Story 74.4: DFCP Configuration File (.dfcp.yaml)
+
+As a platform operator,
+I want a machine-readable .dfcp.yaml file declaring the repo's governance profile,
+So that tooling can automatically determine governance rules, protected paths, and autonomy levels.
+
+**Status:** Not Started | **Priority:** P2
+**Depends On:** 74.1, 74.3
+
+**Acceptance Criteria:**
+- **AC1:** .dfcp.yaml schema defined (profile, autonomy, governance, CI, factory sections)
+- **AC2:** .dfcp.yaml created for ThreeDoors (golden profile)
+- **AC3:** Schema documentation at `docs/architecture/dfcp-schema.md`
+- **AC4:** Validation script checks DFCP/CODEOWNERS consistency
+- **AC5:** Agent awareness documented
+
+### Story 74.5: Typed Comments on Story Files
+
+As a project maintainer,
+I want story file comments to use typed prefixes ([decision], [observation], [blocker]),
+So that the audit trail is structured and machine-parseable.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Comment type taxonomy defined (decision, observation, blocker, risk, deviation)
+- **AC2:** Comment format specified (blockquote with prefix, date, summary)
+- **AC3:** Story file template updated with Implementation Notes section
+- **AC4:** Worker agent definition updated with typed comment instructions
+- **AC5:** Documentation at `docs/operations/typed-comments.md`
+
+## Epic 75: Perplexity MCP Integration (P2)
+
+**Goal:** Install Perplexity's official MCP server for web-grounded research, disabled by default with per-session toggle to prevent uncontrolled API spend.
+
+**Priority:** P2
+**Prerequisites:** Perplexity API key (available)
+**Status:** Not Started (0/1 stories)
+**Reference:** R-008 (Perplexity Research Supervisor)
+
+### Story 75.1: Install Perplexity MCP Server with Per-Session Toggle
+
+As a multiclaude operator,
+I want Perplexity MCP server installed but disabled by default with a per-session toggle,
+So that agents can perform web-grounded research when explicitly enabled without burning API tokens.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** MCP server configuration exists but is disabled by default
+- **AC2:** Per-session enablement mechanism documented
+- **AC3:** Worker dispatch can optionally enable Perplexity
+- **AC4:** Usage guidelines at `docs/operations/perplexity-usage.md`
+- **AC5:** MCP configuration template created
+- **AC6:** npm/npx availability verified

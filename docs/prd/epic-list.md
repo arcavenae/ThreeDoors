@@ -911,6 +911,50 @@ lastUpdated: '2026-03-15'
 - **Stories:** 72.1-72.4 (4 stories)
 - **Reference:** PR #806 (gap analysis)
 
+---
+
+## Dark Factory Phase 1: Stabilize & Harden
+
+**Epic 73: Operational Foundation — Agent Reliability & Operator UX** NOT STARTED
+- **Goal:** Stabilize the multiclaude operator experience and agent lifecycle: workspace-as-primary pattern, remove redundant heartbeats, hook-enforced git safety, session handoff for persistent agents, quota monitoring, daemon-native heartbeats
+- **Prerequisites:** None — fixes the platform you're standing on
+- **Status:** Not Started (0/6 stories)
+- **Deliverables:**
+  - Document workspace-as-primary operator pattern
+  - Remove CronCreate heartbeats (daemon wake loop already handles nudging)
+  - Hook-enforced git safety via `.claude/settings.json` PreToolUse hooks (replaces INC-002 prompt guardrails)
+  - Session handoff protocol design for persistent agent restarts
+  - Passive quota monitoring script (`just quota`)
+  - Daemon-native heartbeat design with per-agent configurable intervals
+- **Stories:** 73.1-73.6 (6 stories)
+- **Research:** R-007 (Operator UX), R-010 (Chainlink), R-004 (Quota), R-012 (Consolidation)
+- **Decisions:** Q-C-005 (hooks), Q-C-010 (daemon handoff), Q-C-011 (drop CronCreate)
+
+**Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance** NOT STARTED
+- **Goal:** Protect governance-critical files via CODEOWNERS, enforce commit conventions via CI, add L0-L4 autonomy-level provenance tracking, define the .dfcp.yaml configuration format, and introduce typed story comments for structured audit trails
+- **Prerequisites:** None (can run parallel with Epic 73)
+- **Status:** Not Started (0/5 stories)
+- **Deliverables:**
+  - `.github/CODEOWNERS` protecting SOUL.md, CLAUDE.md, agents/, .github/, planning docs
+  - CI scope-check workflow (warn mode) validating story references in commits
+  - L0-L4 provenance tagging system (labels, commit trailers, story file fields)
+  - `.dfcp.yaml` machine-readable governance profile for the repo
+  - Typed comment convention ([decision], [observation], [blocker], [risk], [deviation]) for story files
+- **Stories:** 74.1-74.5 (5 stories)
+- **Research:** R-005 (DFCP), R-003 (Dark Factory), R-010 (Chainlink)
+- **Decisions:** Q-C-001 (CODEOWNERS now), Q-C-002 (gate agents/), Q-C-007 (provenance mandatory for AI), Q-C-012 (warn initially)
+
+**Epic 75: Perplexity MCP Integration** NOT STARTED
+- **Goal:** Install Perplexity's official MCP server for web-grounded research, disabled by default with per-session toggle to prevent uncontrolled API spend
+- **Prerequisites:** Perplexity API key (user has this)
+- **Status:** Not Started (0/1 stories)
+- **Deliverables:**
+  - MCP configuration template (`.claude/settings.local.json.perplexity-example`)
+  - Per-session enablement documentation
+  - Usage guidelines with cost awareness (`docs/operations/perplexity-usage.md`)
+- **Stories:** 75.1 (1 story)
+- **Research:** R-008 (Perplexity Research Supervisor)
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -995,5 +1039,8 @@ lastUpdated: '2026-03-15'
 | Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
 | Epic 71: Drop Apple Intel Builds | 3 | Complete (3/3 done) |
 | Epic 72: Operationalize GitHub Label Usage | 4 | Complete (4/4 done) |
-| **Total** | **360** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
+| Epic 73: Operational Foundation — Agent Reliability & Operator UX | 6 | Not Started (0/6 done) |
+| Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance | 5 | Not Started (0/5 done) |
+| Epic 75: Perplexity MCP Integration | 1 | Not Started (0/1 done) |
+| **Total** | **372** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---

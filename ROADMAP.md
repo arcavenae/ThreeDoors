@@ -648,6 +648,49 @@ Wire GitHub label application into agent workflows so that PRs are routinely lab
 
 **Dependency graph:** Stories 72.1, 72.2, and 72.3 are independent and can parallelize. Story 72.4 depends on 72.3 (needs `resolution.wontfix` label to exist).
 
+---
+
+## Dark Factory Phase 1: Stabilize & Harden
+
+### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 0/6 stories
+
+Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (workspace-as-primary), remove redundant heartbeats, add hook-enforced git safety, design session handoff, quota monitoring, daemon-native heartbeats. Research: R-007, R-010, R-004. Decisions: Q-C-005, Q-C-010, Q-C-011.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 73.1 | Workspace-as-Primary Operator Pattern | Not Started | P1 | None |
+| 73.2 | Remove CronCreate Heartbeats | Not Started | P1 | None |
+| 73.3 | Hook-Enforced Git Safety for Workers | Not Started | P0 | None |
+| 73.4 | Session Handoff Protocol for Persistent Agents | Not Started | P1 | None |
+| 73.5 | Passive Quota Monitoring | Not Started | P2 | None |
+| 73.6 | Daemon-Native Heartbeats | Not Started | P2 | 73.2 |
+
+**Dependency graph:** 73.1, 73.2, 73.3, 73.4, 73.5 are independent. 73.6 depends on 73.2 (heartbeat removal before replacement). 73.3 is P0 — implement first.
+
+### Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1) — 0/5 stories
+
+Protect governance files via CODEOWNERS, enforce commit conventions via CI, add provenance tracking, define .dfcp.yaml, introduce typed story comments. Research: R-005, R-003, R-010. Decisions: Q-C-001, Q-C-002, Q-C-007, Q-C-012.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 74.1 | CODEOWNERS for ThreeDoors Golden Repo | Not Started | P0 | None |
+| 74.2 | CI Scope-Check Workflow | Not Started | P1 | None |
+| 74.3 | Provenance Tagging (L0-L4) | Not Started | P1 | None |
+| 74.4 | DFCP Configuration File (.dfcp.yaml) | Not Started | P2 | 74.1, 74.3 |
+| 74.5 | Typed Comments on Story Files | Not Started | P2 | None |
+
+**Dependency graph:** 74.1, 74.2, 74.3, 74.5 are independent. 74.4 depends on 74.1 (CODEOWNERS) and 74.3 (provenance) as it consolidates both into a machine-readable format. 74.1 is P0 — implement first.
+
+### Epic 75: Perplexity MCP Integration (P2) — 0/1 stories
+
+Install Perplexity MCP server, disabled by default with per-session toggle. Parallel track. Research: R-008.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 75.1 | Install Perplexity MCP Server with Per-Session Toggle | Not Started | P2 | None |
+
+**Dependency graph:** Independent — can be implemented at any time.
+
 ## Out of Scope
 
 Work not listed above is out of scope. Merge-queue should reject PRs that introduce features or epics not on this roadmap without human approval.
