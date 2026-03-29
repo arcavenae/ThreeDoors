@@ -7,24 +7,24 @@
 # Reference: https://docs.github.com/articles/about-code-owners
 
 # Project philosophy
-SOUL.md                         @arcaven
+SOUL.md                           @arcaven
 
 # Agent instructions and rules
-CLAUDE.md                       @arcaven
-/.claude/                       @arcaven
+CLAUDE.md                         @arcaven
+/.claude/                         @arcaven
 
 # Scope control — planning docs
 # ROADMAP.md                      @arcaven
-# /docs/prd/epic-list.md          @skippy @arcaven
-# /docs/prd/epics-and-stories.md  @skippy @arcaven
+# /docs/prd/epic-list.md          @skippy   @arcaven
+# /docs/prd/epics-and-stories.md  @skippy   @arcaven
 
 # safety
-/.env                           @arcaven
-/.gitignore
+/.env                             @arcaven
+/.gitignore                       @arcaven
 
 # CI/CD and infrastructure (includes this file)
-/.github/                       @arcaven
+/.github/                         @arcaven
 
 # Agent behavior definitions
-/agents/                        @arcaven
-/_bmad/                         @arcaven
+/agents/                          @arcaven
+/_bmad/                           @arcaven
