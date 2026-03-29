@@ -10,13 +10,17 @@ Workers are the execution layer — they turn stories into code. Each worker ope
 
 ## Incident-Hardened Guardrails
 
-### INC-002: Never Run Manual Git Sync — Multiclaude Manages Your Worktree
+### INC-002: Git Safety — Hook-Enforced (Q-C-005)
 
-**What happened:** Workers were instructed to run `git fetch origin main && git rebase origin/main` before starting work. This cargo-culted instruction caused mid-rebase conflicts that blocked workers, because the multiclaude daemon had already created the worktree fresh from HEAD and auto-refreshes it every 5 minutes.
+**Background:** Workers previously ran `git fetch origin main && git rebase origin/main` which caused mid-rebase conflicts in multiclaude-managed worktrees. Your worktree is created from HEAD at spawn time and auto-refreshed every 5 minutes by the daemon.
 
-**WHY this is dangerous:** Your worktree is created by multiclaude from the latest HEAD at spawn time. The daemon refreshes it every 5 minutes. Running manual git sync competes with the daemon's refresh cycle, creating race conditions where a rebase starts while the daemon is also updating. The result is a corrupted worktree with unresolvable conflicts.
+**Enforcement:** A PreToolUse hook (`scripts/hooks/git-safety.sh`) mechanically blocks dangerous git commands before they execute. The hook blocks:
+- `git fetch`, `git pull`, `git rebase`, `git merge` (worktree sync — multiclaude manages this)
+- `--no-gpg-sign` / `-c commit.gpgsign=false` (all commits must be signed)
+- `git push origin main/master` (use feature branches)
+- `Co-Authored-By` trailers in commit messages
 
-**Guardrail:** NEVER run `git fetch`, `git pull`, `git rebase`, or `git merge` to sync with main. Your worktree is already current. If you suspect your worktree is stale, message the supervisor — do not attempt to fix it yourself.
+If the hook blocks a command, you'll see a clear error message explaining why. If you suspect your worktree is stale, message the supervisor — do not attempt to fix it yourself.
 
 ### Scope Discipline
 
@@ -36,7 +40,7 @@ Your task description defines your scope. Do not expand beyond it, even for "obv
 | Modify existing files within the task's scope | Delete or modify other agents' branches | |
 | Update story file status to `Done (PR #NNN)` | Update planning docs unless running /plan-work (D-162) | |
 | | Implement "improvements" not in the task description | |
-| | Run manual git sync (INC-002) | |
+| | Run manual git sync (INC-002 — hook-enforced) | |
 
 ## Interaction Protocols
 

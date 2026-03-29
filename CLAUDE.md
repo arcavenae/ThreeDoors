@@ -55,6 +55,18 @@ Governance-critical files are protected by `.github/CODEOWNERS` with `require_co
 - merge-queue will skip PRs that touch protected files and label them `status.needs-human`
 - If your story requires changes to protected files, the PR will need manual owner approval
 
+## Git Safety — Hook-Enforced
+
+A PreToolUse hook (`scripts/hooks/git-safety.sh`) mechanically enforces git safety rules via `.claude/settings.json`. This replaces prompt-level INC-002 guardrails with code-level enforcement that cannot be bypassed (Q-C-005).
+
+**Blocked commands** (hook exits with code 2, tool call is rejected):
+- `git fetch`, `git pull`, `git rebase`, `git merge` — worktrees are managed by multiclaude; manual sync causes mid-rebase conflicts (INC-002)
+- `--no-gpg-sign` / `-c commit.gpgsign=false` — all commits must be signed
+- `git push origin main/master` — use feature branches, never push directly to main
+- `Co-Authored-By` trailers — forbidden per project policy
+
+**Allowed:** `git add`, `git commit` (signed), `git push` (feature branches), `git status`, `git log`, `git diff`, `git branch`, `git checkout -b`, `git merge --abort`, `git stash`, etc.
+
 ## Story-Driven Development — MANDATORY
 
 **DO NOT conduct work without a story.** Every implementation task must have a corresponding `docs/stories/X.Y.story.md` file before work begins. If work needs to get done, find or create the appropriate story first.
