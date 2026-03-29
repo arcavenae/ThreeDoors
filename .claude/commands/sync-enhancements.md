@@ -1,6 +1,6 @@
 # Sync Enhancements — Push reusable multiclaude improvements to the enhancements repo
 
-Sync multiclaude customizations from ThreeDoors to the `arcavenai/multiclaude-enhancements` private repo.
+Sync multiclaude customizations from ThreeDoors to the `arcavenae/multiclaude-enhancements` private repo.
 
 **Input:** $ARGUMENTS — optional: specific files or "all" to sync everything. Default: sync all changed files.
 
@@ -19,7 +19,7 @@ These files contain reusable multiclaude improvements extracted from ThreeDoors:
 
 1. Check the enhancements repo exists:
    ```bash
-   ls multiclaude-enhancements/ || git clone git@github.com:arcavenai/multiclaude-enhancements.git multiclaude-enhancements/
+   ls multiclaude-enhancements/ || git clone git@github.com:arcavenae/multiclaude-enhancements.git multiclaude-enhancements/
    ```
 
 2. Sync files from ThreeDoors to the enhancements repo:

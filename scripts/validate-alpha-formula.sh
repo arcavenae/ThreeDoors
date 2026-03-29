@@ -23,7 +23,7 @@ FORMULA=$(sed -n '/cat > threedoors-a.rb <<FORMULA/,/^[[:space:]]*FORMULA$/p' "$
 # Substitute shell variable interpolations with valid placeholders
 FORMULA=$(echo "$FORMULA" \
   | sed 's/${VERSION}/0.1.0-alpha.20260101.abcdef0/g' \
-  | sed 's/${BASE_URL}/https:\/\/github.com\/arcaven\/ThreeDoors\/releases\/download\/alpha-20260101-abcdef0/g' \
+  | sed 's/${BASE_URL}/https:\/\/github.com\/arcavenae\/ThreeDoors\/releases\/download\/alpha-20260101-abcdef0/g' \
   | sed 's/${SHA_ARM64}/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
   | sed 's/${SHA_AMD64}/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/g' \
   | sed 's/${SHA_LINUX}/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/g')
