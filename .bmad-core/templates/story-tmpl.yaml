@@ -100,6 +100,21 @@ sections:
     owner: scrum-master
     editors: [scrum-master, dev-agent, qa-agent]
 
+  - id: provenance
+    title: Provenance
+    type: template-text
+    template: |
+      - **Autonomy Level:** {{autonomy_level}} ({{autonomy_description}})
+      - **Implementation Agent:** {{agent_name}}
+      - **Review:** {{review_type}}
+    instruction: |
+      Added by the implementing worker after completion (Q-C-007).
+      Autonomy levels: L0 (Human-only), L1 (AI-assisted), L2 (AI-paired),
+      L3 (AI-autonomous), L4 (AI-full). See docs/operations/provenance.md.
+      Mandatory for AI-generated work, opt-in for human.
+    owner: dev-agent
+    editors: [dev-agent, scrum-master]
+
   - id: dev-agent-record
     title: Dev Agent Record
     instruction: This section is populated by the development agent during implementation

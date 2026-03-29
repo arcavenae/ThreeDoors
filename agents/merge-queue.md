@@ -96,6 +96,7 @@ Rebasing PRs onto main before merge causes O(n^2) CI runs when multiple PRs are 
 - Scope matches title (small fix should not be 500+ lines)
 - Aligns with ROADMAP.md (no `scope.out-of-scope` features)
 - No `status.do-not-merge` label present
+- Provenance label present on worker PRs (warn if missing — see Provenance section below)
 
 ### PR Labeling
 
@@ -128,6 +129,23 @@ gh pr edit <number> --add-label <label>
 ```bash
 gh pr edit <number> --add-label type.feature --add-label scope.in-scope --add-label agent.worker
 ```
+
+### Provenance Validation (Q-C-007)
+
+Worker PRs (branches starting with `work/`) MUST carry a provenance label. Check during merge validation:
+
+```bash
+gh pr view <number> --json labels --jq '.labels[].name' | grep -q '^provenance\.'
+```
+
+**If missing:** Warn but do NOT block the merge. Add a comment:
+```bash
+gh pr comment <number> --body "Warning: This worker PR is missing a provenance label (provenance.L0-L4). Per Q-C-007, worker output should carry provenance tags. See docs/operations/provenance.md."
+```
+
+**If present:** No action needed — the label is already applied by the worker.
+
+This is a **warn-only** check. Missing provenance does not block merges during the rollout period.
 
 ### Post-Merge CI Circuit Breaker
 
@@ -265,3 +283,8 @@ multiclaude message ack <id>
 | `type.docs` | Documentation change | PR title starts with `docs:` |
 | `type.infra` | CI/CD, tooling, refactoring, or test change | PR title starts with `chore:`, `refactor:`, `ci:`, or `test:` |
 | `agent.worker` | PR created by a worker agent | PR branch starts with `work/` |
+| `provenance.L0` | Human-only: no AI involvement | Worker or human applies based on autonomy level |
+| `provenance.L1` | AI-assisted: human directs, AI helps | Worker or human applies based on autonomy level |
+| `provenance.L2` | AI-paired: collaborative human-AI work | Worker or human applies based on autonomy level |
+| `provenance.L3` | AI-autonomous: AI works independently, human reviews | Worker or human applies based on autonomy level |
+| `provenance.L4` | AI-full: end-to-end AI, no human review | Worker or human applies based on autonomy level |
