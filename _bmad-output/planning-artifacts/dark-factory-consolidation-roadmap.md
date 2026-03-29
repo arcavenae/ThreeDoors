@@ -86,12 +86,13 @@
 
 | Research | What Goes Here | Rationale |
 |----------|---------------|-----------|
-| R-008 (Phase 1) | Perplexity MCP server installation | ~30 min setup; immediate value for all agents |
+| R-008 (Phase 0) | **MCP config inheritance research (R-014)** | **PREREQUISITE:** Understand global→project→local cascade, per-worktree settings.local.json, worker dispatch flags before deploying any MCP server |
+| R-008 (Phase 1) | Perplexity MCP server installation **with per-session toggle** (D-188) | ~30 min setup; **MCP DISABLED by default**; explicit opt-in per session required. User HAS API key. |
 | R-008 (Phase 2) | Research-supervisor persistent agent definition | Dedup, routing, caching |
 | R-008 (Phase 3-4) | Budget tracking, knowledge base, cache management | Sustainability features |
 | R-010 (M-4) | Auto-learning from tool execution | Complements research — agents learn from doing + searching |
 
-**Shared prerequisite:** Perplexity API key. Phase 1 can start immediately and in parallel with everything else.
+**Shared prerequisite:** Perplexity API key (user HAS key). **NEW prerequisite:** R-014 MCP config inheritance research must complete before Phase 1 — need to understand how to implement per-session toggle safely. **MCP Audit (2026-03-29):** Zero MCP servers currently active anywhere.
 
 ### Group F: External Integration (Slack Bot)
 
@@ -117,21 +118,28 @@
 
 **Shared prerequisite:** None, but low priority. Should follow Group A.
 
-### Group H: Long-Term Architecture Evolution
+### Group H: Marvel — End-State Platform (Long-Term Target)
 
-**Why together:** These are the "2-6 month" items that require significant multiclaude core changes.
+**Why together:** These are the "2-6 month" items that feed into Marvel, the end-state platform. All Groups A-G are prototype work; Marvel is the real product.
+
+**Marvel Vision (Human Operator Directive, 2026-03-29):**
+Marvel is the top-level platform. Features: job management, message queue, traffic routing, secrets management, workspace/sandbox management, configurable REPL, crew management, cron/event triggers, git-native services (DAG), loadable content packs (multiclaude, BMAD, gastown, pennyfarthing, dollspace-gay).
+
+**Evolution pipeline:** ThreeDoors (prototype) → multiclaude-enhancements (export) → aae-orc (mining/planning) → Marvel (real product).
 
 | Research | What Goes Here | Rationale |
 |----------|---------------|-----------|
-| R-010 (L-1) | Replace tmux paste-buffer with proper agent protocol (ACP/JSON-RPC) | Fixes root cause of operator UX issues |
-| R-010 (L-2) | Typed agent specialization (Explorer/Haiku, Implementer/Opus, etc.) | Cost optimization + quality improvement |
-| R-010 (L-3) | VDD-style verification layer (adversarial pre-PR review) | Quality gate before PR creation |
+| R-010 (L-1) | Replace tmux paste-buffer with proper agent protocol (ACP/JSON-RPC) | Fixes root cause of operator UX issues; Marvel needs proper IPC |
+| R-010 (L-2) | Typed agent specialization (Explorer/Haiku, Implementer/Opus, etc.) | Cost optimization + quality improvement; Marvel crew management |
+| R-010 (L-3) | VDD-style verification layer (adversarial pre-PR review) | Quality gate before PR creation; Marvel quality pipeline |
 | R-010 (M-3) | Multi-model adversarial PR review (magpie-style) | Free via CLI provider subscriptions |
-| R-007 (L-1) | Claude Code MCP server for message delivery | Eliminates tmux injection entirely |
-| R-007 (L-2) | Operator dashboard (web UI) | Rich UX beyond tmux |
-| R-004 (Phase 3-4) | Multi-plan support + full budget system | Scaling infrastructure |
+| R-007 (L-1) | Claude Code MCP server for message delivery | Eliminates tmux injection entirely; Marvel message queue |
+| R-007 (L-2) | Operator dashboard (web UI) | Rich UX beyond tmux; Marvel control plane |
+| R-004 (Phase 3-4) | Multi-plan support + full budget system | Scaling infrastructure; Marvel job management |
+| **NEW** | Marvel platform architecture design | Job management, traffic routing, secrets, DAG services, content packs |
+| **NEW** | Content pack system for loadable extensions | multiclaude, BMAD, gastown, pennyfarthing, dollspace-gay as packs |
 
-**Shared prerequisite:** Groups A-C must be stable first.
+**Shared prerequisite:** Groups A-C must be stable first. All prototype work feeds Marvel.
 
 ---
 
@@ -194,9 +202,8 @@
                          ▼
               ┌──────────────────────┐
               │   GROUP H            │
-              │   Architecture       │
-              │   Evolution          │
-              │   (long-term)        │
+              │   MARVEL PLATFORM    │
+              │   (end-state target) │
               │                      │
               │   • Agent protocol   │
               │   • Typed agents     │
@@ -204,6 +211,9 @@
               │   • Multi-model review│
               │   • Operator dashboard│
               │   • Multi-plan budget│
+              │   • Content packs    │
+              │   • Job management   │
+              │   • Message queue    │
               └──────────────────────┘
 
   PARALLEL TRACKS (can start anytime):
@@ -399,16 +409,21 @@ Low priority. Manual prototype (1 hour) can happen anytime as validation. Full i
 - Q-C-018: Hard cap for critical agents (recommend: yes)
 - Q-C-019: No persona in artifacts (recommend: correct)
 
-### Phase 4: Architecture Evolution (Long-term, Plan After Phase 3)
+### Phase 4: Marvel Platform (Long-term, Plan After Phase 3)
 
-**Group H — requires Phase 1-3 stability**
+**Group H — requires Phase 1-3 stability. Marvel is the end-state platform.**
 
-These are the big-ticket items: replacing tmux injection with a real protocol, typed agent specialization, VDD verification, multi-model review, operator dashboard, multi-plan budget.
+**Marvel Vision:** All Groups A-G are prototype work. Marvel is the real product with: job management, message queue, traffic routing, secrets management, workspace/sandbox management, configurable REPL, crew management, cron/event triggers, git-native services (DAG), loadable content packs (multiclaude, BMAD, gastown, pennyfarthing, dollspace-gay).
+
+**Evolution pipeline:** ThreeDoors (prototype) → multiclaude-enhancements (export) → aae-orc (mining/planning) → Marvel (real product).
+
+Architecture evolution items (agent protocol, typed agents, VDD verification, multi-model review, operator dashboard, multi-plan budget) are now framed as Marvel infrastructure rather than standalone improvements.
 
 **Human decisions needed:**
 - Q-C-023: Multi-account TOS (research first, decide later)
 - Q-C-026: Blast radius enforcement (alerts then hooks)
 - Q-C-027: Adversarial review strategy (both)
+- Marvel architecture scope and initial repo setup
 
 ---
 
