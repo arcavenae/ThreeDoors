@@ -224,14 +224,16 @@ Questions are numbered Q-C-NNN (C for consolidated), prioritized by how much wor
 
 These questions were raised in multiple research pieces (convergence = highest priority).
 
-| # | Question | Raised In | Options | Recommendation | Unblocks |
-|---|----------|-----------|---------|----------------|----------|
-| Q-C-001 | **Should golden repo CODEOWNERS be applied immediately or wait?** | R-005 (OQ-DFCP-4) | Immediately / After Phase 0 / After Phase 1 | **Immediately** — independent of dark factory, immediately valuable | Groups B, C, D |
-| Q-C-002 | **Should `agents/*.md` changes require human review via CODEOWNERS?** | R-005 (OQ-DFCP-5), R-006 (persona safety) | Yes / No | **Yes** — agent definitions control AI behavior; same risk profile as CLAUDE.md | Groups B, G |
-| Q-C-003 | **Dark factory repo visibility: public or private?** | R-003 (OQ-1), R-005 | Public / Private | **Private** — disposable code shouldn't be public | Group C |
-| Q-C-004 | **Maximum budget per dark factory run?** | R-003 (OQ-4) | Fixed / Configurable / Unlimited | **Configurable, $50/run default** — needed before PoC | Group C |
-| Q-C-005 | **Should hook-enforced git safety replace prompt-level INC-002?** | R-010 (OQ-CL-1), R-011 (enforcement layer 5) | Hooks / Prompt-only / Both | **Hooks** — prompts are unreliable; both R-010 and R-011 converge on this | Groups A, B, C, D |
-| Q-C-006 | **Should the multiclaude daemon patch for submodule init be always-on or opt-in?** | R-011 (OQ-ORC-2) | Always-on / Opt-in / Configurable | **Always-on with skip flag** — most repos benefit; edge cases can opt out | Group D |
+**ALL TIER 1 QUESTIONS DECIDED BY HUMAN OPERATOR ON 2026-03-29.**
+
+| # | Question | Raised In | Options | Decision (2026-03-29) | Unblocks |
+|---|----------|-----------|---------|----------------------|----------|
+| Q-C-001 | **Should golden repo CODEOWNERS be applied immediately or wait?** | R-005 (OQ-DFCP-4) | Immediately / After Phase 0 / After Phase 1 | **✅ DECIDED: YES, apply now** | Groups B, C, D |
+| Q-C-002 | **Should `agents/*.md` changes require human review via CODEOWNERS?** | R-005 (OQ-DFCP-5), R-006 (persona safety) | Yes / No | **✅ DECIDED: YES, require human review** | Groups B, G |
+| Q-C-003 | **Dark factory repo visibility: public or private?** | R-003 (OQ-1), R-005 | Public / Private | **✅ DECIDED: PRIVATE but configurable** | Group C |
+| Q-C-004 | **Maximum budget per dark factory run?** | R-003 (OQ-4) | Fixed / Configurable / Unlimited | **✅ DECIDED: CONFIGURABLE (no fixed default)** — owner sets per project needs | Group C |
+| Q-C-005 | **Should hook-enforced git safety replace prompt-level INC-002?** | R-010 (OQ-CL-1), R-011 (enforcement layer 5) | Hooks / Prompt-only / Both | **✅ DECIDED: HOOKS (replace prompt-level)** | Groups A, B, C, D |
+| Q-C-006 | **Should the multiclaude daemon patch for submodule init be always-on or opt-in?** | R-011 (OQ-ORC-2) | Always-on / Opt-in / Configurable | **✅ DECIDED: YES with skip flag** (always-on, opt-out) | Group D |
 
 ### Tier 2: HIGH — Blocks one group or major feature
 
@@ -266,7 +268,53 @@ These questions were raised in multiple research pieces (convergence = highest p
 
 ---
 
-## 5. Recommended Planning Sequence
+## 5. NEW STRATEGIC DIRECTION: Platform Extraction (Added 2026-03-29)
+
+**Human operator directive:** Extract multiclaude customizations OUT of ThreeDoors into a standalone reusable platform.
+
+### Vision
+- **Goal:** Standalone platform that works with ANY project, not coupled to ThreeDoors
+- **Likely path:** New repo, used as submodule in aae-orc for dark factory
+- **Evolution:** Starts as multiclaude replacement/fork, evolves into something new
+- **Impact:** Reframes Groups C and D — orchestrator and dark factory work should target the extracted platform, not ThreeDoors-specific customizations
+
+### multiclaude Licensing (R-013)
+
+**Source:** `dlorenc/multiclaude` on GitHub (public repo, Go binary)
+- **Module:** `github.com/dlorenc/multiclaude`
+- **README states:** MIT license
+- **LICENSE file:** ❌ MISSING — no LICENSE file exists in the repo
+- **npm "multiclaude":** Different project entirely (by dexhorthy-humanlayer, scaffolding tool) — NOT the same software
+
+**Legal assessment:**
+- MIT intent is clear from README but technically incomplete without a LICENSE file
+- Under copyright law, absence of a license file defaults to "all rights reserved"
+- **Risk: LOW** — MIT is maximally permissive: fork, modify, redistribute, commercial use all allowed
+- The author's public declaration of MIT in README strongly indicates intent
+
+**Recommended actions:**
+1. Request dlorenc add a formal LICENSE file to the repo (ideal path — formalizes what's already stated)
+2. OR proceed with fork, documenting the MIT claim from README as basis
+3. **Not a hard blocker** for development, but should be resolved before public redistribution of derivative works
+
+### Phase 0 Blocker Assessment
+
+Licensing is **not a hard blocker** for starting platform extraction work:
+- Development and internal use can proceed under the stated MIT intent
+- The blocker only activates for **public redistribution** of derivative works
+- Filing a GitHub issue or PR to add LICENSE file would resolve this quickly
+
+### Impact on Planning Sequence
+
+The platform extraction strategy means:
+- **Group D (Orchestrator)** work should be designed for the new platform, not as ThreeDoors-specific changes
+- **Group C (Dark Factory)** infrastructure should target the extracted platform
+- **Groups A & B** remain unchanged — they stabilize the current environment regardless
+- A new **Phase 0.5** may be needed between Phase 1 and Phase 2 for platform repo setup
+
+---
+
+## 6. Recommended Planning Sequence
 
 ### Phase 1: Stabilize & Harden (Plan Together First)
 
@@ -364,7 +412,7 @@ These are the big-ticket items: replacing tmux injection with a real protocol, t
 
 ---
 
-## 6. Cross-Cutting Themes
+## 7. Cross-Cutting Themes
 
 Several themes emerged across multiple research artifacts:
 
