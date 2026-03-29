@@ -18,9 +18,6 @@ ROADMAP.md                      @skippy
 /docs/prd/epic-list.md          @skippy
 /docs/prd/epics-and-stories.md  @skippy
 
-# Architectural decisions
-/docs/decisions/BOARD.md        @skippy
-
 # CI/CD and infrastructure (includes this file)
 /.github/                       @skippy
 
