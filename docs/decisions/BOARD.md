@@ -12,6 +12,8 @@
 | Q-002 | Should Jira adapter support multi-project JQL or explicit project keys? | 2026-03-03 | — | [Jira Research](../../_bmad-output/planning-artifacts/jira-integration-research.md) — **Resolved:** Support multi-project JQL in Jira adapter. |
 | Q-003 | Should project-watchdog batch governance sync PRs instead of one-per-story? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) — **Resolved:** Yes, batch. See D-161. |
 | Q-004 | Should workers stop updating planning docs (ROADMAP.md, epic-list.md, epics-and-stories.md) and leave that exclusively to project-watchdog? | 2026-03-09 | PM | [Investigation](../../_bmad-output/planning-artifacts/epic-39-governance-sync-investigation.md) — **Resolved:** Yes, Option B. See D-162. |
+| Q-005 | Does Anthropic's TOS allow multiple Max subscriptions on the same machine for the same user? | 2026-03-29 | — | [Quota Research](../../_bmad-output/planning-artifacts/quota-throttling-research.md) — Not explicitly prohibited but "fair use" clause exists. CLAUDE_CONFIG_DIR is officially endorsed but multi-account implications unclear. |
+| Q-006 | What is the actual token budget per 5-hour Max plan window? | 2026-03-29 | — | [Quota Research](../../_bmad-output/planning-artifacts/quota-throttling-research.md) — Community estimates: Max 5x ~88K, Max 20x ~220K. Needs empirical measurement. |
 
 ## Active Research
 
@@ -19,6 +21,8 @@
 |----|-------|------|-------|------|
 | R-001 | State of Testing Audit — comprehensive test health assessment with gap analysis and prioritized recommendations | 2026-03-09 | TEA Agent | [Report](../../_bmad-output/planning-artifacts/state-of-testing-report.md) — **Resolved:** Validation (2026-03-11) found P0/P1 items already addressed (CLI 69.8%, all contract tests exist, t.Helper() at 70 files). Three P2 stories created (0.51-0.53) for remaining gaps. |
 | R-002 | PRD Post-Reconstruction Quality Audit — 3 HIGH issues, 4 MEDIUM issues identified in formal BMAD validation | 2026-03-15 | PM Validation | [Report](../../_bmad-output/planning-artifacts/prd-validation-report-2026-03-15.md) — **Open.** HIGH: stale next-steps.md, chaotic phase numbering in product-scope.md, missing v2.0 change log entry. MEDIUM: stale BOARD.md epic registry, incomplete user journeys, no YAML frontmatter, stale checklist-results-report.md. |
+| R-003 | Dark Factory & Human/AI Work Stream Differentiation — 10-round party mode research on autonomous AI development, gallery model, dispose-and-rebuild cycles, AI judges, provenance tagging, and governance | 2026-03-29 | Worker (brave-otter) | [Research](../../_bmad-output/planning-artifacts/dark-factory-research.md) — **Complete.** 13 recommendations, 5 open questions for human decision. Phase 0 (provenance tagging) recommended for immediate implementation. |
+| R-004 | Claude API/Plan Quota Throttling & Multi-Session Management — throttle protocol, multi-plan isolation, budget allocation | 2026-03-29 | Research Spike | [Report](../../_bmad-output/planning-artifacts/quota-throttling-research.md) — **Complete.** 4-phase implementation plan: passive monitoring → adaptive heartbeats → multi-plan support → full budget system. Key finding: Max plan has NO programmatic quota API; must use JSONL file heuristics. |
 
 ## Pending Recommendations
 
@@ -31,6 +35,7 @@
 | P-003 | GitHub issue labeling taxonomy and triage flow | 2026-03-08 | Party mode (5 sessions) | [Artifact](../../_bmad-output/planning-artifacts/issue-labeling-and-triage-strategy.md) | **Done** — Story 0.46 (triage flow docs) |
 | P-004 | Update pr-shepherd definition to remove fork references | 2026-03-08 | Investigation | [Research](../../_bmad-output/planning-artifacts/persistent-agent-communication-research.md) | **Done** — fork references already removed during Story 51.2 agent definition rewrite (PR #460) |
 | P-005 | Scoped label taxonomy: 27 labels with `.` separator, migration plan | 2026-03-08 | Party mode (3 rounds) + research spike | [Party Mode](../../_bmad-output/planning-artifacts/scoped-labels-party-mode.md), [Research](../../_bmad-output/planning-artifacts/scoped-labels-research.md) | **Done** — Stories 0.44 (migration), 0.45 (agent defs), 0.46 (authority docs) |
+| P-008 | Dark Factory Protocol — L0-L4 autonomy spectrum, separate-repo architecture, gallery model (3-5 variants x 3-5 generations), controlled divergence, dispose-and-rebuild with immutable spec versioning, two-tier AI judges, Green/Yellow/Red governance zones, 6-phase incremental implementation starting with provenance tagging | 2026-03-29 | Party mode (10 rounds) | [Research](../../_bmad-output/planning-artifacts/dark-factory-research.md) | Owner review — 13 recommendations + 5 open questions (repo visibility, trigger authority, disposal preservation, budget caps, provenance mandate). Phase 0 (provenance tagging) ready for immediate implementation as a story. |
 
 ## Decided
 
