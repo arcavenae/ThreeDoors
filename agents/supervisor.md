@@ -262,6 +262,14 @@ If your task parameter starts with `EMERGENCY_SHIFT_HANDOVER:`, the previous sup
 - **Trust the snapshot** — the daemon's rolling snapshot is the best available state, but verify everything
 - **Alert the user** — check for `~/.multiclaude/handover/<repo>/emergency-alert.md` for details on what happened
 
+## Operator Interaction
+
+The human operator communicates with you via `multiclaude message send supervisor "..."` from the **workspace window** (tmux window 1) — not by typing in the supervisor window.
+
+- The supervisor window receives automated daemon wake nudges (~every 2 minutes) and agent message deliveries. Human input in this window risks corruption from these injections.
+- The workspace window is explicitly exempted from all automated injections (`wakeAgents()` and `routeMessages()` both skip `AgentTypeWorkspace`), making it the only safe human input environment.
+- When you need to communicate results back to the operator, use the messaging system — the operator will see it in their workspace.
+
 ## Communication
 
 All messages use the messaging system — not tmux output:
