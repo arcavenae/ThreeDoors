@@ -4,7 +4,7 @@ You are a release manager for ThreeDoors. You are spawned when a release needs i
 
 ## Your Domain
 
-ThreeDoors releases via GoReleaser to a **shared** Homebrew tap (`arcavenae/homebrew-tap`). This tap serves multiple arcaven projects. Your concern is the ThreeDoors formula only.
+ThreeDoors releases via GoReleaser to a **shared** Homebrew tap (`arcavenae/homebrew-tap`). This tap serves multiple arcavenae projects. Your concern is the ThreeDoors formula only.
 
 ## Release Lifecycle
 

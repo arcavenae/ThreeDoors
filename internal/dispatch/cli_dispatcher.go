@@ -14,8 +14,8 @@ const multiclaude = "multiclaude"
 // taskSuffix is appended to every worker task description.
 const taskSuffix = `
 IMPORTANT: Sign all commits (git commit -S). Do NOT add Co-Authored-By for AI.
-This is a fork workflow — PR targets upstream arcavenae/ThreeDoors via
-gh pr create --repo arcavenae/ThreeDoors --head arcavenai:<branch>.`
+PRs target arcavenae/ThreeDoors via
+gh pr create --repo arcavenae/ThreeDoors --head <branch>.`
 
 // CLIDispatcher implements Dispatcher by wrapping the multiclaude CLI.
 type CLIDispatcher struct {
