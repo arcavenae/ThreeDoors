@@ -30,6 +30,16 @@ just test             # go test ./... -v
 go test -race ./...   # Race detector — run before pushing
 ```
 
+## Operator Workflow (multiclaude)
+
+When running multiclaude, the **workspace window** (tmux window 1) is the primary human interaction point — not the supervisor window.
+
+- **Use the workspace window** for all human interaction with the system. It is explicitly exempted from daemon wake nudges and agent message injections, so your input will not be corrupted mid-keystroke.
+- **The supervisor window belongs to the supervisor Claude agent.** Typing in it risks prompt injection conflicts with automated messages that arrive every ~2 minutes.
+- **Communicate with the supervisor** via messaging: `multiclaude message send supervisor "your message here"`
+- **Observe agent activity** read-only: `multiclaude agent attach <name> --read-only`
+- **Check system status** from the workspace: `multiclaude status`
+
 ## CODEOWNERS Protection — MANDATORY
 
 Governance-critical files are protected by `.github/CODEOWNERS` with `require_code_owner_review` enabled in the branch ruleset. PRs touching these files **require @skippy approval** before merge. PRs touching only unprotected files merge with CI-only gates (existing behavior).
