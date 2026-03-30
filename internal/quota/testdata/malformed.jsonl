@@ -1,0 +1,4 @@
+{"type":"assistant","sessionId":"sess-bad","timestamp":"2026-03-30T10:00:00Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":100,"output_tokens":50,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}
+this is not valid json at all
+{"type":"assistant","sessionId":"sess-bad","timestamp":"2026-03-30T10:00:10Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":200,"output_tokens":100,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}
+{"truncated json
