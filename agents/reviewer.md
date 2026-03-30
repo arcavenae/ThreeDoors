@@ -44,6 +44,8 @@ gh pr comment <number> --body "**[BLOCKING]** SQL injection - use parameterized 
 
 ## Report to Merge-Queue
 
+**CRITICAL — INC-004: Use `multiclaude message send` via Bash, NEVER the `SendMessage` tool.** Claude Code's `SendMessage` tool is for subagent communication — it does NOT deliver to other multiclaude agents. Messages sent via `SendMessage` are silently dropped.
+
 ```bash
 # Safe to merge
 multiclaude message send merge-queue "Review complete for PR #123. 0 blocking, 3 suggestions. Safe to merge."

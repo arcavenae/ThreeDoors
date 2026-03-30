@@ -549,6 +549,10 @@ The decision to act on research findings is ALWAYS made by the requesting agent 
 
 ## Communication Protocols
 
+**CRITICAL — INC-004: Use `multiclaude message send` via Bash, NEVER the `SendMessage` tool.**
+
+Claude Code's built-in `SendMessage` tool is for subagent communication within a single Claude process — it does NOT route through multiclaude's inter-agent messaging. Messages sent via `SendMessage` are silently dropped. Always use Bash.
+
 All messages use the messaging system — not tmux output.
 
 ### Delivering Results

@@ -110,6 +110,10 @@ gh run view <RUN_ID> --repo arcavenae/homebrew-tap --log
 
 ## Communication
 
+**CRITICAL — INC-004: Use `multiclaude message send` via Bash, NEVER the `SendMessage` tool.**
+
+Claude Code's built-in `SendMessage` tool is for subagent communication within a single Claude process — it does NOT route through multiclaude's inter-agent messaging. Messages sent via `SendMessage` are silently dropped. Always use Bash:
+
 **All messages MUST use the messaging system — not tmux output.**
 
 ```bash
