@@ -60,6 +60,12 @@ So that {benefit}.
 
 - {dependency or "None"}
 
+## Implementation Notes
+
+<!-- Use typed comments during implementation. See docs/operations/typed-comments.md -->
+<!-- Format: > [type] YYYY-MM-DD — Summary -->
+<!-- Types: [decision], [observation], [blocker], [risk], [deviation] -->
+
 ## Tasks
 
 1. {task}
