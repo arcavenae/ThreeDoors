@@ -32,6 +32,7 @@ jobs:
               - 'go.sum'
               - '.golangci.yml'
               - '.github/workflows/**'
+              - 'scripts/hooks/**'
             docker:
               - 'Dockerfile*'
               - 'docker-compose*'
