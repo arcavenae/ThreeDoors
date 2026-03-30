@@ -1,0 +1,32 @@
+# Dark Factory Control Pattern (DFCP) Configuration — Factory Profile Example
+# Schema version: 1.0
+# Profile: factory — full AI autonomy, CI-only gates, no human review required
+#
+# This is an EXAMPLE of what a dark factory repo's .dfcp.yaml looks like.
+# A dark factory repo is a fully AI-managed variant that runs autonomously.
+# It is spawned from a golden repo and operates within a variant budget.
+
+dfcp:
+  version: "1.0"
+  profile: factory  # golden | factory | custom
+
+  autonomy:
+    default: L4    # Full AI autonomy — no human in the loop
+    max: L4        # L4 permitted in factory repos
+
+  governance:
+    require_human_review: []  # No files require human review
+    require_story_reference: false  # Factory variants don't use story-driven dev
+    require_provenance: true   # Still required — traceability is non-negotiable
+    require_signed_commits: true  # Still required — all commits must be verifiable
+
+  ci:
+    scope_check: "off"  # No scope gating in factory repos
+    required_checks:
+      - "Quality Gate"   # Tests and linting still required
+      - "Docker E2E Tests"  # E2E validation still required
+
+  factory:
+    enabled: true
+    variant_budget: 50       # Max variants this factory can produce per cycle
+    repo_visibility: private  # Factory repos are always private
