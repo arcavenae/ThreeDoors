@@ -691,7 +691,7 @@ Install Perplexity MCP server, disabled by default with per-session toggle. Para
 
 **Dependency graph:** Independent — can be implemented at any time.
 
-### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 1/6 stories
+### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 3/6 stories
 
 Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking. Phase 1 of 3-phase evolution: ThreeDoors PoC → mozukai host-level service → Marvel native quota management. Research: R-004, R-016.
 
@@ -700,13 +700,13 @@ Implement warn-only Claude usage monitoring using JSONL transcript heuristics, p
 | 76.1 | JSONL Token Usage Parser Library | Not Started | P1 | None |
 | 76.2 | Per-Agent Usage Tracking & Attribution | Done (PR #881) | P1 | 76.1 |
 | 76.3 | Warning Threshold Engine (Advisory-Only) | Not Started | P1 | 76.1 |
-| 76.4 | /quota-status Slash Command | Not Started | P1 | 76.1, 76.2, 76.3 |
+| 76.4 | /quota-status Slash Command | Done (PR #885) | P1 | 76.1, 76.2, 76.3 |
 | 76.5 | /stats Usage Data Integration | Not Started | P2 | 76.2 |
-| 76.6 | Window Reset Detection & Cron-Based Monitoring | Not Started | P2 | 76.2, 76.3 |
+| 76.6 | Window Reset Detection & Cron-Based Monitoring | Done (PR #884) | P2 | 76.2, 76.3 |
 
 **Dependency graph:** 76.1 is the foundation — all others depend on it. 76.2, 76.3 are independent once 76.1 is done. 76.4 aggregates 76.1-76.3. 76.5 and 76.6 are P2 extensions.
 
-### Epic 77: CI Path Filtering Improvements (P1) — 3/4 stories
+### Epic 77: CI Path Filtering Improvements (P1) — 4/4 stories ✓ COMPLETE
 
 Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs, add ShellCheck linting for 30+ shell scripts, and improve CI job naming. Trigger: PR #866 ran full Go Quality Gate despite only adding shell scripts + docs. Research: PR #868.
 
@@ -714,7 +714,7 @@ Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs
 |-------|-------|--------|----------|------------|
 | 77.1 | Remove Justfile from CI Code Filter | Done (PR #877) | P1 | None |
 | 77.2 | Add ShellCheck CI Job for Scripts | Done (PR #879) | P1 | None |
-| 77.3 | Rename docs-pass to skip-pass | Not Started | P2 | None |
+| 77.3 | Rename docs-pass to skip-pass | Done (PR #880) | P2 | None |
 | 77.4 | Add Safety Hooks to CI Code Filter | Done (PR #882) | P1 | None |
 
 **Note:** All 4 stories are independent and can be implemented in a single PR or in parallel. Stories 77.1, 77.2, 77.3, and 77.4 all modify `.github/workflows/ci.yml` — combining into one PR is recommended to avoid merge conflicts.
