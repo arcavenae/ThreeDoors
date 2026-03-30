@@ -691,7 +691,7 @@ Install Perplexity MCP server, disabled by default with per-session toggle. Para
 
 **Dependency graph:** Independent — can be implemented at any time.
 
-### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 3/6 stories
+### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 4/6 stories
 
 Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking. Phase 1 of 3-phase evolution: ThreeDoors PoC → mozukai host-level service → Marvel native quota management. Research: R-004, R-016.
 
@@ -699,7 +699,7 @@ Implement warn-only Claude usage monitoring using JSONL transcript heuristics, p
 |-------|-------|--------|----------|------------|
 | 76.1 | JSONL Token Usage Parser Library | Not Started | P1 | None |
 | 76.2 | Per-Agent Usage Tracking & Attribution | Done (PR #881) | P1 | 76.1 |
-| 76.3 | Warning Threshold Engine (Advisory-Only) | Not Started | P1 | 76.1 |
+| 76.3 | Warning Threshold Engine (Advisory-Only) | Done (PR #883) | P1 | 76.1 |
 | 76.4 | /quota-status Slash Command | Done (PR #885) | P1 | 76.1, 76.2, 76.3 |
 | 76.5 | /stats Usage Data Integration | Not Started | P2 | 76.2 |
 | 76.6 | Window Reset Detection & Cron-Based Monitoring | Done (PR #884) | P2 | 76.2, 76.3 |
