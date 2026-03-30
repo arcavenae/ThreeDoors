@@ -33,6 +33,7 @@ USE_COLOR=true
 
 # --- Colors ---
 RED='\033[0;31m'
+ORANGE='\033[0;91m'
 YELLOW='\033[0;33m'
 GREEN='\033[0;32m'
 BOLD='\033[1m'
@@ -75,6 +76,7 @@ done
 
 if [[ "$USE_COLOR" == "false" ]]; then
     RED=''
+    ORANGE=''
     YELLOW=''
     GREEN=''
     BOLD=''
@@ -288,6 +290,13 @@ if [[ "$OUTPUT_JSON" == "true" ]]; then
     # Add quota metadata to JSON output
     python3 -c "
 import json, sys
+from datetime import datetime, timezone
+try:
+    import zoneinfo
+    pt = zoneinfo.ZoneInfo('America/Los_Angeles')
+except Exception:
+    pt = None
+
 data = json.loads(sys.stdin.read())
 data['quota_limit'] = int('$QUOTA_LIMIT')
 data['quota_window_hours'] = int('$QUOTA_WINDOW')
@@ -296,10 +305,34 @@ limit = data['quota_limit']
 data['usage_pct'] = round(total / limit * 100, 1) if limit > 0 else 0
 if data['usage_pct'] < 70:
     data['level'] = 'green'
-elif data['usage_pct'] < 85:
+elif data['usage_pct'] < 80:
     data['level'] = 'yellow'
+elif data['usage_pct'] < 90:
+    data['level'] = 'orange'
 else:
     data['level'] = 'red'
+
+# Peak/off-peak
+now_utc = datetime.fromtimestamp(data['now_epoch'], tz=timezone.utc)
+if pt:
+    now_pt = now_utc.astimezone(pt)
+    data['is_peak'] = 5 <= now_pt.hour < 11
+    data['peak_time_pt'] = now_pt.strftime('%H:%M')
+else:
+    data['is_peak'] = None
+    data['peak_time_pt'] = None
+
+# Priority tiers for agents
+persistent = {'supervisor','merge-queue','pr-shepherd','arch-watchdog','envoy','project-watchdog','retrospector','main-checkout'}
+for name in data.get('agents', {}):
+    lower = name.lower()
+    if lower in persistent:
+        data['agents'][name]['priority_tier'] = 'P1'
+    elif '-' in lower and lower not in persistent:
+        data['agents'][name]['priority_tier'] = 'P2'
+    else:
+        data['agents'][name]['priority_tier'] = 'P3'
+
 print(json.dumps(data, indent=2))
 " <<< "$TOKEN_DATA"
     exit 0
@@ -322,13 +355,14 @@ use_color = "$USE_COLOR" == "true"
 # Colors
 if use_color:
     RED = '\033[0;31m'
+    ORANGE = '\033[0;91m'
     YELLOW = '\033[0;33m'
     GREEN = '\033[0;32m'
     BOLD = '\033[1m'
     DIM = '\033[2m'
     RESET = '\033[0m'
 else:
-    RED = YELLOW = GREEN = BOLD = DIM = RESET = ''
+    RED = ORANGE = YELLOW = GREEN = BOLD = DIM = RESET = ''
 
 total = data['total_billed']
 total_all = data['total_all']
@@ -337,12 +371,55 @@ pct = (total / limit * 100) if limit > 0 else 0
 if pct < 70:
     level_color = GREEN
     level_label = "OK"
-elif pct < 85:
+elif pct < 80:
     level_color = YELLOW
+    level_label = "ELEVATED"
+elif pct < 90:
+    level_color = ORANGE
     level_label = "WARNING"
 else:
     level_color = RED
     level_label = "CRITICAL"
+
+# Peak/off-peak detection (Anthropic peak: 05:00-11:00 PT)
+from datetime import timezone as tz
+import zoneinfo
+try:
+    pt = zoneinfo.ZoneInfo("America/Los_Angeles")
+except Exception:
+    pt = None
+now_utc = datetime.fromtimestamp(data['now_epoch'], tz=tz.utc)
+if pt:
+    now_pt = now_utc.astimezone(pt)
+    pt_hour = now_pt.hour
+    is_peak = 5 <= pt_hour < 11
+    peak_str = f"{RED}PEAK HOURS{RESET} (05:00-11:00 PT)" if is_peak else f"{GREEN}Off-Peak{RESET}"
+    peak_time_str = now_pt.strftime('%H:%M PT')
+else:
+    is_peak = False
+    peak_str = f"{DIM}unknown (timezone unavailable){RESET}"
+    peak_time_str = now_utc.strftime('%H:%M UTC')
+
+# Empty state
+if data['interaction_count'] == 0:
+    print(f"{BOLD}══════════════════════════════════════════════{RESET}")
+    print(f"{BOLD}  Claude Quota Status{RESET}")
+    print(f"{BOLD}══════════════════════════════════════════════{RESET}")
+    print()
+    print(f"  {YELLOW}No usage data found.{RESET}")
+    print()
+    print(f"  No JSONL session logs were found in the current quota window.")
+    print(f"  This may mean:")
+    print(f"    - No Claude sessions have been active in the last {window_h}h")
+    print(f"    - The project directory is not configured correctly")
+    print()
+    print(f"  Check your Claude config directory:")
+    print(f"    ~/.claude/projects/")
+    print()
+    print(f"  {BOLD}Peak Status:{RESET} {peak_str} ({peak_time_str})")
+    print()
+    print(f"{BOLD}══════════════════════════════════════════════{RESET}")
+    sys.exit(0)
 
 # Header
 print(f"{BOLD}══════════════════════════════════════════════{RESET}")
@@ -357,6 +434,7 @@ bar = '█' * filled + '░' * (bar_width - filled)
 print(f"  {BOLD}Usage:{RESET}  {level_color}{total:,}{RESET} / {limit:,} billed tokens ({level_color}{pct:.1f}%{RESET})")
 print(f"  {BOLD}Level:{RESET}  {level_color}{level_label}{RESET}")
 print(f"  {BOLD}Bar:{RESET}    [{level_color}{bar}{RESET}]")
+print(f"  {BOLD}Peak:{RESET}   {peak_str} ({peak_time_str})")
 print()
 
 # Token breakdown
@@ -392,12 +470,30 @@ if data['earliest_ts']:
     print(f"    Time remaining: {remaining_str}")
     print()
 
+# Priority tier assignment
+# P1: persistent agents (supervisor, merge-queue, pr-shepherd, etc.)
+# P2: implementation workers
+# P3: ephemeral/one-shot agents
+PERSISTENT_AGENTS = {
+    'supervisor', 'merge-queue', 'pr-shepherd', 'arch-watchdog',
+    'envoy', 'project-watchdog', 'retrospector', 'main-checkout',
+}
+
+def get_priority_tier(name):
+    lower = name.lower()
+    if lower in PERSISTENT_AGENTS:
+        return 'P1'
+    # Workers follow naming patterns like bold-fox, clever-owl
+    if any(c in lower for c in ['-']) and lower not in PERSISTENT_AGENTS:
+        return 'P2'
+    return 'P3'
+
 # Per-agent breakdown
 agents = data.get('agents', {})
 if agents:
     print(f"  {BOLD}Per-Agent Consumption:{RESET}")
-    print(f"    {'Agent':<25} {'Tokens':>10} {'Pct':>6}  {'Interactions':>6}")
-    print(f"    {'─' * 25} {'─' * 10} {'─' * 6}  {'─' * 6}")
+    print(f"    {'Agent':<22} {'Tier':>4} {'Tokens':>10} {'Pct':>6}  {'Interactions':>6}")
+    print(f"    {'─' * 22} {'─' * 4} {'─' * 10} {'─' * 6}  {'─' * 6}")
 
     sorted_agents = sorted(agents.items(), key=lambda x: (
         x[1]['input_tokens'] + x[1]['output_tokens']
@@ -406,9 +502,10 @@ if agents:
     for name, stats in sorted_agents:
         agent_total = stats['input_tokens'] + stats['output_tokens']
         agent_pct = (agent_total / total * 100) if total > 0 else 0
+        tier = get_priority_tier(name)
         # Truncate long names
-        display_name = name[:25] if len(name) <= 25 else name[:22] + '...'
-        print(f"    {display_name:<25} {agent_total:>10,} {agent_pct:>5.1f}%  {stats['interactions']:>6}")
+        display_name = name[:22] if len(name) <= 22 else name[:19] + '...'
+        print(f"    {display_name:<22} {tier:>4} {agent_total:>10,} {agent_pct:>5.1f}%  {stats['interactions']:>6}")
 
     # Identify highest burn rate
     if sorted_agents:

@@ -121,9 +121,13 @@ assert_json_field "level is green (< 70%)" "['level']" "green" "$JSON_OUT"
 YELLOW_OUT=$("$SCRIPT" --project-dir "$TESTDATA_DIR" --limit 1553 --json --no-color 2>/dev/null)
 assert_json_field "level is yellow at ~75%" "['level']" "yellow" "$YELLOW_OUT"
 
-# Test red threshold (1165/1354 ≈ 86%)
-RED_OUT=$("$SCRIPT" --project-dir "$TESTDATA_DIR" --limit 1354 --json --no-color 2>/dev/null)
-assert_json_field "level is red at ~86%" "['level']" "red" "$RED_OUT"
+# Test orange threshold (1165/1354 ≈ 86%)
+ORANGE_OUT=$("$SCRIPT" --project-dir "$TESTDATA_DIR" --limit 1354 --json --no-color 2>/dev/null)
+assert_json_field "level is orange at ~86%" "['level']" "orange" "$ORANGE_OUT"
+
+# Test red threshold (1165/1183 ≈ 98%)
+RED_OUT=$("$SCRIPT" --project-dir "$TESTDATA_DIR" --limit 1183 --json --no-color 2>/dev/null)
+assert_json_field "level is red at ~98%" "['level']" "red" "$RED_OUT"
 
 echo ""
 echo "=== Test 4: Formatted output contains expected sections ==="
@@ -133,6 +137,8 @@ assert_contains "usage line present" "88,000 billed tokens" "$FMT_OUT"
 assert_contains "breakdown section" "Input tokens:" "$FMT_OUT"
 assert_contains "window section" "Window size:" "$FMT_OUT"
 assert_contains "per-agent section" "Per-Agent Consumption" "$FMT_OUT"
+assert_contains "peak indicator present" "Peak:" "$FMT_OUT"
+assert_contains "tier column present" "Tier" "$FMT_OUT"
 
 echo ""
 echo "=== Test 5: Window boundary — old entries excluded ==="
@@ -151,11 +157,37 @@ HELP_OUT=$("$SCRIPT" --help 2>/dev/null)
 assert_contains "help shows usage" "Usage:" "$HELP_OUT"
 
 echo ""
-echo "=== Test 8: Empty project dir ==="
+echo "=== Test 8: Empty project dir (JSON) ==="
 mkdir -p "$TESTDATA_DIR/empty-proj"
 EMPTY_OUT=$("$SCRIPT" --project-dir "$TESTDATA_DIR/empty-proj" --json --no-color 2>/dev/null)
 assert_json_field "empty dir yields 0 tokens" "['total_billed']" "0" "$EMPTY_OUT"
 assert_json_field "empty dir is green" "['level']" "green" "$EMPTY_OUT"
+
+echo ""
+echo "=== Test 9: Empty project dir (formatted — graceful empty state) ==="
+EMPTY_FMT=$("$SCRIPT" --project-dir "$TESTDATA_DIR/empty-proj" --no-color 2>/dev/null)
+assert_contains "empty state message" "No usage data found" "$EMPTY_FMT"
+assert_contains "empty state config hint" ".claude/projects" "$EMPTY_FMT"
+assert_contains "empty state peak indicator" "Peak Status:" "$EMPTY_FMT"
+
+echo ""
+echo "=== Test 10: Peak/off-peak in JSON ==="
+# is_peak should be a boolean (True or False in Python)
+PEAK_VAL=$(python3 -c "import json,sys; d=json.loads(sys.stdin.read()); print(type(d['is_peak']).__name__)" <<< "$JSON_OUT" 2>/dev/null)
+assert_eq "is_peak is bool or NoneType" "True" "$(python3 -c "print('$PEAK_VAL' in ('bool', 'NoneType'))")"
+
+echo ""
+echo "=== Test 11: Priority tiers in JSON ==="
+# bold-fox (worker) should be P2, clever-owl (worker) should be P2
+BOLD_FOX_TIER=$(python3 -c "
+import json, sys
+d = json.loads(sys.stdin.read())
+for name, stats in d['agents'].items():
+    if 'bold-fox' in name.lower():
+        print(stats.get('priority_tier', 'MISSING'))
+        break
+" <<< "$JSON_OUT" 2>/dev/null)
+assert_eq "bold-fox is P2 worker" "P2" "$BOLD_FOX_TIER"
 
 # --- Cleanup ---
 rm -rf "$TESTDATA_DIR"
