@@ -1,0 +1,45 @@
+# Dark Factory Control Pattern (DFCP) Configuration
+# Schema version: 1.0
+# Profile: golden — human-gated governance, AI handles implementation
+#
+# This file is the single source of truth for repo governance rules.
+# Tooling (CI, daemon, agents) reads this to determine what's allowed.
+# Protected by CODEOWNERS — changes require human review.
+
+dfcp:
+  version: "1.0"
+  profile: golden  # golden | factory | custom
+
+  autonomy:
+    default: L3    # Default autonomy level for AI work in this repo
+    max: L3        # Maximum allowed autonomy level (L4 = dark factory, not permitted here)
+
+  governance:
+    require_human_review:
+      - SOUL.md
+      - CLAUDE.md
+      - .claude/**
+      - ROADMAP.md
+      - docs/prd/epic-list.md
+      - docs/prd/epics-and-stories.md
+      - docs/decisions/BOARD.md
+      - .github/**
+      - agents/**
+      - _bmad/**
+      - .dfcp.yaml
+      - .env
+      - .gitignore
+    require_story_reference: true
+    require_provenance: true
+    require_signed_commits: true
+
+  ci:
+    scope_check: warn  # warn | block | off
+    required_checks:
+      - "Quality Gate"
+      - "Docker E2E Tests"
+
+  factory:
+    enabled: false       # This repo cannot be used as a dark factory source
+    variant_budget: null  # No variant budget (golden repo)
+    repo_visibility: private
