@@ -31,13 +31,20 @@ PROJECT_DIR=""
 OUTPUT_JSON=false
 USE_COLOR=true
 
-# --- Colors ---
+# --- Colors (used in embedded Python script below) ---
+# shellcheck disable=SC2034
 RED='\033[0;31m'
+# shellcheck disable=SC2034
 ORANGE='\033[0;91m'
+# shellcheck disable=SC2034
 YELLOW='\033[0;33m'
+# shellcheck disable=SC2034
 GREEN='\033[0;32m'
+# shellcheck disable=SC2034
 BOLD='\033[1m'
+# shellcheck disable=SC2034
 DIM='\033[2m'
+# shellcheck disable=SC2034
 RESET='\033[0m'
 
 # --- Argument parsing ---
@@ -75,12 +82,19 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ "$USE_COLOR" == "false" ]]; then
+    # shellcheck disable=SC2034
     RED=''
+    # shellcheck disable=SC2034
     ORANGE=''
+    # shellcheck disable=SC2034
     YELLOW=''
+    # shellcheck disable=SC2034
     GREEN=''
+    # shellcheck disable=SC2034
     BOLD=''
+    # shellcheck disable=SC2034
     DIM=''
+    # shellcheck disable=SC2034
     RESET=''
 fi
 
@@ -339,8 +353,6 @@ print(json.dumps(data, indent=2))
 fi
 
 # --- Formatted output ---
-TOTAL_TOKENS=$(python3 -c "import json; d=json.loads('$TOKEN_DATA'.replace(\"'\", \"\")); print(d['total_tokens'])" 2>/dev/null || echo "0")
-
 # Use python for all formatting to avoid shell quoting issues with JSON
 python3 << FMTEOF
 import json

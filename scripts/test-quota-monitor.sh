@@ -7,7 +7,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPT="$SCRIPT_DIR/quota-monitor.sh"
-QUOTA_SCRIPT="$SCRIPT_DIR/quota-status.sh"
 TESTDATA_DIR="$SCRIPT_DIR/testdata/quota-monitor"
 PASS=0
 FAIL=0

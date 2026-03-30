@@ -62,7 +62,7 @@ add_to_report ""
 # --- 1. Check for stale PRs (>STALE_HOURS without activity) ---
 add_to_report "## Open PRs"
 
-STALE_CUTOFF="$(date -u -v-${STALE_HOURS}H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "${STALE_HOURS} hours ago" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "")"
+STALE_CUTOFF="$(date -u -v-"${STALE_HOURS}"H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "${STALE_HOURS} hours ago" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "")"
 
 OPEN_PRS="$(gh pr list --repo "$REPO" --state open --json number,title,updatedAt,author --limit 50 2>/dev/null || echo "[]")"
 PR_COUNT="$(echo "$OPEN_PRS" | jq 'length')"
