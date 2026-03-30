@@ -706,6 +706,19 @@ Implement warn-only Claude usage monitoring using JSONL transcript heuristics, p
 
 **Dependency graph:** 76.1 is the foundation — all others depend on it. 76.2, 76.3 are independent once 76.1 is done. 76.4 aggregates 76.1-76.3. 76.5 and 76.6 are P2 extensions.
 
+### Epic 77: CI Path Filtering Improvements (P1) — 0/4 stories
+
+Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs, add ShellCheck linting for 30+ shell scripts, and improve CI job naming. Trigger: PR #866 ran full Go Quality Gate despite only adding shell scripts + docs. Research: PR #868.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 77.1 | Remove Justfile from CI Code Filter | Not Started | P1 | None |
+| 77.2 | Add ShellCheck CI Job for Scripts | Not Started | P1 | None |
+| 77.3 | Rename docs-pass to skip-pass | Not Started | P2 | None |
+| 77.4 | Add Safety Hooks to CI Code Filter | Not Started | P1 | None |
+
+**Note:** All 4 stories are independent and can be implemented in a single PR or in parallel. Stories 77.1, 77.2, 77.3, and 77.4 all modify `.github/workflows/ci.yml` — combining into one PR is recommended to avoid merge conflicts.
+
 ## Out of Scope
 
 Work not listed above is out of scope. Merge-queue should reject PRs that introduce features or epics not on this roadmap without human approval.

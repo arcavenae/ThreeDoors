@@ -7114,3 +7114,84 @@ So that usage monitoring runs continuously without manual intervention.
 - More reliable: track first-message timestamp and calculate reset time deterministically
 - State file at `~/.multiclaude/quota/state.json` for dedup and window tracking
 - This is the foundation for Phase 2's daemon-level integration
+
+## Epic 77: CI Path Filtering Improvements (P1)
+
+**Goal:** Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs, add ShellCheck linting for shell scripts, and improve CI job naming.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** Not Started (0/4 stories)
+**Reference:** PR #868 (ci-path-filtering-research.md)
+
+**Trigger:** PR #866 (Story 73.5) ran full Go Quality Gate despite only adding shell scripts + docs. Root cause: `justfile` in the `dorny/paths-filter` `code` filter.
+
+### Story 77.1: Remove Justfile from CI Code Filter
+
+As a contributor,
+I want the CI code filter to not trigger on justfile-only changes,
+So that scripts-only and docs-only PRs skip the expensive Go Quality Gate.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `justfile` removed from the `code` filter in `ci.yml`
+- **AC2:** PRs modifying only `justfile`, `scripts/**`, and/or `docs/**` get `code: false` and skip Quality Gate
+- **AC3:** Push-to-main still runs full suite (unchanged)
+
+**Dev Notes:**
+- Single-line removal in `.github/workflows/ci.yml`
+- `justfile` will be picked up by the new `scripts` filter (77.2) instead
+
+### Story 77.2: Add ShellCheck CI Job for Scripts
+
+As a project maintainer,
+I want CI to run ShellCheck on shell scripts when they change,
+So that shell bugs in release-critical scripts (create-pkg.sh, create-dmg.sh) are caught before merge.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** New `scripts` filter added to path-filter matching `scripts/**` and `justfile`
+- **AC2:** ShellCheck job runs when `scripts` output is `true` or on push-to-main
+- **AC3:** ShellCheck is informational (non-blocking) — uses `continue-on-error: true`
+- **AC4:** Push-to-main runs ShellCheck unconditionally
+- **AC5:** Upgrade path documented (promote to required after cleanup)
+
+**Dev Notes:**
+- 30 shell scripts, ~8200 lines, mix of `#!/usr/bin/env bash` and `#!/bin/bash`
+- ShellCheck runs in <10 seconds
+- Do NOT add to required status checks (informational only for now)
+
+### Story 77.3: Rename docs-pass to skip-pass
+
+As a contributor reading CI results,
+I want the no-op CI job named `skip-pass` instead of `docs-pass`,
+So that the job name accurately reflects scripts-only and story-only PRs too.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Job ID renamed from `docs-pass` to `skip-pass`, display name `CI Skipped (no code changes)`
+- **AC2:** Echo message updated to neutral wording
+- **AC3:** Skip conditions unchanged
+
+**Dev Notes:**
+- Cosmetic only — `docs-pass` is NOT in required status checks
+
+### Story 77.4: Add Safety Hooks to CI Code Filter
+
+As a project maintainer,
+I want changes to `scripts/hooks/**` to trigger the full Quality Gate,
+So that modifications to safety-critical git hooks are validated by the full Go test suite.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `scripts/hooks/**` added to the `code` filter in `ci.yml`
+- **AC2:** Existing code filter paths unchanged
+- **AC3:** Hooks-only PR triggers Quality Gate
+
+**Dev Notes:**
+- Single-line addition
+- `scripts/hooks/` contains `git-safety.sh` (blocks dangerous git commands) and its test
