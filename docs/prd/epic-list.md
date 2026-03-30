@@ -972,6 +972,19 @@ lastUpdated: '2026-03-15'
 - **Phase 1 of 3:** This epic covers the ThreeDoors/multiclaude PoC. Phase 2 (mozukai host-level service with SQLite, cross-session visibility, Slack alerts) and Phase 3 (Marvel native quota management with OTEL, per-factory budgets, cost attribution) are future work. All designs should consider Marvel portability.
 - **CRITICAL: Warn-only.** No hard blocks on agent activity. All quota awareness is advisory/warning-only.
 
+**Epic 77: CI Path Filtering Improvements** (P1) NOT STARTED
+- **Goal:** Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs, add ShellCheck linting for 30+ shell scripts, and improve CI job naming
+- **Prerequisites:** None
+- **Status:** Not Started (0/4 stories)
+- **Deliverables:**
+  - Remove `justfile` from CI code filter (stop false-positive Go CI on scripts-only PRs)
+  - Add ShellCheck CI job for `scripts/*.sh` (informational, non-blocking)
+  - Rename `docs-pass` to `skip-pass` (cosmetic accuracy)
+  - Add `scripts/hooks/**` to code filter (safety hooks trigger Quality Gate)
+- **Stories:** 77.1-77.4 (4 stories)
+- **Research:** PR #868 (ci-path-filtering-research.md)
+- **Trigger:** PR #866 (Story 73.5) ran full Go Quality Gate despite only adding shell scripts + docs
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -1060,5 +1073,6 @@ lastUpdated: '2026-03-15'
 | Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance | 5 | Not Started (0/5 done) |
 | Epic 75: Perplexity MCP Integration | 1 | Not Started (0/1 done) |
 | Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Not Started (0/6 done) |
-| **Total** | **378** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
+| Epic 77: CI Path Filtering Improvements | 4 | Not Started (0/4 done) |
+| **Total** | **382** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---
