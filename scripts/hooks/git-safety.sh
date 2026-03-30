@@ -2,11 +2,17 @@
 #
 # git-safety.sh — PreToolUse hook for Claude Code
 #
-# Blocks dangerous git commands in worker worktrees:
+# Scoped protections (worker worktrees only — Story 73.8):
 #   - git fetch, git pull, git rebase, git merge (INC-002 prevention)
+#
+# Universal protections (all contexts):
 #   - Unsigned commits (--no-gpg-sign, -c commit.gpgsign=false)
 #   - Direct push to main/master
 #   - Co-Authored-By trailers in commit messages
+#
+# Worktree detection: commands run from inside ~/.multiclaude/wts/ are
+# treated as worker context. All other paths (main checkout, persistent
+# agents, multiclaude CLI) are exempt from sync restrictions.
 #
 # Exit codes:
 #   0 — allow the command
@@ -30,30 +36,43 @@ if [[ "$COMMAND" != *"git "* && "$COMMAND" != *"git"$'\t'* ]]; then
   exit 0
 fi
 
-# --- Blocked: git fetch, git pull, git rebase, git merge (INC-002) ---
-# Match git followed by the dangerous subcommand, allowing flags between them.
-# This catches: git fetch, git -C /path fetch, git fetch origin main, etc.
-if echo "$COMMAND" | grep -qE '\bgit\b\s+(-[a-zA-Z]\s+\S+\s+)*\b(fetch|pull)\b'; then
-  echo "BLOCKED: 'git fetch' and 'git pull' are forbidden in worker worktrees." >&2
-  echo "Your worktree is managed by multiclaude and auto-synced. See INC-002." >&2
-  exit 2
+# --- Worktree detection (Story 73.8) ---
+# Determine if we're in a multiclaude worker worktree.
+# Workers run from ~/.multiclaude/wts/<repo>/<worker-name>/.
+# Persistent agents, supervisor, and multiclaude CLI run from the main checkout.
+# Use CLAUDE_PROJECT_DIR if set (Claude Code provides it), fall back to PWD.
+HOOK_CWD="${CLAUDE_PROJECT_DIR:-$PWD}"
+IS_WORKER_WORKTREE=false
+if [[ "$HOOK_CWD" == */.multiclaude/wts/* ]]; then
+  IS_WORKER_WORKTREE=true
 fi
 
-if echo "$COMMAND" | grep -qE '\bgit\b\s+(-[a-zA-Z]\s+\S+\s+)*\brebase\b'; then
-  echo "BLOCKED: 'git rebase' is forbidden in worker worktrees." >&2
-  echo "Your worktree is managed by multiclaude and auto-synced. See INC-002." >&2
-  exit 2
-fi
-
-# Block git merge with remote refs or branch names (but allow git merge --abort)
-if echo "$COMMAND" | grep -qE '\bgit\b\s+(-[a-zA-Z]\s+\S+\s+)*\bmerge\b'; then
-  # Allow merge --abort and merge --continue (recovery commands)
-  if echo "$COMMAND" | grep -qE '\bmerge\b\s+--(abort|continue)'; then
-    : # allowed
-  else
-    echo "BLOCKED: 'git merge' is forbidden in worker worktrees." >&2
+# --- Scoped blocks: git fetch, git pull, git rebase, git merge (INC-002) ---
+# Only enforced in worker worktrees. Persistent agents and multiclaude CLI
+# need these operations for branch management and worktree creation.
+if [[ "$IS_WORKER_WORKTREE" == true ]]; then
+  if echo "$COMMAND" | grep -qE '\bgit\b\s+(-[a-zA-Z]\s+\S+\s+)*\b(fetch|pull)\b'; then
+    echo "BLOCKED: 'git fetch' and 'git pull' are forbidden in worker worktrees." >&2
     echo "Your worktree is managed by multiclaude and auto-synced. See INC-002." >&2
     exit 2
+  fi
+
+  if echo "$COMMAND" | grep -qE '\bgit\b\s+(-[a-zA-Z]\s+\S+\s+)*\brebase\b'; then
+    echo "BLOCKED: 'git rebase' is forbidden in worker worktrees." >&2
+    echo "Your worktree is managed by multiclaude and auto-synced. See INC-002." >&2
+    exit 2
+  fi
+
+  # Block git merge with remote refs or branch names (but allow git merge --abort)
+  if echo "$COMMAND" | grep -qE '\bgit\b\s+(-[a-zA-Z]\s+\S+\s+)*\bmerge\b'; then
+    # Allow merge --abort and merge --continue (recovery commands)
+    if echo "$COMMAND" | grep -qE '\bmerge\b\s+--(abort|continue)'; then
+      : # allowed
+    else
+      echo "BLOCKED: 'git merge' is forbidden in worker worktrees." >&2
+      echo "Your worktree is managed by multiclaude and auto-synced. See INC-002." >&2
+      exit 2
+    fi
   fi
 fi
 

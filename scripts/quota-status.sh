@@ -81,6 +81,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# shellcheck disable=SC2034
 if [[ "$USE_COLOR" == "false" ]]; then
     # shellcheck disable=SC2034
     RED=''
