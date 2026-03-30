@@ -45,14 +45,14 @@ jobs:
               - 'scripts/**'
               - 'justfile'
 
-  # Lightweight pass for docs-only PRs so required checks aren't stuck pending.
-  docs-pass:
-    name: Docs Only
+  # Lightweight pass for non-code PRs so required checks aren't stuck pending.
+  skip-pass:
+    name: CI Skipped (no code changes)
     needs: changes
     if: github.event_name == 'pull_request' && needs.changes.outputs.code != 'true' && needs.changes.outputs.docker != 'true'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Docs-only PR — code CI skipped."
+      - run: echo "No code changes — Go CI skipped."
 
   # ShellCheck lints shell scripts for common bugs (unquoted vars, missing error
   # handling, bashisms in sh scripts, etc.). Currently informational — does NOT
