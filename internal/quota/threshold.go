@@ -2,6 +2,7 @@ package quota
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -47,23 +48,30 @@ func DefaultThresholdConfig() ThresholdConfig {
 	}
 }
 
-// ptLocation is the America/Los_Angeles timezone for peak hour detection.
-var ptLocation *time.Location
+var (
+	ptLocation     *time.Location
+	ptLocationOnce sync.Once
+)
 
-func init() {
-	var err error
-	ptLocation, err = time.LoadLocation("America/Los_Angeles")
-	if err != nil {
-		// Fallback: use fixed offset UTC-8 (PST). This is imprecise during
-		// PDT but acceptable as a last resort on systems without tzdata.
-		ptLocation = time.FixedZone("PST", -8*60*60)
-	}
+// loadPTLocation returns the America/Los_Angeles timezone, loading it lazily
+// on first call. Falls back to a fixed UTC-8 offset on systems without tzdata.
+func loadPTLocation() *time.Location {
+	ptLocationOnce.Do(func() {
+		var err error
+		ptLocation, err = time.LoadLocation("America/Los_Angeles")
+		if err != nil {
+			// Fallback: fixed offset UTC-8 (PST). Imprecise during PDT
+			// but acceptable as a last resort on systems without tzdata.
+			ptLocation = time.FixedZone("PST", -8*60*60)
+		}
+	})
+	return ptLocation
 }
 
 // IsPeakHour returns true if the given time falls within Anthropic peak hours
 // (default 05:00-11:00 PT).
 func (c ThresholdConfig) IsPeakHour(t time.Time) bool {
-	pt := t.In(ptLocation)
+	pt := t.In(loadPTLocation())
 	hour := pt.Hour()
 	return hour >= c.PeakStartHour && hour < c.PeakEndHour
 }
@@ -76,6 +84,31 @@ func (c ThresholdConfig) EffectiveThreshold(tier Tier, now time.Time) float64 {
 		return tier.Percent * c.PeakShiftFactor
 	}
 	return tier.Percent
+}
+
+// ThresholdInput provides the usage data needed by the warning engine.
+// Callers construct this from whatever source they have (UsageSnapshot, etc.).
+type ThresholdInput struct {
+	UsagePercent    float64       // Current usage as a percentage of budget
+	RemainingTokens int64         // Estimated remaining tokens
+	TimeUntilReset  time.Duration // Duration until the usage window resets
+}
+
+// ThresholdInputFromSnapshot creates a ThresholdInput from a UsageSnapshot.
+func ThresholdInputFromSnapshot(snap UsageSnapshot, now time.Time) ThresholdInput {
+	remaining := snap.TokenBudget - snap.TokensConsumed
+	if remaining < 0 {
+		remaining = 0
+	}
+	resetDur := snap.Window.WindowEnd.Sub(now)
+	if resetDur < 0 {
+		resetDur = 0
+	}
+	return ThresholdInput{
+		UsagePercent:    snap.UsagePercent,
+		RemainingTokens: remaining,
+		TimeUntilReset:  resetDur,
+	}
 }
 
 // EvaluationResult holds the outcome of a threshold evaluation.
@@ -99,22 +132,21 @@ type EvaluationResult struct {
 // Evaluate checks the current usage against configured thresholds and returns
 // the highest triggered tier. This function is ADVISORY ONLY — it never blocks,
 // throttles, or kills anything.
-func (c ThresholdConfig) Evaluate(usage WindowUsage, now time.Time) EvaluationResult {
-	usagePct := usage.UsagePercent()
+func (c ThresholdConfig) Evaluate(input ThresholdInput, now time.Time) EvaluationResult {
 	isPeak := c.IsPeakHour(now)
 
 	result := EvaluationResult{
-		UsagePercent:    usagePct,
+		UsagePercent:    input.UsagePercent,
 		IsPeak:          isPeak,
-		RemainingTokens: usage.RemainingTokens(),
-		TimeUntilReset:  usage.TimeUntilReset(now),
+		RemainingTokens: input.RemainingTokens,
+		TimeUntilReset:  input.TimeUntilReset,
 	}
 
 	// Check tiers from highest to lowest, return the highest triggered.
 	for i := len(c.Tiers) - 1; i >= 0; i-- {
 		tier := c.Tiers[i]
 		effective := c.EffectiveThreshold(tier, now)
-		if usagePct >= effective {
+		if input.UsagePercent >= effective {
 			result.Triggered = true
 			result.ActiveTier = &c.Tiers[i]
 			result.EffectivePercent = effective

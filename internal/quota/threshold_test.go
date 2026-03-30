@@ -6,84 +6,68 @@ import (
 	"time"
 )
 
-func TestWindowUsage_UsagePercent(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name       string
-		total      int64
-		budget     int64
-		wantApprox float64
-	}{
-		{"zero budget", 50000, 0, 0},
-		{"zero usage", 0, 100000, 0},
-		{"50 percent", 50000, 100000, 50.0},
-		{"100 percent", 100000, 100000, 100.0},
-		{"over budget", 120000, 100000, 120.0},
-		{"typical max 5x", 61600, 88000, 70.0},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			u := WindowUsage{TotalTokens: tt.total, PlanBudget: tt.budget}
-			got := u.UsagePercent()
-			if diff := got - tt.wantApprox; diff > 0.1 || diff < -0.1 {
-				t.Errorf("UsagePercent() = %.2f, want ~%.2f", got, tt.wantApprox)
-			}
-		})
-	}
-}
-
-func TestWindowUsage_RemainingTokens(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name   string
-		total  int64
-		budget int64
-		want   int64
-	}{
-		{"under budget", 50000, 100000, 50000},
-		{"at budget", 100000, 100000, 0},
-		{"over budget", 120000, 100000, 0},
-		{"zero budget", 50000, 0, 0},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			u := WindowUsage{TotalTokens: tt.total, PlanBudget: tt.budget}
-			got := u.RemainingTokens()
-			if got != tt.want {
-				t.Errorf("RemainingTokens() = %d, want %d", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestWindowUsage_TimeUntilReset(t *testing.T) {
+func TestThresholdInputFromSnapshot(t *testing.T) {
 	t.Parallel()
 
 	now := time.Date(2026, 3, 30, 12, 0, 0, 0, time.UTC)
 
 	tests := []struct {
-		name      string
-		windowEnd time.Time
-		want      time.Duration
+		name            string
+		snap            UsageSnapshot
+		wantUsagePct    float64
+		wantRemaining   int64
+		wantResetApprox time.Duration
 	}{
-		{"2 hours remaining", now.Add(2 * time.Hour), 2 * time.Hour},
-		{"window expired", now.Add(-1 * time.Hour), 0},
-		{"exactly now", now, 0},
+		{
+			name: "normal usage",
+			snap: UsageSnapshot{
+				Window:         WindowUsage{WindowEnd: now.Add(2 * time.Hour)},
+				UsagePercent:   70.0,
+				TokensConsumed: 70000,
+				TokenBudget:    100000,
+			},
+			wantUsagePct:    70.0,
+			wantRemaining:   30000,
+			wantResetApprox: 2 * time.Hour,
+		},
+		{
+			name: "over budget clamps remaining to zero",
+			snap: UsageSnapshot{
+				Window:         WindowUsage{WindowEnd: now.Add(1 * time.Hour)},
+				UsagePercent:   120.0,
+				TokensConsumed: 120000,
+				TokenBudget:    100000,
+			},
+			wantUsagePct:    120.0,
+			wantRemaining:   0,
+			wantResetApprox: 1 * time.Hour,
+		},
+		{
+			name: "expired window clamps reset to zero",
+			snap: UsageSnapshot{
+				Window:         WindowUsage{WindowEnd: now.Add(-1 * time.Hour)},
+				UsagePercent:   50.0,
+				TokensConsumed: 50000,
+				TokenBudget:    100000,
+			},
+			wantUsagePct:    50.0,
+			wantRemaining:   50000,
+			wantResetApprox: 0,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			u := WindowUsage{WindowEnd: tt.windowEnd}
-			got := u.TimeUntilReset(now)
-			if got != tt.want {
-				t.Errorf("TimeUntilReset() = %v, want %v", got, tt.want)
+			input := ThresholdInputFromSnapshot(tt.snap, now)
+			if diff := input.UsagePercent - tt.wantUsagePct; diff > 0.1 || diff < -0.1 {
+				t.Errorf("UsagePercent = %.2f, want ~%.2f", input.UsagePercent, tt.wantUsagePct)
+			}
+			if input.RemainingTokens != tt.wantRemaining {
+				t.Errorf("RemainingTokens = %d, want %d", input.RemainingTokens, tt.wantRemaining)
+			}
+			if input.TimeUntilReset != tt.wantResetApprox {
+				t.Errorf("TimeUntilReset = %v, want %v", input.TimeUntilReset, tt.wantResetApprox)
 			}
 		})
 	}
@@ -186,12 +170,12 @@ func TestEvaluate_AllTiers(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			usage := WindowUsage{
-				TotalTokens: int64(tt.usagePercent * 1000),
-				PlanBudget:  100000,
-				WindowEnd:   offPeak.Add(2 * time.Hour),
+			input := ThresholdInput{
+				UsagePercent:    tt.usagePercent,
+				RemainingTokens: int64((100 - tt.usagePercent) * 1000),
+				TimeUntilReset:  2 * time.Hour,
 			}
-			result := cfg.Evaluate(usage, offPeak)
+			result := cfg.Evaluate(input, offPeak)
 			if result.Triggered != tt.wantTriggered {
 				t.Errorf("Triggered = %v, want %v", result.Triggered, tt.wantTriggered)
 			}
@@ -236,12 +220,12 @@ func TestEvaluate_PeakHoursShiftThresholds(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			usage := WindowUsage{
-				TotalTokens: int64(tt.usagePercent * 1000),
-				PlanBudget:  100000,
-				WindowEnd:   peakTime.Add(3 * time.Hour),
+			input := ThresholdInput{
+				UsagePercent:    tt.usagePercent,
+				RemainingTokens: int64((100 - tt.usagePercent) * 1000),
+				TimeUntilReset:  3 * time.Hour,
 			}
-			result := cfg.Evaluate(usage, peakTime)
+			result := cfg.Evaluate(input, peakTime)
 			if result.Triggered != tt.wantTriggered {
 				t.Errorf("Triggered = %v, want %v (usage=%.1f%%)", result.Triggered, tt.wantTriggered, tt.usagePercent)
 			}
@@ -267,12 +251,12 @@ func TestEvaluate_NeverBlocks(t *testing.T) {
 	now := time.Date(2026, 3, 30, 20, 0, 0, 0, time.UTC)
 
 	// Even at 200% usage, the engine only returns advisory data
-	usage := WindowUsage{
-		TotalTokens: 200000,
-		PlanBudget:  100000,
-		WindowEnd:   now.Add(1 * time.Hour),
+	input := ThresholdInput{
+		UsagePercent:    200.0,
+		RemainingTokens: 0,
+		TimeUntilReset:  1 * time.Hour,
 	}
-	result := cfg.Evaluate(usage, now)
+	result := cfg.Evaluate(input, now)
 	if !result.Triggered {
 		t.Error("Expected triggered at 200% usage")
 	}
