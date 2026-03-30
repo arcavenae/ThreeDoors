@@ -4,6 +4,7 @@
 package quota
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -40,15 +41,15 @@ func TierFromUsage(pct float64) ThresholdTier {
 	}
 }
 
-// AgentUsage records token consumption for a single agent.
-type AgentUsage struct {
+// SnapshotAgentUsage records token consumption for a single agent within a snapshot.
+type SnapshotAgentUsage struct {
 	Name         string `json:"name"`
 	InputTokens  int64  `json:"input_tokens"`
 	OutputTokens int64  `json:"output_tokens"`
 	BilledTokens int64  `json:"billed_tokens"`
 }
 
-// UsageSnapshot captures a point-in-time quota usage reading.
+// QuotaSnapshot captures a point-in-time quota usage reading.
 // One snapshot is recorded per quota check. Fields are designed for
 // JSONL storage and jq-based analysis by retrospector.
 //
@@ -59,7 +60,7 @@ type AgentUsage struct {
 //	AgentBreakdown  → dark_factory.phase.token_usage{agent=<name>}
 //	ThresholdTier   → dark_factory.quota.tier (attribute)
 //	PeakHours       → dark_factory.quota.peak_hours (attribute)
-type UsageSnapshot struct {
+type QuotaSnapshot struct {
 	// Type discriminator for mixed-type JSONL files.
 	Type string `json:"type"`
 
@@ -77,7 +78,7 @@ type UsageSnapshot struct {
 	EstimatedResetTime time.Time `json:"estimated_reset_time"`
 
 	// AgentBreakdown lists per-agent token consumption in this window.
-	AgentBreakdown []AgentUsage `json:"agent_breakdown"`
+	AgentBreakdown []SnapshotAgentUsage `json:"agent_breakdown"`
 
 	// TotalBilledTokens is the sum of all agents' billed tokens.
 	TotalBilledTokens int64 `json:"total_billed_tokens"`
@@ -107,7 +108,7 @@ func NewSnapshotWriter(dir string) *SnapshotWriter {
 // The snapshot's Type field is set to "quota_snapshot" before writing.
 // Creates the file if it does not exist. Uses atomic append via
 // O_APPEND to prevent partial writes from concurrent processes.
-func (w *SnapshotWriter) Write(snap UsageSnapshot) error {
+func (w *SnapshotWriter) Write(snap QuotaSnapshot) error {
 	snap.Type = "quota_snapshot"
 
 	data, err := json.Marshal(snap)
@@ -148,13 +149,13 @@ func NewSnapshotReader(dir string) *SnapshotReader {
 // ReadAll returns all snapshots from the file.
 // Returns nil, nil for missing or empty files.
 // Corrupted lines are silently skipped.
-func (r *SnapshotReader) ReadAll() ([]UsageSnapshot, error) {
+func (r *SnapshotReader) ReadAll() ([]QuotaSnapshot, error) {
 	return r.ReadSince(time.Time{})
 }
 
 // ReadSince returns snapshots with Timestamp at or after the given time.
 // Returns nil, nil for missing or empty files.
-func (r *SnapshotReader) ReadSince(since time.Time) ([]UsageSnapshot, error) {
+func (r *SnapshotReader) ReadSince(since time.Time) ([]QuotaSnapshot, error) {
 	f, err := os.Open(r.path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -164,11 +165,15 @@ func (r *SnapshotReader) ReadSince(since time.Time) ([]UsageSnapshot, error) {
 	}
 	defer f.Close() //nolint:errcheck // read-only
 
-	var snapshots []UsageSnapshot
-	dec := json.NewDecoder(f)
-	for dec.More() {
-		var snap UsageSnapshot
-		if err := dec.Decode(&snap); err != nil {
+	var snapshots []QuotaSnapshot
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+		var snap QuotaSnapshot
+		if err := json.Unmarshal(line, &snap); err != nil {
 			continue // skip corrupted lines
 		}
 		if snap.Type != "quota_snapshot" {
@@ -177,6 +182,9 @@ func (r *SnapshotReader) ReadSince(since time.Time) ([]UsageSnapshot, error) {
 		if !snap.Timestamp.Before(since) {
 			snapshots = append(snapshots, snap)
 		}
+	}
+	if err := scanner.Err(); err != nil {
+		return snapshots, fmt.Errorf("scan snapshot file: %w", err)
 	}
 
 	return snapshots, nil

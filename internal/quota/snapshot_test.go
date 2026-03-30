@@ -41,13 +41,13 @@ func TestTierFromUsage(t *testing.T) {
 	}
 }
 
-func makeSnapshot(ts time.Time, pct float64, agents []AgentUsage) UsageSnapshot {
+func makeSnapshot(ts time.Time, pct float64, agents []SnapshotAgentUsage) QuotaSnapshot {
 	var total int64
 	for _, a := range agents {
 		total += a.BilledTokens
 	}
 	windowStart := ts.Add(-3 * time.Hour)
-	return UsageSnapshot{
+	return QuotaSnapshot{
 		Timestamp:          ts,
 		WindowUsagePct:     pct,
 		WindowStartTime:    windowStart,
@@ -66,7 +66,7 @@ func TestSnapshotWriterWrite(t *testing.T) {
 	w := NewSnapshotWriter(dir)
 
 	ts := time.Date(2026, 3, 30, 12, 0, 0, 0, time.UTC)
-	snap := makeSnapshot(ts, 65.5, []AgentUsage{
+	snap := makeSnapshot(ts, 65.5, []SnapshotAgentUsage{
 		{Name: "supervisor", InputTokens: 1000, OutputTokens: 500, BilledTokens: 1500},
 		{Name: "worker-1", InputTokens: 2000, OutputTokens: 1000, BilledTokens: 3000},
 	})
@@ -81,7 +81,7 @@ func TestSnapshotWriterWrite(t *testing.T) {
 	}
 
 	// Verify it's valid JSON
-	var decoded UsageSnapshot
+	var decoded QuotaSnapshot
 	if err := json.Unmarshal([]byte(strings.TrimSpace(string(data))), &decoded); err != nil {
 		t.Fatalf("Unmarshal written data: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestSnapshotWriterAppendsMultiple(t *testing.T) {
 
 	// Each line must be valid JSON
 	for i, line := range lines {
-		var snap UsageSnapshot
+		var snap QuotaSnapshot
 		if err := json.Unmarshal([]byte(line), &snap); err != nil {
 			t.Errorf("line %d: invalid JSON: %v", i, err)
 		}
@@ -159,7 +159,7 @@ func TestSnapshotWriterSetsType(t *testing.T) {
 		t.Fatalf("ReadFile: %v", err)
 	}
 
-	var decoded UsageSnapshot
+	var decoded QuotaSnapshot
 	if err := json.Unmarshal([]byte(strings.TrimSpace(string(data))), &decoded); err != nil {
 		t.Fatalf("Unmarshal: %v", err)
 	}
@@ -177,7 +177,7 @@ func TestSnapshotReaderReadAll(t *testing.T) {
 	r := NewSnapshotReader(dir)
 
 	ts := time.Date(2026, 3, 30, 10, 0, 0, 0, time.UTC)
-	agents := []AgentUsage{
+	agents := []SnapshotAgentUsage{
 		{Name: "merge-queue", InputTokens: 500, OutputTokens: 200, BilledTokens: 700},
 	}
 
@@ -328,7 +328,7 @@ func TestSnapshotJSONLParsableWithJQ(t *testing.T) {
 	w := NewSnapshotWriter(dir)
 
 	ts := time.Date(2026, 3, 30, 15, 30, 0, 0, time.UTC)
-	snap := makeSnapshot(ts, 72.3, []AgentUsage{
+	snap := makeSnapshot(ts, 72.3, []SnapshotAgentUsage{
 		{Name: "supervisor", InputTokens: 5000, OutputTokens: 2000, BilledTokens: 7000},
 		{Name: "merge-queue", InputTokens: 1000, OutputTokens: 300, BilledTokens: 1300},
 		{Name: "worker-abc", InputTokens: 8000, OutputTokens: 4000, BilledTokens: 12000},
@@ -371,9 +371,9 @@ func TestSnapshotJSONLParsableWithJQ(t *testing.T) {
 	}
 
 	// Verify timestamp is ISO 8601
-	var snap2 UsageSnapshot
+	var snap2 QuotaSnapshot
 	if err := json.Unmarshal([]byte(line), &snap2); err != nil {
-		t.Fatalf("Unmarshal to UsageSnapshot: %v", err)
+		t.Fatalf("Unmarshal to QuotaSnapshot: %v", err)
 	}
 	if snap2.Timestamp.IsZero() {
 		t.Error("timestamp parsed as zero")
