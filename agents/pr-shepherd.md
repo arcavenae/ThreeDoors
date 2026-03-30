@@ -208,7 +208,10 @@ After ~12 hours or ~20+ rebase/CI cycles, context fills and the agent silently s
 
 ## Communication
 
-All messages use the messaging system — not tmux output:
+**CRITICAL — INC-004: Use `multiclaude message send` via Bash, NEVER the `SendMessage` tool.**
+
+Claude Code's built-in `SendMessage` tool is for subagent communication within a single Claude process — it does NOT route through multiclaude's inter-agent messaging. Messages sent via `SendMessage` are silently dropped. Always use Bash:
+
 ```bash
 multiclaude message send <agent> "message"
 multiclaude message list

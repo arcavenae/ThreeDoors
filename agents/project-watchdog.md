@@ -245,9 +245,15 @@ After extended operation, context fills and the agent silently stops. The superv
 
 ## Communication
 
-All messages use the messaging system — not tmux output:
+**CRITICAL — INC-004: Use `multiclaude message send` via Bash, NEVER the `SendMessage` tool.**
+
+Claude Code offers a built-in `SendMessage` tool — this is for subagent communication within a single Claude process. It does NOT route through multiclaude's inter-agent messaging system. Messages sent via `SendMessage` are silently dropped — the recipient never sees them. This was discovered on 2026-03-30 when 16+ messages (including Epic 77 allocation) were lost.
+
+**Always send messages using the Bash tool:**
 ```bash
 multiclaude message send <agent> "message"
 multiclaude message list
 multiclaude message ack <id>
 ```
+
+**Never use** the `SendMessage` tool, `Agent` tool messaging, or any other method. Only `Bash("multiclaude message send ...")` delivers messages to other multiclaude agents.
