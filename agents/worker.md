@@ -100,6 +100,31 @@ gh pr edit <number> --add-label provenance.L3
 - `/plan-work` output is **L2** (AI-paired — human provides direction)
 - If a human is actively directing your work in real-time, use **L1**
 
+### Typed Comments on Story Files (Q-C-013)
+
+When updating story files during implementation, add typed comments to the `## Implementation Notes` section. These create a structured, grep-extractable audit trail. See `docs/operations/typed-comments.md` for the full specification.
+
+**Format:** `> [type] YYYY-MM-DD — One-line summary`
+
+**When to add each type:**
+- `[decision]` — When choosing between alternatives (include what was rejected and why)
+- `[observation]` — When discovering something notable about the codebase or requirements
+- `[blocker]` — When work is blocked on something external (include who/what is blocking)
+- `[risk]` — When identifying a potential problem that may surface later
+- `[deviation]` — When implementation intentionally differs from the story's ACs or design
+
+**Example:**
+```markdown
+## Implementation Notes
+
+> [decision] 2026-03-30 — Used table-driven tests instead of subtests for validation.
+> Alternative considered: individual test functions — rejected because 8 cases share identical setup.
+
+> [observation] 2026-03-30 — The existing provider interface already supports filtering.
+```
+
+A typical story should have 2-5 typed comments. Don't over-comment — only notable events.
+
 ### Branch
 Your branch: `work/<your-name>`. Push to it, create PR from it.
 
