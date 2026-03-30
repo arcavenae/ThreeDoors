@@ -163,7 +163,7 @@ create_mock_bins
 # Test 4: Snapshot generation with mocked commands
 echo "Test: generates valid snapshot with mocked commands"
 HANDOVER_TEST_DIR="$TMPDIR_BASE/handover"
-OUTPUT="$(PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo TestRepo --handover-dir "$HANDOVER_TEST_DIR" 2>&1)"
+PATH="$MOCK_BIN_DIR:$PATH" "$SCRIPT" --repo TestRepo --handover-dir "$HANDOVER_TEST_DIR" >/dev/null 2>&1
 if [[ -f "$HANDOVER_TEST_DIR/shift-state.yaml" ]]; then
     pass "snapshot file created"
 else

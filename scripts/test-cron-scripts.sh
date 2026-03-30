@@ -96,7 +96,9 @@ fi
 
 # Test 9: Update flag creates baseline file
 echo "Test: --update creates baseline file"
-cd "$REPO_ROOT" && BASELINE_FILE="$TMPDIR_TEST/new-baseline.json" "$SCRIPT_DIR/qa-coverage-audit.sh" --update >/dev/null 2>&1 || true
+if cd "$REPO_ROOT"; then
+    BASELINE_FILE="$TMPDIR_TEST/new-baseline.json" "$SCRIPT_DIR/qa-coverage-audit.sh" --update >/dev/null 2>&1 || true
+fi
 if [[ -f "$TMPDIR_TEST/new-baseline.json" ]]; then
     pass "--update creates baseline file"
     # Verify it's valid JSON

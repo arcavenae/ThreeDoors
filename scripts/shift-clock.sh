@@ -254,7 +254,6 @@ check_natural_seam() {
     local idle_threshold=$((now_epoch - SEAM_IDLE_SECONDS))
 
     # Check for recent multiclaude work commands (tool_use with "multiclaude work" in the content)
-    local recent_work_commands=0
     local last_tool_timestamp
     last_tool_timestamp="$(grep '"tool_use"' "$transcript" | tail -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}' || echo "")"
 
