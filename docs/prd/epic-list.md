@@ -955,6 +955,23 @@ lastUpdated: '2026-03-15'
 - **Stories:** 75.1 (1 story)
 - **Research:** R-008 (Perplexity Research Supervisor)
 
+**Epic 76: Claude Usage Monitoring & Quota Awareness** (P1) NOT STARTED
+- **Goal:** Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking
+- **Prerequisites:** None (reads existing JSONL session files)
+- **Status:** Not Started (0/6 stories)
+- **Deliverables:**
+  - JSONL token usage parser library (`internal/quota/` or `scripts/quota/`)
+  - Per-agent usage attribution (who burns the most tokens?)
+  - Warning threshold engine with configurable tiers (70%/80%/90%/95%)
+  - `/quota-status` slash command for real-time usage summary
+  - `/stats` integration for usage data capture
+  - 5-hour window reset detection and time-of-day awareness
+- **Stories:** 76.1-76.6 (6 stories)
+- **Research:** R-004 (Quota Throttling), R-016 (TDD/Performance/OTEL — OTEL section)
+- **Decisions:** QT-1 (JSONL file reading), QT-2 (hybrid daemon+cron), QT-3 (dynamic multiplier), QT-6 (4-phase incremental)
+- **Phase 1 of 3:** This epic covers the ThreeDoors/multiclaude PoC. Phase 2 (mozukai host-level service with SQLite, cross-session visibility, Slack alerts) and Phase 3 (Marvel native quota management with OTEL, per-factory budgets, cost attribution) are future work. All designs should consider Marvel portability.
+- **CRITICAL: Warn-only.** No hard blocks on agent activity. All quota awareness is advisory/warning-only.
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -1042,5 +1059,6 @@ lastUpdated: '2026-03-15'
 | Epic 73: Operational Foundation — Agent Reliability & Operator UX | 6 | Not Started (0/6 done) |
 | Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance | 5 | Not Started (0/5 done) |
 | Epic 75: Perplexity MCP Integration | 1 | Not Started (0/1 done) |
-| **Total** | **372** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
+| Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Not Started (0/6 done) |
+| **Total** | **378** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---
