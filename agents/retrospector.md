@@ -39,6 +39,13 @@ cat docs/operations/retrospector-checkpoint.json
 # → Restores: mode_rotation_index, rolling_windows, last PR pointer
 # → If file missing (first-ever run): fall back to full JSONL rebuild (step 2)
 
+# 1b. IMPORTANT: After restoring checkpoint, reset prs_since_restart and
+#     hours_since_restart to 0. These fields track CURRENT SESSION resource
+#     usage for the context exhaustion protocol — they are NOT historical
+#     state. A fresh agent must start counting from zero, otherwise stale
+#     counters from the previous session will falsely trigger a self-restart
+#     request immediately on startup.
+
 # 2. Read JSONL findings log for entries AFTER checkpoint's last_pr only
 #    (If no checkpoint, read entire log to rebuild state)
 cat docs/operations/retrospector-findings.jsonl | tail -20
