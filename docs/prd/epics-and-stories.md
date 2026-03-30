@@ -6962,3 +6962,155 @@ So that agents can perform web-grounded research when explicitly enabled without
 - **AC4:** Usage guidelines at `docs/operations/perplexity-usage.md`
 - **AC5:** MCP configuration template created
 - **AC6:** npm/npx availability verified
+
+---
+
+## Epic 76: Claude Usage Monitoring & Quota Awareness (P1)
+
+**Goal:** Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking.
+
+**Priority:** P1
+**Prerequisites:** None (reads existing JSONL session files)
+**Status:** Not Started (0/6 stories)
+**Reference:** R-004 (Quota Throttling), R-016 (TDD/Performance/OTEL)
+
+**Strategic Context:** Phase 1 of a 3-phase evolution: ThreeDoors PoC (this epic) → mozukai host-level service → Marvel native quota management. All designs should consider portability to later phases.
+
+**CRITICAL: Warn-only.** No hard blocks on agent activity. All quota awareness is advisory/warning-only.
+
+### Story 76.1: JSONL Token Usage Parser Library
+
+As a multiclaude system,
+I want a library that reads Claude Code JSONL session files and extracts token usage data,
+So that downstream tools can estimate consumption without depending on unavailable API endpoints.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Parser reads `~/.claude/projects/<project-hash>/<session-id>.jsonl` files and extracts input/output token counts per interaction
+- **AC2:** Aggregates token usage per session, per time window (configurable), and per rolling 5-hour window
+- **AC3:** Handles malformed/incomplete JSONL entries gracefully (skip with warning, don't crash)
+- **AC4:** Estimates consumption as percentage of plan budget using configurable thresholds (default: Max 5x ~88K, Max 20x ~220K per 5-hour window)
+- **AC5:** Returns structured data (Go structs) suitable for CLI display and programmatic consumption
+- **AC6:** Unit tests with fixture JSONL files covering normal, empty, malformed, and multi-session cases
+- **AC7:** Supports `CLAUDE_CONFIG_DIR` override for non-default config locations (Marvel portability)
+
+**Dev Notes:**
+- Reference: Claude-Code-Usage-Monitor's P90 approach and ccusage for JSONL parsing patterns
+- Session files are at `~/.claude/projects/` by default but `CLAUDE_CONFIG_DIR` changes the base path
+- Each JSONL entry contains input/output token counts — sum these for window consumption
+- Plan type detection: infer from usage patterns or accept as config parameter
+
+### Story 76.2: Per-Agent Usage Tracking & Attribution
+
+As a multiclaude operator,
+I want to see which agents consume the most tokens,
+So that I can identify high-cost agents and optimize the system's resource usage.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Maps JSONL session files to multiclaude agent names (using session metadata, worktree paths, or `CLAUDE_CONFIG_DIR` mapping)
+- **AC2:** Produces per-agent usage breakdown: agent name, token count (input/output), percentage of total, session count
+- **AC3:** Classifies agents by priority tier: P0 (active workers), P1 (merge-queue, pr-shepherd), P2 (envoy, watchdogs), P3 (retrospector)
+- **AC4:** Distinguishes between productive messages (tool calls, code changes) and overhead (heartbeat responses, idle polling) where detectable from JSONL structure
+- **AC5:** Outputs structured data suitable for CLI table display
+- **AC6:** Tests with multi-agent fixture data
+
+**Dev Notes:**
+- Agent-to-session mapping is the hardest part — JSONL files are organized by project, not agent
+- multiclaude state.json may contain agent→session mappings
+- Fallback: use worktree paths from JSONL file paths to infer agent identity
+- Productive vs overhead detection: look for tool_use entries vs simple text responses
+
+### Story 76.3: Warning Threshold Engine (Advisory-Only)
+
+As a multiclaude supervisor,
+I want automatic warnings when token consumption approaches plan limits,
+So that I can proactively manage agent activity before hitting hard blocks.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Configurable warning thresholds at 70%, 80%, 90%, 95% of estimated window budget
+- **AC2:** At each threshold, generates a warning message with: current usage %, estimated remaining tokens, time until window reset, recommended action
+- **AC3:** Warnings are delivered via `multiclaude message send supervisor "QUOTA_WARNING: ..."`
+- **AC4:** WARNING ONLY — engine NEVER blocks, throttles, or kills agents. It only sends advisory messages.
+- **AC5:** Recommended actions are suggestions only (e.g., "Consider reducing heartbeat frequency" at 70%, "Consider pausing non-critical agents" at 90%)
+- **AC6:** Time-of-day awareness: thresholds shift ~20% more aggressive during Anthropic peak hours (05:00-11:00 PT) per R-004 findings
+- **AC7:** Configurable via YAML or environment variables (plan type, thresholds, peak hours)
+- **AC8:** Tests for each threshold tier with mock usage data
+
+**Dev Notes:**
+- This is the consumer of 76.1's parser output
+- Designed as a standalone checker that can be invoked by cron, daemon, or CLI
+- Peak hour awareness is because Anthropic reduced capacity during 05:00-11:00 PT (March 2026 change)
+- Future phases will add adaptive heartbeat frequency suggestions, but Phase 1 is just warnings
+
+### Story 76.4: `/quota-status` Slash Command
+
+As a multiclaude operator,
+I want a `/quota-status` command that shows current usage at a glance,
+So that I can quickly check quota health without digging through JSONL files.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Command outputs: current window usage (tokens + percentage), estimated plan type, time since window start, estimated time until reset
+- **AC2:** Shows per-agent breakdown table (from 76.2): agent name, tokens used, % of total
+- **AC3:** Shows current threshold status (green/yellow/orange/red based on 76.3 tiers)
+- **AC4:** Shows peak/off-peak indicator based on current time vs Anthropic peak hours
+- **AC5:** Implemented as a Claude Code slash command (`.claude/commands/quota-status.md`)
+- **AC6:** Graceful fallback when no JSONL data is available (e.g., fresh install, no sessions yet)
+- **AC7:** Output is both human-readable (formatted table) and machine-parseable (structured data available)
+
+**Dev Notes:**
+- Slash command implementation: `.claude/commands/quota-status.md` with instructions for the agent to invoke the underlying tool/script
+- Could be a Go CLI command (`threedoors quota-status`) or a shell script that the slash command wraps
+- Consider integration with future `/rollcall` command (bright-koala's design) for a usage column
+
+### Story 76.5: `/stats` Usage Data Integration
+
+As a multiclaude operator,
+I want usage monitoring data captured alongside existing session metrics,
+So that quota trends are visible in the stats system and can inform retrospective analysis.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Token usage snapshots are recorded to the operational data pipeline (JSONL or `docs/operations/` files)
+- **AC2:** Records: timestamp, window usage %, per-agent breakdown, threshold tier, peak/off-peak
+- **AC3:** Data format is compatible with retrospector's existing analysis patterns
+- **AC4:** Historical data enables trend analysis: daily/weekly token consumption patterns, per-agent usage trends
+- **AC5:** Integration point documented for future OTEL export (Phase 3 Marvel portability)
+- **AC6:** Does not duplicate data already in Claude's native JSONL files — only stores derived/aggregated metrics
+
+**Dev Notes:**
+- This bridges the quota system with the existing operational data pipeline (Epic 67)
+- Retrospector can use this data for usage pattern analysis in retrospectives
+- Keep the data format simple — JSONL with timestamps, easy to parse with jq
+- OTEL integration point: these same metrics map to `dark_factory.phase.token_usage` from R-016
+
+### Story 76.6: Window Reset Detection & Cron-Based Monitoring
+
+As a multiclaude system,
+I want automatic periodic quota checks with window reset detection,
+So that usage monitoring runs continuously without manual intervention.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Detects 5-hour window boundaries by tracking the timestamp of the first message in each window
+- **AC2:** Calculates expected reset time (first_message_timestamp + 5 hours) and displays countdown
+- **AC3:** A cron-compatible script/command that can be scheduled via `CronCreate` to run every 5-10 minutes
+- **AC4:** On each run: reads JSONL, calculates usage, sends warning if threshold exceeded, logs snapshot
+- **AC5:** After window reset detection, sends an "all clear" message to supervisor
+- **AC6:** Cron setup documented with recommended interval (every 5 minutes) and CronCreate invocation
+- **AC7:** Idempotent — multiple runs within the same period don't send duplicate warnings (uses a state file or dedup logic)
+- **AC8:** Tests for window boundary detection, reset detection, and dedup logic
+
+**Dev Notes:**
+- Window reset detection is heuristic: if messages suddenly succeed after a quiet period, the window likely reset
+- More reliable: track first-message timestamp and calculate reset time deterministically
+- State file at `~/.multiclaude/quota/state.json` for dedup and window tracking
+- This is the foundation for Phase 2's daemon-level integration
