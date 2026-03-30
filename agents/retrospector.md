@@ -252,6 +252,60 @@ When the identity probe fails on startup, `multiclaude message list` cannot reli
 3. Set `"processed": false` — the retrospector will ack it on its next cycle (≤15 minutes)
 4. The retrospector always tries `multiclaude message list` first, then checks the file inbox
 
+## Session Handoff Protocol
+
+On restart, you already restore analytical state from `docs/operations/retrospector-checkpoint.json`. The handoff protocol adds structured handoff notes and breadcrumb logging for richer context recovery.
+
+### State Directory
+
+```
+~/.multiclaude/agent-state/ThreeDoors/retrospector/
+  handoff.md     -- your handoff notes from last session
+  session.jsonl  -- breadcrumb log of significant actions
+  context.json   -- machine-readable session state (supplements checkpoint.json)
+```
+
+**Note:** `context.json` here tracks session-scoped state (messaging fallback, session counters). Analytical state (last_pr, mode_rotation_index, rolling_windows) remains in `docs/operations/retrospector-checkpoint.json` because it feeds the data pipeline via project-watchdog sync.
+
+### On Startup (Extends Existing Protocol)
+
+After the existing checkpoint restore (step 1 in "On startup / restart"):
+
+1. Check for `handoff.md` — if present, read it for context on in-progress analysis, recent findings, and warnings from the previous session
+2. Read `context.json` to restore session-scoped state:
+   - Messaging fallback flag (whether identity probe failed previously)
+   - Any session metadata not in the checkpoint
+3. Continue with existing startup sequence (JSONL delta read, catch-up merges, identity probe)
+
+### On SESSION_HANDOFF_PREPARE
+
+When you receive a message containing `SESSION_HANDOFF_PREPARE`:
+
+1. Flush JSONL findings log (all pending entries written) — same as pre-restart protocol
+2. Write final checkpoint to `docs/operations/retrospector-checkpoint.json` — same as pre-restart
+3. Write `handoff.md` with current state:
+   - **In Progress:** Current deep analysis mode, PRs being analyzed
+   - **Recently Completed:** PRs retro'd this session, deep analyses completed, recommendations filed
+   - **Blocked/Waiting:** Kill switch state (consecutive rejections), saga alerts pending resolution
+   - **Key Decisions:** Recommendations filed this session with confidence levels
+   - **Warnings:** CI failure rate trends, conflict patterns, process waste signals, data pipeline gaps
+4. Write `context.json` with session-scoped state
+5. Reply: `multiclaude message send supervisor "SESSION_HANDOFF_READY"`
+
+### Breadcrumb Logging
+
+During normal operation, append significant actions to `session.jsonl`:
+- `finding` — New finding recorded to JSONL (include PR number)
+- `recommendation` — Recommendation filed to queue (include REC-NNN ID, confidence)
+- `saga` — Saga condition detected (include worker names, fix target)
+- `checkpoint` — State checkpoint written
+- `warning` — Data pipeline gap, stale data, kill switch proximity
+
+Write breadcrumbs after each significant action. Format:
+```jsonl
+{"ts":"2026-03-29T14:30:00Z","action":"recommendation","detail":"Filed REC-046 (High confidence): CI flake rate exceeds 20% in last 10 PRs"}
+```
+
 ## Watchmen Safeguards
 
 Five controls preventing cascading damage from a meta-improvement agent gone wrong.

@@ -254,6 +254,57 @@ When you receive a message containing "HEARTBEAT":
 
 HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
 
+## Session Handoff Protocol
+
+On restart, you lose all in-memory state (tracked PRs, emergency mode, correlation IDs). The handoff protocol preserves critical state across restarts.
+
+### State Directory
+
+```
+~/.multiclaude/agent-state/ThreeDoors/merge-queue/
+  handoff.md     -- your handoff notes from last session
+  session.jsonl  -- breadcrumb log of significant actions
+  context.json   -- machine-readable state (tracked PRs, emergency mode, etc.)
+```
+
+### On Startup
+
+1. Check for `handoff.md` — if present, read it for context on in-progress work, recent merges, and warnings from the previous session
+2. Read `context.json` to restore:
+   - Tracked PR list with validation state
+   - Emergency mode flag (resume emergency mode if it was active)
+   - Post-merge CI check state
+   - Processed PR correlation IDs (last 50) — prevents re-processing already-merged PRs
+3. Begin normal polling loop
+
+### On SESSION_HANDOFF_PREPARE
+
+When you receive a message containing `SESSION_HANDOFF_PREPARE`:
+
+1. Write `handoff.md` with current state:
+   - **In Progress:** PRs currently being validated or merged
+   - **Recently Completed:** PRs merged this session with CI results
+   - **Blocked/Waiting:** PRs blocked on human review, CI, or scope issues
+   - **Key Decisions:** Scope rejections, emergency mode entries/exits, worker spawns
+   - **Warnings:** CI flakiness, OAuth limitations hit, stale PRs needing attention
+2. Write `context.json` with machine-readable state (see design doc for schema)
+3. Flush any pending `session.jsonl` entries
+4. Reply: `multiclaude message send supervisor "SESSION_HANDOFF_READY"`
+
+### Breadcrumb Logging
+
+During normal operation, append significant actions to `session.jsonl`:
+- `merge` — PR merged (include PR number, CI result)
+- `merge_blocked` — PR blocked (include reason)
+- `emergency` — Emergency mode entered or exited
+- `spawn` — Worker spawned for CI fix or review feedback
+- `warning` — Operational issue detected
+
+Write breadcrumbs after each significant action. Format:
+```jsonl
+{"ts":"2026-03-29T14:30:00Z","action":"merge","detail":"Merged PR #850, CI green, scope valid"}
+```
+
 ## Context Exhaustion Risk
 
 After ~12 hours or ~20+ merge cycles, context fills and the agent silently stops responding. See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md). The supervisor should restart this agent proactively every 4-6 hours.
