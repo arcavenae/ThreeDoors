@@ -87,6 +87,7 @@ MOCK
     echo "$binary"
 }
 
+# shellcheck disable=SC2317,SC2329 # Functions are called below; ShellCheck is confused by exit in heredocs
 run_test() {
     local name="$1"
     local expected_exit="${2:-0}"
@@ -109,6 +110,7 @@ run_test() {
     echo "$output"
 }
 
+# shellcheck disable=SC2317,SC2329
 run_test_grep() {
     local name="$1"
     local pattern="$2"

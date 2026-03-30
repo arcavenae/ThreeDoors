@@ -186,6 +186,7 @@ cmd_record() {
     local anomalies_json="[]"
     if [[ -n "$ANOMALIES" ]]; then
         # Convert comma-separated list to JSON array
+        # shellcheck disable=SC2001 # Pattern uses backreference (&) which parameter expansion can't do
         anomalies_json="[$(echo "$ANOMALIES" | sed 's/[^,]*/"&"/g')]"
     fi
 
