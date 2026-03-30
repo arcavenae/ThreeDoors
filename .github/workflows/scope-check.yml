@@ -1,0 +1,155 @@
+name: Scope Check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  commit-messages:
+    name: Commit Message Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages reference stories
+        env:
+          PR_COMMITS: ${{ github.event.pull_request.commits }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          echo "## Scope Check: Commit Message Validation"
+          echo ""
+
+          # Patterns that satisfy the story reference requirement
+          STORY_PATTERN='\(Story [0-9]+\.[0-9]+\)'
+          ISSUE_PATTERN='\(#[0-9]+\)'
+          # Decision (D-NNN) and Research (R-NNN) references are also valid
+          DECISION_PATTERN='\([DR]-[0-9]+\)'
+
+          # Exception patterns (commits that don't need story references)
+          # - Merge commits
+          # - Revert commits
+          # - Dependabot / Renovate bot commits (checked via author below)
+
+          VIOLATIONS=0
+          CHECKED=0
+          SKIPPED=0
+
+          echo "| Commit | Message | Status |"
+          echo "|--------|---------|--------|"
+
+          # Iterate over commits in the PR
+          for SHA in $(git log --format='%H' "${PR_BASE_SHA}..${PR_HEAD_SHA}"); do
+            MESSAGE=$(git log --format='%s' -1 "$SHA")
+            AUTHOR=$(git log --format='%an' -1 "$SHA")
+            PARENTS=$(git log --format='%P' -1 "$SHA" | wc -w | tr -d ' ')
+            SHORT=$(git log --format='%h' -1 "$SHA")
+
+            CHECKED=$((CHECKED + 1))
+
+            # Skip merge commits (2+ parents)
+            if [ "$PARENTS" -gt 1 ]; then
+              echo "| \`${SHORT}\` | ${MESSAGE} | Skipped (merge commit) |"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            # Skip Merge/Revert prefixed commits
+            if echo "$MESSAGE" | grep -qE '^(Merge|Revert) '; then
+              echo "| \`${SHORT}\` | ${MESSAGE} | Skipped (merge/revert) |"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            # Skip bot commits (dependabot, renovate)
+            if echo "$AUTHOR" | grep -qiE '(dependabot|renovate)\[bot\]'; then
+              echo "| \`${SHORT}\` | ${MESSAGE} | Skipped (bot) |"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            # Check for story, issue, decision, or research reference
+            if echo "$MESSAGE" | grep -qE "${STORY_PATTERN}|${ISSUE_PATTERN}|${DECISION_PATTERN}"; then
+              echo "| \`${SHORT}\` | ${MESSAGE} | Pass |"
+            else
+              echo "| \`${SHORT}\` | ${MESSAGE} | **WARNING: no story reference** |"
+              echo "::warning file=.github/workflows/scope-check.yml,title=Missing story reference::Commit ${SHORT} lacks a story reference: ${MESSAGE}"
+              VIOLATIONS=$((VIOLATIONS + 1))
+            fi
+          done
+
+          echo ""
+          echo "---"
+          echo "**Summary:** ${CHECKED} commits checked, ${SKIPPED} skipped, ${VIOLATIONS} missing story references"
+          echo ""
+
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "::notice::${VIOLATIONS} commit(s) lack story references. Expected format: (Story X.Y) or (#NNN)"
+            echo ""
+            echo "Expected commit message formats:"
+            echo "  feat: add feature (Story 12.3)"
+            echo "  fix: resolve bug (#456)"
+            echo "  docs: update readme (Story 7.1)"
+          else
+            echo "All commits have valid story references."
+          fi
+
+          # Always exit 0 — this is a WARNING check, not a blocker (Q-C-012)
+          exit 0
+
+      - name: Check story file existence
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          echo "## Story File Existence Check"
+          echo ""
+
+          MISSING=0
+
+          for SHA in $(git log --format='%H' "${PR_BASE_SHA}..${PR_HEAD_SHA}"); do
+            MESSAGE=$(git log --format='%s' -1 "$SHA")
+            SHORT=$(git log --format='%h' -1 "$SHA")
+
+            # Extract Story X.Y references
+            STORIES=$(echo "$MESSAGE" | grep -oE 'Story [0-9]+\.[0-9]+' || true)
+
+            if [ -z "$STORIES" ]; then
+              continue
+            fi
+
+            while IFS= read -r STORY_REF; do
+              # Convert "Story 12.3" to "docs/stories/12.3.story.md"
+              STORY_NUM=$(echo "$STORY_REF" | sed 's/Story //')
+              STORY_FILE="docs/stories/${STORY_NUM}.story.md"
+
+              if [ -f "$STORY_FILE" ]; then
+                echo "- \`${SHORT}\`: ${STORY_REF} -> \`${STORY_FILE}\` exists"
+              else
+                echo "- \`${SHORT}\`: ${STORY_REF} -> \`${STORY_FILE}\` **NOT FOUND**"
+                echo "::warning file=${STORY_FILE},title=Story file missing::Commit ${SHORT} references ${STORY_REF} but ${STORY_FILE} does not exist"
+                MISSING=$((MISSING + 1))
+              fi
+            done <<< "$STORIES"
+          done
+
+          if [ "$MISSING" -gt 0 ]; then
+            echo ""
+            echo "::notice::${MISSING} referenced story file(s) not found in the repository"
+          else
+            echo ""
+            echo "All referenced story files exist."
+          fi
+
+          # Always exit 0 — warning only
+          exit 0
