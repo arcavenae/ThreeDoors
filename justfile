@@ -141,6 +141,10 @@ docs:
 docs-serve:
     cd docs-site && python3 -m pip install -q -r requirements-docs.txt && python3 -m mkdocs serve
 
+# Show Claude token quota status (5h rolling window)
+quota *args='':
+    @bash scripts/quota-status.sh {{args}}
+
 # Show status of all multiclaude agents
 rollcall *args='':
     @bash scripts/rollcall.sh {{args}}
