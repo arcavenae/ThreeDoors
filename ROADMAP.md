@@ -652,44 +652,59 @@ Wire GitHub label application into agent workflows so that PRs are routinely lab
 
 ## Dark Factory Phase 1: Stabilize & Harden
 
-### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 2/6 stories
+### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 4/6 stories
 
 Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (workspace-as-primary), remove redundant heartbeats, add hook-enforced git safety, design session handoff, quota monitoring, daemon-native heartbeats. Research: R-007, R-010, R-004. Decisions: Q-C-005, Q-C-010, Q-C-011.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 73.1 | Workspace-as-Primary Operator Pattern | Done (PR #848) | P1 | None |
-| 73.2 | Remove CronCreate Heartbeats | Not Started | P1 | None |
+| 73.2 | Remove CronCreate Heartbeats | Reverted | P1 | None |
 | 73.3 | Hook-Enforced Git Safety for Workers | Done (PR #840) | P0 | None |
 | 73.4 | Session Handoff Protocol for Persistent Agents | Not Started | P1 | None |
-| 73.5 | Passive Quota Monitoring | Not Started | P2 | None |
+| 73.5 | Passive Quota Monitoring | Done (PR #866) | P2 | None |
 | 73.6 | Daemon-Native Heartbeats | Not Started | P2 | 73.2 |
 
 **Dependency graph:** 73.1, 73.2, 73.3, 73.4, 73.5 are independent. 73.6 depends on 73.2 (heartbeat removal before replacement). 73.3 is P0 — implement first.
 
-### Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1) — 2/5 stories
+### Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1) — 3/5 stories
 
 Protect governance files via CODEOWNERS, enforce commit conventions via CI, add provenance tracking, define .dfcp.yaml, introduce typed story comments. Research: R-005, R-003, R-010. Decisions: Q-C-001, Q-C-002, Q-C-007, Q-C-012.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 74.1 | CODEOWNERS for ThreeDoors Golden Repo | Done (PR #839) | P0 | None |
-| 74.2 | CI Scope-Check Workflow | Not Started | P1 | None |
+| 74.2 | CI Scope-Check Workflow | Done (PR #864) | P1 | None |
 | 74.3 | Provenance Tagging (L0-L4) | Done (PR #851) | P1 | None |
 | 74.4 | DFCP Configuration File (.dfcp.yaml) | Not Started | P2 | 74.1, 74.3 |
 | 74.5 | Typed Comments on Story Files | Not Started | P2 | None |
 
 **Dependency graph:** 74.1, 74.2, 74.3, 74.5 are independent. 74.4 depends on 74.1 (CODEOWNERS) and 74.3 (provenance) as it consolidates both into a machine-readable format. 74.1 is P0 — implement first.
 
-### Epic 75: Perplexity MCP Integration (P2) — 0/1 stories
+### Epic 75: Perplexity MCP Integration (P2) — COMPLETE (1/1 stories)
 
 Install Perplexity MCP server, disabled by default with per-session toggle. Parallel track. Research: R-008.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 75.1 | Install Perplexity MCP Server with Per-Session Toggle | Not Started | P2 | None |
+| 75.1 | Install Perplexity MCP Server with Per-Session Toggle | Done (PR #865) | P2 | None |
 
 **Dependency graph:** Independent — can be implemented at any time.
+
+### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 0/6 stories
+
+Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking. Phase 1 of 3-phase evolution: ThreeDoors PoC → mozukai host-level service → Marvel native quota management. Research: R-004, R-016.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 76.1 | JSONL Token Usage Parser Library | Not Started | P1 | None |
+| 76.2 | Per-Agent Usage Tracking & Attribution | Not Started | P1 | 76.1 |
+| 76.3 | Warning Threshold Engine (Advisory-Only) | Not Started | P1 | 76.1 |
+| 76.4 | /quota-status Slash Command | Not Started | P1 | 76.1, 76.2, 76.3 |
+| 76.5 | /stats Usage Data Integration | Not Started | P2 | 76.2 |
+| 76.6 | Window Reset Detection & Cron-Based Monitoring | Not Started | P2 | 76.2, 76.3 |
+
+**Dependency graph:** 76.1 is the foundation — all others depend on it. 76.2, 76.3 are independent once 76.1 is done. 76.4 aggregates 76.1-76.3. 76.5 and 76.6 are P2 extensions.
 
 ## Out of Scope
 

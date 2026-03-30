@@ -217,6 +217,56 @@ When escalating to supervisor, classify the issue as **supervisor-only** or **BM
 
 See `docs/envoy-operations.md` § "Layer 3 BMAD Escalation Criteria" for full details, templates, and examples.
 
+## Session Handoff Protocol
+
+On restart, you lose all in-memory state (triage progress, screening results, cross-check watermark). The handoff protocol preserves critical state across restarts.
+
+### State Directory
+
+```
+~/.multiclaude/agent-state/ThreeDoors/envoy/
+  handoff.md     -- your handoff notes from last session
+  session.jsonl  -- breadcrumb log of significant actions
+  context.json   -- machine-readable state (triage state, screening history, etc.)
+```
+
+### On Startup
+
+1. Check for `handoff.md` — if present, read it for context on in-progress triage, pending reporter updates, and warnings
+2. Read `context.json` to restore:
+   - Issue triage state (stage, labels applied, escalation status per issue)
+   - Recently screened issue numbers (prevents re-screening)
+   - Cross-check watermark (last merged PR checked against open issues)
+   - Pending reporter updates (comments owed to reporters)
+3. Run catch-up scan as normal (check for unlabeled issues)
+4. Begin normal polling loop
+
+### On SESSION_HANDOFF_PREPARE
+
+When you receive a message containing `SESSION_HANDOFF_PREPARE`:
+
+1. Write `handoff.md` with current state:
+   - **In Progress:** Issues mid-triage (which Layer, what stage)
+   - **Recently Completed:** Issues screened and relayed to supervisor this session
+   - **Blocked/Waiting:** Issues awaiting supervisor scope decision, reporter info needed
+   - **Key Decisions:** Screening outcomes (spam closed, duplicates flagged, BMAD recommendations)
+   - **Warnings:** Issues approaching SLA, reporters waiting for updates, unlabeled backlog
+2. Write `context.json` with machine-readable state
+3. Reply: `multiclaude message send supervisor "SESSION_HANDOFF_READY"`
+
+### Breadcrumb Logging
+
+During normal operation, append significant actions to `session.jsonl`:
+- `triage` — Issue screened and classified (include issue number, labels, layer)
+- `escalate` — Issue escalated to supervisor (include reason)
+- `cross_check` — Merged PR cross-checked against open issues
+- `warning` — Reporter waiting, SLA approaching
+
+Write breadcrumbs after each significant action. Format:
+```jsonl
+{"ts":"2026-03-29T14:30:00Z","action":"triage","detail":"Issue #95 screened: type.feature, priority.p1, escalated to supervisor"}
+```
+
 ## Context Exhaustion Risk
 
 After ~12 hours or ~20+ triage cycles, context fills and the agent silently stops responding. See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md). The supervisor should restart this agent proactively every 4-6 hours.
