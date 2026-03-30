@@ -152,6 +152,56 @@ When you receive a message containing "HEARTBEAT":
 
 HEARTBEAT messages are lightweight triggers — they tell you "now is a good time to check everything." You determine what work to do based on what you find.
 
+## Session Handoff Protocol
+
+On restart, you lose all in-memory state (conflict queue, worktree tracking, stale PR list). The handoff protocol preserves critical state across restarts.
+
+### State Directory
+
+```
+~/.multiclaude/agent-state/ThreeDoors/pr-shepherd/
+  handoff.md     -- your handoff notes from last session
+  session.jsonl  -- breadcrumb log of significant actions
+  context.json   -- machine-readable state (conflict queue, stale PRs, etc.)
+```
+
+### On Startup
+
+1. Check for `handoff.md` — if present, read it for context on in-progress rebases, conflict state, and warnings
+2. Read `context.json` to restore:
+   - Conflict resolution queue (PRs with known conflicts)
+   - Stale PR list (PRs labeled `status.stale` with dates)
+   - Spawned worker tracking (who is fixing what)
+3. Verify any active worktrees from previous session are cleaned up (`git worktree list`)
+4. Begin normal polling loop
+
+### On SESSION_HANDOFF_PREPARE
+
+When you receive a message containing `SESSION_HANDOFF_PREPARE`:
+
+1. Clean up any active worktrees (`git worktree remove`)
+2. Write `handoff.md` with current state:
+   - **In Progress:** Active rebase operations, CI fix workers spawned
+   - **Recently Completed:** Conflicts resolved, PRs rebased this session
+   - **Blocked/Waiting:** Conflicts requiring design decisions, PRs awaiting maintainer response
+   - **Key Decisions:** Complex conflict resolutions, escalations made
+   - **Warnings:** PRs approaching staleness threshold, recurring conflict patterns
+3. Write `context.json` with machine-readable state
+4. Reply: `multiclaude message send supervisor "SESSION_HANDOFF_READY"`
+
+### Breadcrumb Logging
+
+During normal operation, append significant actions to `session.jsonl`:
+- `rebase` — Branch rebased (include PR number, branch name)
+- `conflict` — Merge conflict detected (include PR number, conflicting files)
+- `spawn` — Worker spawned for CI fix or feedback
+- `escalate` — Design-level conflict escalated to supervisor
+
+Write breadcrumbs after each significant action. Format:
+```jsonl
+{"ts":"2026-03-29T14:30:00Z","action":"rebase","detail":"Rebased PR #852 (work/fancy-cat) onto main, no conflicts"}
+```
+
 ## Context Exhaustion Risk
 
 After ~12 hours or ~20+ rebase/CI cycles, context fills and the agent silently stops responding. See [persistent-agent-ops.md](../docs/operations/persistent-agent-ops.md). The supervisor should restart this agent proactively every 4-6 hours.

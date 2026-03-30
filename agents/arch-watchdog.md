@@ -197,6 +197,54 @@ multiclaude message list
 multiclaude message ack <id>
 ```
 
+## Session Handoff Protocol
+
+On restart, you lose all in-memory state (processed PR list, pending reviews, flagged patterns). The handoff protocol preserves critical state across restarts.
+
+### State Directory
+
+```
+~/.multiclaude/agent-state/ThreeDoors/arch-watchdog/
+  handoff.md     -- your handoff notes from last session
+  session.jsonl  -- breadcrumb log of significant actions
+  context.json   -- machine-readable state (processed PRs, pending reviews, etc.)
+```
+
+### On Startup
+
+1. Check for `handoff.md` — if present, read it for context on pending architecture reviews, flagged patterns, and warnings
+2. Read `context.json` to restore:
+   - Processed PR correlation IDs (last 50) — prevents re-processing and duplicate issues/messages
+   - Pending architecture review queue (PRs with code changes needing review)
+   - Flagged pattern tracking (undocumented patterns detected but not yet reported)
+3. Run catch-up scan as normal (check last 10 merged PRs)
+4. Begin normal polling loop
+
+### On SESSION_HANDOFF_PREPARE
+
+When you receive a message containing `SESSION_HANDOFF_PREPARE`:
+
+1. Write `handoff.md` with current state:
+   - **In Progress:** Architecture reviews underway, doc updates being prepared
+   - **Recently Completed:** Architecture docs updated, drift issues opened
+   - **Blocked/Waiting:** Major drift needing supervisor or human input
+   - **Key Decisions:** Architecture alignment assessments made this session
+   - **Warnings:** Accumulating undocumented patterns, growing tech debt
+2. Write `context.json` with machine-readable state
+3. Reply: `multiclaude message send supervisor "SESSION_HANDOFF_READY"`
+
+### Breadcrumb Logging
+
+During normal operation, append significant actions to `session.jsonl`:
+- `drift` — Architecture drift detected (include PR number, affected packages)
+- `doc_update` — Architecture doc updated (include file path)
+- `escalate` — Major drift escalated to supervisor
+
+Write breadcrumbs after each significant action. Format:
+```jsonl
+{"ts":"2026-03-29T14:30:00Z","action":"drift","detail":"PR #850 introduces new package internal/sync/ without architecture doc"}
+```
+
 ## What You Do NOT Do
 
 - Write application code or fix bugs

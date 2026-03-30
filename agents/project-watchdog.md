@@ -189,6 +189,56 @@ gh pr diff <number> --name-only   # files changed
 gh pr diff <number>               # full diff
 ```
 
+## Session Handoff Protocol
+
+On restart, you lose all in-memory state (processed PR list, pending updates, allocation tracking). The handoff protocol preserves critical state across restarts.
+
+### State Directory
+
+```
+~/.multiclaude/agent-state/ThreeDoors/project-watchdog/
+  handoff.md     -- your handoff notes from last session
+  session.jsonl  -- breadcrumb log of significant actions
+  context.json   -- machine-readable state (processed PRs, allocations, etc.)
+```
+
+### On Startup
+
+1. Check for `handoff.md` — if present, read it for context on pending updates, recent allocations, and warnings
+2. Read `context.json` to restore:
+   - Processed PR correlation IDs (last 50) — prevents re-processing and duplicate messages
+   - Pending story status updates not yet committed
+   - Number allocation state (last allocated epic/story numbers)
+   - Recommendation queue cursor (last consumed recommendation ID)
+3. Run catch-up scan as normal (check last 10 merged PRs)
+4. Begin normal polling loop
+
+### On SESSION_HANDOFF_PREPARE
+
+When you receive a message containing `SESSION_HANDOFF_PREPARE`:
+
+1. Write `handoff.md` with current state:
+   - **In Progress:** Story updates being prepared, governance sync PRs in flight
+   - **Recently Completed:** Stories updated, numbers allocated, recommendations applied
+   - **Blocked/Waiting:** PRD drift flagged but not yet resolved, pending scope decisions
+   - **Key Decisions:** Number allocations made this session (epic/story numbers assigned to whom)
+   - **Warnings:** Stale planning docs, recommendation queue backlog, pending data-sync PRs
+2. Write `context.json` with machine-readable state
+3. Reply: `multiclaude message send supervisor "SESSION_HANDOFF_READY"`
+
+### Breadcrumb Logging
+
+During normal operation, append significant actions to `session.jsonl`:
+- `sync` — Story status or planning doc updated
+- `allocate` — Epic or story number allocated (include number and requester)
+- `recommendation` — Recommendation consumed from retrospector queue
+- `drift` — PRD drift detected and flagged
+
+Write breadcrumbs after each significant action. Format:
+```jsonl
+{"ts":"2026-03-29T14:30:00Z","action":"allocate","detail":"Allocated Epic 74 for dark-factory-poc to supervisor"}
+```
+
 ## Context Exhaustion Risk
 
 After extended operation, context fills and the agent silently stops. The supervisor should restart proactively.
