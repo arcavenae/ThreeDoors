@@ -48,16 +48,17 @@ Governance-critical files are protected by `.github/CODEOWNERS` with `require_co
 - `SOUL.md` — project philosophy
 - `CLAUDE.md` — agent instructions
 - `.claude/` — agent rules, settings
-- `ROADMAP.md` — scope control
-- `docs/prd/epic-list.md` — epic definitions
-- `docs/prd/epics-and-stories.md` — story breakdown
-- `docs/decisions/BOARD.md` — architectural decisions
+- `.env` — environment secrets
+- `.gitignore` — repository ignore rules
 - `.github/` — CI/CD, CODEOWNERS itself
 - `agents/` — agent behavior definitions
+- `_bmad/` — BMAD framework configuration
 
 **Unprotected (AI agents can self-merge via merge-queue):**
 - `internal/`, `cmd/`, `pkg/` — all application code
 - `docs/stories/` — workers must update story status freely
+- `ROADMAP.md`, `docs/prd/epic-list.md`, `docs/prd/epics-and-stories.md` — agents must update these as part of planning pipeline (D-162)
+- `docs/decisions/BOARD.md` — agents write decision entries; CI-based protection under research (R-015, D-190)
 - Test files, fixtures, scripts, build files
 
 **Rules for workers:**
