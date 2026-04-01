@@ -37,7 +37,7 @@ See individual agent files in `agents/` for specific authority definitions.
 | pr-shepherd | Fork PR management | Rebase and fix CI; cannot merge |
 | envoy | Community triage | Welcome, triage, create stories; cannot make scope decisions |
 | arch-watchdog | Architecture compliance | Flag violations; cannot override human decisions |
-| project-watchdog | Planning doc health | Detect drift; cannot modify story files |
+| project-watchdog | Planning doc health | Detect drift; allocate epic/story numbers (sole authority, INC-003); update story status and planning docs |
 
 ### Ephemeral Agents
 
