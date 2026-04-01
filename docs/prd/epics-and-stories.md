@@ -7195,3 +7195,52 @@ So that modifications to safety-critical git hooks are validated by the full Go 
 **Dev Notes:**
 - Single-line addition
 - `scripts/hooks/` contains `git-safety.sh` (blocks dangerous git commands) and its test
+
+---
+
+## Epic 78: CODEOWNERS Documentation Drift Fix (P1)
+
+**Goal:** Fix stale CODEOWNERS-protected file lists in CLAUDE.md, merge-queue.md, and pr-shepherd.md. Four files listed as protected are actually unprotected (ROADMAP.md, epic-list.md, epics-and-stories.md, BOARD.md), causing incorrect `status.needs-human` labeling on governance sync PRs.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** 1/3 stories done
+
+### Story 78.1: Update CLAUDE.md CODEOWNERS Protection Section
+
+As a multiclaude operator,
+I want the CLAUDE.md CODEOWNERS section to match the actual `.github/CODEOWNERS` file,
+So that agents get accurate guidance about which files require human review.
+
+**Status:** Done (PR #899) | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** ROADMAP.md, epic-list.md, epics-and-stories.md, BOARD.md removed from protected list
+- **AC2:** All four added to unprotected list with explanatory notes
+- **AC3:** `_bmad/`, `.env`, `.gitignore` added to protected list (present in CODEOWNERS but missing from CLAUDE.md)
+- **AC4:** Protected list matches actual `.github/CODEOWNERS` uncommented entries exactly
+
+### Story 78.2: Fix merge-queue Protected Paths and Detection Pattern
+
+As a merge-queue agent,
+I want my protected paths list and grep detection pattern to match actual CODEOWNERS,
+So that I stop incorrectly labeling governance sync PRs as `status.needs-human`.
+
+**Status:** Not Started | **Priority:** P1 (root cause)
+
+**Acceptance Criteria:**
+- **AC1:** Protected paths list updated to match actual CODEOWNERS
+- **AC2:** Detection grep pattern updated — remove stale paths, add `\.env|\.gitignore|_bmad/`
+- **AC3:** Grep pattern is syntactically correct
+
+### Story 78.3: Fix pr-shepherd Protected Files List
+
+As a pr-shepherd agent,
+I want my protected files list to match actual CODEOWNERS,
+So that I don't incorrectly escalate PRs for human review.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Protected files list updated to match actual CODEOWNERS
+- **AC2:** No other stale CODEOWNERS references in pr-shepherd.md

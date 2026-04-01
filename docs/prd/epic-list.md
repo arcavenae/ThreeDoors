@@ -985,6 +985,16 @@ lastUpdated: '2026-03-15'
 - **Research:** PR #868 (ci-path-filtering-research.md)
 - **Trigger:** PR #866 (Story 73.5) ran full Go Quality Gate despite only adding shell scripts + docs
 
+**Epic 78: CODEOWNERS Documentation Drift Fix** (P1) — 1/3 DONE
+- **Goal:** Fix stale CODEOWNERS-protected file lists in CLAUDE.md, merge-queue.md, and pr-shepherd.md that cause incorrect `status.needs-human` labeling on governance sync PRs
+- **Prerequisites:** None
+- **Status:** 1/3 stories done
+- **Deliverables:**
+  - CLAUDE.md CODEOWNERS section updated to match actual `.github/CODEOWNERS` (Done PR #899)
+  - merge-queue.md protected paths and grep pattern corrected (root cause fix)
+  - pr-shepherd.md protected files list corrected
+- **Stories:** 78.1-78.3 (3 stories)
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -1074,5 +1084,6 @@ lastUpdated: '2026-03-15'
 | Epic 75: Perplexity MCP Integration | 1 | Complete (1/1 done) |
 | Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Complete (6/6 done) |
 | Epic 77: CI Path Filtering Improvements | 4 | Complete (4/4 done) |
-| **Total** | **382** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
+| Epic 78: CODEOWNERS Documentation Drift Fix | 3 | 1/3 done |
+| **Total** | **385** | **Audit 2026-03-31: see epics-and-stories.md for authoritative status** |
 ---
