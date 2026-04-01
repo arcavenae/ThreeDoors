@@ -1,0 +1,20 @@
+id: adr-0029
+type: element
+confidence: bedrock
+title: "Rename Phase 5+ to Phase 4.5 (Active Governance)"
+content: |
+  Governance infrastructure is actively being built, not deferred future
+  work. Renaming from Phase 5+ to Phase 4.5 reflects that governance is
+  a current concern running in parallel with feature development.
+edges:
+  - target: adr-0026
+    type: derives
+    note: "Governance scope clarification for the self-driving pipeline"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - process
+  - dark-factory

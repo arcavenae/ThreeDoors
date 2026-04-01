@@ -1,0 +1,16 @@
+id: adr-0017
+type: element
+confidence: bedrock
+title: "Local-first calendar integration"
+content: |
+  Calendar integration uses local-only sources: AppleScript for macOS Calendar,
+  .ics file parsing, and CalDAV cache. No OAuth flows or cloud API dependencies.
+  Aligns with offline-first and user-sovereignty principles.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - integration

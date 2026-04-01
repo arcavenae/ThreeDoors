@@ -1,0 +1,23 @@
+id: adr-0031
+type: element
+confidence: bedrock
+title: "Biweekly sprint cadence"
+content: |
+  Sprint boundaries with lightweight ceremonies for AI agent team
+  coordination. Provides rhythm for planning, review, and retrospective
+  across human and agent contributors.
+edges:
+  - target: adr-0025
+    type: derives
+    note: "Sprints organize story-driven work into time-boxed iterations"
+  - target: adr-0029
+    type: derives
+    note: "Sprint cadence is part of active governance infrastructure"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - process
+  - dark-factory

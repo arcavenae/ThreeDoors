@@ -1,0 +1,17 @@
+id: board-q-006
+type: question
+confidence: frontier
+title: "What is the actual token budget per 5-hour Max plan window?"
+content: |
+  Community estimates suggest Max 5x ~88K tokens and Max 20x ~220K tokens
+  per 5-hour window, but these are unverified. Needs empirical measurement
+  to establish actual budgets for capacity planning in multi-agent scenarios.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - quota

@@ -1,0 +1,30 @@
+id: inc-002
+type: finding
+confidence: bedrock
+title: "Destructive git sync override — cargo-culted memory calcifies into unquestioned dogma"
+content: |
+  Supervisor memory mandated git fetch/rebase before every worker task.
+  multiclaude already handles worktree sync — the instruction was redundant
+  and destructive. It was cargo-culted from the pre-worktree era when agents
+  shared a single checkout. The instruction was applied 100+ times over 3 days
+  without question. Root cause: agent memory persisted an obsolete practice
+  that had been correct in a prior architecture but became harmful after the
+  platform added worktree isolation. Lesson: operational instructions in agent
+  memory must be audited when the underlying platform changes. Inherited
+  memory that overrides platform abstractions is a reliability hazard.
+edges:
+  - target: adr-0026
+    type: contradicts
+    note: "Pipeline overrode platform abstractions instead of trusting them"
+  - target: inc-001
+    type: derives
+    note: "Same category: agents doing git operations in wrong context"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - incident
+  - dark-factory
+  - git-safety
+  - agent-ops

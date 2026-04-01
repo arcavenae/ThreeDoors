@@ -1,0 +1,26 @@
+id: prd-jira-scope-contradiction
+type: finding
+confidence: frontier
+title: "Jira adapter promised as read-only in Phase 3 but Phase 4 changes to bidirectional"
+content: |
+  Planning docs lag implementation. The multi-provider integration
+  strategy (ADR-0027) defines three phases per provider (read-only
+  to bidirectional to advanced) but the PRD scope document conflates
+  these phases. The Jira adapter appears as read-only in Phase 3 scope
+  but bidirectional in Phase 4, without acknowledging the per-provider
+  phase model that ADR-0027 establishes.
+edges:
+  - target: adr-0027
+    type: contradicts
+    note: "PRD scope doesn't cleanly follow the three-phase-per-provider pattern"
+  - target: prd-multi-source
+    type: derives
+    note: "multi-source integration is the context for per-provider phasing"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - finding
+  - sync

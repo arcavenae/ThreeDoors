@@ -1,0 +1,21 @@
+id: prd-three-doors-ux
+type: element
+confidence: bedrock
+title: "Core UX: three curated task options reduce decision fatigue"
+content: |
+  The founding hypothesis. Show 3 tasks, not a list. The constraint IS
+  the feature. Decision fatigue is the enemy; presenting exactly three
+  curated options forces prioritization at the source. Validated in
+  Phase 1 daily use.
+edges:
+  - target: adr-0002
+    type: derives
+    note: "Bubbletea implements the three-doors TUI"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - app
+  - ux

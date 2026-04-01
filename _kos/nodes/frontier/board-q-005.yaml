@@ -1,0 +1,18 @@
+id: board-q-005
+type: question
+confidence: frontier
+title: "Does Anthropic TOS allow multiple Max subscriptions on same machine?"
+content: |
+  Multi-agent scenario legality. Running multiple Claude Code instances
+  under separate Max subscriptions on the same physical machine. Need to
+  review Anthropic Terms of Service, particularly the fair use clause,
+  to determine whether this is permitted or risks account action.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - quota

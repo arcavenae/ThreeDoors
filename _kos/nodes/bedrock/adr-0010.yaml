@@ -1,0 +1,22 @@
+id: adr-0010
+type: element
+confidence: bedrock
+title: "Incremental task model extension"
+content: |
+  Task struct fields are added per-epic as needed, following YAGNI. The
+  model grows incrementally with each feature rather than being designed
+  upfront with speculative fields.
+edges:
+  - target: adr-0003
+    type: derives
+    note: "YAML persistence makes additive field changes backward-compatible"
+  - target: adr-0009
+    type: derives
+    note: "State machine defines the core model that extensions build upon"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - domain-model

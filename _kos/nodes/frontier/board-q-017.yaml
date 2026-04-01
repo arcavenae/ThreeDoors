@@ -1,0 +1,18 @@
+id: board-q-017
+type: question
+confidence: frontier
+title: "How to handle submodule update conflicts during worktree rebase?"
+content: |
+  Submodule pointer changes can conflict during rebase. When multiple
+  worktrees modify submodule references independently, rebasing onto
+  main produces conflicts at the submodule pointer level that are
+  harder to resolve than normal file conflicts.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - tooling

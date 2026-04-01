@@ -1,0 +1,19 @@
+id: adr-0002
+type: element
+confidence: bedrock
+title: "Bubbletea TUI framework"
+content: |
+  Bubbletea, Lipgloss, and Bubbles form the TUI stack, using the Elm
+  Architecture (Model-View-Update). Bubbletea provides a composable,
+  testable TUI framework that fits Go's concurrency model.
+edges:
+  - target: adr-0001
+    type: derives
+    note: "Bubbletea is a Go-native TUI framework, chosen because Go is the language"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - tui

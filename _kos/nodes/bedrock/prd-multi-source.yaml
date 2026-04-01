@@ -1,0 +1,23 @@
+id: prd-multi-source
+type: element
+confidence: bedrock
+title: "Meet users where they are: integrate existing tools, don't replace them"
+content: |
+  Adapter pattern for external task sources. Apple Notes, Obsidian, Jira,
+  GitHub, Linear, Todoist, Apple Reminders, ClickUp. ThreeDoors is a
+  curated view over existing workflows, not a replacement for them.
+edges:
+  - target: adr-0006
+    type: derives
+    note: "TaskProvider interface defines the adapter contract"
+  - target: adr-0027
+    type: derives
+    note: "Multi-provider strategy enables concurrent source aggregation"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - app
+  - sync

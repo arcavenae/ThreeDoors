@@ -1,0 +1,22 @@
+id: adr-0014
+type: element
+confidence: bedrock
+title: "Auto-migrate schema on load"
+content: |
+  Detect and convert old task file formats to the current schema automatically
+  on load. Eliminates manual migration steps and ensures backward compatibility
+  as the persistence format evolves.
+edges:
+  - target: adr-0010
+    type: derives
+    note: "extends task file format with migration capability"
+  - target: adr-0003
+    type: derives
+    note: "builds on YAML persistence layer"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - persistence

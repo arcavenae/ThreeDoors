@@ -1,0 +1,23 @@
+id: arch-external-apis-stale
+type: element
+confidence: frontier
+title: "external-apis.md claims 'no external API integrations' — completely stale"
+content: |
+  Document says ThreeDoors is fully local with no external APIs. Reality:
+  Jira REST API, Apple Reminders JXA, Todoist REST, GitHub SDK, Linear
+  GraphQL all implemented. The document is a false claim about the system.
+edges:
+  - target: adr-0021
+    type: contradicts
+    note: "MCP server is an external API integration"
+  - target: arch-task-provider
+    type: contradicts
+    note: "5 external adapters implement TaskProvider"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - drift

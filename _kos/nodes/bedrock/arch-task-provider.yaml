@@ -1,0 +1,20 @@
+id: arch-task-provider
+type: element
+confidence: bedrock
+title: "TaskProvider interface — core abstraction for all storage backends"
+content: |
+  All adapters implement the same interface: Load, Save, Delete, Watch,
+  HealthCheck. Registry manages discovery and lifecycle. This decouples
+  domain logic from storage, making backends interchangeable.
+edges:
+  - target: adr-0006
+    type: derives
+    note: "ADR-0006 established the TaskProvider interface pattern"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - sync

@@ -1,0 +1,23 @@
+id: arch-session-handoff
+type: element
+confidence: frontier
+title: "Session handoff protocol for persistent agent restarts"
+content: |
+  Agents write handoff state (handoff.md, session.jsonl, context.json).
+  Daemon sends SESSION_HANDOFF_PREPARE, agent acknowledges with
+  SESSION_HANDOFF_READY. Enables clean restart without losing work context.
+edges:
+  - target: arch-agent-governance
+    type: derives
+    note: "Handoff protocol is part of agent lifecycle governance"
+  - target: inc-004
+    type: contradicts
+    note: "Handoff protocol depends on inter-agent messaging which INC-004 proved is broken — agents use SendMessage not multiclaude message send"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - dark-factory
+  - agent-ops

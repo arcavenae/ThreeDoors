@@ -1,0 +1,19 @@
+id: adr-0019
+type: element
+confidence: bedrock
+title: "Docker E2E and headless TUI testing"
+content: |
+  Three-tier testing strategy: headless teatest for unit-level TUI interaction,
+  golden file snapshots for rendering regression, and Docker-based E2E tests
+  for full integration validation in a clean environment.
+edges:
+  - target: adr-0002
+    type: derives
+    note: "extends Bubbletea TUI with structured testing approach"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - testing

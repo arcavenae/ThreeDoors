@@ -1,0 +1,25 @@
+id: arch-governance-authority-gap
+type: finding
+confidence: bedrock
+title: "Governance authority matrix contradicts INC-003 — project-watchdog needs allocation authority it doesn't have"
+content: |
+  governance-model.md says project-watchdog "cannot modify story files" but
+  INC-003 requires it to be sole allocator of epic/story numbers, which
+  requires modification authority. The authority matrix doesn't include
+  number allocation.
+edges:
+  - target: arch-agent-governance
+    type: contradicts
+    note: "Authority matrix lacks number allocation permission that INC-003 demands"
+  - target: inc-003
+    type: derives
+    note: "INC-003 established need for sole allocator but governance model doesn't grant the authority"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - dark-factory
+  - governance
+  - incident

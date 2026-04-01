@@ -1,0 +1,22 @@
+id: board-r-007
+type: element
+confidence: frontier
+title: "multiclaude operator UX — tmux injection is the root cause"
+content: |
+  Root cause: all communication via tmux paste-buffer injection.
+  3 short-term, 4 medium-term, 3 long-term proposals. Workspace
+  window exempted from injections. Injection-based communication
+  creates fragility, race conditions, and poor operator experience.
+edges:
+  - target: board-q-010
+    type: derives
+    note: "system prompt file replacing injection addresses root cause"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - research
+  - dark-factory
+  - agent-comms

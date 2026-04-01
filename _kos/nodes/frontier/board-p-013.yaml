@@ -1,0 +1,21 @@
+id: board-p-013
+type: element
+confidence: frontier
+title: "Dark factory consolidated roadmap — Phase 1 stabilize, Phase 2 PoC, Phase 3 scale"
+content: |
+  8 initiative clusters. Phase 1: CODEOWNERS, hook-enforced git
+  safety, quota monitoring, provenance tagging. Phase 2: proof of
+  concept with controlled autonomy. Phase 3: scale with full
+  governance. Platform extraction to Marvel as end-state.
+edges:
+  - target: board-r-012
+    type: derives
+    note: "roadmap derived from consolidated cross-analysis"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - recommendation
+  - dark-factory

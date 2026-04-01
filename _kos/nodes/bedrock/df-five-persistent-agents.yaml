@@ -1,0 +1,23 @@
+id: df-five-persistent-agents
+type: element
+confidence: bedrock
+title: "Five persistent agents: merge-queue, pr-shepherd, envoy, project-watchdog, arch-watchdog"
+content: |
+  Each with CAN/CANNOT/ESCALATE authority tiers. No overlapping write
+  domains. Polling intervals 5-30 min. Max 6-7 agents before coordination
+  overhead dominates. API budget: 19-31 GitHub calls/hour.
+edges:
+  - target: arch-agent-governance
+    type: derives
+    note: "Agent governance authority model"
+  - target: adr-0026
+    type: derives
+    note: "Agent authority tier definitions"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - agents
+  - governance

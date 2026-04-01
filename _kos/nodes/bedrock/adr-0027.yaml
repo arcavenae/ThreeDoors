@@ -1,0 +1,23 @@
+id: adr-0027
+type: element
+confidence: bedrock
+title: "Multi-provider integration strategy"
+content: |
+  Three-phase approach per provider: read-only first, then bidirectional
+  sync, then advanced features. Ensures each integration is stable before
+  adding complexity.
+edges:
+  - target: adr-0006
+    type: derives
+    note: "Extends provider architecture from ADR-0006"
+  - target: adr-0007
+    type: derives
+    note: "Builds on sync model from ADR-0007"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - sync
+  - integration

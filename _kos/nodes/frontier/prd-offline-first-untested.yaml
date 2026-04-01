@@ -1,0 +1,26 @@
+id: prd-offline-first-untested
+type: question
+confidence: frontier
+title: "Has offline-first sync been tested under real multi-provider conditions?"
+content: |
+  NFR14 promises all core functionality offline with queued sync.
+  Phase 4 adds 6 external API providers. WAL queuing exists but
+  cross-provider conflict resolution complexity suggests offline-first
+  may be aspirational rather than tested at scale. Each provider has
+  different consistency guarantees, rate limits, and failure modes —
+  the offline queue must handle all of them.
+edges:
+  - target: arch-offline-first
+    type: derives
+    note: "offline-first architecture is the foundation this question probes"
+  - target: prd-multi-source
+    type: derives
+    note: "multi-provider integration multiplies the offline sync surface area"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - app
+  - sync

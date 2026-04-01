@@ -1,0 +1,16 @@
+id: adr-0001
+type: element
+confidence: bedrock
+title: "Go as primary language"
+content: |
+  Go 1.25.4+ is the sole implementation language for ThreeDoors. Chosen for
+  single-binary distribution, fast compilation, built-in concurrency, and
+  a mature ecosystem for CLI and TUI development.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - language

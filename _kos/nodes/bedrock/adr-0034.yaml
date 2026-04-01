@@ -1,0 +1,22 @@
+id: adr-0034
+type: element
+confidence: bedrock
+title: "Cross-computer sync architecture"
+content: |
+  Git-based sync via bare repository, vector clocks per device, and
+  UUID v5 for deterministic device identity. Enables multi-machine
+  usage without cloud dependencies.
+edges:
+  - target: adr-0012
+    type: derives
+    note: "Builds on storage architecture from ADR-0012"
+  - target: adr-0013
+    type: derives
+    note: "Extends data model from ADR-0013 with sync semantics"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - sync

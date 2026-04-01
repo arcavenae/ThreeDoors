@@ -1,0 +1,19 @@
+id: board-q-033
+type: question
+confidence: frontier
+title: "Should remote director use WebSocket, SSH tunnel, or gRPC?"
+content: |
+  Three transport options for remote director communication.
+  WebSocket: web-friendly, works through proxies and firewalls.
+  SSH tunnel: zero-infrastructure, leverages existing SSH keys and
+  access. gRPC: typed contracts, fast binary protocol, good tooling.
+  Each has different operational and complexity trade-offs.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - architecture

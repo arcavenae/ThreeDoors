@@ -1,0 +1,35 @@
+id: df-governance-incident-pattern
+type: finding
+confidence: bedrock
+title: "All 4 incidents are governance failures, not app failures — the dark factory is the fragile half"
+content: |
+  INC-001 (checkout contamination), INC-002 (cargo-culted memory), INC-003
+  (epic collision), INC-004 (message drops) are all agent governance failures.
+  Zero incidents are app bugs. The app half of ThreeDoors is stable; the dark
+  factory half produces all the incidents. This is the two-project seam in
+  action: the experimental half generates the failures.
+edges:
+  - target: inc-001
+    type: derives
+    note: "checkout contamination — governance failure"
+  - target: inc-002
+    type: derives
+    note: "cargo-culted memory — governance failure"
+  - target: inc-003
+    type: derives
+    note: "epic collision — governance failure"
+  - target: inc-004
+    type: derives
+    note: "message drops — governance failure"
+  - target: prd-two-projects-seam
+    type: derives
+    note: "incident pattern confirms the two-project split"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - finding
+  - incidents
+  - two-projects

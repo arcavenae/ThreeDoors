@@ -1,0 +1,19 @@
+id: board-q-013
+type: question
+confidence: frontier
+title: "Should workers call perplexity_research directly or route through research-supervisor?"
+content: |
+  Authorization and routing question for expensive Perplexity operations.
+  Direct calls are simpler but harder to audit and rate-limit. Routing
+  through a research-supervisor centralizes budget enforcement and
+  provides a single point for logging, but adds latency and a dependency
+  on the supervisor being available.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - perplexity

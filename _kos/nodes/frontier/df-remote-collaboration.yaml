@@ -1,0 +1,20 @@
+id: df-remote-collaboration
+type: element
+confidence: frontier
+title: "Three access modes: SSH+multiclaude CLI, tmux read-only, GitHub Issues fallback"
+content: |
+  SSH is auth boundary; multiclaude has no internal auth. Never expose
+  daemon.sock. Agents poll messages at 5-30 min intervals. GitHub Issues
+  with remote-task label as async fallback.
+edges:
+  - target: df-five-persistent-agents
+    type: derives
+    note: "Remote access extends persistent agent capabilities"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - remote
+  - collaboration

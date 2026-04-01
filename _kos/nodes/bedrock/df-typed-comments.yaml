@@ -1,0 +1,20 @@
+id: df-typed-comments
+type: element
+confidence: bedrock
+title: "Typed comment protocol: 5 comment types for structured agent communication in story files"
+content: |
+  [decision], [observation], [blocker], [risk], [deviation]. Grep-extractable
+  design. Enables retrospector to analyze decision patterns. Typical story
+  has 2-5 typed comments.
+edges:
+  - target: adr-0025
+    type: derives
+    note: "Story files host typed comments"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - communication
+  - governance
