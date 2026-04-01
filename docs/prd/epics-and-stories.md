@@ -6758,7 +6758,7 @@ So that the GitHub issue dashboard is clean and accurate.
 
 **Priority:** P1
 **Prerequisites:** None — fixes the platform everything else runs on
-**Status:** Not Started (0/6 stories)
+**Status:** 7/8 stories done (73.2 Reverted)
 **Reference:** R-007 (Operator UX), R-010 (Chainlink), R-004 (Quota), R-012 (Consolidation)
 **Decisions:** Q-C-005 (hooks replace prompts), Q-C-010 (daemon handoff), Q-C-011 (drop CronCreate)
 
@@ -6971,7 +6971,7 @@ So that agents can perform web-grounded research when explicitly enabled without
 
 **Priority:** P1
 **Prerequisites:** None (reads existing JSONL session files)
-**Status:** Not Started (0/6 stories)
+**Status:** Complete (6/6 stories)
 **Reference:** R-004 (Quota Throttling), R-016 (TDD/Performance/OTEL)
 
 **Strategic Context:** Phase 1 of a 3-phase evolution: ThreeDoors PoC (this epic) → mozukai host-level service → Marvel native quota management. All designs should consider portability to later phases.

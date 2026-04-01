@@ -2,7 +2,7 @@
 
 > Source of truth for merge-queue scope checks and worker prioritization.
 > Synced periodically by BMAD PM agent from `docs/prd/epics-and-stories.md`.
-> Last updated: 2026-03-15 (batch-767)
+> Last updated: 2026-03-31 (governance-sync-73-76-catchup)
 
 ## Priority Legend
 
@@ -652,7 +652,7 @@ Wire GitHub label application into agent workflows so that PRs are routinely lab
 
 ## Dark Factory Phase 1: Stabilize & Harden
 
-### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 4/6 stories
+### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 7/8 stories (73.2 Reverted)
 
 Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (workspace-as-primary), remove redundant heartbeats, add hook-enforced git safety, design session handoff, quota monitoring, daemon-native heartbeats. Research: R-007, R-010, R-004. Decisions: Q-C-005, Q-C-010, Q-C-011.
 
@@ -661,11 +661,13 @@ Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (
 | 73.1 | Workspace-as-Primary Operator Pattern | Done (PR #848) | P1 | None |
 | 73.2 | Remove CronCreate Heartbeats | Reverted | P1 | None |
 | 73.3 | Hook-Enforced Git Safety for Workers | Done (PR #840) | P0 | None |
-| 73.4 | Session Handoff Protocol for Persistent Agents | Not Started | P1 | None |
+| 73.4 | Session Handoff Protocol for Persistent Agents | Done (PR #867) | P1 | None |
 | 73.5 | Passive Quota Monitoring | Done (PR #866) | P2 | None |
-| 73.6 | Daemon-Native Heartbeats | Not Started | P2 | 73.2 |
+| 73.6 | Daemon-Native Heartbeats | Done (PR #862) | P2 | 73.2 |
+| 73.7 | /rollcall Slash Command | Done (PR #857) | P1 | None |
+| 73.8 | Worktree-Aware Git Safety Hook Scoping | Done (PR #892) | P1 | 73.3 |
 
-**Dependency graph:** 73.1, 73.2, 73.3, 73.4, 73.5 are independent. 73.6 depends on 73.2 (heartbeat removal before replacement). 73.3 is P0 — implement first.
+**Dependency graph:** 73.1, 73.2, 73.3, 73.4, 73.5, 73.7 are independent. 73.6 depends on 73.2 (heartbeat removal before replacement). 73.8 depends on 73.3 (refines hook scoping). 73.2 is Reverted — daemon wake loop alone insufficient; blocked on alternative approach.
 
 ### Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance (P1) — 5/5 stories ✓ COMPLETE
 
@@ -691,17 +693,17 @@ Install Perplexity MCP server, disabled by default with per-session toggle. Para
 
 **Dependency graph:** Independent — can be implemented at any time.
 
-### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 4/6 stories
+### Epic 76: Claude Usage Monitoring & Quota Awareness (P1) — 6/6 stories ✓ COMPLETE
 
 Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking. Phase 1 of 3-phase evolution: ThreeDoors PoC → mozukai host-level service → Marvel native quota management. Research: R-004, R-016.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
-| 76.1 | JSONL Token Usage Parser Library | Not Started | P1 | None |
+| 76.1 | JSONL Token Usage Parser Library | Done (PR #875) | P1 | None |
 | 76.2 | Per-Agent Usage Tracking & Attribution | Done (PR #881) | P1 | 76.1 |
 | 76.3 | Warning Threshold Engine (Advisory-Only) | Done (PR #883) | P1 | 76.1 |
 | 76.4 | /quota-status Slash Command | Done (PR #885) | P1 | 76.1, 76.2, 76.3 |
-| 76.5 | /stats Usage Data Integration | Not Started | P2 | 76.2 |
+| 76.5 | /stats Usage Data Integration | Done (PR #889) | P2 | 76.2 |
 | 76.6 | Window Reset Detection & Cron-Based Monitoring | Done (PR #884) | P2 | 76.2, 76.3 |
 
 **Dependency graph:** 76.1 is the foundation — all others depend on it. 76.2, 76.3 are independent once 76.1 is done. 76.4 aggregates 76.1-76.3. 76.5 and 76.6 are P2 extensions.
