@@ -47,7 +47,7 @@ See individual agent files in `agents/` for specific authority definitions.
 | reviewer | Code review | Block for security/bugs; cannot block for style |
 | release-manager | Release recovery | Fix and patch-release; cannot bump major/minor |
 
-## Decision Tiers (ADR-0030)
+## Decision Tiers (ADR-0035)
 
 Not all decisions need the same rigor. Three tiers control the cost of deliberation:
 

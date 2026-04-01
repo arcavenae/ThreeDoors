@@ -1,4 +1,4 @@
-# ADR-0030: Three-Tier Decision System for Party Mode
+# ADR-0035: Three-Tier Decision System for Party Mode
 
 - **Status:** Accepted
 - **Date:** 2026-03-08
