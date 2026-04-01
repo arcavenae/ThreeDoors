@@ -652,7 +652,7 @@ Wire GitHub label application into agent workflows so that PRs are routinely lab
 
 ## Dark Factory Phase 1: Stabilize & Harden
 
-### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 7/8 stories (73.2 Reverted)
+### Epic 73: Operational Foundation — Agent Reliability & Operator UX (P1) — 6/8 stories (73.2 Reverted, 73.4 DRAFT)
 
 Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (workspace-as-primary), remove redundant heartbeats, add hook-enforced git safety, design session handoff, quota monitoring, daemon-native heartbeats. Research: R-007, R-010, R-004. Decisions: Q-C-005, Q-C-010, Q-C-011.
 
@@ -661,7 +661,7 @@ Stabilize multiclaude operator experience and agent lifecycle. Fix operator UX (
 | 73.1 | Workspace-as-Primary Operator Pattern | Done (PR #848) | P1 | None |
 | 73.2 | Remove CronCreate Heartbeats | Reverted | P1 | None |
 | 73.3 | Hook-Enforced Git Safety for Workers | Done (PR #840) | P0 | None |
-| 73.4 | Session Handoff Protocol for Persistent Agents | Done (PR #867) | P1 | None |
+| 73.4 | Session Handoff Protocol for Persistent Agents | DRAFT — blocked on INC-004 (#908) | P1 | None |
 | 73.5 | Passive Quota Monitoring | Done (PR #866) | P2 | None |
 | 73.6 | Daemon-Native Heartbeats | Done (PR #862) | P2 | 73.2 |
 | 73.7 | /rollcall Slash Command | Done (PR #857) | P1 | None |
