@@ -915,10 +915,10 @@ lastUpdated: '2026-03-15'
 
 ## Dark Factory Phase 1: Stabilize & Harden
 
-**Epic 73: Operational Foundation — Agent Reliability & Operator UX** NOT STARTED
+**Epic 73: Operational Foundation — Agent Reliability & Operator UX** 7/8 DONE (73.2 Reverted)
 - **Goal:** Stabilize the multiclaude operator experience and agent lifecycle: workspace-as-primary pattern, remove redundant heartbeats, hook-enforced git safety, session handoff for persistent agents, quota monitoring, daemon-native heartbeats
 - **Prerequisites:** None — fixes the platform you're standing on
-- **Status:** Not Started (0/6 stories)
+- **Status:** 7/8 stories done (73.2 Reverted)
 - **Deliverables:**
   - Document workspace-as-primary operator pattern
   - Remove CronCreate heartbeats (daemon wake loop already handles nudging)
@@ -926,14 +926,14 @@ lastUpdated: '2026-03-15'
   - Session handoff protocol design for persistent agent restarts
   - Passive quota monitoring script (`just quota`)
   - Daemon-native heartbeat design with per-agent configurable intervals
-- **Stories:** 73.1-73.6 (6 stories)
+- **Stories:** 73.1-73.8 (8 stories)
 - **Research:** R-007 (Operator UX), R-010 (Chainlink), R-004 (Quota), R-012 (Consolidation)
 - **Decisions:** Q-C-005 (hooks), Q-C-010 (daemon handoff), Q-C-011 (drop CronCreate)
 
-**Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance** NOT STARTED
+**Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance** ✓ COMPLETE
 - **Goal:** Protect governance-critical files via CODEOWNERS, enforce commit conventions via CI, add L0-L4 autonomy-level provenance tracking, define the .dfcp.yaml configuration format, and introduce typed story comments for structured audit trails
 - **Prerequisites:** None (can run parallel with Epic 73)
-- **Status:** Not Started (0/5 stories)
+- **Status:** Complete (5/5 stories)
 - **Deliverables:**
   - `.github/CODEOWNERS` protecting SOUL.md, CLAUDE.md, agents/, .github/, planning docs
   - CI scope-check workflow (warn mode) validating story references in commits
@@ -944,10 +944,10 @@ lastUpdated: '2026-03-15'
 - **Research:** R-005 (DFCP), R-003 (Dark Factory), R-010 (Chainlink)
 - **Decisions:** Q-C-001 (CODEOWNERS now), Q-C-002 (gate agents/), Q-C-007 (provenance mandatory for AI), Q-C-012 (warn initially)
 
-**Epic 75: Perplexity MCP Integration** NOT STARTED
+**Epic 75: Perplexity MCP Integration** ✓ COMPLETE
 - **Goal:** Install Perplexity's official MCP server for web-grounded research, disabled by default with per-session toggle to prevent uncontrolled API spend
 - **Prerequisites:** Perplexity API key (user has this)
-- **Status:** Not Started (0/1 stories)
+- **Status:** Complete (1/1 stories)
 - **Deliverables:**
   - MCP configuration template (`.claude/settings.local.json.perplexity-example`)
   - Per-session enablement documentation
@@ -955,10 +955,10 @@ lastUpdated: '2026-03-15'
 - **Stories:** 75.1 (1 story)
 - **Research:** R-008 (Perplexity Research Supervisor)
 
-**Epic 76: Claude Usage Monitoring & Quota Awareness** (P1) NOT STARTED
+**Epic 76: Claude Usage Monitoring & Quota Awareness** (P1) ✓ COMPLETE
 - **Goal:** Implement warn-only Claude usage monitoring using JSONL transcript heuristics, providing per-agent token usage tracking, warning thresholds, and a `/quota-status` command — all advisory, never blocking
 - **Prerequisites:** None (reads existing JSONL session files)
-- **Status:** Not Started (0/6 stories)
+- **Status:** Complete (6/6 stories)
 - **Deliverables:**
   - JSONL token usage parser library (`internal/quota/` or `scripts/quota/`)
   - Per-agent usage attribution (who burns the most tokens?)
@@ -972,10 +972,10 @@ lastUpdated: '2026-03-15'
 - **Phase 1 of 3:** This epic covers the ThreeDoors/multiclaude PoC. Phase 2 (mozukai host-level service with SQLite, cross-session visibility, Slack alerts) and Phase 3 (Marvel native quota management with OTEL, per-factory budgets, cost attribution) are future work. All designs should consider Marvel portability.
 - **CRITICAL: Warn-only.** No hard blocks on agent activity. All quota awareness is advisory/warning-only.
 
-**Epic 77: CI Path Filtering Improvements** (P1) NOT STARTED
+**Epic 77: CI Path Filtering Improvements** (P1) ✓ COMPLETE
 - **Goal:** Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs, add ShellCheck linting for 30+ shell scripts, and improve CI job naming
 - **Prerequisites:** None
-- **Status:** Not Started (0/4 stories)
+- **Status:** Complete (4/4 stories)
 - **Deliverables:**
   - Remove `justfile` from CI code filter (stop false-positive Go CI on scripts-only PRs)
   - Add ShellCheck CI job for `scripts/*.sh` (informational, non-blocking)
@@ -1069,10 +1069,10 @@ lastUpdated: '2026-03-15'
 | Epic 68: BOARD.md Redesign | 3 | Complete (3/3 done) |
 | Epic 71: Drop Apple Intel Builds | 3 | Complete (3/3 done) |
 | Epic 72: Operationalize GitHub Label Usage | 4 | Complete (4/4 done) |
-| Epic 73: Operational Foundation — Agent Reliability & Operator UX | 6 | Not Started (0/6 done) |
-| Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance | 5 | Not Started (0/5 done) |
-| Epic 75: Perplexity MCP Integration | 1 | Not Started (0/1 done) |
-| Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Not Started (0/6 done) |
-| Epic 77: CI Path Filtering Improvements | 4 | Not Started (0/4 done) |
+| Epic 73: Operational Foundation — Agent Reliability & Operator UX | 8 | 7/8 done (73.2 Reverted) |
+| Epic 74: Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance | 5 | Complete (5/5 done) |
+| Epic 75: Perplexity MCP Integration | 1 | Complete (1/1 done) |
+| Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Complete (6/6 done) |
+| Epic 77: CI Path Filtering Improvements | 4 | Complete (4/4 done) |
 | **Total** | **382** | **Audit 2026-03-18: see epics-and-stories.md for authoritative status** |
 ---

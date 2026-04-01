@@ -1,0 +1,25 @@
+id: board-p-014
+type: element
+confidence: frontier
+title: "Platform extraction — multiclaude customizations to standalone platform"
+content: |
+  Extract into reusable platform NOT coupled to ThreeDoors. Vision:
+  starts as multiclaude replacement/fork, evolves into standalone
+  agent orchestration platform. BLOCKER: licensing status of
+  dlorenc/multiclaude (R-013) must be resolved before redistribution.
+edges:
+  - target: board-r-013
+    type: derives
+    note: "licensing blocker must be resolved before extraction"
+  - target: board-r-012
+    type: derives
+    note: "extraction direction identified in consolidation analysis"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - recommendation
+  - dark-factory
+  - platform

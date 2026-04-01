@@ -1,0 +1,19 @@
+id: adr-0030-ci
+type: element
+confidence: bedrock
+title: "CI churn reduction — branch protection optimization"
+content: |
+  Relax the require-up-to-date branch protection setting for a 70-80%
+  reduction in CI runs. Add path-based triggers so docs-only PRs skip
+  code CI entirely.
+edges:
+  - target: adr-0028
+    type: derives
+    note: "Optimizes CI pipeline established in ADR-0028"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - ci

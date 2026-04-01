@@ -1,0 +1,21 @@
+id: arch-eval-metrics-blind
+type: finding
+confidence: frontier
+title: "Agent evaluation metrics can't detect silent message drops"
+content: |
+  agent-evaluation.md measures outputs (merged PRs, updated docs) but not
+  message delivery. INC-004 showed 16+ project-watchdog messages silently
+  dropped. The MUTEX function could appear to succeed (story files exist)
+  while allocations aren't acknowledged.
+edges:
+  - target: inc-004
+    type: derives
+    note: "INC-004 demonstrated silent message drops that output-based metrics cannot detect"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - dark-factory
+  - evaluation

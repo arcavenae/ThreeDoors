@@ -1,0 +1,23 @@
+id: prd-privacy-vs-agents
+type: finding
+confidence: frontier
+title: "Local-first privacy claim in tension with agent infrastructure telemetry"
+content: |
+  SOUL.md says no telemetry. Phase 6 includes retrospector data pipeline
+  (Epic 67), in-app bug reporting with tiered submission (Epic 50), agent
+  audit logs, transcript monitoring. These are telemetry mechanisms even
+  if file-based and local. The tension may be resolvable (local-only
+  telemetry) but the PRD doesn't address it.
+edges:
+  - target: prd-local-first
+    type: contradicts
+    note: "Agent infrastructure adds local telemetry not addressed by privacy principle"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - finding
+  - privacy
+  - dark-factory

@@ -1,0 +1,19 @@
+id: adr-0012
+type: element
+confidence: bedrock
+title: "Property-level conflict resolution"
+content: |
+  Sync conflicts are resolved at the field level using last-write-wins
+  with FieldVersions tracking per-property timestamps. This avoids
+  whole-record overwrites and preserves non-conflicting concurrent edits.
+edges:
+  - target: adr-0010
+    type: derives
+    note: "Field-level versioning depends on the incremental task model structure"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - sync

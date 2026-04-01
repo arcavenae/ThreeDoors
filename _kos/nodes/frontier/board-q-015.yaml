@@ -1,0 +1,19 @@
+id: board-q-015
+type: question
+confidence: frontier
+title: "Should multiclaude post-worktree submodule init be configurable or always-on?"
+content: |
+  Some repos have intentionally uninitialized submodules (large deps,
+  optional components, platform-specific modules). An always-on
+  submodule init after worktree creation could pull unwanted content
+  or fail on repos where submodule URLs are inaccessible. Making it
+  configurable adds complexity but respects repo-specific intent.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - tooling

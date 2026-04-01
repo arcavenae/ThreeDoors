@@ -1,0 +1,25 @@
+id: df-zero-rework-signal
+type: finding
+confidence: frontier
+title: "100% first-pass CI success across 20 PRs in one sprint — is this signal or selection bias?"
+content: |
+  All 20 retrospector entries show ci_first_pass: true, conflicts: 0,
+  rebase_count: 0. Either: (a) the development pipeline genuinely produces
+  clean PRs, or (b) PRs that fail are retried/abandoned before entering
+  the log. The 100% rate is suspicious — INC-003 produced PR #419 with
+  7 merge conflicts, but that may not be in the retrospector window.
+edges:
+  - target: df-retrospector
+    type: derives
+    note: "data comes from retrospector-findings.jsonl"
+  - target: arch-eval-metrics-blind
+    type: derives
+    note: "survivorship bias in metrics is a known evaluation gap"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - finding
+  - metrics

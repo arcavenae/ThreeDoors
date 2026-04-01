@@ -1,0 +1,23 @@
+id: arch-sync-scheduler
+type: element
+confidence: bedrock
+title: "Per-provider sync goroutines with adaptive intervals"
+content: |
+  Independent goroutine per provider, adaptive polling (30s min, 30m max),
+  jitter +/-20%. Each provider syncs on its own schedule, scaling back when
+  idle and ramping up when changes are detected.
+edges:
+  - target: adr-0011
+    type: derives
+    note: "ADR-0011 established per-provider sync goroutines"
+  - target: arch-task-provider
+    type: derives
+    note: "Sync scheduler operates on TaskProvider instances"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - sync

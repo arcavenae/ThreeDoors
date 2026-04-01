@@ -1,0 +1,16 @@
+id: adr-0009
+type: element
+confidence: bedrock
+title: "Task status state machine"
+content: |
+  Tasks have six states (todo, blocked, in-progress, in-review, complete,
+  deferred) with validated transitions. Invalid state changes are rejected
+  at the domain level, preventing inconsistent task data.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - domain-model

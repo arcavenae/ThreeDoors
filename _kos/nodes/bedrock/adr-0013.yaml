@@ -1,0 +1,22 @@
+id: adr-0013
+type: element
+confidence: bedrock
+title: "Offline-first with local change queue (WAL)"
+content: |
+  Append-only JSONL write-ahead log queues changes locally. Changes replay
+  to sync providers when they become available, ensuring offline-first
+  operation with eventual consistency.
+edges:
+  - target: adr-0011
+    type: derives
+    note: "builds on sync provider architecture"
+  - target: adr-0012
+    type: derives
+    note: "extends conflict resolution with local queue"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - sync

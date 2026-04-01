@@ -1,0 +1,18 @@
+id: board-q-010
+type: question
+confidence: frontier
+title: "Could Claude Code --append-system-prompt-file replace tmux injection?"
+content: |
+  Would eliminate tmux paste-buffer injection for agent communication.
+  If Claude Code supports --append-system-prompt-file, agent instructions
+  could be passed via file rather than tmux send-keys, reducing fragility
+  and avoiding paste-buffer race conditions.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - agent-comms

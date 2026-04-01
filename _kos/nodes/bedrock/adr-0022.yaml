@@ -1,0 +1,19 @@
+id: adr-0022
+type: element
+confidence: bedrock
+title: "CLI interface with Cobra"
+content: |
+  Cobra-based CLI provides non-interactive access alongside the TUI. Supports
+  --json output for scripting, stdin piping for batch operations, and standard
+  subcommand structure for task management.
+edges:
+  - target: adr-0004
+    type: derives
+    note: "extends monolithic binary with structured CLI interface"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - cli

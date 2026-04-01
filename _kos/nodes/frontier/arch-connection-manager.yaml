@@ -1,0 +1,21 @@
+id: arch-connection-manager
+type: element
+confidence: frontier
+title: "ConnectionManager (Epic 43) introduces parallel model to TaskProvider"
+content: |
+  Adds credential storage, state machine (Disconnected→Connecting→Connected→
+  Syncing/Paused/Error/AuthExpired), sync event auditing. Creates ambiguity:
+  does every TaskProvider need a Connection? How do ConnectionManager transitions
+  interact with TaskProvider HealthCheck?
+edges:
+  - target: arch-task-provider
+    type: derives
+    note: "ConnectionManager extends the TaskProvider abstraction with connection lifecycle"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - sync

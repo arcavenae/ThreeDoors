@@ -1,0 +1,28 @@
+id: inc-001
+type: finding
+confidence: bedrock
+title: "PR-shepherd contaminated shared checkout — agent isolation requires architecture, not convention"
+content: |
+  PR-shepherd agent ran git checkout/rebase in the shared repo checkout,
+  destroying uncommitted supervisor work. Agent definitions assumed isolation
+  but nothing enforced it. The shared mutable state (a single git checkout)
+  had no architectural protection — only convention separated agent workspaces.
+  Root cause: the agent definition was the spec, and the spec assumed isolation
+  without providing it. Lesson: agent isolation must be structural (worktrees,
+  separate clones, filesystem boundaries), not advisory.
+edges:
+  - target: adr-0026
+    type: contradicts
+    note: "Self-driving pipeline assumed agents operate in isolation but shared a checkout"
+  - target: adr-0025
+    type: derives
+    note: "Story-driven development: the agent definition was the spec, and the spec was wrong"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - incident
+  - dark-factory
+  - git-safety
+  - agent-isolation

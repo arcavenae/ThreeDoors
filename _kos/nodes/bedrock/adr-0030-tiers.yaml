@@ -1,0 +1,20 @@
+id: adr-0030-tiers
+type: element
+confidence: bedrock
+title: "Three-tier decision system for party mode"
+content: |
+  Tier 1 (single agent), Tier 2 (3-agent party), Tier 3 (full party 6+).
+  Addresses decision fatigue from 46+ party mode artifacts by scaling
+  ceremony to decision weight.
+edges:
+  - target: adr-0029
+    type: derives
+    note: "Governance tiering within the active governance phase"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - process
+  - dark-factory

@@ -1,0 +1,20 @@
+id: adr-0021
+type: element
+confidence: bedrock
+title: "MCP server integration"
+content: |
+  ThreeDoors exposes an MCP server with dual transport (stdio and SSE).
+  Provides Resources (task lists, door state), Tools (task CRUD, door operations),
+  and Prompts (planning workflows) for AI agent integration.
+edges:
+  - target: adr-0004
+    type: derives
+    note: "extends monolithic CLI with server capability for agent access"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - integration
+  - mcp

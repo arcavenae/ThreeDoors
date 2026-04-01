@@ -1,0 +1,25 @@
+id: question-dark-factory-extraction
+type: question
+confidence: frontier
+title: "Should the dark factory be extracted from ThreeDoors into a standalone platform?"
+content: |
+  board-p-014 recommends platform extraction to Marvel. R-013 flags the
+  multiclaude licensing blocker. SOUL.md says the governance infrastructure
+  'is as much a part of the project as the TUI itself.' Extracting it
+  changes ThreeDoors from a two-project experiment to an app that consumes
+  an external platform.
+edges:
+  - target: board-p-014
+    type: derives
+    note: "platform extraction recommendation"
+  - target: prd-two-projects-seam
+    type: derives
+    note: "extraction would resolve the two-project seam"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - question
+  - platform

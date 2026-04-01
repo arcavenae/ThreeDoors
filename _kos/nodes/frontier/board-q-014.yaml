@@ -1,0 +1,18 @@
+id: board-q-014
+type: question
+confidence: frontier
+title: "Does Claude Code file scanner follow symlinks in .claude/commands/?"
+content: |
+  Critical for BMAD-as-submodule bridge. If Claude Code follows symlinks
+  in .claude/commands/, BMAD templates can live in a git submodule and be
+  symlinked into the commands directory. If not, the bridge needs a
+  different approach (copy, script, or direct path). Needs empirical test.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - tooling

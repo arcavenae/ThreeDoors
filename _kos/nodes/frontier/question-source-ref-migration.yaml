@@ -1,0 +1,21 @@
+id: question-source-ref-migration
+type: question
+confidence: frontier
+title: "How does SourceProvider string migrate to SourceRef struct?"
+content: |
+  Existing code uses source: string. New model adds SourceRefs []SourceRef.
+  Document claims backward compatible via fallback but no explicit migration
+  logic, no version bump strategy. Dual-format code path could create
+  inconsistencies.
+edges:
+  - target: arch-task-provider
+    type: derives
+    note: "SourceRef is a proposed extension to the TaskProvider model"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - sync

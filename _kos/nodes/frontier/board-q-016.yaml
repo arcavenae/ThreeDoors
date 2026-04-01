@@ -1,0 +1,21 @@
+id: board-q-016
+type: question
+confidence: frontier
+title: "Where should orchestrator-level stories live?"
+content: |
+  Centralized in orchestrator repo or distributed across sub-repos?
+  Affects project-watchdog tracking scope. Stories that span multiple
+  sub-repos need a single authoritative location, but distributing
+  them keeps context close to implementation.
+edges:
+  - target: adr-0032
+    type: derives
+    note: "BMAD files as primary tracker determines where stories are indexed"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - process

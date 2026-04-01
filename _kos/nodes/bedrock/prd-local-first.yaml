@@ -1,0 +1,24 @@
+id: prd-local-first
+type: element
+confidence: bedrock
+title: "Local-first privacy: no telemetry, no accounts, no cloud unless configured"
+content: |
+  Data stays on machine. Integrations use local APIs or user tokens.
+  No intermediary services. No accounts, no cloud sync unless the user
+  explicitly configures it. Privacy is a structural guarantee, not a
+  policy promise.
+edges:
+  - target: adr-0003
+    type: derives
+    note: "YAML local storage keeps data on disk"
+  - target: adr-0017
+    type: derives
+    note: "Local calendar integration uses on-device APIs"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - app
+  - privacy

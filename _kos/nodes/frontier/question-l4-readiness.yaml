@@ -1,0 +1,24 @@
+id: question-l4-readiness
+type: question
+confidence: frontier
+title: "What needs to be true before L4 (fully autonomous) dark factory can be attempted?"
+content: |
+  L0-L3 work. L4 is aspirational. But the incidents show L3 (autonomous
+  worker, human reviews PR) already has reliability gaps. INC-003 and
+  INC-004 are L3 failures. Can L4 work when L3 still produces incidents?
+  What infrastructure must exist first?
+edges:
+  - target: df-provenance-l0-l4
+    type: derives
+    note: "L4 is the highest tier in the provenance level model"
+  - target: df-governance-incident-pattern
+    type: derives
+    note: "L3 incidents must be resolved before L4 is viable"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - question
+  - provenance

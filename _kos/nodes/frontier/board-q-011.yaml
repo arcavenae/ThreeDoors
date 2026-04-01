@@ -1,0 +1,17 @@
+id: board-q-011
+type: question
+confidence: frontier
+title: "Daily budget cap for Perplexity API usage?"
+content: |
+  Need to establish a daily spending limit for Perplexity API calls.
+  Recommendation: start at $5/day and adjust based on observed usage
+  patterns and value delivered.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - integration
+  - perplexity

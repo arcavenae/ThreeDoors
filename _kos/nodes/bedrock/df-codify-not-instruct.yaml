@@ -1,0 +1,39 @@
+id: df-codify-not-instruct
+type: finding
+confidence: bedrock
+title: "The most important dark factory lesson: codify rules as infrastructure, not instructions"
+content: |
+  governance-model.md states this explicitly. The retrospector validates it:
+  PR 733 found 47 epics missing PRD coverage, PR 735 immediately codified
+  the fix as an infrastructure rule. All 4 incidents (INC-001 through INC-004)
+  are failures of instruction-based enforcement. INC-001: agent definition
+  said 'don't checkout' but nothing enforced it. INC-002: memory said 'sync
+  git' but the platform already handled it. INC-003: registry said 'reserve
+  first' but markdown can't lock. INC-004: definition said 'use multiclaude
+  message' but agents chose SendMessage. Soft constraints fail under agent
+  load.
+edges:
+  - target: inc-001
+    type: derives
+    note: "checkout contamination — instruction said don't, nothing enforced"
+  - target: inc-002
+    type: derives
+    note: "cargo-culted memory — instruction duplicated platform behavior"
+  - target: inc-003
+    type: derives
+    note: "epic collision — markdown registry can't lock"
+  - target: inc-004
+    type: derives
+    note: "message drops — agents ignored instruction to use multiclaude message"
+  - target: df-decision-pipeline
+    type: derives
+    note: "codification is the pipeline's enforcement mechanism"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - finding
+  - governance
+  - incidents

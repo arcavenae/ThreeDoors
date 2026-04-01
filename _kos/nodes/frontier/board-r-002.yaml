@@ -1,0 +1,19 @@
+id: board-r-002
+type: element
+confidence: frontier
+title: "PRD post-reconstruction audit — 3 HIGH, 4 MEDIUM issues"
+content: |
+  Stale next-steps.md, chaotic phase numbering, missing v2.0
+  changelog, stale BOARD epic registry, incomplete user journeys.
+  3 HIGH severity issues require immediate attention. 4 MEDIUM
+  issues should be addressed before next planning cycle.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - research
+  - product
+  - prd

@@ -1,0 +1,19 @@
+id: arch-atomic-writes
+type: element
+confidence: bedrock
+title: "All file persistence uses atomic write pattern"
+content: |
+  Write to .tmp, fsync, rename. Prevents corruption on crash or power loss.
+  Applied consistently across all file-writing paths in the application.
+edges:
+  - target: adr-0008
+    type: derives
+    note: "ADR-0008 established the atomic write pattern for file persistence"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - persistence

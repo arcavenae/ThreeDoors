@@ -1,0 +1,22 @@
+id: board-q-022
+type: question
+confidence: frontier
+title: "Should duplicate D-xxx numbers in BOARD.md be flagged by CI?"
+content: |
+  BOARD.md has duplicate IDs (D-059, D-074, D-080 through D-086).
+  Duplicate identifiers cause ambiguity when referencing items.
+  Should CI enforce unique D-xxx numbers, or is manual tracking
+  sufficient? If CI, what tooling — a lint script, a pre-commit
+  hook, or a GitHub Action?
+edges:
+  - target: adr-0028
+    type: derives
+    note: "CI quality gates should include BOARD.md consistency checks"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - process
+  - ci

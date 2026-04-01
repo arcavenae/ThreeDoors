@@ -1,0 +1,20 @@
+id: arch-offline-first
+type: element
+confidence: bedrock
+title: "Offline-first with WAL queue and circuit breaker"
+content: |
+  Append-only JSONL queue for offline changes, per-provider circuit breaker
+  (closed->open->half-open), adaptive polling. Changes are queued locally
+  when providers are unreachable and replayed when connectivity returns.
+edges:
+  - target: adr-0013
+    type: derives
+    note: "ADR-0013 established offline-first sync with WAL and circuit breaker"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - architecture
+  - app
+  - sync

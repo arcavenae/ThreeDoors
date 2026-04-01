@@ -1,0 +1,20 @@
+id: df-retrospector
+type: element
+confidence: frontier
+title: "Retrospector agent: analyzes PR data, discovers governance gaps, recommends infrastructure"
+content: |
+  Tracks PR patterns in findings.jsonl. Key finding: PR 733 discovered
+  47 epics missing PRD coverage. PR 735 immediately codified the fix as
+  a rule. Recommendations pipeline exists but is nearly empty.
+edges:
+  - target: df-decision-pipeline
+    type: derives
+    note: "Retrospector feeds the decision pipeline with discovered gaps"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - retrospector
+  - governance

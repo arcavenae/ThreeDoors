@@ -1,0 +1,18 @@
+id: prd-seven-phases
+type: element
+confidence: frontier
+title: "Product scope: 7 phases, 70+ epics, 353+ stories"
+content: |
+  Phase 1 (foundation) complete. Phases 2-6 in progress. Phase 7
+  deferred. The full product roadmap spans 7 phases with 70+ epics
+  and 353+ stories covering daily planning, seasonal themes, dependency
+  graphs, LLM decomposition, statistics, and multiple integrations.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - product
+  - scope
