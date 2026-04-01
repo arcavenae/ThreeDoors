@@ -7244,3 +7244,193 @@ So that I don't incorrectly escalate PRs for human review.
 **Acceptance Criteria:**
 - **AC1:** Protected files list updated to match actual CODEOWNERS
 - **AC2:** No other stale CODEOWNERS references in pr-shepherd.md
+
+---
+
+## Epic 79: ThreeDoors Daemon/Server Mode (P1)
+
+**Goal:** Add a lightweight daemon mode (`threedoors serve`) that exposes TaskProvider and door selection over a Unix domain socket with JSON-RPC 2.0, enabling Stream Deck, Apple Shortcuts, widgets, and other external integrations to interact with ThreeDoors programmatically.
+
+**Priority:** P1
+**Prerequisites:** None (builds on existing TaskProvider, door selector, and CLI infrastructure)
+**Status:** Not Started (0/6 stories)
+**Research:** [Stream Deck Research](../../_bmad-output/planning-artifacts/streamdeck-research.md)
+
+### Story 79.1: Core Daemon Infrastructure — `threedoors serve` Command
+
+As a ThreeDoors user with external integrations,
+I want a daemon mode that listens on a Unix socket,
+So that Stream Deck plugins and other tools can communicate with ThreeDoors.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `threedoors serve` subcommand registered in CLI (Cobra)
+- **AC2:** Daemon listens on Unix domain socket at `~/.threedoors/daemon.sock` (configurable via `--socket`)
+- **AC3:** PID file management with stale detection and cleanup
+- **AC4:** Graceful shutdown on SIGINT/SIGTERM
+- **AC5:** `threedoors serve --check` returns exit 0/1 for daemon status
+- **AC6:** Tests cover socket lifecycle, PID file, concurrent connections, graceful shutdown
+
+### Story 79.2: JSON-RPC 2.0 Protocol Layer and API Contract
+
+As a plugin developer,
+I want a well-defined JSON-RPC 2.0 protocol,
+So that I can build clients in any language.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** JSON-RPC 2.0 codec in `internal/daemon/` package (single + batch requests)
+- **AC2:** Standard error codes (-32700, -32600, -32601, -32602, -32603) and application-specific codes
+- **AC3:** Method dispatcher with `system.listMethods` and `system.version` introspection
+- **AC4:** API contract documented in `docs/architecture/daemon-api.md`
+- **AC5:** Tests: codec round-trip, batch, error formatting, dispatch
+
+### Story 79.3: Door Operations API — getDoors, selectDoor, refresh
+
+As a Stream Deck user,
+I want to see current doors and select them via buttons,
+So that I can manage tasks without switching to the terminal.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `doors.get` returns current three doors with task metadata
+- **AC2:** `doors.select` accepts `{"door": 1|2|3}` and marks task in-progress
+- **AC3:** `doors.refresh` generates new set of three doors using diversity-aware selection
+- **AC4:** Shared door state across concurrent clients with proper locking
+- **AC5:** Tests: get, select, refresh, concurrent access, empty pool, invalid door
+
+### Story 79.4: Task Lifecycle API — completeTask, skipTask, snoozeTask
+
+As a Stream Deck user,
+I want buttons to complete, skip, or snooze the current task,
+So that I can manage task lifecycle from the Stream Deck.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `task.complete`, `task.skip`, `task.snooze` methods with auto-refresh after action
+- **AC2:** `task.snooze` accepts optional duration parameter (default 1h)
+- **AC3:** `task.getActive` returns currently selected task
+- **AC4:** `task.stats` returns session statistics
+- **AC5:** Session tracker records metrics for daemon interactions
+- **AC6:** Tests: complete, skip, snooze with duration, no-selection error, stats
+
+### Story 79.5: Real-Time Event Notifications
+
+As a Stream Deck plugin,
+I want push notifications when doors change,
+So that button displays update immediately without polling.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** `events.subscribe` / `events.unsubscribe` for notification registration
+- **AC2:** `doors.changed` notification with full door set payload
+- **AC3:** `task.completed` notification on task completion
+- **AC4:** `provider.changed` notification from TaskProvider.Watch() events
+- **AC5:** Slow subscriber handling (buffered channels, drop policy)
+- **AC6:** Tests: subscribe, event delivery, slow subscriber, disconnect cleanup
+
+### Story 79.6: Homebrew Service Integration and launchd Support
+
+As a macOS user,
+I want the daemon to start automatically via Homebrew services,
+So that the Stream Deck plugin always has a daemon to connect to.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Homebrew formula updated with service stanza
+- **AC2:** `brew services start/stop threedoors` works correctly
+- **AC3:** Standalone launchd plist template for non-Homebrew users
+- **AC4:** `threedoors serve --install-service` / `--uninstall-service` for manual setup
+- **AC5:** Documentation for both Homebrew and manual daemon setup
+
+---
+
+## Epic 80: Stream Deck Plugin — Elgato SDK (P2)
+
+**Goal:** Build a Stream Deck plugin using the official Elgato Node.js SDK that communicates with the ThreeDoors daemon (Epic 79) to provide physical button control for door selection, task completion, and session monitoring.
+
+**Priority:** P2
+**Prerequisites:** Epic 79 (daemon must expose API)
+**Status:** Not Started (0/5 stories)
+**Repo:** `ArcavenAE/threedoors-streamdeck` (NEW — separate repository, Node.js/TypeScript)
+**Research:** [Stream Deck Research](../../_bmad-output/planning-artifacts/streamdeck-research.md)
+
+### Story 80.1: Plugin Scaffold and Daemon Client Library
+
+As a plugin developer,
+I want a scaffolded TypeScript plugin with a daemon client,
+So that I have the foundation to build Stream Deck actions.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** New repo `ArcavenAE/threedoors-streamdeck` with Elgato CLI scaffold
+- **AC2:** TypeScript build pipeline (`npm run build`, `npm run watch`)
+- **AC3:** `ThreeDoorsClient` class connects to daemon Unix socket, sends JSON-RPC 2.0
+- **AC4:** Auto-reconnect with exponential backoff on disconnect
+- **AC5:** CI pipeline: lint, build, `streamdeck validate`
+
+### Story 80.2: Door Action Buttons — Three Doors + Refresh
+
+As a Stream Deck user,
+I want three door buttons showing task titles and a refresh button,
+So that I can see and select tasks from my Stream Deck.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `com.arcavenae.threedoors.door` action with configurable door number (1/2/3)
+- **AC2:** Dynamic button titles showing truncated task text
+- **AC3:** `keyDown` calls `doors.select`, shows `showOk()`/`showAlert()`
+- **AC4:** Refresh action calls `doors.refresh`
+- **AC5:** `doors.changed` server notification updates all door button titles
+
+### Story 80.3: Task Lifecycle Buttons — Complete, Skip, Snooze
+
+As a Stream Deck user,
+I want complete/skip/snooze buttons,
+So that I can act on the selected task without touching the keyboard.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Complete, Skip, Snooze actions calling corresponding daemon methods
+- **AC2:** Snooze configurable via property inspector (15m, 30m, 1h, 2h, tomorrow)
+- **AC3:** Visual feedback: `showOk()` on success, `showAlert()` on error/offline
+- **AC4:** Icons for each action (checkmark, forward arrow, clock)
+
+### Story 80.4: Connection Management and Status Display
+
+As a Stream Deck user,
+I want a status button and reliable connection handling,
+So that I know when the daemon is connected and can troubleshoot issues.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** Status action with green/yellow/red icons for Connected/Connecting/Offline
+- **AC2:** Session stats display on status button when connected
+- **AC3:** Property inspector for configuring daemon socket path
+- **AC4:** `systemDidWakeUp` triggers reconnection
+- **AC5:** All actions gracefully degrade when offline
+
+### Story 80.5: Stream Deck+ Encoder Support and Polish
+
+As a Stream Deck+ owner,
+I want encoder support and polished icons,
+So that I can use rotary dials for stats and task browsing.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** Session stats encoder action (rotate cycles displays, press resets timer)
+- **AC2:** Task browse encoder action (rotate scrolls tasks, press selects)
+- **AC3:** Final icon set: 8 icons in 72x72 and 144x144 (@2x)
+- **AC4:** Pre-built `.streamDeckProfile` with optimal layout
+- **AC5:** `streamdeck pack` produces valid `.streamDeckPlugin` installer

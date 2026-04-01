@@ -995,6 +995,34 @@ lastUpdated: '2026-03-15'
   - pr-shepherd.md protected files list corrected
 - **Stories:** 78.1-78.3 (3 stories)
 
+**Epic 79: ThreeDoors Daemon/Server Mode** (P1) — NOT STARTED
+- **Goal:** Add a lightweight daemon mode (`threedoors serve`) that exposes TaskProvider and door selection over a Unix domain socket with JSON-RPC 2.0, enabling Stream Deck, Apple Shortcuts, widgets, and other external integrations
+- **Prerequisites:** None (builds on existing TaskProvider, door selector, and CLI infrastructure)
+- **Status:** Not Started (0/6 stories)
+- **Deliverables:**
+  - `threedoors serve` CLI command with Unix socket listener and graceful shutdown
+  - JSON-RPC 2.0 protocol layer with method dispatch
+  - Door operations API: getDoors, selectDoor, refresh
+  - Task lifecycle API: completeTask, skipTask, snoozeTask, getStats
+  - Real-time event notifications (doors.changed, task.completed)
+  - Homebrew service integration and launchd support
+- **Stories:** 79.1-79.6 (6 stories)
+- **Research:** [Stream Deck Research](../../_bmad-output/planning-artifacts/streamdeck-research.md)
+
+**Epic 80: Stream Deck Plugin (Elgato SDK)** (P2) — NOT STARTED
+- **Goal:** Build a Stream Deck plugin using the official Elgato Node.js SDK that communicates with the ThreeDoors daemon to provide physical button control for door selection, task completion, and session monitoring
+- **Prerequisites:** Epic 79 (daemon must expose API)
+- **Status:** Not Started (0/5 stories)
+- **Repo:** `ArcavenAE/threedoors-streamdeck` (NEW — separate repository, Node.js/TypeScript)
+- **Deliverables:**
+  - TypeScript plugin scaffold with daemon client library
+  - Three door buttons with dynamic task titles
+  - Complete/Skip/Snooze lifecycle buttons
+  - Connection management with auto-reconnect and status display
+  - Stream Deck+ encoder support, pre-built profiles, Marketplace-ready packaging
+- **Stories:** 80.1-80.5 (5 stories)
+- **Research:** [Stream Deck Research](../../_bmad-output/planning-artifacts/streamdeck-research.md)
+
 **Epic 67+: Advanced Features** (Voice interface, web interface, Apple Watch, iPad, trading mechanic, gamification)
 
 **Guiding Principle:** Each epic must deliver tangible user value and be informed by real usage patterns from previous phases. No speculation-driven development.
@@ -1085,5 +1113,7 @@ lastUpdated: '2026-03-15'
 | Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Complete (6/6 done) |
 | Epic 77: CI Path Filtering Improvements | 4 | Complete (4/4 done) |
 | Epic 78: CODEOWNERS Documentation Drift Fix | 3 | 1/3 done |
-| **Total** | **385** | **Audit 2026-03-31: see epics-and-stories.md for authoritative status** |
+| Epic 79: ThreeDoors Daemon/Server Mode | 6 | Not Started |
+| Epic 80: Stream Deck Plugin (Elgato SDK) | 5 | Not Started |
+| **Total** | **396** | **Audit 2026-03-31: see epics-and-stories.md for authoritative status** |
 ---

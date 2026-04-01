@@ -733,6 +733,35 @@ Fix stale CODEOWNERS-protected file lists in CLAUDE.md, merge-queue.md, and pr-s
 
 **Dependency graph:** All three stories are independent and can be implemented in parallel. 78.2 is the highest-impact fix (root cause of incorrect labeling).
 
+### Epic 79: ThreeDoors Daemon/Server Mode (P1) — 0/6 stories
+
+Add a lightweight daemon mode (`threedoors serve`) that exposes TaskProvider and door selection over a Unix domain socket with JSON-RPC 2.0. Enables Stream Deck, Apple Shortcuts, widgets, and other external integrations. Research: [streamdeck-research.md](/_bmad-output/planning-artifacts/streamdeck-research.md).
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 79.1 | Core Daemon Infrastructure — `threedoors serve` Command | Not Started | P1 | None |
+| 79.2 | JSON-RPC 2.0 Protocol Layer and API Contract | Not Started | P1 | 79.1 |
+| 79.3 | Door Operations API — getDoors, selectDoor, refresh | Not Started | P1 | 79.1, 79.2 |
+| 79.4 | Task Lifecycle API — completeTask, skipTask, snoozeTask | Not Started | P1 | 79.3 |
+| 79.5 | Real-Time Event Notifications | Not Started | P2 | 79.3, 79.4 |
+| 79.6 | Homebrew Service Integration and launchd Support | Not Started | P2 | 79.1 |
+
+**Dependency graph:** 79.1 → 79.2 → 79.3 → 79.4 (linear chain). 79.5 depends on 79.3+79.4. 79.6 only needs 79.1.
+
+### Epic 80: Stream Deck Plugin — Elgato SDK (P2) — 0/5 stories
+
+Build a Stream Deck plugin (Node.js/TypeScript, separate repo `ArcavenAE/threedoors-streamdeck`) using the official Elgato SDK. Communicates with ThreeDoors daemon (Epic 79) for physical button control of door selection, task lifecycle, and session monitoring.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 80.1 | Plugin Scaffold and Daemon Client Library | Not Started | P1 | Epic 79 (API contract) |
+| 80.2 | Door Action Buttons — Three Doors + Refresh | Not Started | P1 | 80.1, 79.3 |
+| 80.3 | Task Lifecycle Buttons — Complete, Skip, Snooze | Not Started | P1 | 80.1, 79.4 |
+| 80.4 | Connection Management and Status Display | Not Started | P1 | 80.1 |
+| 80.5 | Stream Deck+ Encoder Support and Polish | Not Started | P2 | 80.2, 80.3, 80.4, 79.5 |
+
+**Dependency graph:** 80.1 is foundation. 80.2-80.4 can parallelize after 80.1 (each depends on corresponding Epic 79 API story). 80.5 requires all others complete.
+
 ## Out of Scope
 
 Work not listed above is out of scope. Merge-queue should reject PRs that introduce features or epics not on this roadmap without human approval.
