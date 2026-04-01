@@ -1,0 +1,30 @@
+id: inc-003
+type: finding
+confidence: bedrock
+title: "Epic 42 number collision — advisory registries don't prevent races"
+content: |
+  Four parallel /plan-work workers self-assigned Epic 42 to three different
+  features within 2 minutes. The markdown registry (introduced after the
+  Epic 39 repeat incident) has no locking or compare-and-swap mechanism.
+  A project-watchdog mutex existed as policy in agent memory but was not
+  enforced by tooling. 1,043 lines of work wasted on colliding epics.
+  Root cause: concurrent agents writing to a shared advisory registry
+  with no mutual exclusion. The registry was a file, not a lock. Lesson:
+  any shared numbering or allocation scheme under concurrent agents requires
+  atomic operations — advisory markdown files are not coordination primitives.
+edges:
+  - target: adr-0025
+    type: contradicts
+    note: "Story-driven process assumed serial number allocation but dispatched workers concurrently"
+  - target: adr-0032
+    type: contradicts
+    note: "BMAD files as primary tracker but the tracker has no mutual exclusion"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - incident
+  - dark-factory
+  - process
+  - concurrency

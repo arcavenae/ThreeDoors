@@ -1,0 +1,18 @@
+id: board-q-009
+type: question
+confidence: frontier
+title: "Should daemon wake loop interval be configurable per-agent-type?"
+content: |
+  Currently hardcoded at 2 minutes for all agent types. Persistent agents
+  and watchdogs may need different wake intervals — a persistent coding
+  agent might need shorter intervals for responsiveness, while a watchdog
+  checking system health could tolerate longer intervals to reduce overhead.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - agent-ops

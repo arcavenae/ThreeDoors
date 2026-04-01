@@ -1,0 +1,19 @@
+id: board-r-003
+type: element
+confidence: frontier
+title: "Dark factory protocol — L0-L4 autonomy, gallery model, dispose-and-rebuild"
+content: |
+  10-round party mode research. 13 recommendations. Gallery model:
+  3-5 variants x 3-5 generations. Two-tier AI judges. Green/Yellow/Red
+  governance zones. 6-phase implementation. L0 (human does everything)
+  through L4 (full autonomy with human audit). Dispose-and-rebuild
+  pattern for agent sessions rather than long-lived state.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - research
+  - dark-factory

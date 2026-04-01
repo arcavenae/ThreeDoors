@@ -1,0 +1,18 @@
+id: board-r-013
+type: element
+confidence: frontier
+title: "multiclaude licensing — MIT intent but no LICENSE file"
+content: |
+  dlorenc/multiclaude README says MIT but no LICENSE file exists.
+  All rights reserved by default under copyright law. LOW risk
+  but must formalize before any redistribution or forking.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - research
+  - dark-factory
+  - legal

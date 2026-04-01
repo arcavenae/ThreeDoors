@@ -1,0 +1,28 @@
+id: prd-two-projects-seam
+type: finding
+confidence: frontier
+title: "ThreeDoors is two projects: a productivity app and a dark factory experiment"
+content: |
+  The PRD phases reveal the split clearly. Phases 1-5 are app features
+  (doors, providers, sync, UX). Phase 6 is almost entirely dark factory
+  (agents, governance, retrospector, envoy, remote collab). SOUL.md
+  explicitly acknowledges this: 'agent governance infrastructure is as
+  much a part of the project as the TUI itself.' The two halves share
+  ADRs and BOARD but have different users (end user vs developer),
+  different lifecycles (app features ship, dark factory experiments),
+  and different failure modes (app bugs vs agent incidents).
+edges:
+  - target: prd-seven-phases
+    type: derives
+    note: "phase structure reveals the two-project seam"
+  - target: arch-agent-governance
+    type: derives
+    note: "agent governance is the dark factory half of the project"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - finding
+  - two-projects

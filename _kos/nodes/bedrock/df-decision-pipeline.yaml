@@ -1,0 +1,24 @@
+id: df-decision-pipeline
+type: element
+confidence: bedrock
+title: "Decision pipeline: research → party mode → sprint change → BOARD entry → story → implementation"
+content: |
+  Three decision tiers (ADR-0030): Tier 1 single agent, Tier 2 three-agent
+  party, Tier 3 six-plus agent party. Course correction pattern: detect →
+  analyze → propose → validate → execute → codify. Key insight: codify as
+  infrastructure, not instructions.
+edges:
+  - target: adr-0030-tiers
+    type: derives
+    note: "Decision tier definitions"
+  - target: adr-0031
+    type: derives
+    note: "Course correction codification pattern"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - dark-factory
+  - governance
+  - process

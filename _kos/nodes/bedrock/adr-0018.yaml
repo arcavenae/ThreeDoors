@@ -1,0 +1,16 @@
+id: adr-0018
+type: element
+confidence: bedrock
+title: "macOS code signing and notarization"
+content: |
+  CI-based code signing via GitHub Actions using Apple Developer ID certificates.
+  Notarization submitted to Apple's notary service as part of the release pipeline.
+  Enables Gatekeeper-clean distribution on macOS.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - distribution

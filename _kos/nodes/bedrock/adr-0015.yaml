@@ -1,0 +1,19 @@
+id: adr-0015
+type: element
+confidence: bedrock
+title: "Multi-source dedup strategy"
+content: |
+  Fuzzy matching via Levenshtein distance with user confirmation for ambiguous
+  cases, plus SourceRef-based linking for deterministic programmatic cross-references.
+  Two-tier approach balances human judgment with automated precision.
+edges:
+  - target: adr-0006
+    type: derives
+    note: "addresses deduplication needs from multi-source task model"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - sync

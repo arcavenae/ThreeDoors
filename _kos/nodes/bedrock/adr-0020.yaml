@@ -1,0 +1,19 @@
+id: adr-0020
+type: element
+confidence: bedrock
+title: "Door theme system architecture"
+content: |
+  Registry-based DoorTheme interface enabling swappable visual themes for the
+  TUI. Ships with Classic, Modern, Sci-Fi, and Shoji themes. Themes control
+  door rendering, colors, and animation style.
+edges:
+  - target: adr-0002
+    type: derives
+    note: "extends Bubbletea TUI with pluggable visual themes"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - tui

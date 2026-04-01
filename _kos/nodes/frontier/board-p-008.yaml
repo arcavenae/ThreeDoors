@@ -1,0 +1,21 @@
+id: board-p-008
+type: element
+confidence: frontier
+title: "Dark factory protocol implementation — provenance tagging ready for Phase 0"
+content: |
+  Phase 0 (provenance tagging) recommended for immediate implementation.
+  13 recommendations from R-003 research. 5 open questions remain.
+  Provenance tagging is the lowest-risk, highest-signal first step
+  toward dark factory governance.
+edges:
+  - target: board-r-003
+    type: derives
+    note: "implementation plan derived from dark factory protocol research"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - recommendation
+  - dark-factory

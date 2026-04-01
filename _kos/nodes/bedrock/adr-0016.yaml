@@ -1,0 +1,19 @@
+id: adr-0016
+type: element
+confidence: bedrock
+title: "Cancel SQLite enrichment layer"
+content: |
+  Cancelled the proposed SQLite database layer. Retains file-based YAML storage
+  with in-memory indexing. SQLite added complexity without sufficient benefit
+  given the task volume and access patterns.
+edges:
+  - target: adr-0003
+    type: derives
+    note: "reaffirms YAML over SQLite"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - persistence

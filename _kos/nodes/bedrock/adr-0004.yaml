@@ -1,0 +1,19 @@
+id: adr-0004
+type: element
+confidence: bedrock
+title: "Monolithic CLI architecture"
+content: |
+  ThreeDoors is a single binary with no external services, no daemon process,
+  and no network requirements for core operation. Local-first design keeps
+  the tool self-contained and portable.
+edges:
+  - target: adr-0001
+    type: derives
+    note: "Go enables single-binary distribution without runtime dependencies"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - architecture

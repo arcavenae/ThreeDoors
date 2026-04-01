@@ -1,0 +1,20 @@
+id: board-q-032
+type: question
+confidence: frontier
+title: "Should multiclaude workspace→director rename happen before or after Marvel extraction?"
+content: |
+  Trade-off: renaming now improves the mental model and aligns
+  terminology with the aae-orc ecosystem (director = supervisor
+  communications). But if Marvel extraction is imminent, the rename
+  effort is spent on code that will soon be replaced or restructured.
+  Skip saves effort on a soon-replaced system; rename now reduces
+  confusion during the extraction itself.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - board
+  - dark-factory
+  - naming

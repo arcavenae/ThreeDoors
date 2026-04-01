@@ -1,0 +1,17 @@
+id: adr-0025
+type: element
+confidence: bedrock
+title: "Story-driven development process"
+content: |
+  Story files (X.Y.story.md) are required before implementation begins.
+  Each story defines acceptance criteria and technical approach, ensuring
+  work is scoped and testable before code is written.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - process
+  - dark-factory

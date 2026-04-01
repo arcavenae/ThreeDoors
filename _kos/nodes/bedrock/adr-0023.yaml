@@ -1,0 +1,16 @@
+id: adr-0023
+type: element
+confidence: bedrock
+title: "iPhone app deferred to icebox"
+content: |
+  SwiftUI iPhone app deferred indefinitely. Revisit criteria: 5+ user requests
+  or evidence that MCP server integration is insufficient for mobile access.
+  Keeps focus on the CLI/TUI core.
+edges: []
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - product

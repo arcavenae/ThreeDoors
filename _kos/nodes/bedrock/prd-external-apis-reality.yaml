@@ -1,0 +1,24 @@
+id: prd-external-apis-reality
+type: finding
+confidence: bedrock
+title: "PRD external-apis.md says 'no external APIs' but 5+ external adapters are implemented"
+content: |
+  external-apis.md claims ThreeDoors is fully local with no external API
+  integrations. Reality: Jira REST, Apple Reminders JXA, Todoist REST,
+  GitHub SDK, Linear GraphQL, ClickUp REST all implemented. The document
+  is a false claim about the system.
+edges:
+  - target: arch-external-apis-stale
+    type: contradicts
+    note: "Same finding from architecture layer — confirms cross-layer drift"
+  - target: prd-multi-source
+    type: derives
+    note: "Multi-source integration requires external APIs by definition"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - finding
+  - drift

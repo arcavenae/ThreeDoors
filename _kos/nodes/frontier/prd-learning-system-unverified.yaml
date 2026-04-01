@@ -1,0 +1,23 @@
+id: prd-learning-system-unverified
+type: question
+confidence: frontier
+title: "Is the learning/intelligent door selection system (Epic 4) actually working?"
+content: |
+  PRD claims mood-task correlation within 2 weeks. Epic 4 marked
+  COMPLETE but no recent changelog updates since early PRs. Unclear
+  if actively maintained or shipped-then-abandoned. The intelligent
+  door selection system is a differentiating feature — if it's not
+  working, the product is a static three-door picker, not a learning
+  system.
+edges:
+  - target: prd-three-doors-ux
+    type: derives
+    note: "learning system is the dynamic layer on top of the core UX"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - app
+  - learning

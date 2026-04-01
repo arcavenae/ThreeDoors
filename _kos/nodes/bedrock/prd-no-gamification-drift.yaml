@@ -1,0 +1,22 @@
+id: prd-no-gamification-drift
+type: finding
+confidence: bedrock
+title: "SOUL says 'not a habit tracker, no gamification' but Epic 40 adds milestone celebrations, animated counters, heatmaps"
+content: |
+  Beautiful Stats Display (Epic 40) includes gamification patterns that
+  directly contradict SOUL.md's 'What ThreeDoors Is NOT' section.
+  Milestone celebrations, animated counters, and heatmaps are gamification
+  mechanisms. Progress view with streak/stats display also contradicts
+  the stated philosophy.
+edges:
+  - target: prd-three-doors-ux
+    type: contradicts
+    note: "Gamification features contradict the anti-gamification principle"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-31"
+tags:
+  - prd
+  - finding
+  - philosophy-drift

@@ -1,0 +1,19 @@
+id: adr-0007
+type: element
+confidence: bedrock
+title: "Compile-time adapter registration"
+content: |
+  Adapters are imported in main.go and registered at compile time.
+  Configuration controls which adapters are activated at runtime. No
+  runtime plugin loading — all adapters are statically linked.
+edges:
+  - target: adr-0006
+    type: derives
+    note: "Registration mechanism for TaskProvider implementations"
+provenance:
+  created_by: human
+  session: session-011
+  created_at: "2026-03-30"
+tags:
+  - adr
+  - architecture
