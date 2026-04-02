@@ -7434,3 +7434,108 @@ So that I can use rotary dials for stats and task browsing.
 - **AC3:** Final icon set: 8 icons in 72x72 and 144x144 (@2x)
 - **AC4:** Pre-built `.streamDeckProfile` with optimal layout
 - **AC5:** `streamdeck pack` produces valid `.streamDeckPlugin` installer
+
+---
+
+## Epic 81: Git Coordination Fixes (P1)
+
+**Goal:** Fix persistent agent and workspace staleness by adding self-sync capabilities to agent definitions and extending daemon refresh to cover all worktree types.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** Not Started (0/4 stories)
+
+### Story 81.1: Merge-Queue Polling Fetch
+
+As the merge-queue agent,
+I want to fetch the latest origin/main before each polling cycle,
+So that my PR checks, branch cleanup, and scope validation use current data instead of a stale local ref.
+
+**Status:** Not Started | **Priority:** P0
+
+**Acceptance Criteria:**
+- **AC1:** Merge-queue's polling loop begins with `git fetch origin main` before checking open PRs
+- **AC2:** The fetch is added to `agents/merge-queue.md` in the Polling Loop section (step 0, before existing step 1)
+- **AC3:** The fetch uses `git fetch origin main` (not `git pull` — no working tree changes needed, just ref update)
+- **AC4:** Error handling: if fetch fails (network issue), log a warning but continue the polling cycle with stale data rather than halting
+
+### Story 81.2: Persistent Agent Self-Sync Documentation
+
+As a persistent agent operator,
+I want agent definitions to clearly document that persistent agents CAN and SHOULD periodically fetch origin/main,
+So that agents don't remain perpetually stale and operators don't waste time debugging staleness issues.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** CLAUDE.md Git Safety section includes a note clarifying that persistent agents are exempt from fetch restrictions
+- **AC2:** `agents/pr-shepherd.md` includes a periodic `git fetch origin` in its startup or polling routine
+- **AC3:** `agents/project-watchdog.md` includes a periodic `git fetch origin main` before planning doc checks
+- **AC4:** `agents/arch-watchdog.md` includes a note that it may fetch to check architecture docs against latest main
+- **AC5:** Each agent's fetch instruction includes error handling guidance
+
+### Story 81.3: Workspace Refresh Discoverability
+
+As a multiclaude operator working in the workspace window,
+I want the workspace to be easily refreshable and the /refresh command to be well-documented,
+So that I don't work with stale code when reviewing agent output or making manual changes.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** CLAUDE.md "Operator Workflow (multiclaude)" section mentions `/refresh` as the way to sync the workspace worktree
+- **AC2:** A note is added explaining that the workspace worktree is NOT auto-refreshed by the daemon
+- **AC3:** The `/refresh` slash command documentation is verified to work correctly for the workspace context
+
+### Story 81.4: Daemon Refresh for Workspace and Persistent Agent Worktrees
+
+As a multiclaude operator,
+I want the daemon to automatically refresh the workspace worktree and the shared persistent-agent checkout,
+So that all agents and the human operator always work with reasonably current code without manual intervention.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** The daemon refresh loop includes workspace-type worktrees in its refresh cycle
+- **AC2:** The daemon refresh loop includes a `git fetch origin main` for the shared persistent-agent checkout
+- **AC3:** Refresh interval for workspace/persistent checkout is configurable (default: 5 minutes)
+- **AC4:** Refresh does NOT interrupt active git operations
+- **AC5:** Refresh failures are logged but do not crash the daemon
+
+---
+
+## Epic 82: Agent Definition Accuracy (P1)
+
+**Goal:** Fix incorrect scope descriptions for the envoy agent in supervisor and governance documentation, and add a prominent scope boundary callout to envoy's own definition.
+
+**Priority:** P1
+**Prerequisites:** None
+**Status:** Not Started (0/2 stories)
+
+### Story 82.1: Fix Envoy Scope Misstatements in Agent and Governance Docs
+
+As a multiclaude operator or agent,
+I want agent definitions and governance docs to accurately describe envoy's scope,
+So that agents don't attempt actions outside their authority and operators don't misroute work to envoy.
+
+**Status:** Not Started | **Priority:** P1
+
+**Acceptance Criteria:**
+- **AC1:** `agents/supervisor.md` line 69 interaction protocol with envoy is corrected
+- **AC2:** `docs/architecture/governance-model.md` line 38 envoy row is corrected
+- **AC3:** No other documents contain the misstatement that envoy creates stories or runs BMAD pipelines
+- **AC4:** Changes are consistent with envoy.md's existing authority table
+
+### Story 82.2: Add Explicit Scope Boundary Callout to Envoy Definition
+
+As the envoy agent,
+I want a prominent SCOPE BOUNDARY section at the top of my definition,
+So that my operational limits are immediately visible and I never attempt out-of-scope actions.
+
+**Status:** Not Started | **Priority:** P2
+
+**Acceptance Criteria:**
+- **AC1:** `agents/envoy.md` has a `## SCOPE BOUNDARY` section added after "Your Mission"
+- **AC2:** The scope boundary clearly states envoy's limits in 5-10 lines
+- **AC3:** The scope boundary references the detailed authority table later in the document
+- **AC4:** Existing "What You Do NOT Do" section remains unchanged

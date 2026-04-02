@@ -1115,5 +1115,7 @@ lastUpdated: '2026-03-15'
 | Epic 78: CODEOWNERS Documentation Drift Fix | 3 | Complete (3/3 done) |
 | Epic 79: ThreeDoors Daemon/Server Mode | 6 | Not Started |
 | Epic 80: Stream Deck Plugin (Elgato SDK) | 5 | Not Started |
-| **Total** | **396** | **Audit 2026-03-31: see epics-and-stories.md for authoritative status** |
+| Epic 81: Git Coordination Fixes | 4 | Not Started |
+| Epic 82: Agent Definition Accuracy | 2 | Not Started |
+| **Total** | **402** | **Audit 2026-04-02: see epics-and-stories.md for authoritative status** |
 ---

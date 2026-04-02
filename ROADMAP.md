@@ -762,6 +762,30 @@ Build a Stream Deck plugin (Node.js/TypeScript, separate repo `ArcavenAE/threedo
 
 **Dependency graph:** 80.1 is foundation. 80.2-80.4 can parallelize after 80.1 (each depends on corresponding Epic 79 API story). 80.5 requires all others complete.
 
+### Epic 81: Git Coordination Fixes (P1) — 0/4 stories
+
+Fix persistent agent and workspace staleness. Persistent agents share a checkout that never gets refreshed; workspace worktree is also never auto-synced. Immediate fixes via agent self-fetch instructions, medium-term via daemon refresh extension.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 81.1 | Merge-Queue Polling Fetch | Not Started | P0 | None |
+| 81.2 | Persistent Agent Self-Sync Documentation | Not Started | P1 | None |
+| 81.3 | Workspace Refresh Discoverability | Not Started | P1 | None |
+| 81.4 | Daemon Refresh for Workspace and Persistent Agent Worktrees | Not Started | P2 | multiclaude daemon source |
+
+**Dependency graph:** 81.1-81.3 are independent and can parallelize. 81.4 is a medium-term daemon change that supersedes the manual approaches.
+
+### Epic 82: Agent Definition Accuracy (P1) — 0/2 stories
+
+Fix incorrect envoy scope descriptions in supervisor and governance docs. Envoy is issues-board ONLY — it cannot create stories or run BMAD pipelines, but two documents incorrectly claim otherwise.
+
+| Story | Title | Status | Priority | Depends On |
+|-------|-------|--------|----------|------------|
+| 82.1 | Fix Envoy Scope Misstatements in Agent and Governance Docs | Not Started | P1 | None |
+| 82.2 | Add Explicit Scope Boundary Callout to Envoy Definition | Not Started | P2 | None |
+
+**Dependency graph:** Independent stories, can parallelize. 82.1 fixes existing errors; 82.2 adds defensive reinforcement.
+
 ## Out of Scope
 
 Work not listed above is out of scope. Merge-queue should reject PRs that introduce features or epics not on this roadmap without human approval.
