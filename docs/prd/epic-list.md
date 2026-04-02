@@ -985,10 +985,10 @@ lastUpdated: '2026-03-15'
 - **Research:** PR #868 (ci-path-filtering-research.md)
 - **Trigger:** PR #866 (Story 73.5) ran full Go Quality Gate despite only adding shell scripts + docs
 
-**Epic 78: CODEOWNERS Documentation Drift Fix** (P1) — 1/3 DONE
+**Epic 78: CODEOWNERS Documentation Drift Fix** (P1) — ✓ COMPLETE
 - **Goal:** Fix stale CODEOWNERS-protected file lists in CLAUDE.md, merge-queue.md, and pr-shepherd.md that cause incorrect `status.needs-human` labeling on governance sync PRs
 - **Prerequisites:** None
-- **Status:** 1/3 stories done
+- **Status:** Complete (3/3 stories done)
 - **Deliverables:**
   - CLAUDE.md CODEOWNERS section updated to match actual `.github/CODEOWNERS` (Done PR #899)
   - merge-queue.md protected paths and grep pattern corrected (root cause fix)
@@ -1112,7 +1112,7 @@ lastUpdated: '2026-03-15'
 | Epic 75: Perplexity MCP Integration | 1 | Complete (1/1 done) |
 | Epic 76: Claude Usage Monitoring & Quota Awareness | 6 | Complete (6/6 done) |
 | Epic 77: CI Path Filtering Improvements | 4 | Complete (4/4 done) |
-| Epic 78: CODEOWNERS Documentation Drift Fix | 3 | 1/3 done |
+| Epic 78: CODEOWNERS Documentation Drift Fix | 3 | Complete (3/3 done) |
 | Epic 79: ThreeDoors Daemon/Server Mode | 6 | Not Started |
 | Epic 80: Stream Deck Plugin (Elgato SDK) | 5 | Not Started |
 | **Total** | **396** | **Audit 2026-03-31: see epics-and-stories.md for authoritative status** |

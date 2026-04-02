@@ -7204,7 +7204,7 @@ So that modifications to safety-critical git hooks are validated by the full Go 
 
 **Priority:** P1
 **Prerequisites:** None
-**Status:** 1/3 stories done
+**Status:** Complete (3/3 stories done)
 
 ### Story 78.1: Update CLAUDE.md CODEOWNERS Protection Section
 
@@ -7226,7 +7226,7 @@ As a merge-queue agent,
 I want my protected paths list and grep detection pattern to match actual CODEOWNERS,
 So that I stop incorrectly labeling governance sync PRs as `status.needs-human`.
 
-**Status:** Not Started | **Priority:** P1 (root cause)
+**Status:** Done (PR #923) | **Priority:** P1 (root cause)
 
 **Acceptance Criteria:**
 - **AC1:** Protected paths list updated to match actual CODEOWNERS
@@ -7239,7 +7239,7 @@ As a pr-shepherd agent,
 I want my protected files list to match actual CODEOWNERS,
 So that I don't incorrectly escalate PRs for human review.
 
-**Status:** Not Started | **Priority:** P2
+**Status:** Done (PR #923) | **Priority:** P2
 
 **Acceptance Criteria:**
 - **AC1:** Protected files list updated to match actual CODEOWNERS

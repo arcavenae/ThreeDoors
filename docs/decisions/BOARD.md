@@ -478,7 +478,7 @@
 | 75 | Perplexity MCP Integration | 2026-03-29 | Complete (1/1) |
 | 76 | Claude Usage Monitoring & Quota Awareness | 2026-03-29 | In Progress (4/6) |
 | 77 | CI Path Filtering Improvements | 2026-03-29 | Complete (4/4) |
-| 78 | CODEOWNERS Documentation Drift Fix | 2026-03-31 | In Progress (1/3) |
+| 78 | CODEOWNERS Documentation Drift Fix | 2026-03-31 | Complete (3/3) |
 | 79 | ThreeDoors Daemon/Server Mode | 2026-04-01 | Not Started (0/6) |
 | 80 | Stream Deck Plugin — Elgato SDK | 2026-04-01 | Not Started (0/5) |
 | 81 | *(next available)* | — | — |

@@ -721,15 +721,15 @@ Fix CI path filtering to stop false-positive Quality Gate triggers on non-Go PRs
 
 **Note:** All 4 stories are independent and can be implemented in a single PR or in parallel. Stories 77.1, 77.2, 77.3, and 77.4 all modify `.github/workflows/ci.yml` — combining into one PR is recommended to avoid merge conflicts.
 
-### Epic 78: CODEOWNERS Documentation Drift Fix (P1) — 1/3 stories
+### Epic 78: CODEOWNERS Documentation Drift Fix (P1) — 3/3 stories ✓ COMPLETE
 
 Fix stale CODEOWNERS-protected file lists in CLAUDE.md, merge-queue.md, and pr-shepherd.md. Four files listed as protected are actually unprotected (ROADMAP.md, epic-list.md, epics-and-stories.md, BOARD.md). Root cause of incorrect `status.needs-human` labeling on governance sync PRs.
 
 | Story | Title | Status | Priority | Depends On |
 |-------|-------|--------|----------|------------|
 | 78.1 | Update CLAUDE.md CODEOWNERS Protection Section | Done (PR #899) | P1 | None |
-| 78.2 | Fix merge-queue Protected Paths and Detection Pattern | Not Started | P1 | None |
-| 78.3 | Fix pr-shepherd Protected Files List | Not Started | P2 | None |
+| 78.2 | Fix merge-queue Protected Paths and Detection Pattern | Done (PR #923) | P1 | None |
+| 78.3 | Fix pr-shepherd Protected Files List | Done (PR #923) | P2 | None |
 
 **Dependency graph:** All three stories are independent and can be implemented in parallel. 78.2 is the highest-impact fix (root cause of incorrect labeling).
 
