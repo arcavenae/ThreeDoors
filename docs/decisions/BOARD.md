@@ -73,6 +73,14 @@
 | P-012 | Orchestrator repo support for multiclaude-enhancements: (1) Daemon patch: add `git submodule update --init --recursive` after worktree creation when `.gitmodules` exists — **#1 blocker** for orchestrator repos. (2) Profile-based packaging: `single-project` (ThreeDoors-style) vs `orchestrator` (aae-orc-style) with shared core agents. (3) BMAD-as-submodule with symlink bridge for command discovery. (4) repos.yaml manifest + 5-layer DFCP enforcement. (5) Variant agent definitions for merge-queue, pr-shepherd, project-watchdog, envoy, supervisor. | 2026-03-29 | Orchestrator Research (R-011) | [Research](../../_bmad-output/planning-artifacts/orchestrator-repo-pattern-research.md) | Owner review — 7 open questions (OQ-ORC-1 through OQ-ORC-7). Daemon patch (item 1) is immediately actionable as a multiclaude PR. Symlink command discovery (OQ-ORC-1) needs empirical testing. |
 | P-018 | TDD + Performance + OTEL for Dark Factories — Three-system architecture: (1) **Scenario-based TDD** for agent definitions — YAML scenario files, judge panel evaluation, holdout validation, red-green-refactor for prompts. Key finding: TDAD shows context > procedure (giving agents dependency maps beats prescriptive TDD instructions). (2) **A/B testing framework** with MLOps-style experiment tracking — adaptive sample sizing (start 10, sequential testing), 3-tier metrics (outcome/efficiency/process), config versioning and promotion workflow. (3) **OTEL instrumentation** using GenAI semantic conventions — span hierarchy (factory_run → agent phases → tool calls), custom metrics (phase token breakdown, tool usage, hook violations, research:productive ratio), local Prometheus + Grafana stack. **ThreeDoors NOW (4-6 weeks):** Enable Claude Code OTLP export, Grafana dashboard, scenario framework, basic A/B comparison, JSONL experiment tracking. **Marvel later:** Multi-factory OTEL, central experiment registry, automated arena, statistical significance engine. Composes with R-003 gallery model and R-012 consolidation roadmap. | 2026-03-29 | Research (R-018) | [Research](../../_bmad-output/planning-artifacts/tdd-performance-otel-research.md) | Owner review — 6 open questions (Q-023 through Q-028). Phase 0 (enable OTLP + Grafana) is immediately actionable with Docker. |
 
+## Needs Decision
+
+| ID | Recommendation | Date | Source (Confidence) | Evidence | Awaiting |
+|----|----------------|------|---------------------|----------|----------|
+| REC-001 | Workers performing file-creation tasks should verify artifact exists before reporting completion. Gate completion on artifact existence, not just process exit. | 2026-03-31 | retrospector (High) | [Stream Deck research: clever-fox stall, kind-tiger empty completion](../../_bmad-output/planning-artifacts/streamdeck-worker-failure-analysis.md) | Supervisor review |
+| REC-002 | Research tasks should constrain web fetch output size — extract relevant sections only, not full pages. Prevents context exhaustion during synthesis. | 2026-03-31 | retrospector (Medium) | [Stream Deck research: 3 consecutive failures at synthesis stage after web fetches](../../_bmad-output/planning-artifacts/streamdeck-worker-failure-analysis.md) | Supervisor review |
+| REC-003 | Research workers should write findings incrementally (per-source) rather than accumulating all results before writing. Prevents synthesis stall by persisting partial results. | 2026-03-31 | retrospector (Medium) | [Stream Deck research: clever-fox stalled synthesizing 3 subagent results, kind-tiger stalled after 6 min thinking](../../_bmad-output/planning-artifacts/streamdeck-worker-failure-analysis.md) | Supervisor review |
+
 ## Decided
 
 | ID | Decision | Date | Rationale | Link |
@@ -437,7 +445,7 @@
 | 42 | Application Security Hardening | 2026-03-09 | In Progress (1/5) |
 | 43 | Connection Manager Infrastructure | 2026-03-09 | In Progress (2/6) |
 | 44 | Sources TUI | 2026-03-09 | Not Started (0/7) |
-| 45 | Sources CLI | 2026-03-09 | Not Started (0/5) |
+| 45 | Sources CLI | 2026-03-09 | Complete (6/6) |
 | 46 | OAuth Device Code Flow | 2026-03-09 | Not Started (0/4) |
 | 47 | Sync Lifecycle & Advanced Features | 2026-03-09 | Not Started (0/4) |
 | 48 | Door-Like Doors — Visual Door Metaphor Enhancement | 2026-03-09 | Not Started (0/4) |
@@ -455,9 +463,25 @@
 | 60 | README Overhaul | 2026-03-11 | In Progress (1/5) |
 | 61 | GitHub Pages User Guide | 2026-03-11 | Not Started (0/4) |
 | 62 | Retrospector Agent Reliability | 2026-03-12 | Not Started (0/3) |
-| 63 | ClickUp Integration | 2026-03-13 | Not Started (0/4) |
-| 64 | Cross-Computer Sync | 2026-03-13 | Not Started (0/6) |
-| 65 | *(next available)* | — | — |
+| 63 | ClickUp Integration | 2026-03-13 | Complete (4/4) |
+| 64 | Cross-Computer Sync | 2026-03-13 | Complete (6/6) |
+| 65 | CLI Test Coverage | 2026-03-13 | Complete (3/3) |
+| 66 | CLI/TUI Adapter Wiring Parity | 2026-03-13 | Complete (3/3) |
+| 67 | Retrospector Operational Data Pipeline | 2026-03-13 | Complete (1/1) |
+| 68 | *(skipped)* | — | — |
+| 69 | TUI Architecture Refactor | 2026-03-15 | Complete |
+| 70 | Completion Analytics & Insights | 2026-03-15 | Complete |
+| 71 | *(reserved — see ROADMAP.md)* | — | — |
+| 72 | *(reserved — see ROADMAP.md)* | — | — |
+| 73 | Operational Foundation — Agent Reliability & Operator UX | 2026-03-29 | In Progress (6/8, 73.2 Reverted, 73.4 DRAFT) |
+| 74 | Golden Repo Hardening — CODEOWNERS, CI Gates & Provenance | 2026-03-29 | Complete (5/5) |
+| 75 | Perplexity MCP Integration | 2026-03-29 | Complete (1/1) |
+| 76 | Claude Usage Monitoring & Quota Awareness | 2026-03-29 | In Progress (4/6) |
+| 77 | CI Path Filtering Improvements | 2026-03-29 | Complete (4/4) |
+| 78 | CODEOWNERS Documentation Drift Fix | 2026-03-31 | In Progress (1/3) |
+| 79 | ThreeDoors Daemon/Server Mode | 2026-04-01 | Not Started (0/6) |
+| 80 | Stream Deck Plugin — Elgato SDK | 2026-04-01 | Not Started (0/5) |
+| 81 | *(next available)* | — | — |
 
 **Rules:**
 1. Before creating a new epic, check this table for the next available number

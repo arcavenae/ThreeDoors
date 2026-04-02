@@ -391,6 +391,18 @@ ThreeDoors/
 │   │   ├── proposal_tools.go        # Proposal MCP tools
 │   │   └── proposal_store.go        # Proposal persistence
 │   │
+│   ├── quota/                          # Quota Monitoring & Usage Tracking (Epic 76)
+│   │   ├── types.go                 # Domain types: TokenCount, Interaction, SessionUsage, WindowUsage, UsageSnapshot, PlanBudget
+│   │   ├── parser.go                # JSONL token usage parser (Claude session logs)
+│   │   ├── discover.go              # Session file discovery (finds JSONL logs)
+│   │   ├── aggregate.go             # Rolling-window token aggregation
+│   │   ├── attribution.go           # Per-agent usage attribution
+│   │   ├── config.go                # Threshold configuration
+│   │   ├── threshold.go             # Warning threshold engine (4-tier)
+│   │   ├── notify.go                # Threshold notification system
+│   │   ├── snapshot.go              # Usage snapshot for /stats integration
+│   │   └── testdata/                # Test fixtures (JSONL samples)
+│   │
 │   ├── retrospector/                  # Retrospective Analysis (Epic 62)
 │   │   ├── finding.go               # Finding model
 │   │   ├── findings.go              # Findings collection/persistence
@@ -451,6 +463,7 @@ User Data Directory (created at runtime):
 5. **`internal/retrospector/`** retrospective analysis (Epic 62), standalone package
 6. **`internal/dist/`** distribution/packaging pipeline, standalone from core
 7. **`internal/testkit/`** shared test utilities (factories, assertions, mock providers)
-8. **Dependency direction:** TUI → Core → Adapters (never reverse)
+8. **`internal/quota/`** quota monitoring and usage tracking (Epic 76), standalone operational package — parses Claude JSONL logs, aggregates token usage, provides threshold warnings
+9. **Dependency direction:** TUI → Core → Adapters (never reverse)
 
 ---
