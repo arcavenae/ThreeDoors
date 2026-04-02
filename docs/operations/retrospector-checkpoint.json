@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "last_pr": 918,
-  "last_timestamp": "2026-04-01T03:30:41Z",
+  "last_pr": 925,
+  "last_timestamp": "2026-04-02T23:03:03Z",
   "mode_rotation_index": 2,
   "hours_since_restart": 0,
-  "prs_since_restart": 6,
+  "prs_since_restart": 12,
   "rolling_windows": {
-    "ci_failure_rate_10pr": 0.0,
+    "ci_failure_rate_10pr": 0.1,
     "conflict_rate_10pr": 0.0,
-    "rebase_avg_10pr": 0.1
+    "rebase_avg_10pr": 0.0
   },
-  "checkpoint_timestamp": "2026-03-31T23:35:00Z"
+  "checkpoint_timestamp": "2026-04-02T23:05:00Z"
 }
