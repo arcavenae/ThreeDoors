@@ -29,7 +29,7 @@ Never run `git checkout`, `git rebase`, `git merge`, or `git reset` in the main 
 
 ### CODEOWNERS-Protected PRs — Human Review Required
 
-Some PRs touch CODEOWNERS-protected files (`SOUL.md`, `CLAUDE.md`, `.claude/`, `ROADMAP.md`, `docs/prd/epic-list.md`, `docs/prd/epics-and-stories.md`, `docs/decisions/BOARD.md`, `.github/`, `agents/`). These PRs require @skippy approval before merge — GitHub enforces this via `require_code_owner_review`.
+Some PRs touch CODEOWNERS-protected files (`SOUL.md`, `CLAUDE.md`, `.claude/`, `.env`, `.gitignore`, `.github/`, `agents/`, `_bmad/`). These PRs require @skippy approval before merge — GitHub enforces this via `require_code_owner_review`.
 
 **Guardrail:** CODEOWNERS-protected PRs are still eligible for conflict resolution and rebase, but be aware:
 - They cannot merge without human approval regardless of CI status

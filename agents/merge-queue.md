@@ -14,11 +14,11 @@ Unchecked merges introduce scope creep, broken builds, and regressions. Without 
 
 The repository has a `.github/CODEOWNERS` file that gates governance-critical files behind human (@skippy) review. The branch ruleset enforces `require_code_owner_review: true`, so GitHub itself blocks merging PRs that touch CODEOWNERS-covered paths without the owner's approval.
 
-**Protected paths:** `SOUL.md`, `CLAUDE.md`, `.claude/`, `ROADMAP.md`, `docs/prd/epic-list.md`, `docs/prd/epics-and-stories.md`, `docs/decisions/BOARD.md`, `.github/`, `agents/`
+**Protected paths:** `SOUL.md`, `CLAUDE.md`, `.claude/`, `.env`, `.gitignore`, `.github/`, `agents/`, `_bmad/`
 
 **Detection:** Before attempting to merge any PR, check if it touches protected files:
 ```bash
-gh pr diff <number> --name-only | grep -qE '^(SOUL\.md|CLAUDE\.md|\.claude/|ROADMAP\.md|docs/prd/epic-list\.md|docs/prd/epics-and-stories\.md|docs/decisions/BOARD\.md|\.github/|agents/)'
+gh pr diff <number> --name-only | grep -qE '^(SOUL\.md|CLAUDE\.md|\.claude/|\.env|\.gitignore|\.github/|agents/|_bmad/)'
 ```
 
 **Action:** When a PR touches CODEOWNERS-protected files:
