@@ -16,7 +16,7 @@ func TestPrioritizeTasks(t *testing.T) {
 	pool := core.NewTaskPool()
 	pool.AddTask(&core.Task{ID: "t1", Text: "blocker task", Status: core.StatusTodo, Type: core.TypeTechnical, Effort: core.EffortQuickWin, CreatedAt: now.AddDate(0, 0, -10), UpdatedAt: now})
 	pool.AddTask(&core.Task{ID: "t2", Text: "blocked task", Status: core.StatusTodo, Type: core.TypeCreative, Effort: core.EffortDeepWork, CreatedAt: now, UpdatedAt: now, Blocker: "t1"})
-	pool.AddTask(&core.Task{ID: "t3", Text: "old task", Status: core.StatusTodo, Type: core.TypeAdministrative, Effort: core.EffortMedium, CreatedAt: now.AddDate(0, -1, 0), UpdatedAt: now})
+	pool.AddTask(&core.Task{ID: "t3", Text: "old task", Status: core.StatusTodo, Type: core.TypeAdministrative, Effort: core.EffortMedium, CreatedAt: now.AddDate(0, 0, -5), UpdatedAt: now})
 
 	edges := []TaskEdge{
 		{FromID: "t1", ToID: "t2", Type: EdgeBlocks, Weight: 0.8, Source: "inferred:text"},

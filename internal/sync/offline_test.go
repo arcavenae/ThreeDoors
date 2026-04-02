@@ -113,11 +113,18 @@ func TestOfflineManager_ConnectivityState(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			// Use a long probe interval by default so the circuit stays open;
+			// only use a short interval for the half-open case where we need
+			// the circuit to transition.
+			probeInterval := time.Hour
+			if tt.cbState == core.CircuitHalfOpen {
+				probeInterval = time.Millisecond
+			}
 			cb := core.NewCircuitBreaker(core.CircuitBreakerConfig{
 				FailureThreshold: 1,
 				FailureWindow:    time.Minute,
-				ProbeInterval:    time.Millisecond,
-				MaxProbeInterval: time.Minute,
+				ProbeInterval:    probeInterval,
+				MaxProbeInterval: time.Hour,
 			})
 			switch tt.cbState {
 			case core.CircuitOpen:
