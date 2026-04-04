@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [develop, main]
   push:
-    branches: [main]
+    branches: [develop]
 
 permissions:
   contents: write
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   # Detect which files changed to skip expensive jobs on docs-only PRs.
-  # Push-to-main always runs the full suite (no path filtering).
+  # Push-to-develop always runs the full suite (no path filtering).
   changes:
     name: Detect Changes
     runs-on: ubuntu-latest
@@ -277,13 +277,6 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Build binaries
-        run: |
-          LDFLAGS="-X main.version=${{ steps.version.outputs.version }}"
-          GOOS=darwin GOARCH=arm64 go build -ldflags "$LDFLAGS" -o threedoors-darwin-arm64 ./cmd/threedoors
-          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-darwin-amd64 ./cmd/threedoors
-          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o threedoors-linux-amd64 ./cmd/threedoors
-
       - name: Build alpha binaries
         run: |
           LDFLAGS="-X main.version=${{ steps.version.outputs.version }} -X main.channel=alpha"
@@ -320,8 +313,6 @@ jobs:
         env:
           APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_INSTALLER_CERTIFICATE_P12: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_P12 }}
-          APPLE_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_INSTALLER_CERTIFICATE_PASSWORD }}
         run: |
           # Create temporary keychain
           security create-keychain -p "" build.keychain
@@ -333,116 +324,38 @@ jobs:
           security import cert.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           rm cert.p12
 
-          # Import installer certificate (for pkg signing)
-          echo "$APPLE_INSTALLER_CERTIFICATE_P12" | base64 --decode > installer-cert.p12
-          security import installer-cert.p12 -k build.keychain -P "$APPLE_INSTALLER_CERTIFICATE_PASSWORD" -T /usr/bin/pkgbuild -T /usr/bin/productbuild -T /usr/bin/productsign
-          rm installer-cert.p12
-
           # Install Apple Developer ID G2 intermediate certificate
           curl -sfo /tmp/DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
           security add-certificates -k build.keychain /tmp/DeveloperIDG2CA.cer
           rm /tmp/DeveloperIDG2CA.cer
 
-          # Allow Apple tools (codesign, pkgbuild, productsign) to access keychain
+          # Allow codesign to access keychain without prompting
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
 
       - name: Verify certificate import
         run: |
           echo "Listing signing identities:"
           security find-identity -v build.keychain
-          echo ""
-          echo "Checking for installer identity:"
-          security find-identity -v build.keychain | grep -i "installer" || echo "WARNING: No installer identity found in keychain"
 
       - name: Sign darwin binaries
         env:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
-          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcavenae.threedoors" --timestamp threedoors-darwin-arm64
-          codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcavenae.threedoors" --timestamp threedoors-darwin-amd64
           codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcavenae.threedoors-a" --timestamp threedoors-a-darwin-arm64
           codesign --force --options runtime --sign "$APPLE_SIGNING_IDENTITY" --identifier "com.arcavenae.threedoors-a" --timestamp threedoors-a-darwin-amd64
 
       - name: Verify signatures
         run: |
-          codesign --verify --deep --strict threedoors-darwin-arm64
-          codesign --verify --deep --strict threedoors-darwin-amd64
           codesign --verify --deep --strict threedoors-a-darwin-arm64
           codesign --verify --deep --strict threedoors-a-darwin-amd64
 
-      - name: Build app bundles
-        run: |
-          VERSION="${{ needs.build-binaries.outputs.version }}"
-          chmod +x scripts/create-app.sh
-
-          ./scripts/create-app.sh threedoors-darwin-arm64 "$VERSION" .
-          mv ThreeDoors.app ThreeDoors-arm64.app
-
-          ./scripts/create-app.sh threedoors-darwin-amd64 "$VERSION" .
-          mv ThreeDoors.app ThreeDoors-amd64.app
-
-      - name: Sign app bundles
-        env:
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-        run: |
-          codesign --force --deep --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp ThreeDoors-arm64.app
-          codesign --force --deep --options runtime --sign "$APPLE_SIGNING_IDENTITY" --timestamp ThreeDoors-amd64.app
-
-      - name: Build dmg images
-        run: |
-          VERSION="${{ needs.build-binaries.outputs.version }}"
-          chmod +x scripts/create-dmg.sh
-
-          ./scripts/create-dmg.sh ThreeDoors-arm64.app "$VERSION" threedoors-arm64.dmg
-          ./scripts/create-dmg.sh ThreeDoors-amd64.app "$VERSION" threedoors-amd64.dmg
-
-      - name: Build pkg installers
-        env:
-          APPLE_INSTALLER_IDENTITY: ${{ secrets.APPLE_INSTALLER_IDENTITY }}
-        run: |
-          # Verify installer identity exists in keychain before building
-          if ! security find-identity -v build.keychain | grep -q "$APPLE_INSTALLER_IDENTITY"; then
-            echo "::error::APPLE_INSTALLER_IDENTITY not found in keychain. Expected format: 'Developer ID Installer: Name (TeamID)'"
-            echo "Available identities:"
-            security find-identity -v build.keychain
-            exit 1
-          fi
-
-          VERSION="${{ needs.build-binaries.outputs.version }}"
-          chmod +x scripts/create-pkg.sh
-
-          ./scripts/create-pkg.sh threedoors-darwin-arm64 "$VERSION" "$APPLE_INSTALLER_IDENTITY" threedoors-arm64.pkg
-          ./scripts/create-pkg.sh threedoors-darwin-amd64 "$VERSION" "$APPLE_INSTALLER_IDENTITY" threedoors-amd64.pkg
-
-      - name: Notarize and staple all artifacts
-        env:
-          APPLE_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_NOTARIZATION_APPLE_ID }}
-          APPLE_NOTARIZATION_PASSWORD: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
-          APPLE_NOTARIZATION_TEAM_ID: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
-        run: |
-          for ARTIFACT in threedoors-arm64.pkg threedoors-amd64.pkg threedoors-arm64.dmg threedoors-amd64.dmg; do
-            echo "Notarizing $ARTIFACT..."
-            xcrun notarytool submit "$ARTIFACT" \
-              --apple-id "$APPLE_NOTARIZATION_APPLE_ID" \
-              --password "$APPLE_NOTARIZATION_PASSWORD" \
-              --team-id "$APPLE_NOTARIZATION_TEAM_ID" \
-              --wait --timeout 14400
-            xcrun stapler staple "$ARTIFACT"
-          done
-
-      - name: Upload signed binaries and installers
+      - name: Upload signed alpha binaries
         uses: actions/upload-artifact@v7
         with:
           name: signed-binaries
           path: |
-            threedoors-darwin-arm64
-            threedoors-darwin-amd64
             threedoors-a-darwin-arm64
             threedoors-a-darwin-amd64
-            threedoors-arm64.pkg
-            threedoors-amd64.pkg
-            threedoors-arm64.dmg
-            threedoors-amd64.dmg
           retention-days: 14
 
       - name: Cleanup keychain
@@ -478,10 +391,9 @@ jobs:
           name: binaries
           path: unsigned-binaries
 
-      - name: Copy linux binaries from unsigned artifacts
+      - name: Copy linux binary from unsigned artifacts
         if: needs.sign-and-notarize.result == 'success'
         run: |
-          cp unsigned-binaries/threedoors-linux-amd64 .
           cp unsigned-binaries/threedoors-a-linux-amd64 .
           rm -rf unsigned-binaries
 
@@ -496,29 +408,16 @@ jobs:
           COMMIT: ${{ github.sha }}
           SIGNED: ${{ needs.sign-and-notarize.result == 'success' && 'Yes (Apple Developer ID)' || 'No (unsigned)' }}
         run: |
-          BODY="Automated alpha release from merge to main.
+          BODY="Automated alpha release from merge to develop.
 
           **Version:** ${VERSION}
           **Commit:** ${COMMIT}
           **Signed:** ${SIGNED}
 
-          **Binaries:**
-          - \`threedoors-darwin-arm64\` — macOS Apple Silicon
-          - \`threedoors-darwin-amd64\` — macOS Intel
-          - \`threedoors-linux-amd64\` — Linux x86_64
+          **Alpha Binaries:**
           - \`threedoors-a-darwin-arm64\` — Alpha macOS Apple Silicon
           - \`threedoors-a-darwin-amd64\` — Alpha macOS Intel
-          - \`threedoors-a-linux-amd64\` — Alpha Linux x86_64"
-
-          if [ "$SIGNED" = "Yes (Apple Developer ID)" ]; then
-            BODY="${BODY}
-          - \`threedoors-arm64.pkg\` — macOS Installer (Apple Silicon)
-          - \`threedoors-amd64.pkg\` — macOS Installer (Intel)
-          - \`threedoors-arm64.dmg\` — macOS Disk Image (Apple Silicon)
-          - \`threedoors-amd64.dmg\` — macOS Disk Image (Intel)"
-          fi
-
-          BODY="${BODY}
+          - \`threedoors-a-linux-amd64\` — Alpha Linux x86_64
 
           **Homebrew (alpha):** \`brew install arcavenae/tap/threedoors-a\`"
 
@@ -553,7 +452,7 @@ jobs:
           # Generate formula
           cat > threedoors-a.rb <<FORMULA
           class ThreedoorsA < Formula
-            desc "TUI task manager — alpha channel (updated on every main push)"
+            desc "TUI task manager — alpha channel (updated on every develop push)"
             homepage "https://github.com/arcavenae/ThreeDoors"
             version "${VERSION}"
             license "MIT"

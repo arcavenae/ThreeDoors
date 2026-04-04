@@ -111,7 +111,7 @@ jobs:
     if: >-
       github.event.workflow_run.name == 'CI'
       && github.event.workflow_run.conclusion == 'success'
-      && github.event.workflow_run.head_branch == 'main'
+      && github.event.workflow_run.head_branch == 'develop'
       && github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -217,7 +217,7 @@ jobs:
 
           1. Check the [tap CI logs](https://github.com/arcavenae/homebrew-tap/actions) for the specific failure
           2. Identify whether the failure is in \`brew audit\`, \`brew install\`, or \`brew test\`
-          3. Fix the root cause in ThreeDoors (the next push to main will regenerate the alpha formula)
+          3. Fix the root cause in ThreeDoors (the next push to develop will regenerate the alpha formula)
 
           Alpha formula failures do not affect stable releases.
           EOF
