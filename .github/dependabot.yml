@@ -10,3 +10,13 @@ updates:
           - "*"
     labels:
       - "dependencies"
+
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /scripts/spike
+    schedule:
+      interval: daily
