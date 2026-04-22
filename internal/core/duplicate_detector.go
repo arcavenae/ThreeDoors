@@ -1,6 +1,7 @@
 package core
 
 import (
+	"math"
 	"sort"
 	"strings"
 )
@@ -24,6 +25,13 @@ func LevenshteinDistance(a, b string) int {
 		return len(b)
 	}
 	if len(b) == 0 {
+		return len(a)
+	}
+	// Guard allocation arithmetic from integer overflow.
+	if len(b) > math.MaxInt-1 {
+		return len(b)
+	}
+	if len(a) > math.MaxInt-1 {
 		return len(a)
 	}
 
